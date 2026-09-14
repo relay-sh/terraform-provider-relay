@@ -98,12 +98,15 @@ func (p *relayProvider) Configure(ctx context.Context, req provider.ConfigureReq
 }
 
 func (p *relayProvider) Resources(context.Context) []func() resource.Resource {
-	return nil
+	return []func() resource.Resource{
+		newWorkspaceResource,
+	}
 }
 
 func (p *relayProvider) DataSources(context.Context) []func() datasource.DataSource {
 	return []func() datasource.DataSource{
 		newOrganizationDataSource,
+		newWorkspaceDataSource,
 	}
 }
 
