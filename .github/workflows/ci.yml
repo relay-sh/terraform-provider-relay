@@ -1,0 +1,47 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+permissions:
+  contents: read
+
+jobs:
+  go:
+    uses: relay-sh/workflows/.github/workflows/go-ci.yaml@main
+    with:
+      test-packages: ./internal/...
+      coverage-mode: total
+      coverage-threshold: "100"
+
+  docs:
+    name: Docs are current
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-go@v5
+        with:
+          go-version-file: go.mod
+      - uses: hashicorp/setup-terraform@v3
+        with:
+          terraform_wrapper: false
+      - run: go generate ./...
+      - run: git diff --exit-code docs/
+
+  release-config:
+    name: Release config builds
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-go@v5
+        with:
+          go-version-file: go.mod
+      - uses: goreleaser/goreleaser-action@v6
+        with:
+          args: check
+      - uses: goreleaser/goreleaser-action@v6
+        with:
+          args: build --snapshot --clean --single-target
