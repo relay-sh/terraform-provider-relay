@@ -100,6 +100,7 @@ func (p *relayProvider) Configure(ctx context.Context, req provider.ConfigureReq
 func (p *relayProvider) Resources(context.Context) []func() resource.Resource {
 	return []func() resource.Resource{
 		newWorkspaceResource,
+		newConnectionResource,
 	}
 }
 

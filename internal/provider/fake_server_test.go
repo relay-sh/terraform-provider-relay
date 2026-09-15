@@ -11,6 +11,7 @@ import (
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/metadata"
 	"google.golang.org/grpc/status"
+	"google.golang.org/protobuf/proto"
 
 	serverv1 "github.com/relay-sh/relay-go/gen/relay/server/v1"
 )
@@ -30,9 +31,12 @@ type fakeServer struct {
 	calls []call
 	errs  map[string]error
 
-	orgs       map[string]*serverv1.Organization
-	workspaces map[string]*serverv1.Workspace
-	nextID     int
+	orgs        map[string]*serverv1.Organization
+	workspaces  map[string]*serverv1.Workspace
+	connections map[string]*serverv1.Connection
+	lastCreate  *serverv1.CreateConnectionRequest
+	lastUpdate  *serverv1.UpdateConnectionRequest
+	nextID      int
 }
 
 func startFakeServer(t *testing.T) *fakeServer {
@@ -42,10 +46,11 @@ func startFakeServer(t *testing.T) *fakeServer {
 		t.Fatalf("listen: %v", err)
 	}
 	f := &fakeServer{
-		addr:       lis.Addr().String(),
-		errs:       map[string]error{},
-		orgs:       map[string]*serverv1.Organization{},
-		workspaces: map[string]*serverv1.Workspace{},
+		addr:        lis.Addr().String(),
+		errs:        map[string]error{},
+		orgs:        map[string]*serverv1.Organization{},
+		workspaces:  map[string]*serverv1.Workspace{},
+		connections: map[string]*serverv1.Connection{},
 	}
 	srv := grpc.NewServer()
 	serverv1.RegisterServerServiceServer(srv, f)
@@ -181,4 +186,139 @@ func (f *fakeServer) DeleteWorkspace(ctx context.Context, req *serverv1.DeleteWo
 	}
 	delete(f.workspaces, w.Id)
 	return &serverv1.DeleteWorkspaceResponse{}, nil
+}
+
+func workspaceOf(ctx context.Context) string {
+	md, _ := metadata.FromIncomingContext(ctx)
+	if v := md.Get("x-relay-workspace-id"); len(v) > 0 {
+		return v[0]
+	}
+	return ""
+}
+
+func connectionKey(ctx context.Context, name string) string {
+	return workspaceOf(ctx) + "/" + name
+}
+
+func normalizeTLS(c *serverv1.Connection) {
+	if t := c.GetTls(); t != nil && t.GetCert() == "" && t.GetKey() == "" && t.GetCa() == "" {
+		c.Tls = nil
+	}
+	if c.GetCredentialRef() != "" {
+		c.PasswordSet = false
+	}
+}
+
+func (f *fakeServer) CreateConnection(ctx context.Context, req *serverv1.CreateConnectionRequest) (*serverv1.CreateConnectionResponse, error) {
+	f.mu.Lock()
+	defer f.mu.Unlock()
+	if err := f.record(ctx, "CreateConnection"); err != nil {
+		return nil, err
+	}
+	f.lastCreate = req
+	key := connectionKey(ctx, req.GetConnection().GetName())
+	if _, ok := f.connections[key]; ok {
+		return nil, status.Error(codes.AlreadyExists, "connection already exists")
+	}
+	c := proto.Clone(req.GetConnection()).(*serverv1.Connection)
+	c.Id = f.newID("conn")
+	c.Status = "unknown"
+	c.PasswordSet = c.GetPassword() != ""
+	c.Password = ""
+	if c.GetKind() == "" {
+		c.Kind = "interactive"
+	}
+	normalizeTLS(c)
+	f.connections[key] = c
+	return &serverv1.CreateConnectionResponse{Connection: c}, nil
+}
+
+func (f *fakeServer) GetConnections(ctx context.Context, req *serverv1.GetConnectionsRequest) (*serverv1.GetConnectionsResponse, error) {
+	f.mu.Lock()
+	defer f.mu.Unlock()
+	if err := f.record(ctx, "GetConnections"); err != nil {
+		return nil, err
+	}
+	out := &serverv1.GetConnectionsResponse{}
+	for _, name := range req.GetNames() {
+		c, ok := f.connections[connectionKey(ctx, name)]
+		if !ok {
+			return nil, status.Errorf(codes.NotFound, "connection %q not found", name)
+		}
+		out.Connections = append(out.Connections, c)
+	}
+	return out, nil
+}
+
+func (f *fakeServer) UpdateConnection(ctx context.Context, req *serverv1.UpdateConnectionRequest) (*serverv1.UpdateConnectionResponse, error) {
+	f.mu.Lock()
+	defer f.mu.Unlock()
+	if err := f.record(ctx, "UpdateConnection"); err != nil {
+		return nil, err
+	}
+	f.lastUpdate = req
+	c, ok := f.connections[connectionKey(ctx, req.GetName())]
+	if !ok {
+		return nil, status.Error(codes.NotFound, "connection not found")
+	}
+	set := func(dst *string, v *string) {
+		if v != nil {
+			*dst = *v
+		}
+	}
+	set(&c.Engine, req.Engine)
+	set(&c.Host, req.Host)
+	set(&c.User, req.User)
+	set(&c.CredentialRef, req.CredentialRef)
+	set(&c.CredentialSource, req.CredentialSource)
+	set(&c.Database, req.Database)
+	set(&c.Listen, req.Listen)
+	set(&c.AgentPool, req.AgentPool)
+	set(&c.Kind, req.Kind)
+	set(&c.ManagedBy, req.ManagedBy)
+	if req.Password != nil {
+		c.PasswordSet = req.GetPassword() != ""
+	}
+	if c.Config == nil {
+		c.Config = &serverv1.ConnectionConfig{}
+	}
+	if req.RedactEnabled != nil {
+		c.Config.RedactEnabled = req.GetRedactEnabled()
+	}
+	if req.AuditEnabled != nil {
+		c.Config.AuditEnabled = req.GetAuditEnabled()
+	}
+	set(&c.Config.PolicyFailMode, req.PolicyFailMode)
+	if req.GetClearRedactRules() {
+		c.Config.RedactRules = nil
+	} else if len(req.GetRedactRules()) > 0 {
+		c.Config.RedactRules = req.GetRedactRules()
+	}
+	if req.GetClearManagedDatabaseId() {
+		c.ManagedDatabaseId = ""
+	} else {
+		set(&c.ManagedDatabaseId, req.ManagedDatabaseId)
+	}
+	if req.Tls != nil {
+		c.Tls = req.GetTls()
+	}
+	if req.HostTls != nil {
+		c.HostTls = req.GetHostTls()
+	}
+	normalizeTLS(c)
+	return &serverv1.UpdateConnectionResponse{Connection: c}, nil
+}
+
+func (f *fakeServer) DeleteConnection(ctx context.Context, req *serverv1.DeleteConnectionRequest) (*serverv1.DeleteConnectionResponse, error) {
+	f.mu.Lock()
+	defer f.mu.Unlock()
+	if err := f.record(ctx, "DeleteConnection"); err != nil {
+		return nil, err
+	}
+	key := connectionKey(ctx, req.GetName())
+	if _, ok := f.connections[key]; !ok {
+		return nil, status.Error(codes.NotFound, "connection not found")
+	}
+	delete(f.connections, key)
+	return &serverv1.DeleteConnectionResponse{}, nil
 }

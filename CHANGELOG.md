@@ -6,3 +6,4 @@ FEATURES:
 
 * **New Resource:** `relay_workspace`
 * **New Data Source:** `relay_workspace`
+* **New Resource:** `relay_connection`
