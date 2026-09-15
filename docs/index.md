@@ -20,9 +20,13 @@ terraform {
   }
 }
 
+variable "relay_api_key" {
+  type      = string
+  sensitive = true
+}
+
 provider "relay" {
-  endpoint = "api.staging.userelay.sh:443"
-  org_id   = "00000000-0000-0000-0000-000000000000"
+  api_key = var.relay_api_key
 }
 ```
 
@@ -31,7 +35,7 @@ provider "relay" {
 
 ### Optional
 
-- `endpoint` (String) Relay API address as `host:port`. Falls back to `RELAY_ENDPOINT`.
+- `api_key` (String, Sensitive) Organization or workspace API key (`rly_key_…`). Falls back to `RELAY_API_KEY`.
+- `endpoint` (String) Relay API address as `host:port`. Defaults to `api.userelay.sh:443`. Falls back to `RELAY_ENDPOINT`.
 - `insecure` (Boolean) Dial without TLS. Only for a local server. Falls back to `RELAY_INSECURE`.
-- `org_id` (String) Organization every resource is managed in. Falls back to `RELAY_ORG_ID`.
-- `token` (String, Sensitive) Organization or workspace API key (`rly_key_…`). Falls back to `RELAY_TOKEN`.
+- `org_id` (String) Organization to manage. Defaults to the API key's organization. Falls back to `RELAY_ORG_ID`.

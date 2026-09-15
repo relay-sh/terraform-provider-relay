@@ -12,12 +12,14 @@ import (
 	serverv1 "github.com/relay-sh/relay-go/gen/relay/server/v1"
 )
 
+const DefaultEndpoint = "api.userelay.sh:443"
+
 type Options struct {
-	Endpoint  string
-	Token     string
-	Insecure  bool
-	Origin    string
-	UserAgent string
+	Endpoint    string
+	Credentials Credentials
+	Insecure    bool
+	Origin      string
+	UserAgent   string
 }
 
 type Client struct {
@@ -25,26 +27,24 @@ type Client struct {
 	Server serverv1.ServerServiceClient
 }
 
-var (
-	ErrMissingEndpoint = errors.New("relay: endpoint is required")
-	ErrMissingToken    = errors.New("relay: token is required")
-)
+var ErrMissingCredentials = errors.New("relay: credentials are required")
 
 func Dial(opts Options) (*Client, error) {
-	if opts.Endpoint == "" {
-		return nil, ErrMissingEndpoint
+	if opts.Credentials == nil {
+		return nil, ErrMissingCredentials
 	}
-	if opts.Token == "" {
-		return nil, ErrMissingToken
+	endpoint := opts.Endpoint
+	if endpoint == "" {
+		endpoint = DefaultEndpoint
 	}
 	dialOpts := []grpc.DialOption{
-		grpc.WithTransportCredentials(transportCredentials(opts.Endpoint, opts.Insecure)),
-		grpc.WithPerRPCCredentials(tokenAuth{token: opts.Token, origin: opts.Origin, requireTLS: !opts.Insecure}),
+		grpc.WithTransportCredentials(transportCredentials(endpoint, opts.Insecure)),
+		grpc.WithPerRPCCredentials(perRPC{creds: opts.Credentials, origin: opts.Origin, requireTLS: !opts.Insecure}),
 	}
 	if opts.UserAgent != "" {
 		dialOpts = append(dialOpts, grpc.WithUserAgent(opts.UserAgent))
 	}
-	conn, err := grpc.NewClient(opts.Endpoint, dialOpts...)
+	conn, err := grpc.NewClient(endpoint, dialOpts...)
 	if err != nil {
 		return nil, err
 	}

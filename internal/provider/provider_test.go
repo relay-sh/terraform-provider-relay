@@ -44,7 +44,7 @@ func providerBlock(f *fakeServer) string {
 	return fmt.Sprintf(`
 provider "relay" {
   endpoint = %q
-  token    = "rly_key_test"
+  api_key  = "rly_key_test"
   org_id   = %q
   insecure = true
 }
@@ -59,7 +59,7 @@ func TestProvider_EnvironmentFallback(t *testing.T) {
 	f := startFakeServer(t)
 	seedOrg(f)
 	t.Setenv("RELAY_ENDPOINT", f.addr)
-	t.Setenv("RELAY_TOKEN", "rly_key_env")
+	t.Setenv("RELAY_API_KEY", "rly_key_env")
 	t.Setenv("RELAY_ORG_ID", testOrgID)
 	t.Setenv("RELAY_INSECURE", "true")
 
@@ -75,6 +75,54 @@ func TestProvider_EnvironmentFallback(t *testing.T) {
 	}
 }
 
+func TestProvider_OrganizationFromAPIKey(t *testing.T) {
+	f := startFakeServer(t)
+	seedOrg(f)
+	for _, k := range []string{"RELAY_ENDPOINT", "RELAY_API_KEY", "RELAY_ORG_ID", "RELAY_INSECURE"} {
+		t.Setenv(k, "")
+	}
+
+	resource.UnitTest(t, resource.TestCase{
+		ProtoV6ProviderFactories: factories(relay.Dial),
+		Steps: []resource.TestStep{{
+			Config: fmt.Sprintf(`
+provider "relay" {
+  endpoint = %q
+  api_key  = "rly_key_test"
+  insecure = true
+}
+
+data "relay_organization" "this" {}
+`, f.addr),
+			Check: resource.TestCheckResourceAttr("data.relay_organization.this", "id", testOrgID),
+		}},
+	})
+	if calls := f.callsTo("GetOrganization"); len(calls) == 0 || calls[0].org != "" {
+		t.Errorf("without org_id no org header is sent; calls = %+v", calls)
+	}
+}
+
+func TestProvider_DefaultEndpoint(t *testing.T) {
+	var got relay.Options
+	dial := func(o relay.Options) (*relay.Client, error) {
+		got = o
+		return nil, errors.New("stop")
+	}
+	for _, k := range []string{"RELAY_ENDPOINT", "RELAY_API_KEY", "RELAY_ORG_ID", "RELAY_INSECURE"} {
+		t.Setenv(k, "")
+	}
+	resource.UnitTest(t, resource.TestCase{
+		ProtoV6ProviderFactories: factories(dial),
+		Steps: []resource.TestStep{{
+			Config:      `provider "relay" { api_key = "rly_key_test" }` + "\n" + `data "relay_organization" "this" {}`,
+			ExpectError: regexp.MustCompile("Cannot create Relay client"),
+		}},
+	})
+	if got.Endpoint != "" || got.Credentials != relay.APIKey("rly_key_test") || got.Insecure {
+		t.Errorf("an empty endpoint is left to relay-go's default; options = %+v", got)
+	}
+}
+
 func TestProvider_ConfigurationErrors(t *testing.T) {
 	f := startFakeServer(t)
 	cases := map[string]struct {
@@ -83,7 +131,7 @@ func TestProvider_ConfigurationErrors(t *testing.T) {
 		dial   func(relay.Options) (*relay.Client, error)
 		want   string
 	}{
-		"missing token": {
+		"missing api key": {
 			config: fmt.Sprintf(`provider "relay" {
   endpoint = %q
   org_id   = %q
@@ -93,7 +141,7 @@ func TestProvider_ConfigurationErrors(t *testing.T) {
 		"invalid insecure env": {
 			config: fmt.Sprintf(`provider "relay" {
   endpoint = %q
-  token    = "t"
+  api_key  = "t"
   org_id   = %q
 }`, f.addr, testOrgID),
 			env:  map[string]string{"RELAY_INSECURE": "maybe"},
@@ -105,7 +153,7 @@ func TestProvider_ConfigurationErrors(t *testing.T) {
 }
 provider "relay" {
   endpoint = terraform_data.late.output
-  token    = terraform_data.late.output
+  api_key  = terraform_data.late.output
   org_id   = terraform_data.late.output
   insecure = terraform_data.late.output == "x"
 }`,
@@ -119,7 +167,7 @@ provider "relay" {
 	}
 	for name, tc := range cases {
 		t.Run(name, func(t *testing.T) {
-			for _, k := range []string{"RELAY_ENDPOINT", "RELAY_TOKEN", "RELAY_ORG_ID", "RELAY_INSECURE"} {
+			for _, k := range []string{"RELAY_ENDPOINT", "RELAY_API_KEY", "RELAY_ORG_ID", "RELAY_INSECURE"} {
 				t.Setenv(k, "")
 			}
 			for k, v := range tc.env {

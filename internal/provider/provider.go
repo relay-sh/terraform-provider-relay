@@ -24,7 +24,7 @@ type relayProvider struct {
 
 type providerModel struct {
 	Endpoint types.String `tfsdk:"endpoint"`
-	Token    types.String `tfsdk:"token"`
+	APIKey   types.String `tfsdk:"api_key"`
 	OrgID    types.String `tfsdk:"org_id"`
 	Insecure types.Bool   `tfsdk:"insecure"`
 }
@@ -44,17 +44,17 @@ func (p *relayProvider) Schema(_ context.Context, _ provider.SchemaRequest, resp
 	resp.Schema = schema.Schema{
 		MarkdownDescription: "Manages Relay workspaces, connections and managed databases.",
 		Attributes: map[string]schema.Attribute{
-			"endpoint": schema.StringAttribute{
-				MarkdownDescription: "Relay API address as `host:port`. Falls back to `RELAY_ENDPOINT`.",
-				Optional:            true,
-			},
-			"token": schema.StringAttribute{
-				MarkdownDescription: "Organization or workspace API key (`rly_key_…`). Falls back to `RELAY_TOKEN`.",
+			"api_key": schema.StringAttribute{
+				MarkdownDescription: "Organization or workspace API key (`rly_key_…`). Falls back to `RELAY_API_KEY`.",
 				Optional:            true,
 				Sensitive:           true,
 			},
+			"endpoint": schema.StringAttribute{
+				MarkdownDescription: "Relay API address as `host:port`. Defaults to `api.userelay.sh:443`. Falls back to `RELAY_ENDPOINT`.",
+				Optional:            true,
+			},
 			"org_id": schema.StringAttribute{
-				MarkdownDescription: "Organization every resource is managed in. Falls back to `RELAY_ORG_ID`.",
+				MarkdownDescription: "Organization to manage. Defaults to the API key's organization. Falls back to `RELAY_ORG_ID`.",
 				Optional:            true,
 			},
 			"insecure": schema.BoolAttribute{
@@ -72,20 +72,20 @@ func (p *relayProvider) Configure(ctx context.Context, req provider.ConfigureReq
 		return
 	}
 
-	endpoint := stringSetting(cfg.Endpoint, "RELAY_ENDPOINT", path.Root("endpoint"), resp)
-	token := stringSetting(cfg.Token, "RELAY_TOKEN", path.Root("token"), resp)
-	orgID := stringSetting(cfg.OrgID, "RELAY_ORG_ID", path.Root("org_id"), resp)
+	apiKey := stringSetting(cfg.APIKey, "RELAY_API_KEY", path.Root("api_key"), true, resp)
+	endpoint := stringSetting(cfg.Endpoint, "RELAY_ENDPOINT", path.Root("endpoint"), false, resp)
+	orgID := stringSetting(cfg.OrgID, "RELAY_ORG_ID", path.Root("org_id"), false, resp)
 	insecure := boolSetting(cfg.Insecure, "RELAY_INSECURE", path.Root("insecure"), resp)
 	if resp.Diagnostics.HasError() {
 		return
 	}
 
 	api, err := p.dial(relay.Options{
-		Endpoint:  endpoint,
-		Token:     token,
-		Insecure:  insecure,
-		Origin:    "terraform",
-		UserAgent: "terraform-provider-relay/" + p.version,
+		Endpoint:    endpoint,
+		Credentials: relay.APIKey(apiKey),
+		Insecure:    insecure,
+		Origin:      "terraform",
+		UserAgent:   "terraform-provider-relay/" + p.version,
 	})
 	if err != nil {
 		resp.Diagnostics.AddError("Cannot create Relay client", err.Error())
@@ -107,7 +107,7 @@ func (p *relayProvider) DataSources(context.Context) []func() datasource.DataSou
 	}
 }
 
-func stringSetting(v types.String, env string, attr path.Path, resp *provider.ConfigureResponse) string {
+func stringSetting(v types.String, env string, attr path.Path, required bool, resp *provider.ConfigureResponse) string {
 	if v.IsUnknown() {
 		resp.Diagnostics.AddAttributeError(attr, "Unknown provider setting", "The value is not known until apply. Set it from a static value or "+env+".")
 		return ""
@@ -116,7 +116,7 @@ func stringSetting(v types.String, env string, attr path.Path, resp *provider.Co
 	if value == "" {
 		value = os.Getenv(env)
 	}
-	if value == "" {
+	if value == "" && required {
 		resp.Diagnostics.AddAttributeError(attr, "Missing provider setting", "Set it in the provider block or through "+env+".")
 	}
 	return value

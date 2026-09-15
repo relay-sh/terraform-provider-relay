@@ -6,7 +6,11 @@ terraform {
   }
 }
 
+variable "relay_api_key" {
+  type      = string
+  sensitive = true
+}
+
 provider "relay" {
-  endpoint = "api.staging.userelay.sh:443"
-  org_id   = "00000000-0000-0000-0000-000000000000"
+  api_key = var.relay_api_key
 }

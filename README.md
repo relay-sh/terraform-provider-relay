@@ -5,12 +5,15 @@ Terraform and OpenTofu provider for Relay. Resource documentation lives in
 
 ```hcl
 provider "relay" {
-  endpoint = "api.staging.userelay.sh:443"
-  org_id   = "…"
+  api_key = var.relay_api_key
 }
 ```
 
-Authentication uses an organization or workspace API key in `RELAY_TOKEN`.
+Authentication uses an organization or workspace API key, from `api_key` or
+`RELAY_API_KEY`. The organization comes from the key.
+
+Tests against staging set `RELAY_ENDPOINT=api.staging.userelay.sh:443`; it
+defaults to production.
 
 ## Development
 

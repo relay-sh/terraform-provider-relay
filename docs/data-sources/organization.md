@@ -3,12 +3,12 @@
 page_title: "relay_organization Data Source - relay"
 subcategory: ""
 description: |-
-  Reads an organization the token's user belongs to. Without id or slug it reads the provider's org_id.
+  Reads an organization. Without id or slug it reads the provider's org_id, or the API key's organization when org_id is unset.
 ---
 
 # relay_organization (Data Source)
 
-Reads an organization the token's user belongs to. Without `id` or `slug` it reads the provider's `org_id`.
+Reads an organization. Without `id` or `slug` it reads the provider's `org_id`, or the API key's organization when `org_id` is unset.
 
 ## Example Usage
 

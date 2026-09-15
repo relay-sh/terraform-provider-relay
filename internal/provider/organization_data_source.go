@@ -42,7 +42,7 @@ func (d *organizationDataSource) Metadata(_ context.Context, req datasource.Meta
 
 func (d *organizationDataSource) Schema(_ context.Context, _ datasource.SchemaRequest, resp *datasource.SchemaResponse) {
 	resp.Schema = schema.Schema{
-		MarkdownDescription: "Reads an organization the token's user belongs to. Without `id` or `slug` it reads the provider's `org_id`.",
+		MarkdownDescription: "Reads an organization. Without `id` or `slug` it reads the provider's `org_id`, or the API key's organization when `org_id` is unset.",
 		Attributes: map[string]schema.Attribute{
 			"id":                           schema.StringAttribute{Optional: true, Computed: true, MarkdownDescription: "Organization ID."},
 			"slug":                         schema.StringAttribute{Optional: true, Computed: true, MarkdownDescription: "Organization slug."},
@@ -75,17 +75,19 @@ func (d *organizationDataSource) Read(ctx context.Context, req datasource.ReadRe
 		return
 	}
 
-	lookup := &serverv1.GetOrganizationRequest{Key: &serverv1.GetOrganizationRequest_Id{Id: d.client.OrgID}}
+	lookup := &serverv1.GetOrganizationRequest{}
 	switch {
 	case !state.Slug.IsNull():
 		lookup.Key = &serverv1.GetOrganizationRequest_Slug{Slug: state.Slug.ValueString()}
 	case !state.ID.IsNull():
 		lookup.Key = &serverv1.GetOrganizationRequest_Id{Id: state.ID.ValueString()}
+	case d.client.OrgID != "":
+		lookup.Key = &serverv1.GetOrganizationRequest_Id{Id: d.client.OrgID}
 	}
 
 	out, err := d.client.API.GetOrganization(d.client.Org(ctx), lookup)
 	if relay.IsNotFound(err) {
-		resp.Diagnostics.AddError("Organization not found", "No organization matches, or the token's user is not a member of it.")
+		resp.Diagnostics.AddError("Organization not found", "No organization matches, or the API key does not belong to it.")
 		return
 	}
 	if err != nil {

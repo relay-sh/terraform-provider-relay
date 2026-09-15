@@ -86,6 +86,11 @@ func (f *fakeServer) GetOrganization(ctx context.Context, req *serverv1.GetOrgan
 	if err := f.record(ctx, "GetOrganization"); err != nil {
 		return nil, err
 	}
+	if req.GetKey() == nil {
+		if o, ok := f.orgs[testOrgID]; ok {
+			return &serverv1.GetOrganizationResponse{Organization: o}, nil
+		}
+	}
 	for _, o := range f.orgs {
 		if o.GetId() == req.GetId() || (req.GetSlug() != "" && o.GetSlug() == req.GetSlug()) {
 			return &serverv1.GetOrganizationResponse{Organization: o}, nil
