@@ -10,7 +10,7 @@ provider "relay" {
 }
 ```
 
-Authentication uses a personal access token in `RELAY_TOKEN`.
+Authentication uses an organization or workspace API key in `RELAY_TOKEN`.
 
 ## Development
 

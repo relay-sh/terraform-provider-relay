@@ -34,4 +34,4 @@ provider "relay" {
 - `endpoint` (String) Relay API address as `host:port`. Falls back to `RELAY_ENDPOINT`.
 - `insecure` (Boolean) Dial without TLS. Only for a local server. Falls back to `RELAY_INSECURE`.
 - `org_id` (String) Organization every resource is managed in. Falls back to `RELAY_ORG_ID`.
-- `token` (String, Sensitive) Personal access token (`rly_pat_…`). Falls back to `RELAY_TOKEN`.
+- `token` (String, Sensitive) Organization or workspace API key (`rly_key_…`). Falls back to `RELAY_TOKEN`.

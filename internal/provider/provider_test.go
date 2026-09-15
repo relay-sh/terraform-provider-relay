@@ -44,7 +44,7 @@ func providerBlock(f *fakeServer) string {
 	return fmt.Sprintf(`
 provider "relay" {
   endpoint = %q
-  token    = "rly_pat_test"
+  token    = "rly_key_test"
   org_id   = %q
   insecure = true
 }
@@ -59,7 +59,7 @@ func TestProvider_EnvironmentFallback(t *testing.T) {
 	f := startFakeServer(t)
 	seedOrg(f)
 	t.Setenv("RELAY_ENDPOINT", f.addr)
-	t.Setenv("RELAY_TOKEN", "rly_pat_env")
+	t.Setenv("RELAY_TOKEN", "rly_key_env")
 	t.Setenv("RELAY_ORG_ID", testOrgID)
 	t.Setenv("RELAY_INSECURE", "true")
 

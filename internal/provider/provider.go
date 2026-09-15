@@ -49,7 +49,7 @@ func (p *relayProvider) Schema(_ context.Context, _ provider.SchemaRequest, resp
 				Optional:            true,
 			},
 			"token": schema.StringAttribute{
-				MarkdownDescription: "Personal access token (`rly_pat_…`). Falls back to `RELAY_TOKEN`.",
+				MarkdownDescription: "Organization or workspace API key (`rly_key_…`). Falls back to `RELAY_TOKEN`.",
 				Optional:            true,
 				Sensitive:           true,
 			},
