@@ -4,6 +4,8 @@ import (
 	"context"
 	"fmt"
 	"net"
+	"sort"
+	"strconv"
 	"sync"
 	"testing"
 
@@ -37,6 +39,17 @@ type fakeServer struct {
 	lastCreate  *serverv1.CreateConnectionRequest
 	lastUpdate  *serverv1.UpdateConnectionRequest
 	nextID      int
+
+	databases         map[string]*serverv1.Database
+	dbCountdown       map[string]int
+	readyAfter        int
+	stuck             bool
+	failProvision     string
+	failDeletion      string
+	failWhileDeleting error
+	lastDBCreate      *serverv1.CreateDatabaseRequest
+	lastDBUpdate      *serverv1.UpdateDatabaseRequest
+	lastDBDelete      *serverv1.DeleteDatabaseRequest
 }
 
 func startFakeServer(t *testing.T) *fakeServer {
@@ -51,6 +64,9 @@ func startFakeServer(t *testing.T) *fakeServer {
 		orgs:        map[string]*serverv1.Organization{},
 		workspaces:  map[string]*serverv1.Workspace{},
 		connections: map[string]*serverv1.Connection{},
+		databases:   map[string]*serverv1.Database{},
+		dbCountdown: map[string]int{},
+		readyAfter:  2,
 	}
 	srv := grpc.NewServer()
 	serverv1.RegisterServerServiceServer(srv, f)
@@ -321,4 +337,157 @@ func (f *fakeServer) DeleteConnection(ctx context.Context, req *serverv1.DeleteC
 	}
 	delete(f.connections, key)
 	return &serverv1.DeleteConnectionResponse{}, nil
+}
+
+func (f *fakeServer) settle(id, phase string) {
+	f.databases[id].Status.Phase = phase
+	f.dbCountdown[id] = f.readyAfter
+}
+
+func (f *fakeServer) CreateDatabase(ctx context.Context, req *serverv1.CreateDatabaseRequest) (*serverv1.CreateDatabaseResponse, error) {
+	f.mu.Lock()
+	defer f.mu.Unlock()
+	if err := f.record(ctx, "CreateDatabase"); err != nil {
+		return nil, err
+	}
+	f.lastDBCreate = req
+	for _, db := range f.databases {
+		if db.GetWorkspaceId() == workspaceOf(ctx) && db.GetName() == req.GetName() {
+			return nil, status.Error(codes.AlreadyExists, "database already exists")
+		}
+	}
+	spec := proto.Clone(req.GetSpec()).(*serverv1.DatabaseSpec)
+	for _, n := range spec.GetNodes() {
+		if n.GetResources().GetStorageClass() == "" {
+			n.Resources.StorageClass = "standard"
+		}
+	}
+	if spec.Replication == nil {
+		spec.Replication = &serverv1.Replication{Mode: "async"}
+	}
+	db := &serverv1.Database{
+		Id:          f.newID("db"),
+		Name:        req.GetName(),
+		OrgId:       testOrgID,
+		WorkspaceId: workspaceOf(ctx),
+		Spec:        spec,
+		Status: &serverv1.DatabaseStatus{
+			Endpoint:        &serverv1.Endpoint{Host: req.GetName() + ".db.relay", Port: 5432},
+			PublicEndpoints: []*serverv1.PublicEndpoint{{Role: "primary", Host: req.GetName() + ".public", Port: 5432}},
+			TotalNodes:      1,
+		},
+	}
+	f.databases[db.Id] = db
+	f.settle(db.Id, "provisioning")
+	return &serverv1.CreateDatabaseResponse{Database: db}, nil
+}
+
+func (f *fakeServer) GetDatabase(ctx context.Context, req *serverv1.GetDatabaseRequest) (*serverv1.GetDatabaseResponse, error) {
+	f.mu.Lock()
+	defer f.mu.Unlock()
+	if err := f.record(ctx, "GetDatabase"); err != nil {
+		return nil, err
+	}
+	db, ok := f.databases[req.GetId()]
+	if !ok {
+		return nil, status.Error(codes.NotFound, "database not found")
+	}
+	if db.Status.Phase == "deleting" && f.failWhileDeleting != nil {
+		return nil, f.failWhileDeleting
+	}
+	if f.dbCountdown[db.Id] > 0 && !f.stuck {
+		f.dbCountdown[db.Id]--
+		if f.dbCountdown[db.Id] == 0 {
+			switch db.Status.Phase {
+			case "provisioning":
+				db.Status.Phase, db.Status.ReadyNodes = "running", 1
+				if f.failProvision != "" {
+					db.Status.Phase, db.Status.Message = "failed", f.failProvision
+				}
+			case "deleting":
+				if f.failDeletion != "" {
+					db.Status.Phase, db.Status.Message = "failed", f.failDeletion
+				} else {
+					delete(f.databases, db.Id)
+					return nil, status.Error(codes.NotFound, "database not found")
+				}
+			}
+		}
+	}
+	return &serverv1.GetDatabaseResponse{Database: db}, nil
+}
+
+func (f *fakeServer) UpdateDatabase(ctx context.Context, req *serverv1.UpdateDatabaseRequest) (*serverv1.UpdateDatabaseResponse, error) {
+	f.mu.Lock()
+	defer f.mu.Unlock()
+	if err := f.record(ctx, "UpdateDatabase"); err != nil {
+		return nil, err
+	}
+	f.lastDBUpdate = req
+	db, ok := f.databases[req.GetId()]
+	if !ok {
+		return nil, status.Error(codes.NotFound, "database not found")
+	}
+	in := req.GetSpec()
+	for _, p := range req.GetUpdateMask().GetPaths() {
+		switch p {
+		case "topology":
+			db.Spec.Topology = in.GetTopology()
+		case "nodes":
+			db.Spec.Nodes = in.GetNodes()
+		case "params":
+			db.Spec.Params = in.GetParams()
+		case "backups_enabled":
+			db.Spec.BackupsEnabled = in.GetBackupsEnabled()
+		case "replication":
+			db.Spec.Replication = in.GetReplication()
+		case "postgresql":
+			db.Spec.Postgresql = in.GetPostgresql()
+		default:
+			return nil, status.Errorf(codes.InvalidArgument, "path %q is not updatable", p)
+		}
+	}
+	f.settle(db.Id, "provisioning")
+	return &serverv1.UpdateDatabaseResponse{Database: db}, nil
+}
+
+func (f *fakeServer) DeleteDatabase(ctx context.Context, req *serverv1.DeleteDatabaseRequest) (*serverv1.DeleteDatabaseResponse, error) {
+	f.mu.Lock()
+	defer f.mu.Unlock()
+	if err := f.record(ctx, "DeleteDatabase"); err != nil {
+		return nil, err
+	}
+	f.lastDBDelete = req
+	if _, ok := f.databases[req.GetId()]; !ok {
+		return nil, status.Error(codes.NotFound, "database not found")
+	}
+	f.settle(req.GetId(), "deleting")
+	return &serverv1.DeleteDatabaseResponse{}, nil
+}
+
+func (f *fakeServer) ListDatabases(ctx context.Context, req *serverv1.ListDatabasesRequest) (*serverv1.ListDatabasesResponse, error) {
+	f.mu.Lock()
+	defer f.mu.Unlock()
+	if err := f.record(ctx, "ListDatabases"); err != nil {
+		return nil, err
+	}
+	var ids []string
+	for id, db := range f.databases {
+		if db.GetWorkspaceId() == workspaceOf(ctx) {
+			ids = append(ids, id)
+		}
+	}
+	sort.Strings(ids)
+	start := 0
+	if req.GetPageToken() != "" {
+		start, _ = strconv.Atoi(req.GetPageToken())
+	}
+	out := &serverv1.ListDatabasesResponse{}
+	if start < len(ids) {
+		out.Databases = []*serverv1.Database{f.databases[ids[start]]}
+		if start+1 < len(ids) {
+			out.NextPageToken = strconv.Itoa(start + 1)
+		}
+	}
+	return out, nil
 }

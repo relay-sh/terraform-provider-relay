@@ -6,6 +6,7 @@ import (
 	"os"
 	"regexp"
 	"testing"
+	"time"
 
 	"github.com/hashicorp/terraform-plugin-framework/providerserver"
 	"github.com/hashicorp/terraform-plugin-go/tfprotov6"
@@ -28,6 +29,7 @@ func TestMain(m *testing.M) {
 			}
 		}
 	}
+	pollInterval = time.Millisecond
 	os.Exit(m.Run())
 }
 

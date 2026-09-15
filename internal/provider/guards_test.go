@@ -78,13 +78,16 @@ func assertResourceGuards(t *testing.T, r resource.Resource) {
 func TestResourceGuards(t *testing.T) {
 	assertResourceGuards(t, newWorkspaceResource())
 	assertResourceGuards(t, newConnectionResource())
+	assertResourceGuards(t, newDatabaseResource())
 
-	d := newWorkspaceDataSource()
-	var dsSchema datasource.SchemaResponse
-	d.Schema(context.Background(), datasource.SchemaRequest{}, &dsSchema)
-	var readResp datasource.ReadResponse
-	d.Read(context.Background(), datasource.ReadRequest{Config: tfsdk.Config{Schema: dsSchema.Schema, Raw: malformed}}, &readResp)
-	if !readResp.Diagnostics.HasError() {
-		t.Error("workspace data source Read must stop on a malformed config")
+	for _, d := range []datasource.DataSource{newWorkspaceDataSource(), newDatabaseDataSource()} {
+		var dsSchema datasource.SchemaResponse
+		d.Schema(context.Background(), datasource.SchemaRequest{}, &dsSchema)
+		var readResp datasource.ReadResponse
+		d.Read(context.Background(), datasource.ReadRequest{Config: tfsdk.Config{Schema: dsSchema.Schema, Raw: malformed}}, &readResp)
+		if !readResp.Diagnostics.HasError() {
+			t.Errorf("%T Read must stop on a malformed config", d)
+		}
 	}
+
 }
