@@ -7,7 +7,6 @@ import (
 	"time"
 
 	"github.com/hashicorp/terraform-plugin-framework-timeouts/resource/timeouts"
-	"github.com/hashicorp/terraform-plugin-framework-validators/resourcevalidator"
 	"github.com/hashicorp/terraform-plugin-framework-validators/stringvalidator"
 	"github.com/hashicorp/terraform-plugin-framework/attr"
 	"github.com/hashicorp/terraform-plugin-framework/path"
@@ -135,9 +134,13 @@ func (r *databaseUserResource) Schema(ctx context.Context, _ resource.SchemaRequ
 	}
 }
 
-func (r *databaseUserResource) ConfigValidators(context.Context) []resource.ConfigValidator {
-	return []resource.ConfigValidator{
-		resourcevalidator.Conflicting(path.MatchRoot("password"), path.MatchRoot("generate_password")),
+func (r *databaseUserResource) ValidateConfig(ctx context.Context, req resource.ValidateConfigRequest, resp *resource.ValidateConfigResponse) {
+	var password types.String
+	var generate types.Bool
+	resp.Diagnostics.Append(req.Config.GetAttribute(ctx, path.Root("password"), &password)...)
+	resp.Diagnostics.Append(req.Config.GetAttribute(ctx, path.Root("generate_password"), &generate)...)
+	if !password.IsNull() && generate.ValueBool() {
+		resp.Diagnostics.AddAttributeError(path.Root("generate_password"), "Conflicting password settings", "Set password or generate_password = true, not both.")
 	}
 }
 

@@ -193,7 +193,6 @@ github.com/hashicorp/terraform-plugin-framework-validators/helpers/validatordiag
 github.com/hashicorp/terraform-plugin-framework-validators/helpers/validatorfuncerr
 github.com/hashicorp/terraform-plugin-framework-validators/internal/configvalidator
 github.com/hashicorp/terraform-plugin-framework-validators/internal/schemavalidator
-github.com/hashicorp/terraform-plugin-framework-validators/resourcevalidator
 github.com/hashicorp/terraform-plugin-framework-validators/stringvalidator
 # github.com/hashicorp/terraform-plugin-go v0.31.0
 ## explicit; go 1.25.0

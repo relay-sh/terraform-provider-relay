@@ -171,7 +171,10 @@ func TestDatabaseUserResource_PasswordConflict(t *testing.T) {
 		ProtoV6ProviderFactories: factories(relay.Dial),
 		Steps: []resource.TestStep{{
 			Config:      userConfig(f, "reporting", "  password = \"x\"\n  generate_password = true"),
-			ExpectError: regexp.MustCompile("Invalid Attribute Combination"),
+			ExpectError: regexp.MustCompile("Conflicting password settings"),
+		}, {
+			Config: userConfig(f, "reporting", "  password = \"x\"\n  generate_password = false"),
+			Check:  resource.TestCheckResourceAttr("relay_database_user.this", "generate_password", "false"),
 		}},
 	})
 }
