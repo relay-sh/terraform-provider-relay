@@ -8,12 +8,14 @@ import (
 	"strconv"
 	"sync"
 	"testing"
+	"time"
 
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/metadata"
 	"google.golang.org/grpc/status"
 	"google.golang.org/protobuf/proto"
+	"google.golang.org/protobuf/types/known/timestamppb"
 
 	serverv1 "github.com/relay-sh/relay-go/gen/relay/server/v1"
 )
@@ -47,6 +49,11 @@ type fakeServer struct {
 	failProvision     string
 	failDeletion      string
 	failWhileDeleting error
+	users             map[string]*serverv1.DatabaseUser
+	userCountdown     map[string]int
+	failUser          string
+	lastUserCreate    *serverv1.CreateDatabaseUserRequest
+	lastUserUpdate    *serverv1.UpdateDatabaseUserRequest
 	lastDBCreate      *serverv1.CreateDatabaseRequest
 	lastDBUpdate      *serverv1.UpdateDatabaseRequest
 	lastDBDelete      *serverv1.DeleteDatabaseRequest
@@ -59,14 +66,16 @@ func startFakeServer(t *testing.T) *fakeServer {
 		t.Fatalf("listen: %v", err)
 	}
 	f := &fakeServer{
-		addr:        lis.Addr().String(),
-		errs:        map[string]error{},
-		orgs:        map[string]*serverv1.Organization{},
-		workspaces:  map[string]*serverv1.Workspace{},
-		connections: map[string]*serverv1.Connection{},
-		databases:   map[string]*serverv1.Database{},
-		dbCountdown: map[string]int{},
-		readyAfter:  2,
+		addr:          lis.Addr().String(),
+		errs:          map[string]error{},
+		orgs:          map[string]*serverv1.Organization{},
+		workspaces:    map[string]*serverv1.Workspace{},
+		connections:   map[string]*serverv1.Connection{},
+		databases:     map[string]*serverv1.Database{},
+		dbCountdown:   map[string]int{},
+		readyAfter:    2,
+		users:         map[string]*serverv1.DatabaseUser{},
+		userCountdown: map[string]int{},
 	}
 	srv := grpc.NewServer()
 	serverv1.RegisterServerServiceServer(srv, f)
@@ -490,4 +499,108 @@ func (f *fakeServer) ListDatabases(ctx context.Context, req *serverv1.ListDataba
 		}
 	}
 	return out, nil
+}
+
+func userKey(databaseID, username string) string {
+	return databaseID + "/" + username
+}
+
+func (f *fakeServer) CreateDatabaseUser(ctx context.Context, req *serverv1.CreateDatabaseUserRequest) (*serverv1.CreateDatabaseUserResponse, error) {
+	f.mu.Lock()
+	defer f.mu.Unlock()
+	if err := f.record(ctx, "CreateDatabaseUser"); err != nil {
+		return nil, err
+	}
+	f.lastUserCreate = req
+	key := userKey(req.GetDatabaseId(), req.GetUsername())
+	if _, ok := f.users[key]; ok {
+		return nil, status.Error(codes.AlreadyExists, "user already exists")
+	}
+	f.users[key] = &serverv1.DatabaseUser{
+		Username:            req.GetUsername(),
+		Description:         req.GetDescription(),
+		AuthMethod:          "password",
+		Roles:               req.GetRoles(),
+		RestrictedResources: req.GetRestrictedResources(),
+		ExpiresAt:           req.GetExpiresAt(),
+		ConnectionLimit:     req.ConnectionLimit,
+		StatementTimeout:    req.GetStatementTimeout(),
+		Phase:               "Pending",
+		CreatedAt:           timestamppb.New(time.Unix(1_700_000_000, 0)),
+	}
+	f.userCountdown[key] = f.readyAfter
+	out := &serverv1.CreateDatabaseUserResponse{User: f.users[key]}
+	if req.GetGeneratePassword() {
+		out.GeneratedPassword = "generated-secret"
+	}
+	return out, nil
+}
+
+func (f *fakeServer) GetDatabaseUser(ctx context.Context, req *serverv1.GetDatabaseUserRequest) (*serverv1.GetDatabaseUserResponse, error) {
+	f.mu.Lock()
+	defer f.mu.Unlock()
+	if err := f.record(ctx, "GetDatabaseUser"); err != nil {
+		return nil, err
+	}
+	key := userKey(req.GetDatabaseId(), req.GetUsername())
+	u, ok := f.users[key]
+	if !ok {
+		return nil, status.Error(codes.NotFound, "user not found")
+	}
+	if f.userCountdown[key] > 0 && !f.stuck {
+		f.userCountdown[key]--
+		if f.userCountdown[key] == 0 {
+			u.Phase = "Ready"
+			if f.failUser != "" {
+				u.Phase, u.PhaseMessage = "Failed", f.failUser
+			}
+		}
+	}
+	return &serverv1.GetDatabaseUserResponse{User: u}, nil
+}
+
+func (f *fakeServer) UpdateDatabaseUser(ctx context.Context, req *serverv1.UpdateDatabaseUserRequest) (*serverv1.UpdateDatabaseUserResponse, error) {
+	f.mu.Lock()
+	defer f.mu.Unlock()
+	if err := f.record(ctx, "UpdateDatabaseUser"); err != nil {
+		return nil, err
+	}
+	f.lastUserUpdate = req
+	u, ok := f.users[userKey(req.GetDatabaseId(), req.GetUsername())]
+	if !ok {
+		return nil, status.Error(codes.NotFound, "user not found")
+	}
+	if len(req.GetRoles()) > 0 {
+		return nil, status.Error(codes.InvalidArgument, "role and database(s) are immutable")
+	}
+	if req.GetDescription() != "" {
+		u.Description = req.GetDescription()
+	}
+	if req.GetStatementTimeout() != "" {
+		u.StatementTimeout = req.GetStatementTimeout()
+	}
+	if req.ConnectionLimit != nil {
+		u.ConnectionLimit = req.ConnectionLimit
+	}
+	if t := req.GetExpiresAt(); t != nil {
+		u.ExpiresAt = t
+		if t.AsTime().IsZero() {
+			u.ExpiresAt = nil
+		}
+	}
+	return &serverv1.UpdateDatabaseUserResponse{User: u}, nil
+}
+
+func (f *fakeServer) DeleteDatabaseUser(ctx context.Context, req *serverv1.DeleteDatabaseUserRequest) (*serverv1.DeleteDatabaseUserResponse, error) {
+	f.mu.Lock()
+	defer f.mu.Unlock()
+	if err := f.record(ctx, "DeleteDatabaseUser"); err != nil {
+		return nil, err
+	}
+	key := userKey(req.GetDatabaseId(), req.GetUsername())
+	if _, ok := f.users[key]; !ok {
+		return nil, status.Error(codes.NotFound, "user not found")
+	}
+	delete(f.users, key)
+	return &serverv1.DeleteDatabaseUserResponse{}, nil
 }
