@@ -19,163 +19,171 @@ import (
 const _ = grpc.SupportPackageIsVersion9
 
 const (
-	ServerService_WhoAmI_FullMethodName                      = "/relay.server.v1.ServerService/WhoAmI"
-	ServerService_Logout_FullMethodName                      = "/relay.server.v1.ServerService/Logout"
-	ServerService_ListSessions_FullMethodName                = "/relay.server.v1.ServerService/ListSessions"
-	ServerService_RevokeSession_FullMethodName               = "/relay.server.v1.ServerService/RevokeSession"
-	ServerService_CreateAPIToken_FullMethodName              = "/relay.server.v1.ServerService/CreateAPIToken"
-	ServerService_ListAPITokens_FullMethodName               = "/relay.server.v1.ServerService/ListAPITokens"
-	ServerService_RevokeAPIToken_FullMethodName              = "/relay.server.v1.ServerService/RevokeAPIToken"
-	ServerService_ListConnections_FullMethodName             = "/relay.server.v1.ServerService/ListConnections"
-	ServerService_GetConnections_FullMethodName              = "/relay.server.v1.ServerService/GetConnections"
-	ServerService_CreateConnection_FullMethodName            = "/relay.server.v1.ServerService/CreateConnection"
-	ServerService_DeleteConnection_FullMethodName            = "/relay.server.v1.ServerService/DeleteConnection"
-	ServerService_UpdateConnection_FullMethodName            = "/relay.server.v1.ServerService/UpdateConnection"
-	ServerService_IssueTunnelToken_FullMethodName            = "/relay.server.v1.ServerService/IssueTunnelToken"
-	ServerService_ResolveTunnelToken_FullMethodName          = "/relay.server.v1.ServerService/ResolveTunnelToken"
-	ServerService_ReportTunnelSessions_FullMethodName        = "/relay.server.v1.ServerService/ReportTunnelSessions"
-	ServerService_ListTunnelSessions_FullMethodName          = "/relay.server.v1.ServerService/ListTunnelSessions"
-	ServerService_ListConnectionGroups_FullMethodName        = "/relay.server.v1.ServerService/ListConnectionGroups"
-	ServerService_CreateConnectionGroup_FullMethodName       = "/relay.server.v1.ServerService/CreateConnectionGroup"
-	ServerService_DeleteConnectionGroup_FullMethodName       = "/relay.server.v1.ServerService/DeleteConnectionGroup"
-	ServerService_UpdateConnectionGroup_FullMethodName       = "/relay.server.v1.ServerService/UpdateConnectionGroup"
-	ServerService_AddConnectionToGroup_FullMethodName        = "/relay.server.v1.ServerService/AddConnectionToGroup"
-	ServerService_RemoveConnectionFromGroup_FullMethodName   = "/relay.server.v1.ServerService/RemoveConnectionFromGroup"
-	ServerService_ListPolicies_FullMethodName                = "/relay.server.v1.ServerService/ListPolicies"
-	ServerService_GetPolicy_FullMethodName                   = "/relay.server.v1.ServerService/GetPolicy"
-	ServerService_CreatePolicy_FullMethodName                = "/relay.server.v1.ServerService/CreatePolicy"
-	ServerService_UpdatePolicy_FullMethodName                = "/relay.server.v1.ServerService/UpdatePolicy"
-	ServerService_DeletePolicy_FullMethodName                = "/relay.server.v1.ServerService/DeletePolicy"
-	ServerService_SetConnectionPolicies_FullMethodName       = "/relay.server.v1.ServerService/SetConnectionPolicies"
-	ServerService_ListConnectionPolicies_FullMethodName      = "/relay.server.v1.ServerService/ListConnectionPolicies"
-	ServerService_ListAccessGrants_FullMethodName            = "/relay.server.v1.ServerService/ListAccessGrants"
-	ServerService_CreateAccessGrant_FullMethodName           = "/relay.server.v1.ServerService/CreateAccessGrant"
-	ServerService_DeleteAccessGrant_FullMethodName           = "/relay.server.v1.ServerService/DeleteAccessGrant"
-	ServerService_ListTeams_FullMethodName                   = "/relay.server.v1.ServerService/ListTeams"
-	ServerService_CreateTeam_FullMethodName                  = "/relay.server.v1.ServerService/CreateTeam"
-	ServerService_DeleteTeam_FullMethodName                  = "/relay.server.v1.ServerService/DeleteTeam"
-	ServerService_AddTeamMember_FullMethodName               = "/relay.server.v1.ServerService/AddTeamMember"
-	ServerService_RemoveTeamMember_FullMethodName            = "/relay.server.v1.ServerService/RemoveTeamMember"
-	ServerService_ListMembers_FullMethodName                 = "/relay.server.v1.ServerService/ListMembers"
-	ServerService_SetMemberRole_FullMethodName               = "/relay.server.v1.ServerService/SetMemberRole"
-	ServerService_RemoveMember_FullMethodName                = "/relay.server.v1.ServerService/RemoveMember"
-	ServerService_UpdateMember_FullMethodName                = "/relay.server.v1.ServerService/UpdateMember"
-	ServerService_RevokeUserSessions_FullMethodName          = "/relay.server.v1.ServerService/RevokeUserSessions"
-	ServerService_InviteMember_FullMethodName                = "/relay.server.v1.ServerService/InviteMember"
-	ServerService_ListInvitations_FullMethodName             = "/relay.server.v1.ServerService/ListInvitations"
-	ServerService_RevokeInvitation_FullMethodName            = "/relay.server.v1.ServerService/RevokeInvitation"
-	ServerService_GetInvitation_FullMethodName               = "/relay.server.v1.ServerService/GetInvitation"
-	ServerService_AcceptInvitation_FullMethodName            = "/relay.server.v1.ServerService/AcceptInvitation"
-	ServerService_ListAgents_FullMethodName                  = "/relay.server.v1.ServerService/ListAgents"
-	ServerService_DeleteAgent_FullMethodName                 = "/relay.server.v1.ServerService/DeleteAgent"
-	ServerService_CreateEnrollmentToken_FullMethodName       = "/relay.server.v1.ServerService/CreateEnrollmentToken"
-	ServerService_ListEnrollmentTokens_FullMethodName        = "/relay.server.v1.ServerService/ListEnrollmentTokens"
-	ServerService_DeleteEnrollmentToken_FullMethodName       = "/relay.server.v1.ServerService/DeleteEnrollmentToken"
-	ServerService_EnrollAgent_FullMethodName                 = "/relay.server.v1.ServerService/EnrollAgent"
-	ServerService_Heartbeat_FullMethodName                   = "/relay.server.v1.ServerService/Heartbeat"
-	ServerService_Deregister_FullMethodName                  = "/relay.server.v1.ServerService/Deregister"
-	ServerService_ListAgentPools_FullMethodName              = "/relay.server.v1.ServerService/ListAgentPools"
-	ServerService_CreateAgentPool_FullMethodName             = "/relay.server.v1.ServerService/CreateAgentPool"
-	ServerService_DeleteAgentPool_FullMethodName             = "/relay.server.v1.ServerService/DeleteAgentPool"
-	ServerService_UpdateAgentPool_FullMethodName             = "/relay.server.v1.ServerService/UpdateAgentPool"
-	ServerService_ResolveConnectionCredential_FullMethodName = "/relay.server.v1.ServerService/ResolveConnectionCredential"
-	ServerService_ResolveExternalSecretSource_FullMethodName = "/relay.server.v1.ServerService/ResolveExternalSecretSource"
-	ServerService_ListExternalSecretSources_FullMethodName   = "/relay.server.v1.ServerService/ListExternalSecretSources"
-	ServerService_GetExternalSecretSource_FullMethodName     = "/relay.server.v1.ServerService/GetExternalSecretSource"
-	ServerService_UpsertExternalSecretSource_FullMethodName  = "/relay.server.v1.ServerService/UpsertExternalSecretSource"
-	ServerService_DeleteExternalSecretSource_FullMethodName  = "/relay.server.v1.ServerService/DeleteExternalSecretSource"
-	ServerService_GetCloudIntegrationSetup_FullMethodName    = "/relay.server.v1.ServerService/GetCloudIntegrationSetup"
-	ServerService_ListCloudIntegrations_FullMethodName       = "/relay.server.v1.ServerService/ListCloudIntegrations"
-	ServerService_GetCloudIntegration_FullMethodName         = "/relay.server.v1.ServerService/GetCloudIntegration"
-	ServerService_CreateCloudIntegration_FullMethodName      = "/relay.server.v1.ServerService/CreateCloudIntegration"
-	ServerService_UpdateCloudIntegration_FullMethodName      = "/relay.server.v1.ServerService/UpdateCloudIntegration"
-	ServerService_DeleteCloudIntegration_FullMethodName      = "/relay.server.v1.ServerService/DeleteCloudIntegration"
-	ServerService_TestCloudIntegration_FullMethodName        = "/relay.server.v1.ServerService/TestCloudIntegration"
-	ServerService_IngestAuditEvents_FullMethodName           = "/relay.server.v1.ServerService/IngestAuditEvents"
-	ServerService_ListAuditLogs_FullMethodName               = "/relay.server.v1.ServerService/ListAuditLogs"
-	ServerService_GetAuditMetrics_FullMethodName             = "/relay.server.v1.ServerService/GetAuditMetrics"
-	ServerService_ListActivityLogs_FullMethodName            = "/relay.server.v1.ServerService/ListActivityLogs"
-	ServerService_ListOrgActivityLogs_FullMethodName         = "/relay.server.v1.ServerService/ListOrgActivityLogs"
-	ServerService_EmitActivity_FullMethodName                = "/relay.server.v1.ServerService/EmitActivity"
-	ServerService_ListUserOrganizations_FullMethodName       = "/relay.server.v1.ServerService/ListUserOrganizations"
-	ServerService_GetOrganization_FullMethodName             = "/relay.server.v1.ServerService/GetOrganization"
-	ServerService_CreateOrganization_FullMethodName          = "/relay.server.v1.ServerService/CreateOrganization"
-	ServerService_UpdateOrganization_FullMethodName          = "/relay.server.v1.ServerService/UpdateOrganization"
-	ServerService_UpdateOrganizationSettings_FullMethodName  = "/relay.server.v1.ServerService/UpdateOrganizationSettings"
-	ServerService_DeleteOrganization_FullMethodName          = "/relay.server.v1.ServerService/DeleteOrganization"
-	ServerService_SwitchOrganization_FullMethodName          = "/relay.server.v1.ServerService/SwitchOrganization"
-	ServerService_GetOrgOverview_FullMethodName              = "/relay.server.v1.ServerService/GetOrgOverview"
-	ServerService_ListWorkspaces_FullMethodName              = "/relay.server.v1.ServerService/ListWorkspaces"
-	ServerService_GetWorkspace_FullMethodName                = "/relay.server.v1.ServerService/GetWorkspace"
-	ServerService_CreateWorkspace_FullMethodName             = "/relay.server.v1.ServerService/CreateWorkspace"
-	ServerService_UpdateWorkspace_FullMethodName             = "/relay.server.v1.ServerService/UpdateWorkspace"
-	ServerService_DeleteWorkspace_FullMethodName             = "/relay.server.v1.ServerService/DeleteWorkspace"
-	ServerService_AddWorkspaceMember_FullMethodName          = "/relay.server.v1.ServerService/AddWorkspaceMember"
-	ServerService_RemoveWorkspaceMember_FullMethodName       = "/relay.server.v1.ServerService/RemoveWorkspaceMember"
-	ServerService_ListWorkspaceMembers_FullMethodName        = "/relay.server.v1.ServerService/ListWorkspaceMembers"
-	ServerService_AddWorkspaceTeam_FullMethodName            = "/relay.server.v1.ServerService/AddWorkspaceTeam"
-	ServerService_RemoveWorkspaceTeam_FullMethodName         = "/relay.server.v1.ServerService/RemoveWorkspaceTeam"
-	ServerService_ListWorkspaceTeams_FullMethodName          = "/relay.server.v1.ServerService/ListWorkspaceTeams"
-	ServerService_SetWorkspaceMemberRole_FullMethodName      = "/relay.server.v1.ServerService/SetWorkspaceMemberRole"
-	ServerService_SetWorkspaceTeamRole_FullMethodName        = "/relay.server.v1.ServerService/SetWorkspaceTeamRole"
-	ServerService_ListRoles_FullMethodName                   = "/relay.server.v1.ServerService/ListRoles"
-	ServerService_CreateRole_FullMethodName                  = "/relay.server.v1.ServerService/CreateRole"
-	ServerService_UpdateRole_FullMethodName                  = "/relay.server.v1.ServerService/UpdateRole"
-	ServerService_DeleteRole_FullMethodName                  = "/relay.server.v1.ServerService/DeleteRole"
-	ServerService_ListRoleBindings_FullMethodName            = "/relay.server.v1.ServerService/ListRoleBindings"
-	ServerService_CreateRoleBinding_FullMethodName           = "/relay.server.v1.ServerService/CreateRoleBinding"
-	ServerService_DeleteRoleBinding_FullMethodName           = "/relay.server.v1.ServerService/DeleteRoleBinding"
-	ServerService_ListDatabases_FullMethodName               = "/relay.server.v1.ServerService/ListDatabases"
-	ServerService_CreateDatabase_FullMethodName              = "/relay.server.v1.ServerService/CreateDatabase"
-	ServerService_RestoreDatabase_FullMethodName             = "/relay.server.v1.ServerService/RestoreDatabase"
-	ServerService_GetDatabase_FullMethodName                 = "/relay.server.v1.ServerService/GetDatabase"
-	ServerService_UpdateDatabase_FullMethodName              = "/relay.server.v1.ServerService/UpdateDatabase"
-	ServerService_ListPostgreSQLParameters_FullMethodName    = "/relay.server.v1.ServerService/ListPostgreSQLParameters"
-	ServerService_WatchDatabase_FullMethodName               = "/relay.server.v1.ServerService/WatchDatabase"
-	ServerService_ListPendingOperations_FullMethodName       = "/relay.server.v1.ServerService/ListPendingOperations"
-	ServerService_DeleteDatabase_FullMethodName              = "/relay.server.v1.ServerService/DeleteDatabase"
-	ServerService_RetryDeleteDatabase_FullMethodName         = "/relay.server.v1.ServerService/RetryDeleteDatabase"
-	ServerService_PauseDatabase_FullMethodName               = "/relay.server.v1.ServerService/PauseDatabase"
-	ServerService_ResumeDatabase_FullMethodName              = "/relay.server.v1.ServerService/ResumeDatabase"
-	ServerService_GetDatabaseStatus_FullMethodName           = "/relay.server.v1.ServerService/GetDatabaseStatus"
-	ServerService_ListDatabaseNodes_FullMethodName           = "/relay.server.v1.ServerService/ListDatabaseNodes"
-	ServerService_GetDatabaseLogs_FullMethodName             = "/relay.server.v1.ServerService/GetDatabaseLogs"
-	ServerService_GetDatabaseAnalytics_FullMethodName        = "/relay.server.v1.ServerService/GetDatabaseAnalytics"
-	ServerService_GetDatabaseConnection_FullMethodName       = "/relay.server.v1.ServerService/GetDatabaseConnection"
-	ServerService_ListIPAllowlist_FullMethodName             = "/relay.server.v1.ServerService/ListIPAllowlist"
-	ServerService_AddIPAllowlistEntry_FullMethodName         = "/relay.server.v1.ServerService/AddIPAllowlistEntry"
-	ServerService_UpdateIPAllowlistEntry_FullMethodName      = "/relay.server.v1.ServerService/UpdateIPAllowlistEntry"
-	ServerService_RemoveIPAllowlistEntry_FullMethodName      = "/relay.server.v1.ServerService/RemoveIPAllowlistEntry"
-	ServerService_GetWorkspaceNetworking_FullMethodName      = "/relay.server.v1.ServerService/GetWorkspaceNetworking"
-	ServerService_SetWorkspacePrivateAccess_FullMethodName   = "/relay.server.v1.ServerService/SetWorkspacePrivateAccess"
-	ServerService_ListBackupSchedules_FullMethodName         = "/relay.server.v1.ServerService/ListBackupSchedules"
-	ServerService_ListBackups_FullMethodName                 = "/relay.server.v1.ServerService/ListBackups"
-	ServerService_UpdateBackupSchedule_FullMethodName        = "/relay.server.v1.ServerService/UpdateBackupSchedule"
-	ServerService_CreateBackup_FullMethodName                = "/relay.server.v1.ServerService/CreateBackup"
-	ServerService_DeleteBackup_FullMethodName                = "/relay.server.v1.ServerService/DeleteBackup"
-	ServerService_ListDatabaseUsers_FullMethodName           = "/relay.server.v1.ServerService/ListDatabaseUsers"
-	ServerService_GetDatabaseUser_FullMethodName             = "/relay.server.v1.ServerService/GetDatabaseUser"
-	ServerService_CreateDatabaseUser_FullMethodName          = "/relay.server.v1.ServerService/CreateDatabaseUser"
-	ServerService_UpdateDatabaseUser_FullMethodName          = "/relay.server.v1.ServerService/UpdateDatabaseUser"
-	ServerService_DeleteDatabaseUser_FullMethodName          = "/relay.server.v1.ServerService/DeleteDatabaseUser"
-	ServerService_ListLogicalDatabases_FullMethodName        = "/relay.server.v1.ServerService/ListLogicalDatabases"
-	ServerService_CreateLogicalDatabase_FullMethodName       = "/relay.server.v1.ServerService/CreateLogicalDatabase"
-	ServerService_UpdateLogicalDatabase_FullMethodName       = "/relay.server.v1.ServerService/UpdateLogicalDatabase"
-	ServerService_DeleteLogicalDatabase_FullMethodName       = "/relay.server.v1.ServerService/DeleteLogicalDatabase"
-	ServerService_ListDatabaseProviders_FullMethodName       = "/relay.server.v1.ServerService/ListDatabaseProviders"
-	ServerService_GetBillingState_FullMethodName             = "/relay.server.v1.ServerService/GetBillingState"
-	ServerService_CreateCheckoutSession_FullMethodName       = "/relay.server.v1.ServerService/CreateCheckoutSession"
-	ServerService_CreateBillingPortalSession_FullMethodName  = "/relay.server.v1.ServerService/CreateBillingPortalSession"
-	ServerService_ChangePlan_FullMethodName                  = "/relay.server.v1.ServerService/ChangePlan"
-	ServerService_CreateSupportReport_FullMethodName         = "/relay.server.v1.ServerService/CreateSupportReport"
-	ServerService_ListSupportReports_FullMethodName          = "/relay.server.v1.ServerService/ListSupportReports"
-	ServerService_GetSupportReport_FullMethodName            = "/relay.server.v1.ServerService/GetSupportReport"
-	ServerService_AddSupportReportComment_FullMethodName     = "/relay.server.v1.ServerService/AddSupportReportComment"
-	ServerService_UpdateSupportReportStatus_FullMethodName   = "/relay.server.v1.ServerService/UpdateSupportReportStatus"
-	ServerService_GetOrgSSOConnection_FullMethodName         = "/relay.server.v1.ServerService/GetOrgSSOConnection"
-	ServerService_UpsertOrgSSOConnection_FullMethodName      = "/relay.server.v1.ServerService/UpsertOrgSSOConnection"
-	ServerService_DeleteOrgSSOConnection_FullMethodName      = "/relay.server.v1.ServerService/DeleteOrgSSOConnection"
-	ServerService_TestOrgSSOConnection_FullMethodName        = "/relay.server.v1.ServerService/TestOrgSSOConnection"
+	ServerService_WhoAmI_FullMethodName                       = "/relay.server.v1.ServerService/WhoAmI"
+	ServerService_Logout_FullMethodName                       = "/relay.server.v1.ServerService/Logout"
+	ServerService_ListSessions_FullMethodName                 = "/relay.server.v1.ServerService/ListSessions"
+	ServerService_RevokeSession_FullMethodName                = "/relay.server.v1.ServerService/RevokeSession"
+	ServerService_CreateAPIKey_FullMethodName                 = "/relay.server.v1.ServerService/CreateAPIKey"
+	ServerService_ListAPIKeys_FullMethodName                  = "/relay.server.v1.ServerService/ListAPIKeys"
+	ServerService_RevokeAPIKey_FullMethodName                 = "/relay.server.v1.ServerService/RevokeAPIKey"
+	ServerService_ListConnections_FullMethodName              = "/relay.server.v1.ServerService/ListConnections"
+	ServerService_GetConnections_FullMethodName               = "/relay.server.v1.ServerService/GetConnections"
+	ServerService_CreateConnection_FullMethodName             = "/relay.server.v1.ServerService/CreateConnection"
+	ServerService_DeleteConnection_FullMethodName             = "/relay.server.v1.ServerService/DeleteConnection"
+	ServerService_UpdateConnection_FullMethodName             = "/relay.server.v1.ServerService/UpdateConnection"
+	ServerService_IssueTunnelToken_FullMethodName             = "/relay.server.v1.ServerService/IssueTunnelToken"
+	ServerService_ResolveTunnelToken_FullMethodName           = "/relay.server.v1.ServerService/ResolveTunnelToken"
+	ServerService_ReportTunnelSessions_FullMethodName         = "/relay.server.v1.ServerService/ReportTunnelSessions"
+	ServerService_ListTunnelSessions_FullMethodName           = "/relay.server.v1.ServerService/ListTunnelSessions"
+	ServerService_ListConnectionGroups_FullMethodName         = "/relay.server.v1.ServerService/ListConnectionGroups"
+	ServerService_CreateConnectionGroup_FullMethodName        = "/relay.server.v1.ServerService/CreateConnectionGroup"
+	ServerService_DeleteConnectionGroup_FullMethodName        = "/relay.server.v1.ServerService/DeleteConnectionGroup"
+	ServerService_UpdateConnectionGroup_FullMethodName        = "/relay.server.v1.ServerService/UpdateConnectionGroup"
+	ServerService_AddConnectionToGroup_FullMethodName         = "/relay.server.v1.ServerService/AddConnectionToGroup"
+	ServerService_RemoveConnectionFromGroup_FullMethodName    = "/relay.server.v1.ServerService/RemoveConnectionFromGroup"
+	ServerService_ListPolicies_FullMethodName                 = "/relay.server.v1.ServerService/ListPolicies"
+	ServerService_GetPolicy_FullMethodName                    = "/relay.server.v1.ServerService/GetPolicy"
+	ServerService_CreatePolicy_FullMethodName                 = "/relay.server.v1.ServerService/CreatePolicy"
+	ServerService_UpdatePolicy_FullMethodName                 = "/relay.server.v1.ServerService/UpdatePolicy"
+	ServerService_DeletePolicy_FullMethodName                 = "/relay.server.v1.ServerService/DeletePolicy"
+	ServerService_SetConnectionPolicies_FullMethodName        = "/relay.server.v1.ServerService/SetConnectionPolicies"
+	ServerService_ListConnectionPolicies_FullMethodName       = "/relay.server.v1.ServerService/ListConnectionPolicies"
+	ServerService_ListAccessGrants_FullMethodName             = "/relay.server.v1.ServerService/ListAccessGrants"
+	ServerService_CreateAccessGrant_FullMethodName            = "/relay.server.v1.ServerService/CreateAccessGrant"
+	ServerService_DeleteAccessGrant_FullMethodName            = "/relay.server.v1.ServerService/DeleteAccessGrant"
+	ServerService_ListTeams_FullMethodName                    = "/relay.server.v1.ServerService/ListTeams"
+	ServerService_CreateTeam_FullMethodName                   = "/relay.server.v1.ServerService/CreateTeam"
+	ServerService_DeleteTeam_FullMethodName                   = "/relay.server.v1.ServerService/DeleteTeam"
+	ServerService_AddTeamMember_FullMethodName                = "/relay.server.v1.ServerService/AddTeamMember"
+	ServerService_RemoveTeamMember_FullMethodName             = "/relay.server.v1.ServerService/RemoveTeamMember"
+	ServerService_ListMembers_FullMethodName                  = "/relay.server.v1.ServerService/ListMembers"
+	ServerService_SetMemberRole_FullMethodName                = "/relay.server.v1.ServerService/SetMemberRole"
+	ServerService_RemoveMember_FullMethodName                 = "/relay.server.v1.ServerService/RemoveMember"
+	ServerService_UpdateMember_FullMethodName                 = "/relay.server.v1.ServerService/UpdateMember"
+	ServerService_RevokeUserSessions_FullMethodName           = "/relay.server.v1.ServerService/RevokeUserSessions"
+	ServerService_InviteMember_FullMethodName                 = "/relay.server.v1.ServerService/InviteMember"
+	ServerService_ListInvitations_FullMethodName              = "/relay.server.v1.ServerService/ListInvitations"
+	ServerService_RevokeInvitation_FullMethodName             = "/relay.server.v1.ServerService/RevokeInvitation"
+	ServerService_GetInvitation_FullMethodName                = "/relay.server.v1.ServerService/GetInvitation"
+	ServerService_AcceptInvitation_FullMethodName             = "/relay.server.v1.ServerService/AcceptInvitation"
+	ServerService_ListAgents_FullMethodName                   = "/relay.server.v1.ServerService/ListAgents"
+	ServerService_DeleteAgent_FullMethodName                  = "/relay.server.v1.ServerService/DeleteAgent"
+	ServerService_CreateEnrollmentToken_FullMethodName        = "/relay.server.v1.ServerService/CreateEnrollmentToken"
+	ServerService_ListEnrollmentTokens_FullMethodName         = "/relay.server.v1.ServerService/ListEnrollmentTokens"
+	ServerService_DeleteEnrollmentToken_FullMethodName        = "/relay.server.v1.ServerService/DeleteEnrollmentToken"
+	ServerService_EnrollAgent_FullMethodName                  = "/relay.server.v1.ServerService/EnrollAgent"
+	ServerService_Heartbeat_FullMethodName                    = "/relay.server.v1.ServerService/Heartbeat"
+	ServerService_Deregister_FullMethodName                   = "/relay.server.v1.ServerService/Deregister"
+	ServerService_ListAgentPools_FullMethodName               = "/relay.server.v1.ServerService/ListAgentPools"
+	ServerService_CreateAgentPool_FullMethodName              = "/relay.server.v1.ServerService/CreateAgentPool"
+	ServerService_DeleteAgentPool_FullMethodName              = "/relay.server.v1.ServerService/DeleteAgentPool"
+	ServerService_UpdateAgentPool_FullMethodName              = "/relay.server.v1.ServerService/UpdateAgentPool"
+	ServerService_ResolveConnectionCredential_FullMethodName  = "/relay.server.v1.ServerService/ResolveConnectionCredential"
+	ServerService_ResolveExternalSecretSource_FullMethodName  = "/relay.server.v1.ServerService/ResolveExternalSecretSource"
+	ServerService_ListExternalSecretSources_FullMethodName    = "/relay.server.v1.ServerService/ListExternalSecretSources"
+	ServerService_GetExternalSecretSource_FullMethodName      = "/relay.server.v1.ServerService/GetExternalSecretSource"
+	ServerService_UpsertExternalSecretSource_FullMethodName   = "/relay.server.v1.ServerService/UpsertExternalSecretSource"
+	ServerService_DeleteExternalSecretSource_FullMethodName   = "/relay.server.v1.ServerService/DeleteExternalSecretSource"
+	ServerService_GetCloudIntegrationSetup_FullMethodName     = "/relay.server.v1.ServerService/GetCloudIntegrationSetup"
+	ServerService_ListCloudIntegrations_FullMethodName        = "/relay.server.v1.ServerService/ListCloudIntegrations"
+	ServerService_GetCloudIntegration_FullMethodName          = "/relay.server.v1.ServerService/GetCloudIntegration"
+	ServerService_CreateCloudIntegration_FullMethodName       = "/relay.server.v1.ServerService/CreateCloudIntegration"
+	ServerService_UpdateCloudIntegration_FullMethodName       = "/relay.server.v1.ServerService/UpdateCloudIntegration"
+	ServerService_DeleteCloudIntegration_FullMethodName       = "/relay.server.v1.ServerService/DeleteCloudIntegration"
+	ServerService_TestCloudIntegration_FullMethodName         = "/relay.server.v1.ServerService/TestCloudIntegration"
+	ServerService_IngestAuditEvents_FullMethodName            = "/relay.server.v1.ServerService/IngestAuditEvents"
+	ServerService_ListAuditLogs_FullMethodName                = "/relay.server.v1.ServerService/ListAuditLogs"
+	ServerService_GetAuditMetrics_FullMethodName              = "/relay.server.v1.ServerService/GetAuditMetrics"
+	ServerService_ListActivityLogs_FullMethodName             = "/relay.server.v1.ServerService/ListActivityLogs"
+	ServerService_ListOrgActivityLogs_FullMethodName          = "/relay.server.v1.ServerService/ListOrgActivityLogs"
+	ServerService_EmitActivity_FullMethodName                 = "/relay.server.v1.ServerService/EmitActivity"
+	ServerService_ListUserOrganizations_FullMethodName        = "/relay.server.v1.ServerService/ListUserOrganizations"
+	ServerService_GetOrganization_FullMethodName              = "/relay.server.v1.ServerService/GetOrganization"
+	ServerService_CreateOrganization_FullMethodName           = "/relay.server.v1.ServerService/CreateOrganization"
+	ServerService_UpdateOrganization_FullMethodName           = "/relay.server.v1.ServerService/UpdateOrganization"
+	ServerService_UpdateOrganizationSettings_FullMethodName   = "/relay.server.v1.ServerService/UpdateOrganizationSettings"
+	ServerService_DeleteOrganization_FullMethodName           = "/relay.server.v1.ServerService/DeleteOrganization"
+	ServerService_SwitchOrganization_FullMethodName           = "/relay.server.v1.ServerService/SwitchOrganization"
+	ServerService_GetOrgOverview_FullMethodName               = "/relay.server.v1.ServerService/GetOrgOverview"
+	ServerService_ListWorkspaces_FullMethodName               = "/relay.server.v1.ServerService/ListWorkspaces"
+	ServerService_GetWorkspace_FullMethodName                 = "/relay.server.v1.ServerService/GetWorkspace"
+	ServerService_CreateWorkspace_FullMethodName              = "/relay.server.v1.ServerService/CreateWorkspace"
+	ServerService_UpdateWorkspace_FullMethodName              = "/relay.server.v1.ServerService/UpdateWorkspace"
+	ServerService_DeleteWorkspace_FullMethodName              = "/relay.server.v1.ServerService/DeleteWorkspace"
+	ServerService_AddWorkspaceMember_FullMethodName           = "/relay.server.v1.ServerService/AddWorkspaceMember"
+	ServerService_RemoveWorkspaceMember_FullMethodName        = "/relay.server.v1.ServerService/RemoveWorkspaceMember"
+	ServerService_ListWorkspaceMembers_FullMethodName         = "/relay.server.v1.ServerService/ListWorkspaceMembers"
+	ServerService_AddWorkspaceTeam_FullMethodName             = "/relay.server.v1.ServerService/AddWorkspaceTeam"
+	ServerService_RemoveWorkspaceTeam_FullMethodName          = "/relay.server.v1.ServerService/RemoveWorkspaceTeam"
+	ServerService_ListWorkspaceTeams_FullMethodName           = "/relay.server.v1.ServerService/ListWorkspaceTeams"
+	ServerService_SetWorkspaceMemberRole_FullMethodName       = "/relay.server.v1.ServerService/SetWorkspaceMemberRole"
+	ServerService_SetWorkspaceTeamRole_FullMethodName         = "/relay.server.v1.ServerService/SetWorkspaceTeamRole"
+	ServerService_ListRoles_FullMethodName                    = "/relay.server.v1.ServerService/ListRoles"
+	ServerService_CreateRole_FullMethodName                   = "/relay.server.v1.ServerService/CreateRole"
+	ServerService_UpdateRole_FullMethodName                   = "/relay.server.v1.ServerService/UpdateRole"
+	ServerService_DeleteRole_FullMethodName                   = "/relay.server.v1.ServerService/DeleteRole"
+	ServerService_ListRoleBindings_FullMethodName             = "/relay.server.v1.ServerService/ListRoleBindings"
+	ServerService_CreateRoleBinding_FullMethodName            = "/relay.server.v1.ServerService/CreateRoleBinding"
+	ServerService_DeleteRoleBinding_FullMethodName            = "/relay.server.v1.ServerService/DeleteRoleBinding"
+	ServerService_ListDatabases_FullMethodName                = "/relay.server.v1.ServerService/ListDatabases"
+	ServerService_CreateDatabase_FullMethodName               = "/relay.server.v1.ServerService/CreateDatabase"
+	ServerService_RestoreDatabase_FullMethodName              = "/relay.server.v1.ServerService/RestoreDatabase"
+	ServerService_GetDatabase_FullMethodName                  = "/relay.server.v1.ServerService/GetDatabase"
+	ServerService_UpdateDatabase_FullMethodName               = "/relay.server.v1.ServerService/UpdateDatabase"
+	ServerService_ListPostgreSQLParameters_FullMethodName     = "/relay.server.v1.ServerService/ListPostgreSQLParameters"
+	ServerService_WatchDatabase_FullMethodName                = "/relay.server.v1.ServerService/WatchDatabase"
+	ServerService_ListPendingOperations_FullMethodName        = "/relay.server.v1.ServerService/ListPendingOperations"
+	ServerService_DeleteDatabase_FullMethodName               = "/relay.server.v1.ServerService/DeleteDatabase"
+	ServerService_RetryDeleteDatabase_FullMethodName          = "/relay.server.v1.ServerService/RetryDeleteDatabase"
+	ServerService_PauseDatabase_FullMethodName                = "/relay.server.v1.ServerService/PauseDatabase"
+	ServerService_ResumeDatabase_FullMethodName               = "/relay.server.v1.ServerService/ResumeDatabase"
+	ServerService_GetDatabaseStatus_FullMethodName            = "/relay.server.v1.ServerService/GetDatabaseStatus"
+	ServerService_ListDatabaseNodes_FullMethodName            = "/relay.server.v1.ServerService/ListDatabaseNodes"
+	ServerService_GetDatabaseLogs_FullMethodName              = "/relay.server.v1.ServerService/GetDatabaseLogs"
+	ServerService_GetDatabaseAnalytics_FullMethodName         = "/relay.server.v1.ServerService/GetDatabaseAnalytics"
+	ServerService_GetDatabaseConnection_FullMethodName        = "/relay.server.v1.ServerService/GetDatabaseConnection"
+	ServerService_ListIPAllowlist_FullMethodName              = "/relay.server.v1.ServerService/ListIPAllowlist"
+	ServerService_AddIPAllowlistEntry_FullMethodName          = "/relay.server.v1.ServerService/AddIPAllowlistEntry"
+	ServerService_UpdateIPAllowlistEntry_FullMethodName       = "/relay.server.v1.ServerService/UpdateIPAllowlistEntry"
+	ServerService_RemoveIPAllowlistEntry_FullMethodName       = "/relay.server.v1.ServerService/RemoveIPAllowlistEntry"
+	ServerService_GetWorkspaceNetworking_FullMethodName       = "/relay.server.v1.ServerService/GetWorkspaceNetworking"
+	ServerService_SetWorkspacePrivateAccess_FullMethodName    = "/relay.server.v1.ServerService/SetWorkspacePrivateAccess"
+	ServerService_ListPrivateEndpointRegions_FullMethodName   = "/relay.server.v1.ServerService/ListPrivateEndpointRegions"
+	ServerService_CreatePrivateEndpointService_FullMethodName = "/relay.server.v1.ServerService/CreatePrivateEndpointService"
+	ServerService_ListPrivateEndpointServices_FullMethodName  = "/relay.server.v1.ServerService/ListPrivateEndpointServices"
+	ServerService_GetPrivateEndpointService_FullMethodName    = "/relay.server.v1.ServerService/GetPrivateEndpointService"
+	ServerService_DeletePrivateEndpointService_FullMethodName = "/relay.server.v1.ServerService/DeletePrivateEndpointService"
+	ServerService_CreatePrivateEndpoint_FullMethodName        = "/relay.server.v1.ServerService/CreatePrivateEndpoint"
+	ServerService_GetPrivateEndpoint_FullMethodName           = "/relay.server.v1.ServerService/GetPrivateEndpoint"
+	ServerService_DeletePrivateEndpoint_FullMethodName        = "/relay.server.v1.ServerService/DeletePrivateEndpoint"
+	ServerService_ListBackupSchedules_FullMethodName          = "/relay.server.v1.ServerService/ListBackupSchedules"
+	ServerService_ListBackups_FullMethodName                  = "/relay.server.v1.ServerService/ListBackups"
+	ServerService_UpdateBackupSchedule_FullMethodName         = "/relay.server.v1.ServerService/UpdateBackupSchedule"
+	ServerService_CreateBackup_FullMethodName                 = "/relay.server.v1.ServerService/CreateBackup"
+	ServerService_DeleteBackup_FullMethodName                 = "/relay.server.v1.ServerService/DeleteBackup"
+	ServerService_ListDatabaseUsers_FullMethodName            = "/relay.server.v1.ServerService/ListDatabaseUsers"
+	ServerService_GetDatabaseUser_FullMethodName              = "/relay.server.v1.ServerService/GetDatabaseUser"
+	ServerService_CreateDatabaseUser_FullMethodName           = "/relay.server.v1.ServerService/CreateDatabaseUser"
+	ServerService_UpdateDatabaseUser_FullMethodName           = "/relay.server.v1.ServerService/UpdateDatabaseUser"
+	ServerService_DeleteDatabaseUser_FullMethodName           = "/relay.server.v1.ServerService/DeleteDatabaseUser"
+	ServerService_ListLogicalDatabases_FullMethodName         = "/relay.server.v1.ServerService/ListLogicalDatabases"
+	ServerService_CreateLogicalDatabase_FullMethodName        = "/relay.server.v1.ServerService/CreateLogicalDatabase"
+	ServerService_UpdateLogicalDatabase_FullMethodName        = "/relay.server.v1.ServerService/UpdateLogicalDatabase"
+	ServerService_DeleteLogicalDatabase_FullMethodName        = "/relay.server.v1.ServerService/DeleteLogicalDatabase"
+	ServerService_ListDatabaseProviders_FullMethodName        = "/relay.server.v1.ServerService/ListDatabaseProviders"
+	ServerService_GetBillingState_FullMethodName              = "/relay.server.v1.ServerService/GetBillingState"
+	ServerService_CreateCheckoutSession_FullMethodName        = "/relay.server.v1.ServerService/CreateCheckoutSession"
+	ServerService_CreateBillingPortalSession_FullMethodName   = "/relay.server.v1.ServerService/CreateBillingPortalSession"
+	ServerService_ChangePlan_FullMethodName                   = "/relay.server.v1.ServerService/ChangePlan"
+	ServerService_CreateSupportReport_FullMethodName          = "/relay.server.v1.ServerService/CreateSupportReport"
+	ServerService_ListSupportReports_FullMethodName           = "/relay.server.v1.ServerService/ListSupportReports"
+	ServerService_GetSupportReport_FullMethodName             = "/relay.server.v1.ServerService/GetSupportReport"
+	ServerService_AddSupportReportComment_FullMethodName      = "/relay.server.v1.ServerService/AddSupportReportComment"
+	ServerService_UpdateSupportReportStatus_FullMethodName    = "/relay.server.v1.ServerService/UpdateSupportReportStatus"
+	ServerService_GetOrgSSOConnection_FullMethodName          = "/relay.server.v1.ServerService/GetOrgSSOConnection"
+	ServerService_UpsertOrgSSOConnection_FullMethodName       = "/relay.server.v1.ServerService/UpsertOrgSSOConnection"
+	ServerService_DeleteOrgSSOConnection_FullMethodName       = "/relay.server.v1.ServerService/DeleteOrgSSOConnection"
+	ServerService_TestOrgSSOConnection_FullMethodName         = "/relay.server.v1.ServerService/TestOrgSSOConnection"
 )
 
 // ServerServiceClient is the client API for ServerService service.
@@ -197,20 +205,14 @@ type ServerServiceClient interface {
 	// RevokeSession revokes one of the caller's own sessions by id (e.g. "log out
 	// that other device"). A user can only revoke their own sessions.
 	RevokeSession(ctx context.Context, in *RevokeSessionRequest, opts ...grpc.CallOption) (*RevokeSessionResponse, error)
-	// CreateAPIToken mints a personal access token for the caller, for automation
-	// such as Terraform or CI. The plaintext is returned once and never again. A
-	// personal access token cannot mint another one.
-	CreateAPIToken(ctx context.Context, in *CreateAPITokenRequest, opts ...grpc.CallOption) (*CreateAPITokenResponse, error)
-	// ListAPITokens returns the caller's personal access tokens, without secrets.
-	ListAPITokens(ctx context.Context, in *ListAPITokensRequest, opts ...grpc.CallOption) (*ListAPITokensResponse, error)
-	// RevokeAPIToken deletes one of the caller's personal access tokens by id.
-	// Idempotent: an unknown or foreign id returns revoked=false.
-	RevokeAPIToken(ctx context.Context, in *RevokeAPITokenRequest, opts ...grpc.CallOption) (*RevokeAPITokenResponse, error)
+	// A key created by another key never
+	// outlives it, stays within its allowed IPs, and is revoked with it.
+	CreateAPIKey(ctx context.Context, in *CreateAPIKeyRequest, opts ...grpc.CallOption) (*CreateAPIKeyResponse, error)
+	ListAPIKeys(ctx context.Context, in *ListAPIKeysRequest, opts ...grpc.CallOption) (*ListAPIKeysResponse, error)
+	RevokeAPIKey(ctx context.Context, in *RevokeAPIKeyRequest, opts ...grpc.CallOption) (*RevokeAPIKeyResponse, error)
 	// ListConnections returns all connections in the user's organization.
 	ListConnections(ctx context.Context, in *ListConnectionsRequest, opts ...grpc.CallOption) (*ListConnectionsResponse, error)
-	// GetConnections returns connections matching the given names. Any missing
-	// name fails the whole call with NotFound, so a single-name call is the
-	// canonical get-by-name.
+	// GetConnections returns connections matching the given names.
 	GetConnections(ctx context.Context, in *GetConnectionsRequest, opts ...grpc.CallOption) (*GetConnectionsResponse, error)
 	// CreateConnection creates a new connection.
 	CreateConnection(ctx context.Context, in *CreateConnectionRequest, opts ...grpc.CallOption) (*CreateConnectionResponse, error)
@@ -287,8 +289,7 @@ type ServerServiceClient interface {
 	RemoveMember(ctx context.Context, in *RemoveMemberRequest, opts ...grpc.CallOption) (*RemoveMemberResponse, error)
 	// UpdateMember updates editable profile fields on an org member.
 	UpdateMember(ctx context.Context, in *UpdateMemberRequest, opts ...grpc.CallOption) (*UpdateMemberResponse, error)
-	// RevokeUserSessions terminates every session, tunnel token and personal
-	// access token for a member.
+	// RevokeUserSessions terminates every session and API token for a member.
 	RevokeUserSessions(ctx context.Context, in *RevokeUserSessionsRequest, opts ...grpc.CallOption) (*RevokeUserSessionsResponse, error)
 	// InviteMember creates a pending invitation and returns its join link.
 	InviteMember(ctx context.Context, in *InviteMemberRequest, opts ...grpc.CallOption) (*InviteMemberResponse, error)
@@ -373,8 +374,7 @@ type ServerServiceClient interface {
 	EmitActivity(ctx context.Context, in *EmitActivityRequest, opts ...grpc.CallOption) (*EmitActivityResponse, error)
 	// ListUserOrganizations returns all organizations the authenticated user belongs to.
 	ListUserOrganizations(ctx context.Context, in *ListUserOrganizationsRequest, opts ...grpc.CallOption) (*ListUserOrganizationsResponse, error)
-	// GetOrganization returns one organization the caller belongs to, by id or
-	// slug. A non-member gets NotFound, never a hint that the org exists.
+	// GetOrganization returns NotFound to non-members, whether or not the org exists.
 	GetOrganization(ctx context.Context, in *GetOrganizationRequest, opts ...grpc.CallOption) (*GetOrganizationResponse, error)
 	// CreateOrganization creates a new organization and makes the caller the owner.
 	CreateOrganization(ctx context.Context, in *CreateOrganizationRequest, opts ...grpc.CallOption) (*CreateOrganizationResponse, error)
@@ -390,8 +390,6 @@ type ServerServiceClient interface {
 	GetOrgOverview(ctx context.Context, in *GetOrgOverviewRequest, opts ...grpc.CallOption) (*GetOrgOverviewResponse, error)
 	// ListWorkspaces returns all workspaces in the user's organization.
 	ListWorkspaces(ctx context.Context, in *ListWorkspacesRequest, opts ...grpc.CallOption) (*ListWorkspacesResponse, error)
-	// GetWorkspace returns one workspace of the current organization, by name or
-	// id, applying the same access filter as ListWorkspaces.
 	GetWorkspace(ctx context.Context, in *GetWorkspaceRequest, opts ...grpc.CallOption) (*GetWorkspaceResponse, error)
 	// CreateWorkspace creates a new workspace in the user's organization.
 	CreateWorkspace(ctx context.Context, in *CreateWorkspaceRequest, opts ...grpc.CallOption) (*CreateWorkspaceResponse, error)
@@ -432,10 +430,7 @@ type ServerServiceClient interface {
 	// ListDatabases returns all managed-database clusters in the
 	// user's active workspace.
 	ListDatabases(ctx context.Context, in *ListDatabasesRequest, opts ...grpc.CallOption) (*ListDatabasesResponse, error)
-	// CreateDatabase provisions a new managed-database cluster. Provisioning is
-	// asynchronous: the response carries the accepted spec, and callers poll
-	// GetDatabase / GetDatabaseStatus (or WatchDatabase) until status.phase is
-	// running. AlreadyExists is returned when the name is taken in the workspace.
+	// CreateDatabase provisions a new managed-database cluster.
 	CreateDatabase(ctx context.Context, in *CreateDatabaseRequest, opts ...grpc.CallOption) (*CreateDatabaseResponse, error)
 	// RestoreDatabase provisions a NEW managed-database cluster bootstrapped
 	// from another database's backups (optionally point-in-time). The new
@@ -458,10 +453,7 @@ type ServerServiceClient interface {
 	// ListPendingOperations returns the workspace's in-flight and terminally
 	// failed platform operations, newest first. See PendingOperation.
 	ListPendingOperations(ctx context.Context, in *ListPendingOperationsRequest, opts ...grpc.CallOption) (*ListPendingOperationsResponse, error)
-	// DeleteDatabase tears down a managed-database cluster. Teardown is
-	// asynchronous: callers poll GetDatabase until it returns NotFound. Maestro's
-	// NotFound / FailedPrecondition codes pass through so a repeated delete of
-	// an already-gone cluster is distinguishable from an infra failure.
+	// DeleteDatabase tears down a managed-database cluster.
 	DeleteDatabase(ctx context.Context, in *DeleteDatabaseRequest, opts ...grpc.CallOption) (*DeleteDatabaseResponse, error)
 	// RetryDeleteDatabase re-arms an async cluster delete that hit
 	// max retries. Only valid when the cluster is in PHASE_FAILED
@@ -507,6 +499,21 @@ type ServerServiceClient interface {
 	// public-access flags (each optional, independently). Disabling public
 	// access requires private access to be (or become) enabled.
 	SetWorkspacePrivateAccess(ctx context.Context, in *SetWorkspacePrivateAccessRequest, opts ...grpc.CallOption) (*SetWorkspacePrivateAccessResponse, error)
+	// ListPrivateEndpointRegions returns the (provider, region) pairs the platform can
+	// serve private endpoints in.
+	ListPrivateEndpointRegions(ctx context.Context, in *ListPrivateEndpointRegionsRequest, opts ...grpc.CallOption) (*ListPrivateEndpointRegionsResponse, error)
+	// CreatePrivateEndpointService creates the caller's workspace endpoint service for one
+	// provider + region (one per pair). Gated on the private_networking plan feature.
+	CreatePrivateEndpointService(ctx context.Context, in *CreatePrivateEndpointServiceRequest, opts ...grpc.CallOption) (*CreatePrivateEndpointServiceResponse, error)
+	ListPrivateEndpointServices(ctx context.Context, in *ListPrivateEndpointServicesRequest, opts ...grpc.CallOption) (*ListPrivateEndpointServicesResponse, error)
+	GetPrivateEndpointService(ctx context.Context, in *GetPrivateEndpointServiceRequest, opts ...grpc.CallOption) (*GetPrivateEndpointServiceResponse, error)
+	DeletePrivateEndpointService(ctx context.Context, in *DeletePrivateEndpointServiceRequest, opts ...grpc.CallOption) (*DeletePrivateEndpointServiceResponse, error)
+	// CreatePrivateEndpoint registers a customer-side endpoint on a service; the platform
+	// accepts the connection asynchronously (poll connection_status). Gated on the
+	// private_networking plan feature.
+	CreatePrivateEndpoint(ctx context.Context, in *CreatePrivateEndpointRequest, opts ...grpc.CallOption) (*CreatePrivateEndpointResponse, error)
+	GetPrivateEndpoint(ctx context.Context, in *GetPrivateEndpointRequest, opts ...grpc.CallOption) (*GetPrivateEndpointResponse, error)
+	DeletePrivateEndpoint(ctx context.Context, in *DeletePrivateEndpointRequest, opts ...grpc.CallOption) (*DeletePrivateEndpointResponse, error)
 	// ListBackupSchedules returns backup schedules for a managed database.
 	ListBackupSchedules(ctx context.Context, in *ListBackupSchedulesRequest, opts ...grpc.CallOption) (*ListBackupSchedulesResponse, error)
 	// ListBackups returns the backup snapshots taken for a managed database.
@@ -528,7 +535,6 @@ type ServerServiceClient interface {
 	DeleteBackup(ctx context.Context, in *DeleteBackupRequest, opts ...grpc.CallOption) (*DeleteBackupResponse, error)
 	// ListDatabaseUsers returns engine-level users for a managed database.
 	ListDatabaseUsers(ctx context.Context, in *ListDatabaseUsersRequest, opts ...grpc.CallOption) (*ListDatabaseUsersResponse, error)
-	// GetDatabaseUser returns one engine-level user of a managed database.
 	GetDatabaseUser(ctx context.Context, in *GetDatabaseUserRequest, opts ...grpc.CallOption) (*GetDatabaseUserResponse, error)
 	// CreateDatabaseUser creates a new engine-level user.
 	CreateDatabaseUser(ctx context.Context, in *CreateDatabaseUserRequest, opts ...grpc.CallOption) (*CreateDatabaseUserResponse, error)
@@ -633,30 +639,30 @@ func (c *serverServiceClient) RevokeSession(ctx context.Context, in *RevokeSessi
 	return out, nil
 }
 
-func (c *serverServiceClient) CreateAPIToken(ctx context.Context, in *CreateAPITokenRequest, opts ...grpc.CallOption) (*CreateAPITokenResponse, error) {
+func (c *serverServiceClient) CreateAPIKey(ctx context.Context, in *CreateAPIKeyRequest, opts ...grpc.CallOption) (*CreateAPIKeyResponse, error) {
 	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
-	out := new(CreateAPITokenResponse)
-	err := c.cc.Invoke(ctx, ServerService_CreateAPIToken_FullMethodName, in, out, cOpts...)
+	out := new(CreateAPIKeyResponse)
+	err := c.cc.Invoke(ctx, ServerService_CreateAPIKey_FullMethodName, in, out, cOpts...)
 	if err != nil {
 		return nil, err
 	}
 	return out, nil
 }
 
-func (c *serverServiceClient) ListAPITokens(ctx context.Context, in *ListAPITokensRequest, opts ...grpc.CallOption) (*ListAPITokensResponse, error) {
+func (c *serverServiceClient) ListAPIKeys(ctx context.Context, in *ListAPIKeysRequest, opts ...grpc.CallOption) (*ListAPIKeysResponse, error) {
 	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
-	out := new(ListAPITokensResponse)
-	err := c.cc.Invoke(ctx, ServerService_ListAPITokens_FullMethodName, in, out, cOpts...)
+	out := new(ListAPIKeysResponse)
+	err := c.cc.Invoke(ctx, ServerService_ListAPIKeys_FullMethodName, in, out, cOpts...)
 	if err != nil {
 		return nil, err
 	}
 	return out, nil
 }
 
-func (c *serverServiceClient) RevokeAPIToken(ctx context.Context, in *RevokeAPITokenRequest, opts ...grpc.CallOption) (*RevokeAPITokenResponse, error) {
+func (c *serverServiceClient) RevokeAPIKey(ctx context.Context, in *RevokeAPIKeyRequest, opts ...grpc.CallOption) (*RevokeAPIKeyResponse, error) {
 	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
-	out := new(RevokeAPITokenResponse)
-	err := c.cc.Invoke(ctx, ServerService_RevokeAPIToken_FullMethodName, in, out, cOpts...)
+	out := new(RevokeAPIKeyResponse)
+	err := c.cc.Invoke(ctx, ServerService_RevokeAPIKey_FullMethodName, in, out, cOpts...)
 	if err != nil {
 		return nil, err
 	}
@@ -1892,6 +1898,86 @@ func (c *serverServiceClient) SetWorkspacePrivateAccess(ctx context.Context, in 
 	return out, nil
 }
 
+func (c *serverServiceClient) ListPrivateEndpointRegions(ctx context.Context, in *ListPrivateEndpointRegionsRequest, opts ...grpc.CallOption) (*ListPrivateEndpointRegionsResponse, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(ListPrivateEndpointRegionsResponse)
+	err := c.cc.Invoke(ctx, ServerService_ListPrivateEndpointRegions_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *serverServiceClient) CreatePrivateEndpointService(ctx context.Context, in *CreatePrivateEndpointServiceRequest, opts ...grpc.CallOption) (*CreatePrivateEndpointServiceResponse, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(CreatePrivateEndpointServiceResponse)
+	err := c.cc.Invoke(ctx, ServerService_CreatePrivateEndpointService_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *serverServiceClient) ListPrivateEndpointServices(ctx context.Context, in *ListPrivateEndpointServicesRequest, opts ...grpc.CallOption) (*ListPrivateEndpointServicesResponse, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(ListPrivateEndpointServicesResponse)
+	err := c.cc.Invoke(ctx, ServerService_ListPrivateEndpointServices_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *serverServiceClient) GetPrivateEndpointService(ctx context.Context, in *GetPrivateEndpointServiceRequest, opts ...grpc.CallOption) (*GetPrivateEndpointServiceResponse, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(GetPrivateEndpointServiceResponse)
+	err := c.cc.Invoke(ctx, ServerService_GetPrivateEndpointService_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *serverServiceClient) DeletePrivateEndpointService(ctx context.Context, in *DeletePrivateEndpointServiceRequest, opts ...grpc.CallOption) (*DeletePrivateEndpointServiceResponse, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(DeletePrivateEndpointServiceResponse)
+	err := c.cc.Invoke(ctx, ServerService_DeletePrivateEndpointService_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *serverServiceClient) CreatePrivateEndpoint(ctx context.Context, in *CreatePrivateEndpointRequest, opts ...grpc.CallOption) (*CreatePrivateEndpointResponse, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(CreatePrivateEndpointResponse)
+	err := c.cc.Invoke(ctx, ServerService_CreatePrivateEndpoint_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *serverServiceClient) GetPrivateEndpoint(ctx context.Context, in *GetPrivateEndpointRequest, opts ...grpc.CallOption) (*GetPrivateEndpointResponse, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(GetPrivateEndpointResponse)
+	err := c.cc.Invoke(ctx, ServerService_GetPrivateEndpoint_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *serverServiceClient) DeletePrivateEndpoint(ctx context.Context, in *DeletePrivateEndpointRequest, opts ...grpc.CallOption) (*DeletePrivateEndpointResponse, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(DeletePrivateEndpointResponse)
+	err := c.cc.Invoke(ctx, ServerService_DeletePrivateEndpoint_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
 func (c *serverServiceClient) ListBackupSchedules(ctx context.Context, in *ListBackupSchedulesRequest, opts ...grpc.CallOption) (*ListBackupSchedulesResponse, error) {
 	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
 	out := new(ListBackupSchedulesResponse)
@@ -2191,20 +2277,14 @@ type ServerServiceServer interface {
 	// RevokeSession revokes one of the caller's own sessions by id (e.g. "log out
 	// that other device"). A user can only revoke their own sessions.
 	RevokeSession(context.Context, *RevokeSessionRequest) (*RevokeSessionResponse, error)
-	// CreateAPIToken mints a personal access token for the caller, for automation
-	// such as Terraform or CI. The plaintext is returned once and never again. A
-	// personal access token cannot mint another one.
-	CreateAPIToken(context.Context, *CreateAPITokenRequest) (*CreateAPITokenResponse, error)
-	// ListAPITokens returns the caller's personal access tokens, without secrets.
-	ListAPITokens(context.Context, *ListAPITokensRequest) (*ListAPITokensResponse, error)
-	// RevokeAPIToken deletes one of the caller's personal access tokens by id.
-	// Idempotent: an unknown or foreign id returns revoked=false.
-	RevokeAPIToken(context.Context, *RevokeAPITokenRequest) (*RevokeAPITokenResponse, error)
+	// A key created by another key never
+	// outlives it, stays within its allowed IPs, and is revoked with it.
+	CreateAPIKey(context.Context, *CreateAPIKeyRequest) (*CreateAPIKeyResponse, error)
+	ListAPIKeys(context.Context, *ListAPIKeysRequest) (*ListAPIKeysResponse, error)
+	RevokeAPIKey(context.Context, *RevokeAPIKeyRequest) (*RevokeAPIKeyResponse, error)
 	// ListConnections returns all connections in the user's organization.
 	ListConnections(context.Context, *ListConnectionsRequest) (*ListConnectionsResponse, error)
-	// GetConnections returns connections matching the given names. Any missing
-	// name fails the whole call with NotFound, so a single-name call is the
-	// canonical get-by-name.
+	// GetConnections returns connections matching the given names.
 	GetConnections(context.Context, *GetConnectionsRequest) (*GetConnectionsResponse, error)
 	// CreateConnection creates a new connection.
 	CreateConnection(context.Context, *CreateConnectionRequest) (*CreateConnectionResponse, error)
@@ -2281,8 +2361,7 @@ type ServerServiceServer interface {
 	RemoveMember(context.Context, *RemoveMemberRequest) (*RemoveMemberResponse, error)
 	// UpdateMember updates editable profile fields on an org member.
 	UpdateMember(context.Context, *UpdateMemberRequest) (*UpdateMemberResponse, error)
-	// RevokeUserSessions terminates every session, tunnel token and personal
-	// access token for a member.
+	// RevokeUserSessions terminates every session and API token for a member.
 	RevokeUserSessions(context.Context, *RevokeUserSessionsRequest) (*RevokeUserSessionsResponse, error)
 	// InviteMember creates a pending invitation and returns its join link.
 	InviteMember(context.Context, *InviteMemberRequest) (*InviteMemberResponse, error)
@@ -2367,8 +2446,7 @@ type ServerServiceServer interface {
 	EmitActivity(context.Context, *EmitActivityRequest) (*EmitActivityResponse, error)
 	// ListUserOrganizations returns all organizations the authenticated user belongs to.
 	ListUserOrganizations(context.Context, *ListUserOrganizationsRequest) (*ListUserOrganizationsResponse, error)
-	// GetOrganization returns one organization the caller belongs to, by id or
-	// slug. A non-member gets NotFound, never a hint that the org exists.
+	// GetOrganization returns NotFound to non-members, whether or not the org exists.
 	GetOrganization(context.Context, *GetOrganizationRequest) (*GetOrganizationResponse, error)
 	// CreateOrganization creates a new organization and makes the caller the owner.
 	CreateOrganization(context.Context, *CreateOrganizationRequest) (*CreateOrganizationResponse, error)
@@ -2384,8 +2462,6 @@ type ServerServiceServer interface {
 	GetOrgOverview(context.Context, *GetOrgOverviewRequest) (*GetOrgOverviewResponse, error)
 	// ListWorkspaces returns all workspaces in the user's organization.
 	ListWorkspaces(context.Context, *ListWorkspacesRequest) (*ListWorkspacesResponse, error)
-	// GetWorkspace returns one workspace of the current organization, by name or
-	// id, applying the same access filter as ListWorkspaces.
 	GetWorkspace(context.Context, *GetWorkspaceRequest) (*GetWorkspaceResponse, error)
 	// CreateWorkspace creates a new workspace in the user's organization.
 	CreateWorkspace(context.Context, *CreateWorkspaceRequest) (*CreateWorkspaceResponse, error)
@@ -2426,10 +2502,7 @@ type ServerServiceServer interface {
 	// ListDatabases returns all managed-database clusters in the
 	// user's active workspace.
 	ListDatabases(context.Context, *ListDatabasesRequest) (*ListDatabasesResponse, error)
-	// CreateDatabase provisions a new managed-database cluster. Provisioning is
-	// asynchronous: the response carries the accepted spec, and callers poll
-	// GetDatabase / GetDatabaseStatus (or WatchDatabase) until status.phase is
-	// running. AlreadyExists is returned when the name is taken in the workspace.
+	// CreateDatabase provisions a new managed-database cluster.
 	CreateDatabase(context.Context, *CreateDatabaseRequest) (*CreateDatabaseResponse, error)
 	// RestoreDatabase provisions a NEW managed-database cluster bootstrapped
 	// from another database's backups (optionally point-in-time). The new
@@ -2452,10 +2525,7 @@ type ServerServiceServer interface {
 	// ListPendingOperations returns the workspace's in-flight and terminally
 	// failed platform operations, newest first. See PendingOperation.
 	ListPendingOperations(context.Context, *ListPendingOperationsRequest) (*ListPendingOperationsResponse, error)
-	// DeleteDatabase tears down a managed-database cluster. Teardown is
-	// asynchronous: callers poll GetDatabase until it returns NotFound. Maestro's
-	// NotFound / FailedPrecondition codes pass through so a repeated delete of
-	// an already-gone cluster is distinguishable from an infra failure.
+	// DeleteDatabase tears down a managed-database cluster.
 	DeleteDatabase(context.Context, *DeleteDatabaseRequest) (*DeleteDatabaseResponse, error)
 	// RetryDeleteDatabase re-arms an async cluster delete that hit
 	// max retries. Only valid when the cluster is in PHASE_FAILED
@@ -2501,6 +2571,21 @@ type ServerServiceServer interface {
 	// public-access flags (each optional, independently). Disabling public
 	// access requires private access to be (or become) enabled.
 	SetWorkspacePrivateAccess(context.Context, *SetWorkspacePrivateAccessRequest) (*SetWorkspacePrivateAccessResponse, error)
+	// ListPrivateEndpointRegions returns the (provider, region) pairs the platform can
+	// serve private endpoints in.
+	ListPrivateEndpointRegions(context.Context, *ListPrivateEndpointRegionsRequest) (*ListPrivateEndpointRegionsResponse, error)
+	// CreatePrivateEndpointService creates the caller's workspace endpoint service for one
+	// provider + region (one per pair). Gated on the private_networking plan feature.
+	CreatePrivateEndpointService(context.Context, *CreatePrivateEndpointServiceRequest) (*CreatePrivateEndpointServiceResponse, error)
+	ListPrivateEndpointServices(context.Context, *ListPrivateEndpointServicesRequest) (*ListPrivateEndpointServicesResponse, error)
+	GetPrivateEndpointService(context.Context, *GetPrivateEndpointServiceRequest) (*GetPrivateEndpointServiceResponse, error)
+	DeletePrivateEndpointService(context.Context, *DeletePrivateEndpointServiceRequest) (*DeletePrivateEndpointServiceResponse, error)
+	// CreatePrivateEndpoint registers a customer-side endpoint on a service; the platform
+	// accepts the connection asynchronously (poll connection_status). Gated on the
+	// private_networking plan feature.
+	CreatePrivateEndpoint(context.Context, *CreatePrivateEndpointRequest) (*CreatePrivateEndpointResponse, error)
+	GetPrivateEndpoint(context.Context, *GetPrivateEndpointRequest) (*GetPrivateEndpointResponse, error)
+	DeletePrivateEndpoint(context.Context, *DeletePrivateEndpointRequest) (*DeletePrivateEndpointResponse, error)
 	// ListBackupSchedules returns backup schedules for a managed database.
 	ListBackupSchedules(context.Context, *ListBackupSchedulesRequest) (*ListBackupSchedulesResponse, error)
 	// ListBackups returns the backup snapshots taken for a managed database.
@@ -2522,7 +2607,6 @@ type ServerServiceServer interface {
 	DeleteBackup(context.Context, *DeleteBackupRequest) (*DeleteBackupResponse, error)
 	// ListDatabaseUsers returns engine-level users for a managed database.
 	ListDatabaseUsers(context.Context, *ListDatabaseUsersRequest) (*ListDatabaseUsersResponse, error)
-	// GetDatabaseUser returns one engine-level user of a managed database.
 	GetDatabaseUser(context.Context, *GetDatabaseUserRequest) (*GetDatabaseUserResponse, error)
 	// CreateDatabaseUser creates a new engine-level user.
 	CreateDatabaseUser(context.Context, *CreateDatabaseUserRequest) (*CreateDatabaseUserResponse, error)
@@ -2599,14 +2683,14 @@ func (UnimplementedServerServiceServer) ListSessions(context.Context, *ListSessi
 func (UnimplementedServerServiceServer) RevokeSession(context.Context, *RevokeSessionRequest) (*RevokeSessionResponse, error) {
 	return nil, status.Error(codes.Unimplemented, "method RevokeSession not implemented")
 }
-func (UnimplementedServerServiceServer) CreateAPIToken(context.Context, *CreateAPITokenRequest) (*CreateAPITokenResponse, error) {
-	return nil, status.Error(codes.Unimplemented, "method CreateAPIToken not implemented")
+func (UnimplementedServerServiceServer) CreateAPIKey(context.Context, *CreateAPIKeyRequest) (*CreateAPIKeyResponse, error) {
+	return nil, status.Error(codes.Unimplemented, "method CreateAPIKey not implemented")
 }
-func (UnimplementedServerServiceServer) ListAPITokens(context.Context, *ListAPITokensRequest) (*ListAPITokensResponse, error) {
-	return nil, status.Error(codes.Unimplemented, "method ListAPITokens not implemented")
+func (UnimplementedServerServiceServer) ListAPIKeys(context.Context, *ListAPIKeysRequest) (*ListAPIKeysResponse, error) {
+	return nil, status.Error(codes.Unimplemented, "method ListAPIKeys not implemented")
 }
-func (UnimplementedServerServiceServer) RevokeAPIToken(context.Context, *RevokeAPITokenRequest) (*RevokeAPITokenResponse, error) {
-	return nil, status.Error(codes.Unimplemented, "method RevokeAPIToken not implemented")
+func (UnimplementedServerServiceServer) RevokeAPIKey(context.Context, *RevokeAPIKeyRequest) (*RevokeAPIKeyResponse, error) {
+	return nil, status.Error(codes.Unimplemented, "method RevokeAPIKey not implemented")
 }
 func (UnimplementedServerServiceServer) ListConnections(context.Context, *ListConnectionsRequest) (*ListConnectionsResponse, error) {
 	return nil, status.Error(codes.Unimplemented, "method ListConnections not implemented")
@@ -2974,6 +3058,30 @@ func (UnimplementedServerServiceServer) GetWorkspaceNetworking(context.Context, 
 func (UnimplementedServerServiceServer) SetWorkspacePrivateAccess(context.Context, *SetWorkspacePrivateAccessRequest) (*SetWorkspacePrivateAccessResponse, error) {
 	return nil, status.Error(codes.Unimplemented, "method SetWorkspacePrivateAccess not implemented")
 }
+func (UnimplementedServerServiceServer) ListPrivateEndpointRegions(context.Context, *ListPrivateEndpointRegionsRequest) (*ListPrivateEndpointRegionsResponse, error) {
+	return nil, status.Error(codes.Unimplemented, "method ListPrivateEndpointRegions not implemented")
+}
+func (UnimplementedServerServiceServer) CreatePrivateEndpointService(context.Context, *CreatePrivateEndpointServiceRequest) (*CreatePrivateEndpointServiceResponse, error) {
+	return nil, status.Error(codes.Unimplemented, "method CreatePrivateEndpointService not implemented")
+}
+func (UnimplementedServerServiceServer) ListPrivateEndpointServices(context.Context, *ListPrivateEndpointServicesRequest) (*ListPrivateEndpointServicesResponse, error) {
+	return nil, status.Error(codes.Unimplemented, "method ListPrivateEndpointServices not implemented")
+}
+func (UnimplementedServerServiceServer) GetPrivateEndpointService(context.Context, *GetPrivateEndpointServiceRequest) (*GetPrivateEndpointServiceResponse, error) {
+	return nil, status.Error(codes.Unimplemented, "method GetPrivateEndpointService not implemented")
+}
+func (UnimplementedServerServiceServer) DeletePrivateEndpointService(context.Context, *DeletePrivateEndpointServiceRequest) (*DeletePrivateEndpointServiceResponse, error) {
+	return nil, status.Error(codes.Unimplemented, "method DeletePrivateEndpointService not implemented")
+}
+func (UnimplementedServerServiceServer) CreatePrivateEndpoint(context.Context, *CreatePrivateEndpointRequest) (*CreatePrivateEndpointResponse, error) {
+	return nil, status.Error(codes.Unimplemented, "method CreatePrivateEndpoint not implemented")
+}
+func (UnimplementedServerServiceServer) GetPrivateEndpoint(context.Context, *GetPrivateEndpointRequest) (*GetPrivateEndpointResponse, error) {
+	return nil, status.Error(codes.Unimplemented, "method GetPrivateEndpoint not implemented")
+}
+func (UnimplementedServerServiceServer) DeletePrivateEndpoint(context.Context, *DeletePrivateEndpointRequest) (*DeletePrivateEndpointResponse, error) {
+	return nil, status.Error(codes.Unimplemented, "method DeletePrivateEndpoint not implemented")
+}
 func (UnimplementedServerServiceServer) ListBackupSchedules(context.Context, *ListBackupSchedulesRequest) (*ListBackupSchedulesResponse, error) {
 	return nil, status.Error(codes.Unimplemented, "method ListBackupSchedules not implemented")
 }
@@ -3151,56 +3259,56 @@ func _ServerService_RevokeSession_Handler(srv interface{}, ctx context.Context, 
 	return interceptor(ctx, in, info, handler)
 }
 
-func _ServerService_CreateAPIToken_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(CreateAPITokenRequest)
+func _ServerService_CreateAPIKey_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(CreateAPIKeyRequest)
 	if err := dec(in); err != nil {
 		return nil, err
 	}
 	if interceptor == nil {
-		return srv.(ServerServiceServer).CreateAPIToken(ctx, in)
+		return srv.(ServerServiceServer).CreateAPIKey(ctx, in)
 	}
 	info := &grpc.UnaryServerInfo{
 		Server:     srv,
-		FullMethod: ServerService_CreateAPIToken_FullMethodName,
+		FullMethod: ServerService_CreateAPIKey_FullMethodName,
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(ServerServiceServer).CreateAPIToken(ctx, req.(*CreateAPITokenRequest))
+		return srv.(ServerServiceServer).CreateAPIKey(ctx, req.(*CreateAPIKeyRequest))
 	}
 	return interceptor(ctx, in, info, handler)
 }
 
-func _ServerService_ListAPITokens_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(ListAPITokensRequest)
+func _ServerService_ListAPIKeys_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(ListAPIKeysRequest)
 	if err := dec(in); err != nil {
 		return nil, err
 	}
 	if interceptor == nil {
-		return srv.(ServerServiceServer).ListAPITokens(ctx, in)
+		return srv.(ServerServiceServer).ListAPIKeys(ctx, in)
 	}
 	info := &grpc.UnaryServerInfo{
 		Server:     srv,
-		FullMethod: ServerService_ListAPITokens_FullMethodName,
+		FullMethod: ServerService_ListAPIKeys_FullMethodName,
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(ServerServiceServer).ListAPITokens(ctx, req.(*ListAPITokensRequest))
+		return srv.(ServerServiceServer).ListAPIKeys(ctx, req.(*ListAPIKeysRequest))
 	}
 	return interceptor(ctx, in, info, handler)
 }
 
-func _ServerService_RevokeAPIToken_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(RevokeAPITokenRequest)
+func _ServerService_RevokeAPIKey_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(RevokeAPIKeyRequest)
 	if err := dec(in); err != nil {
 		return nil, err
 	}
 	if interceptor == nil {
-		return srv.(ServerServiceServer).RevokeAPIToken(ctx, in)
+		return srv.(ServerServiceServer).RevokeAPIKey(ctx, in)
 	}
 	info := &grpc.UnaryServerInfo{
 		Server:     srv,
-		FullMethod: ServerService_RevokeAPIToken_FullMethodName,
+		FullMethod: ServerService_RevokeAPIKey_FullMethodName,
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(ServerServiceServer).RevokeAPIToken(ctx, req.(*RevokeAPITokenRequest))
+		return srv.(ServerServiceServer).RevokeAPIKey(ctx, req.(*RevokeAPIKeyRequest))
 	}
 	return interceptor(ctx, in, info, handler)
 }
@@ -5394,6 +5502,150 @@ func _ServerService_SetWorkspacePrivateAccess_Handler(srv interface{}, ctx conte
 	return interceptor(ctx, in, info, handler)
 }
 
+func _ServerService_ListPrivateEndpointRegions_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(ListPrivateEndpointRegionsRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(ServerServiceServer).ListPrivateEndpointRegions(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: ServerService_ListPrivateEndpointRegions_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(ServerServiceServer).ListPrivateEndpointRegions(ctx, req.(*ListPrivateEndpointRegionsRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _ServerService_CreatePrivateEndpointService_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(CreatePrivateEndpointServiceRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(ServerServiceServer).CreatePrivateEndpointService(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: ServerService_CreatePrivateEndpointService_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(ServerServiceServer).CreatePrivateEndpointService(ctx, req.(*CreatePrivateEndpointServiceRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _ServerService_ListPrivateEndpointServices_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(ListPrivateEndpointServicesRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(ServerServiceServer).ListPrivateEndpointServices(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: ServerService_ListPrivateEndpointServices_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(ServerServiceServer).ListPrivateEndpointServices(ctx, req.(*ListPrivateEndpointServicesRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _ServerService_GetPrivateEndpointService_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(GetPrivateEndpointServiceRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(ServerServiceServer).GetPrivateEndpointService(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: ServerService_GetPrivateEndpointService_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(ServerServiceServer).GetPrivateEndpointService(ctx, req.(*GetPrivateEndpointServiceRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _ServerService_DeletePrivateEndpointService_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(DeletePrivateEndpointServiceRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(ServerServiceServer).DeletePrivateEndpointService(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: ServerService_DeletePrivateEndpointService_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(ServerServiceServer).DeletePrivateEndpointService(ctx, req.(*DeletePrivateEndpointServiceRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _ServerService_CreatePrivateEndpoint_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(CreatePrivateEndpointRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(ServerServiceServer).CreatePrivateEndpoint(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: ServerService_CreatePrivateEndpoint_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(ServerServiceServer).CreatePrivateEndpoint(ctx, req.(*CreatePrivateEndpointRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _ServerService_GetPrivateEndpoint_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(GetPrivateEndpointRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(ServerServiceServer).GetPrivateEndpoint(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: ServerService_GetPrivateEndpoint_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(ServerServiceServer).GetPrivateEndpoint(ctx, req.(*GetPrivateEndpointRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _ServerService_DeletePrivateEndpoint_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(DeletePrivateEndpointRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(ServerServiceServer).DeletePrivateEndpoint(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: ServerService_DeletePrivateEndpoint_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(ServerServiceServer).DeletePrivateEndpoint(ctx, req.(*DeletePrivateEndpointRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
 func _ServerService_ListBackupSchedules_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
 	in := new(ListBackupSchedulesRequest)
 	if err := dec(in); err != nil {
@@ -5922,16 +6174,16 @@ var ServerService_ServiceDesc = grpc.ServiceDesc{
 			Handler:    _ServerService_RevokeSession_Handler,
 		},
 		{
-			MethodName: "CreateAPIToken",
-			Handler:    _ServerService_CreateAPIToken_Handler,
+			MethodName: "CreateAPIKey",
+			Handler:    _ServerService_CreateAPIKey_Handler,
 		},
 		{
-			MethodName: "ListAPITokens",
-			Handler:    _ServerService_ListAPITokens_Handler,
+			MethodName: "ListAPIKeys",
+			Handler:    _ServerService_ListAPIKeys_Handler,
 		},
 		{
-			MethodName: "RevokeAPIToken",
-			Handler:    _ServerService_RevokeAPIToken_Handler,
+			MethodName: "RevokeAPIKey",
+			Handler:    _ServerService_RevokeAPIKey_Handler,
 		},
 		{
 			MethodName: "ListConnections",
@@ -6416,6 +6668,38 @@ var ServerService_ServiceDesc = grpc.ServiceDesc{
 		{
 			MethodName: "SetWorkspacePrivateAccess",
 			Handler:    _ServerService_SetWorkspacePrivateAccess_Handler,
+		},
+		{
+			MethodName: "ListPrivateEndpointRegions",
+			Handler:    _ServerService_ListPrivateEndpointRegions_Handler,
+		},
+		{
+			MethodName: "CreatePrivateEndpointService",
+			Handler:    _ServerService_CreatePrivateEndpointService_Handler,
+		},
+		{
+			MethodName: "ListPrivateEndpointServices",
+			Handler:    _ServerService_ListPrivateEndpointServices_Handler,
+		},
+		{
+			MethodName: "GetPrivateEndpointService",
+			Handler:    _ServerService_GetPrivateEndpointService_Handler,
+		},
+		{
+			MethodName: "DeletePrivateEndpointService",
+			Handler:    _ServerService_DeletePrivateEndpointService_Handler,
+		},
+		{
+			MethodName: "CreatePrivateEndpoint",
+			Handler:    _ServerService_CreatePrivateEndpoint_Handler,
+		},
+		{
+			MethodName: "GetPrivateEndpoint",
+			Handler:    _ServerService_GetPrivateEndpoint_Handler,
+		},
+		{
+			MethodName: "DeletePrivateEndpoint",
+			Handler:    _ServerService_DeletePrivateEndpoint_Handler,
 		},
 		{
 			MethodName: "ListBackupSchedules",
