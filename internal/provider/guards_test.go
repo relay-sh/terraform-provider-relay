@@ -6,6 +6,7 @@ import (
 
 	"github.com/hashicorp/terraform-plugin-framework/datasource"
 	"github.com/hashicorp/terraform-plugin-framework/provider"
+	"github.com/hashicorp/terraform-plugin-framework/resource"
 	"github.com/hashicorp/terraform-plugin-framework/tfsdk"
 	"github.com/hashicorp/terraform-plugin-go/tftypes"
 )
@@ -43,5 +44,46 @@ func TestMalformedConfigStopsBeforeAnyCall(t *testing.T) {
 	d.Read(ctx, datasource.ReadRequest{Config: tfsdk.Config{Schema: dsSchema.Schema, Raw: malformed}}, &readResp)
 	if !readResp.Diagnostics.HasError() {
 		t.Error("organization Read must stop on a malformed config")
+	}
+}
+
+func assertResourceGuards(t *testing.T, r resource.Resource) {
+	t.Helper()
+	ctx := context.Background()
+	var schemaResp resource.SchemaResponse
+	r.Schema(ctx, resource.SchemaRequest{}, &schemaResp)
+	sch := schemaResp.Schema
+
+	var createResp resource.CreateResponse
+	r.Create(ctx, resource.CreateRequest{Plan: tfsdk.Plan{Schema: sch, Raw: malformed}}, &createResp)
+	var readResp resource.ReadResponse
+	r.Read(ctx, resource.ReadRequest{State: tfsdk.State{Schema: sch, Raw: malformed}}, &readResp)
+	var updateResp resource.UpdateResponse
+	r.Update(ctx, resource.UpdateRequest{Plan: tfsdk.Plan{Schema: sch, Raw: malformed}, State: tfsdk.State{Schema: sch, Raw: malformed}}, &updateResp)
+	var deleteResp resource.DeleteResponse
+	r.Delete(ctx, resource.DeleteRequest{State: tfsdk.State{Schema: sch, Raw: malformed}}, &deleteResp)
+
+	for name, failed := range map[string]bool{
+		"create": createResp.Diagnostics.HasError(),
+		"read":   readResp.Diagnostics.HasError(),
+		"update": updateResp.Diagnostics.HasError(),
+		"delete": deleteResp.Diagnostics.HasError(),
+	} {
+		if !failed {
+			t.Errorf("%s must stop on malformed input", name)
+		}
+	}
+}
+
+func TestResourceGuards(t *testing.T) {
+	assertResourceGuards(t, newWorkspaceResource())
+
+	d := newWorkspaceDataSource()
+	var dsSchema datasource.SchemaResponse
+	d.Schema(context.Background(), datasource.SchemaRequest{}, &dsSchema)
+	var readResp datasource.ReadResponse
+	d.Read(context.Background(), datasource.ReadRequest{Config: tfsdk.Config{Schema: dsSchema.Schema, Raw: malformed}}, &readResp)
+	if !readResp.Diagnostics.HasError() {
+		t.Error("workspace data source Read must stop on a malformed config")
 	}
 }

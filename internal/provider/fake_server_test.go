@@ -2,6 +2,7 @@ package provider
 
 import (
 	"context"
+	"fmt"
 	"net"
 	"sync"
 	"testing"
@@ -29,7 +30,9 @@ type fakeServer struct {
 	calls []call
 	errs  map[string]error
 
-	orgs map[string]*serverv1.Organization
+	orgs       map[string]*serverv1.Organization
+	workspaces map[string]*serverv1.Workspace
+	nextID     int
 }
 
 func startFakeServer(t *testing.T) *fakeServer {
@@ -39,9 +42,10 @@ func startFakeServer(t *testing.T) *fakeServer {
 		t.Fatalf("listen: %v", err)
 	}
 	f := &fakeServer{
-		addr: lis.Addr().String(),
-		errs: map[string]error{},
-		orgs: map[string]*serverv1.Organization{},
+		addr:       lis.Addr().String(),
+		errs:       map[string]error{},
+		orgs:       map[string]*serverv1.Organization{},
+		workspaces: map[string]*serverv1.Workspace{},
 	}
 	srv := grpc.NewServer()
 	serverv1.RegisterServerServiceServer(srv, f)
@@ -97,4 +101,84 @@ func (f *fakeServer) GetOrganization(ctx context.Context, req *serverv1.GetOrgan
 		}
 	}
 	return nil, status.Error(codes.NotFound, "organization not found")
+}
+
+func (f *fakeServer) newID(prefix string) string {
+	f.nextID++
+	return fmt.Sprintf("%s-%d", prefix, f.nextID)
+}
+
+func (f *fakeServer) workspaceByName(name string) *serverv1.Workspace {
+	for _, w := range f.workspaces {
+		if w.GetName() == name {
+			return w
+		}
+	}
+	return nil
+}
+
+func (f *fakeServer) CreateWorkspace(ctx context.Context, req *serverv1.CreateWorkspaceRequest) (*serverv1.CreateWorkspaceResponse, error) {
+	f.mu.Lock()
+	defer f.mu.Unlock()
+	if err := f.record(ctx, "CreateWorkspace"); err != nil {
+		return nil, err
+	}
+	if f.workspaceByName(req.GetName()) != nil {
+		return nil, status.Errorf(codes.AlreadyExists, "workspace %q already exists", req.GetName())
+	}
+	w := &serverv1.Workspace{Id: f.newID("ws"), Name: req.GetName(), Slug: req.GetName(), Description: req.GetDescription(), ManagedBy: req.GetManagedBy()}
+	f.workspaces[w.Id] = w
+	return &serverv1.CreateWorkspaceResponse{Workspace: w}, nil
+}
+
+func (f *fakeServer) GetWorkspace(ctx context.Context, req *serverv1.GetWorkspaceRequest) (*serverv1.GetWorkspaceResponse, error) {
+	f.mu.Lock()
+	defer f.mu.Unlock()
+	if err := f.record(ctx, "GetWorkspace"); err != nil {
+		return nil, err
+	}
+	w := f.workspaces[req.GetId()]
+	if req.GetName() != "" {
+		w = f.workspaceByName(req.GetName())
+	}
+	if w == nil {
+		return nil, status.Error(codes.NotFound, "workspace not found")
+	}
+	return &serverv1.GetWorkspaceResponse{Workspace: w}, nil
+}
+
+func (f *fakeServer) UpdateWorkspace(ctx context.Context, req *serverv1.UpdateWorkspaceRequest) (*serverv1.UpdateWorkspaceResponse, error) {
+	f.mu.Lock()
+	defer f.mu.Unlock()
+	if err := f.record(ctx, "UpdateWorkspace"); err != nil {
+		return nil, err
+	}
+	w := f.workspaceByName(req.GetName())
+	if w == nil {
+		return nil, status.Error(codes.NotFound, "workspace not found")
+	}
+	if req.NewName != nil {
+		w.Name, w.Slug = req.GetNewName(), req.GetNewName()
+	}
+	if req.Description != nil {
+		w.Description = req.GetDescription()
+	}
+	if req.ManagedBy != nil {
+		w.ManagedBy = req.GetManagedBy()
+	}
+	return &serverv1.UpdateWorkspaceResponse{Workspace: w}, nil
+}
+
+func (f *fakeServer) DeleteWorkspace(ctx context.Context, req *serverv1.DeleteWorkspaceRequest) (*serverv1.DeleteWorkspaceResponse, error) {
+	f.mu.Lock()
+	defer f.mu.Unlock()
+	if err := f.record(ctx, "DeleteWorkspace"); err != nil {
+		return nil, err
+	}
+	w := f.workspaceByName(req.GetName())
+	if w == nil {
+		return nil, status.Error(codes.NotFound, "workspace not found")
+	}
+	delete(f.workspaces, w.Id)
+	return &serverv1.DeleteWorkspaceResponse{}, nil
 }
