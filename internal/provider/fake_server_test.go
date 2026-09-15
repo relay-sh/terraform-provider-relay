@@ -77,11 +77,27 @@ func startFakeServer(t *testing.T) *fakeServer {
 		users:         map[string]*serverv1.DatabaseUser{},
 		userCountdown: map[string]int{},
 	}
-	srv := grpc.NewServer()
+	srv := grpc.NewServer(grpc.UnaryInterceptor(f.snapshot))
 	serverv1.RegisterServerServiceServer(srv, f)
 	go func() { _ = srv.Serve(lis) }()
 	t.Cleanup(srv.Stop)
 	return f
+}
+
+func (f *fakeServer) snapshot(ctx context.Context, req any, _ *grpc.UnaryServerInfo, handler grpc.UnaryHandler) (any, error) {
+	resp, err := handler(ctx, req)
+	if err != nil {
+		return nil, err
+	}
+	f.mu.Lock()
+	defer f.mu.Unlock()
+	return proto.Clone(resp.(proto.Message)), nil
+}
+
+func (f *fakeServer) set(fn func()) {
+	f.mu.Lock()
+	defer f.mu.Unlock()
+	fn()
 }
 
 func (f *fakeServer) failWith(method string, err error) {
