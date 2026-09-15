@@ -102,6 +102,7 @@ func (p *relayProvider) Resources(context.Context) []func() resource.Resource {
 		newWorkspaceResource,
 		newConnectionResource,
 		newDatabaseResource,
+		newDatabaseUserResource,
 	}
 }
 

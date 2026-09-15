@@ -9,3 +9,4 @@ FEATURES:
 * **New Resource:** `relay_connection`
 * **New Resource:** `relay_database`
 * **New Data Source:** `relay_database`
+* **New Resource:** `relay_database_user`

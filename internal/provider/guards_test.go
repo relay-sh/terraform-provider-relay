@@ -79,6 +79,7 @@ func TestResourceGuards(t *testing.T) {
 	assertResourceGuards(t, newWorkspaceResource())
 	assertResourceGuards(t, newConnectionResource())
 	assertResourceGuards(t, newDatabaseResource())
+	assertResourceGuards(t, newDatabaseUserResource())
 
 	for _, d := range []datasource.DataSource{newWorkspaceDataSource(), newDatabaseDataSource()} {
 		var dsSchema datasource.SchemaResponse
