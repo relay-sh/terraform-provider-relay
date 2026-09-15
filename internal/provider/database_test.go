@@ -248,7 +248,7 @@ func TestDatabaseResource_DriftAndFailures(t *testing.T) {
 			{
 				PreConfig: func() {
 					clearAll()
-					f.failProvision = "resize failed"
+					f.set(func() { f.failProvision = "resize failed" })
 				},
 				Config:      databaseConfig(f, "17", "12Gi", `{}`, ""),
 				ExpectError: regexp.MustCompile(`(?s)did not settle after update.*resize failed`),
@@ -269,7 +269,7 @@ func TestDatabaseResource_DriftAndFailures(t *testing.T) {
 			{
 				PreConfig: func() {
 					clearAll()
-					f.failDeletion = "finalizer stuck"
+					f.set(func() { f.failDeletion = "finalizer stuck" })
 				},
 				Config:      providerBlock(f),
 				ExpectError: regexp.MustCompile(`(?s)was not deleted.*finalizer stuck`),
@@ -302,7 +302,7 @@ func TestDatabaseResource_DeleteTimeoutAndImportErrors(t *testing.T) {
 				ExpectError:   regexp.MustCompile("Invalid import ID"),
 			},
 			{
-				PreConfig:   func() { f.stuck = true },
+				PreConfig:   func() { f.set(func() { f.stuck = true }) },
 				Config:      providerBlock(f),
 				ExpectError: regexp.MustCompile(`(?s)was not deleted.*timed out`),
 			},
