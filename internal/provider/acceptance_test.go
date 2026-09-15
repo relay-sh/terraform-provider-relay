@@ -14,7 +14,7 @@ import (
 
 func acceptanceFactories(t *testing.T) map[string]func() (tfprotov6.ProviderServer, error) {
 	t.Helper()
-	for _, env := range []string{"RELAY_ENDPOINT", "RELAY_TOKEN", "RELAY_ORG_ID"} {
+	for _, env := range []string{"RELAY_ENDPOINT", "RELAY_API_KEY"} {
 		if os.Getenv(env) == "" {
 			t.Skipf("%s is required for acceptance tests", env)
 		}

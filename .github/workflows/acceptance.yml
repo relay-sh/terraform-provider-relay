@@ -30,8 +30,7 @@ jobs:
     env:
       TF_ACC: "1"
       RELAY_ENDPOINT: ${{ vars.RELAY_STAGING_ENDPOINT }}
-      RELAY_TOKEN: ${{ secrets.RELAY_STAGING_TOKEN }}
-      RELAY_ORG_ID: ${{ vars.RELAY_STAGING_ORG_ID }}
+      RELAY_API_KEY: ${{ secrets.RELAY_STAGING_API_KEY }}
       RELAY_ACC_DATABASES: ${{ inputs.databases && '1' || '' }}
     steps:
       - uses: actions/checkout@v4
