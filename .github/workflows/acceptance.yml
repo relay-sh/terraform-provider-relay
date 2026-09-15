@@ -1,0 +1,53 @@
+name: Acceptance
+
+on:
+  workflow_dispatch:
+    inputs:
+      databases:
+        description: Also provision a real cluster and user
+        type: boolean
+        default: false
+  schedule:
+    - cron: "0 6 * * 1-5"
+
+permissions:
+  contents: read
+
+concurrency:
+  group: acceptance
+  cancel-in-progress: false
+
+jobs:
+  acceptance:
+    name: ${{ matrix.cli }}
+    runs-on: ubuntu-latest
+    timeout-minutes: 90
+    strategy:
+      fail-fast: false
+      max-parallel: 1
+      matrix:
+        cli: [terraform, tofu]
+    env:
+      TF_ACC: "1"
+      RELAY_ENDPOINT: ${{ vars.RELAY_STAGING_ENDPOINT }}
+      RELAY_TOKEN: ${{ secrets.RELAY_STAGING_TOKEN }}
+      RELAY_ORG_ID: ${{ vars.RELAY_STAGING_ORG_ID }}
+      RELAY_ACC_DATABASES: ${{ inputs.databases && '1' || '' }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-go@v5
+        with:
+          go-version-file: go.mod
+      - if: matrix.cli == 'terraform'
+        uses: hashicorp/setup-terraform@v3
+        with:
+          terraform_wrapper: false
+      - if: matrix.cli == 'tofu'
+        uses: opentofu/setup-opentofu@v1
+        with:
+          tofu_wrapper: false
+      - name: Point the test harness at the CLI
+        run: |
+          echo "TF_ACC_TERRAFORM_PATH=$(command -v ${{ matrix.cli }})" >> "$GITHUB_ENV"
+          if [ "${{ matrix.cli }}" = "tofu" ]; then echo "TF_ACC_PROVIDER_HOST=registry.opentofu.org" >> "$GITHUB_ENV"; fi
+      - run: go test -count=1 -timeout 80m -run '^TestAcc' ./internal/provider/
