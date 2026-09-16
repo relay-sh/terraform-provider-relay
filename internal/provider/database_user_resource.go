@@ -312,7 +312,11 @@ func databaseUserFromProto(u *serverv1.DatabaseUser, prior databaseUserModel) da
 	out.Phase = types.StringValue(u.GetPhase())
 	out.PhaseMessage = types.StringValue(u.GetPhaseMessage())
 	out.Stale = types.BoolValue(u.GetStale())
-	out.CreatedAt = types.StringValue(u.GetCreatedAt().AsTime().UTC().Format(time.RFC3339))
+	if created := u.GetCreatedAt(); created.IsValid() && created.GetSeconds() > 0 {
+		out.CreatedAt = types.StringValue(created.AsTime().UTC().Format(time.RFC3339))
+	} else if out.CreatedAt.IsNull() || out.CreatedAt.IsUnknown() {
+		out.CreatedAt = types.StringValue("")
+	}
 	if out.GeneratedPassword.IsNull() || out.GeneratedPassword.IsUnknown() {
 		out.GeneratedPassword = types.StringValue("")
 	}

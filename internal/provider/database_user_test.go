@@ -82,6 +82,7 @@ func TestDatabaseUserResource_Lifecycle(t *testing.T) {
 				Check: resource.ComposeAggregateTestCheckFunc(
 					resource.TestCheckNoResourceAttr("relay_database_user.this", "expires_at"),
 					resource.TestCheckResourceAttr("relay_database_user.this", "connection_limit", "40"),
+					resource.TestCheckResourceAttr("relay_database_user.this", "created_at", "2023-11-14T22:13:20Z"),
 					func(*terraform.State) error {
 						u := f.lastUserUpdate
 						switch {

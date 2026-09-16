@@ -604,7 +604,9 @@ func (f *fakeServer) UpdateDatabaseUser(ctx context.Context, req *serverv1.Updat
 			u.ExpiresAt = nil
 		}
 	}
-	return &serverv1.UpdateDatabaseUserResponse{User: u}, nil
+	updated := proto.Clone(u).(*serverv1.DatabaseUser)
+	updated.CreatedAt = nil
+	return &serverv1.UpdateDatabaseUserResponse{User: updated}, nil
 }
 
 func (f *fakeServer) DeleteDatabaseUser(ctx context.Context, req *serverv1.DeleteDatabaseUserRequest) (*serverv1.DeleteDatabaseUserResponse, error) {
