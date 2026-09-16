@@ -52,6 +52,7 @@ type fakeServer struct {
 	users             map[string]*serverv1.DatabaseUser
 	userCountdown     map[string]int
 	failUser          string
+	userWithoutTimes  bool
 	lastUserCreate    *serverv1.CreateDatabaseUserRequest
 	lastUserUpdate    *serverv1.UpdateDatabaseUserRequest
 	lastDBCreate      *serverv1.CreateDatabaseRequest
@@ -543,6 +544,9 @@ func (f *fakeServer) CreateDatabaseUser(ctx context.Context, req *serverv1.Creat
 		StatementTimeout:    req.GetStatementTimeout(),
 		Phase:               "Pending",
 		CreatedAt:           timestamppb.New(time.Unix(1_700_000_000, 0)),
+	}
+	if f.userWithoutTimes {
+		f.users[key].CreatedAt = nil
 	}
 	f.userCountdown[key] = f.readyAfter
 	out := &serverv1.CreateDatabaseUserResponse{User: f.users[key]}
