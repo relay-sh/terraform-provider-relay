@@ -27,6 +27,34 @@ resource "relay_workspace" "this" {
 `, name, desc)
 }
 
+func TestWorkspaceResource_ManagedByIsConfigurable(t *testing.T) {
+	f := startFakeServer(t)
+	resource.UnitTest(t, resource.TestCase{
+		ProtoV6ProviderFactories: factories(relay.Dial),
+		CheckDestroy:             noWorkspacesLeft(f),
+		Steps: []resource.TestStep{
+			{
+				Config: providerBlock(f) + `
+resource "relay_workspace" "this" {
+  name       = "prod"
+  managed_by = "crossplane"
+}
+`,
+				Check: resource.TestCheckResourceAttr("relay_workspace.this", "managed_by", "crossplane"),
+			},
+			{
+				Config: providerBlock(f) + `
+resource "relay_workspace" "this" {
+  name       = "prod"
+  managed_by = ""
+}
+`,
+				Check: resource.TestCheckResourceAttr("relay_workspace.this", "managed_by", ""),
+			},
+		},
+	})
+}
+
 func noWorkspacesLeft(f *fakeServer) resource.TestCheckFunc {
 	return func(*terraform.State) error {
 		f.mu.Lock()

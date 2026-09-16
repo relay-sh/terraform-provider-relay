@@ -51,6 +51,7 @@ resource "relay_connection" "orders" {
 - `host_tls_ca` (String) CA bundle used to verify the upstream server, PEM.
 - `kind` (String) `interactive` for human sessions through the CLI, `service` for always-on application traffic.
 - `listen` (String) Local listen address on the agent.
+- `managed_by` (String) Owner tag the dashboard shows. Defaults to `terraform`; set it to another tool or an empty string.
 - `managed_database_id` (String) Managed database this connection belongs to.
 - `password` (String, Sensitive) Upstream password. Write-only on the API: changes made outside Terraform are not detected. Prefer `credential_ref`.
 - `policy_fail_mode` (String) What the query firewall does with a query it cannot parse. Empty means `closed`.
@@ -64,7 +65,6 @@ resource "relay_connection" "orders" {
 ### Read-Only
 
 - `id` (String) Connection ID.
-- `managed_by` (String) Owner tag the dashboard shows. Set to `terraform` on every apply.
 - `password_set` (Boolean) Whether a password is stored.
 - `status` (String) `healthy`, `error` or `unknown`, as last reported by the agent.
 - `status_error` (String) Last error reported by the agent.

@@ -56,8 +56,10 @@ func (r *workspaceResource) Schema(_ context.Context, _ resource.SchemaRequest, 
 				MarkdownDescription: "Whether this is the organization's default workspace.",
 			},
 			"managed_by": schema.StringAttribute{
+				Optional:            true,
 				Computed:            true,
-				MarkdownDescription: "Owner tag the dashboard shows. Set to `terraform` on every apply.",
+				Default:             stringdefault.StaticString(managedBy),
+				MarkdownDescription: "Owner tag the dashboard shows. Defaults to `terraform`; set it to another tool or an empty string.",
 			},
 		},
 	}
@@ -76,7 +78,7 @@ func (r *workspaceResource) Create(ctx context.Context, req resource.CreateReque
 	out, err := r.client.API.CreateWorkspace(r.client.Org(ctx), &serverv1.CreateWorkspaceRequest{
 		Name:        plan.Name.ValueString(),
 		Description: plan.Description.ValueString(),
-		ManagedBy:   stringPtr(managedBy),
+		ManagedBy:   plan.ManagedBy.ValueStringPointer(),
 	})
 	if err != nil {
 		resp.Diagnostics.AddError("Cannot create workspace", err.Error())
@@ -117,7 +119,7 @@ func (r *workspaceResource) Update(ctx context.Context, req resource.UpdateReque
 	update := &serverv1.UpdateWorkspaceRequest{
 		Name:        prior.Name.ValueString(),
 		Description: stringPtr(plan.Description.ValueString()),
-		ManagedBy:   stringPtr(managedBy),
+		ManagedBy:   plan.ManagedBy.ValueStringPointer(),
 	}
 	if !plan.Name.Equal(prior.Name) {
 		update.NewName = stringPtr(plan.Name.ValueString())

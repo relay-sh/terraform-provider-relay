@@ -29,12 +29,12 @@ resource "relay_workspace" "prod" {
 ### Optional
 
 - `description` (String) Free-text description.
+- `managed_by` (String) Owner tag the dashboard shows. Defaults to `terraform`; set it to another tool or an empty string.
 
 ### Read-Only
 
 - `id` (String) Workspace ID.
 - `is_default` (Boolean) Whether this is the organization's default workspace.
-- `managed_by` (String) Owner tag the dashboard shows. Set to `terraform` on every apply.
 - `slug` (String) URL slug derived from the name.
 
 ## Import
