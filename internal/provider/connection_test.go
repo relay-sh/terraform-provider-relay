@@ -29,6 +29,23 @@ resource "relay_connection" "this" {
 `, connWorkspace, name, body)
 }
 
+func TestConnectionResource_ManagedByIsConfigurable(t *testing.T) {
+	f := startFakeServer(t)
+	resource.UnitTest(t, resource.TestCase{
+		ProtoV6ProviderFactories: factories(relay.Dial),
+		Steps: []resource.TestStep{
+			{
+				Config: connectionConfig(f, "pg", `  managed_by = "pulumi"`),
+				Check:  resource.TestCheckResourceAttr("relay_connection.this", "managed_by", "pulumi"),
+			},
+			{
+				Config: connectionConfig(f, "pg", `  managed_by = "crossplane"`),
+				Check:  resource.TestCheckResourceAttr("relay_connection.this", "managed_by", "crossplane"),
+			},
+		},
+	})
+}
+
 const fullConnectionBody = `
   user                = "app"
   password            = "first"

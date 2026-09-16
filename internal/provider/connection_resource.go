@@ -143,7 +143,12 @@ func (r *connectionResource) Schema(_ context.Context, _ resource.SchemaRequest,
 			"status":       computedString("`healthy`, `error` or `unknown`, as last reported by the agent."),
 			"status_error": computedString("Last error reported by the agent."),
 			"password_set": schema.BoolAttribute{Computed: true, MarkdownDescription: "Whether a password is stored."},
-			"managed_by":   computedString("Owner tag the dashboard shows. Set to `terraform` on every apply."),
+			"managed_by": schema.StringAttribute{
+				Optional:            true,
+				Computed:            true,
+				Default:             stringdefault.StaticString(managedBy),
+				MarkdownDescription: "Owner tag the dashboard shows. Defaults to `terraform`; set it to another tool or an empty string.",
+			},
 		},
 	}
 }
@@ -172,7 +177,7 @@ func (r *connectionResource) Create(ctx context.Context, req resource.CreateRequ
 			AgentPool:         plan.AgentPool.ValueString(),
 			Kind:              plan.Kind.ValueString(),
 			ManagedDatabaseId: plan.ManagedDatabaseID.ValueString(),
-			ManagedBy:         managedBy,
+			ManagedBy:         plan.ManagedBy.ValueString(),
 			Config: &serverv1.ConnectionConfig{
 				RedactEnabled:  plan.RedactEnabled.ValueBool(),
 				AuditEnabled:   plan.AuditEnabled.ValueBool(),
@@ -237,7 +242,7 @@ func (r *connectionResource) Update(ctx context.Context, req resource.UpdateRequ
 		ClearRedactRules: len(plan.RedactRules) == 0,
 		Tls:              &serverv1.TLSConfig{Cert: plan.TLSCert.ValueString(), Key: plan.TLSKey.ValueString(), Ca: plan.TLSCA.ValueString()},
 		HostTls:          &serverv1.HostTLSConfig{Enabled: true, Ca: plan.HostTLSCA.ValueString()},
-		ManagedBy:        stringPtr(managedBy),
+		ManagedBy:        plan.ManagedBy.ValueStringPointer(),
 	}
 	if !plan.Password.Equal(prior.Password) {
 		update.Password = stringPtr(plan.Password.ValueString())
