@@ -52,6 +52,7 @@ type fakeServer struct {
 	users             map[string]*serverv1.DatabaseUser
 	userCountdown     map[string]int
 	failUser          string
+	userWithoutTimes  bool
 	lastUserCreate    *serverv1.CreateDatabaseUserRequest
 	lastUserUpdate    *serverv1.UpdateDatabaseUserRequest
 	lastDBCreate      *serverv1.CreateDatabaseRequest
@@ -544,6 +545,9 @@ func (f *fakeServer) CreateDatabaseUser(ctx context.Context, req *serverv1.Creat
 		Phase:               "Pending",
 		CreatedAt:           timestamppb.New(time.Unix(1_700_000_000, 0)),
 	}
+	if f.userWithoutTimes {
+		f.users[key].CreatedAt = nil
+	}
 	f.userCountdown[key] = f.readyAfter
 	out := &serverv1.CreateDatabaseUserResponse{User: f.users[key]}
 	if req.GetGeneratePassword() {
@@ -604,7 +608,9 @@ func (f *fakeServer) UpdateDatabaseUser(ctx context.Context, req *serverv1.Updat
 			u.ExpiresAt = nil
 		}
 	}
-	return &serverv1.UpdateDatabaseUserResponse{User: u}, nil
+	updated := proto.Clone(u).(*serverv1.DatabaseUser)
+	updated.CreatedAt = nil
+	return &serverv1.UpdateDatabaseUserResponse{User: updated}, nil
 }
 
 func (f *fakeServer) DeleteDatabaseUser(ctx context.Context, req *serverv1.DeleteDatabaseUserRequest) (*serverv1.DeleteDatabaseUserResponse, error) {

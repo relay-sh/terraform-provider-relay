@@ -26,6 +26,19 @@ resource "relay_database_user" "this" {
 `, dbWorkspace, username, body)
 }
 
+func TestDatabaseUserResource_WithoutCreatedAt(t *testing.T) {
+	f := startFakeServer(t)
+	f.userWithoutTimes = true
+	resource.UnitTest(t, resource.TestCase{
+		ProtoV6ProviderFactories: factories(relay.Dial),
+		CheckDestroy:             noUsersLeft(f),
+		Steps: []resource.TestStep{{
+			Config: userConfig(f, "app", `  password = "first"`),
+			Check:  resource.TestCheckResourceAttr("relay_database_user.this", "created_at", ""),
+		}},
+	})
+}
+
 func noUsersLeft(f *fakeServer) resource.TestCheckFunc {
 	return func(*terraform.State) error {
 		f.mu.Lock()
@@ -82,6 +95,7 @@ func TestDatabaseUserResource_Lifecycle(t *testing.T) {
 				Check: resource.ComposeAggregateTestCheckFunc(
 					resource.TestCheckNoResourceAttr("relay_database_user.this", "expires_at"),
 					resource.TestCheckResourceAttr("relay_database_user.this", "connection_limit", "40"),
+					resource.TestCheckResourceAttr("relay_database_user.this", "created_at", "2023-11-14T22:13:20Z"),
 					func(*terraform.State) error {
 						u := f.lastUserUpdate
 						switch {
