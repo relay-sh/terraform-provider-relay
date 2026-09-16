@@ -23,7 +23,6 @@ type databaseDataModel struct {
 	Name             types.String `tfsdk:"name"`
 	Engine           types.String `tfsdk:"engine"`
 	Version          types.String `tfsdk:"version"`
-	Topology         types.String `tfsdk:"topology"`
 	BackupsEnabled   types.Bool   `tfsdk:"backups_enabled"`
 	Phase            types.String `tfsdk:"phase"`
 	EndpointHost     types.String `tfsdk:"endpoint_host"`
@@ -54,7 +53,6 @@ func (d *databaseDataSource) Schema(_ context.Context, _ datasource.SchemaReques
 			"name":              schema.StringAttribute{Optional: true, Computed: true, MarkdownDescription: "Database name."},
 			"engine":            schema.StringAttribute{Computed: true},
 			"version":           schema.StringAttribute{Computed: true},
-			"topology":          schema.StringAttribute{Computed: true},
 			"backups_enabled":   schema.BoolAttribute{Computed: true},
 			"phase":             schema.StringAttribute{Computed: true},
 			"endpoint_host":     schema.StringAttribute{Computed: true},
@@ -109,7 +107,6 @@ func (d *databaseDataSource) Read(ctx context.Context, req datasource.ReadReques
 		Name:             types.StringValue(db.GetName()),
 		Engine:           types.StringValue(spec.GetEngine()),
 		Version:          types.StringValue(spec.GetVersion()),
-		Topology:         types.StringValue(spec.GetTopology()),
 		BackupsEnabled:   types.BoolValue(spec.GetBackupsEnabled()),
 		Phase:            types.StringValue(st.GetPhase()),
 		EndpointHost:     types.StringValue(st.GetEndpoint().GetHost()),

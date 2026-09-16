@@ -40,7 +40,6 @@ data "relay_database" "billing" {
 - `phase` (String)
 - `private_endpoints` (Attributes List) (see [below for nested schema](#nestedatt--private_endpoints))
 - `public_endpoints` (Attributes List) (see [below for nested schema](#nestedatt--public_endpoints))
-- `topology` (String)
 - `version` (String)
 
 <a id="nestedatt--private_endpoints"></a>

@@ -18,7 +18,6 @@ resource "relay_database" "billing" {
   name         = "billing"
   engine       = "postgresql"
   version      = "17"
-  topology     = "replication"
 
   nodes = [{
     role     = "data"
@@ -54,7 +53,6 @@ resource "relay_database" "billing" {
 - `engine` (String) `postgresql` or `mongodb`.
 - `name` (String) Cluster name, unique in the workspace.
 - `nodes` (Attributes List) Node groups. Storage can only grow. (see [below for nested schema](#nestedatt--nodes))
-- `topology` (String) Cluster topology, for example `standalone`, `replication` or `replicaset`.
 - `version` (String) Engine version. It cannot change here: major upgrades go through Relay's upgrade flow, and a plan that changes it fails.
 - `workspace_id` (String) Workspace the cluster belongs to.
 
