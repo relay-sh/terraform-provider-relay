@@ -30,9 +30,8 @@ resource "relay_postgresql_cluster" "this" {
       count  = 2
       cloud  = "aws"
       region = "us-east-1"
+      tier   = "R10"
       resources = {
-        cpu     = "1"
-        memory  = "2Gi"
         storage = %q
         iops    = 3000
       }
@@ -40,9 +39,8 @@ resource "relay_postgresql_cluster" "this" {
 
     analytics = {
       count = 1
+      tier  = "R20"
       resources = {
-        cpu     = "2"
-        memory  = "4Gi"
         storage = "20Gi"
       }
       synchronous = false
@@ -90,6 +88,8 @@ func TestPostgreSQLClusterResource_Lifecycle(t *testing.T) {
 					resource.TestCheckResourceAttr("relay_postgresql_cluster.this", "nodes.primary.resources.storage_class", "standard"),
 					resource.TestCheckResourceAttr("relay_postgresql_cluster.this", "nodes.primary.resources.iops", "3000"),
 					resource.TestCheckNoResourceAttr("relay_postgresql_cluster.this", "nodes.primary.resources.throughput"),
+					resource.TestCheckResourceAttr("relay_postgresql_cluster.this", "nodes.primary.tier", "R10"),
+					resource.TestCheckResourceAttr("relay_postgresql_cluster.this", "nodes.analytics.tier", "R20"),
 					resource.TestCheckResourceAttr("relay_postgresql_cluster.this", "nodes.primary.synchronous", "true"),
 					resource.TestCheckResourceAttr("relay_postgresql_cluster.this", "nodes.primary.failover", "true"),
 					resource.TestCheckResourceAttr("relay_postgresql_cluster.this", "nodes.analytics.synchronous", "false"),
@@ -109,8 +109,6 @@ func TestPostgreSQLClusterResource_Lifecycle(t *testing.T) {
 						switch {
 						case spec.GetEngine() != "postgresql":
 							return fmt.Errorf("engine = %q", spec.GetEngine())
-						case spec.GetTopology() != "":
-							return fmt.Errorf("topology = %q, it must not be sent", spec.GetTopology())
 						case !spec.GetBackupsEnabled():
 							return errors.New("backups must always be requested on")
 						case spec.GetNodes()[1].GetProvider() != "aws-use1":
@@ -119,6 +117,12 @@ func TestPostgreSQLClusterResource_Lifecycle(t *testing.T) {
 							return fmt.Errorf("an unplaced group must not name a provisioner, got %q", spec.GetNodes()[0].GetProvider())
 						case spec.GetNodes()[0].GetTags()["nosync"] != "true":
 							return fmt.Errorf("synchronous = false must become the nosync tag, got %v", spec.GetNodes()[0].GetTags())
+						case spec.GetNodes()[1].GetTier() != "R10":
+							return fmt.Errorf("primary tier = %q, want R10", spec.GetNodes()[1].GetTier())
+						case spec.GetNodes()[0].GetTier() != "R20":
+							return fmt.Errorf("analytics tier = %q, want R20", spec.GetNodes()[0].GetTier())
+						case spec.GetNodes()[1].GetResources().GetCpu() != "" || spec.GetNodes()[1].GetResources().GetMemory() != "":
+							return fmt.Errorf("cpu/memory must not be sent, got %q/%q", spec.GetNodes()[1].GetResources().GetCpu(), spec.GetNodes()[1].GetResources().GetMemory())
 						}
 						return nil
 					},
@@ -184,9 +188,8 @@ resource "relay_postgresql_cluster" "dev" {
 
   nodes = {
     primary = {
+      tier = "R5"
       resources = {
-        cpu     = "500m"
-        memory  = "1Gi"
         storage = "5Gi"
       }
     }
@@ -241,7 +244,8 @@ resource "relay_postgresql_cluster" "this" {
 
   nodes = {
     primary = {
-      resources = { cpu = "1", memory = "1Gi", storage = "5Gi" }
+      tier = "R10"
+      resources = { storage = "5Gi" }
     }
   }
 %s
@@ -286,7 +290,8 @@ resource "relay_postgresql_cluster" "this" {
     primary = {
       cloud  = "fly"
       region = "gru"
-      resources = { cpu = "1", memory = "1Gi", storage = "5Gi" }
+      tier = "R10"
+      resources = { storage = "5Gi" }
     }
   }
 }
@@ -310,7 +315,8 @@ resource "relay_postgresql_cluster" "this" {
       count  = %d
       cloud  = "aws"
       region = %q
-      resources = { cpu = "1", memory = "1Gi", storage = "5Gi" }
+      tier = "R10"
+      resources = { storage = "5Gi" }
     }
   }
 }
@@ -326,13 +332,15 @@ resource "relay_postgresql_cluster" "this" {
       count  = 1
       cloud  = "aws"
       region = "us-east-1"
-      resources = { cpu = "1", memory = "1Gi", storage = "5Gi" }
+      tier = "R10"
+      resources = { storage = "5Gi" }
     }
 
     analytics = {
       cloud  = "fly"
       region = "gru"
-      resources = { cpu = "1", memory = "1Gi", storage = "5Gi" }
+      tier = "R10"
+      resources = { storage = "5Gi" }
     }
   }
 }

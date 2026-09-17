@@ -8,9 +8,8 @@ resource "relay_postgresql_cluster" "billing" {
       count  = 3
       cloud  = "aws"
       region = "us-east-1"
+      tier = "R30"
       resources = {
-        cpu     = "2"
-        memory  = "8Gi"
         storage = "100Gi"
       }
     }
@@ -19,9 +18,8 @@ resource "relay_postgresql_cluster" "billing" {
       count  = 2
       cloud  = "aws"
       region = "us-east-1"
+      tier = "R40"
       resources = {
-        cpu     = "4"
-        memory  = "16Gi"
         storage = "200Gi"
       }
       synchronous = false

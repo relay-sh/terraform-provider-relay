@@ -110,7 +110,8 @@ resource "relay_postgresql_cluster" "this" {
     primary = {
       cloud     = %[3]q
       region    = %[4]q
-      resources = { cpu = "500m", memory = "1Gi", storage = "5Gi" }
+      tier      = "R5"
+      resources = { storage = "5Gi" }
     }
   }
 }

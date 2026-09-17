@@ -32,6 +32,7 @@ type nodeGroupModel struct {
 	Count       types.Int64    `tfsdk:"count"`
 	Cloud       types.String   `tfsdk:"cloud"`
 	Region      types.String   `tfsdk:"region"`
+	Tier        types.String   `tfsdk:"tier"`
 	Resources   resourcesModel `tfsdk:"resources"`
 	Synchronous types.Bool     `tfsdk:"synchronous"`
 	Failover    types.Bool     `tfsdk:"failover"`
@@ -102,8 +103,6 @@ func nodesToProto(nodes map[string]nodeGroupModel, catalog []*serverv1.DatabaseP
 			return nil, err
 		}
 		res := &serverv1.ResourceRequirements{
-			Cpu:          n.Resources.CPU.ValueString(),
-			Memory:       n.Resources.Memory.ValueString(),
 			Storage:      n.Resources.Storage.ValueString(),
 			StorageClass: n.Resources.StorageClass.ValueString(),
 		}
@@ -118,6 +117,7 @@ func nodesToProto(nodes map[string]nodeGroupModel, catalog []*serverv1.DatabaseP
 			Count:     int32(n.Count.ValueInt64()),
 			Provider:  provisioner,
 			Region:    n.Region.ValueString(),
+			Tier:      n.Tier.ValueString(),
 			Resources: res,
 			Tags:      patroniTags(n),
 		})
@@ -148,6 +148,7 @@ func nodesFromProto(nodes []*serverv1.NodeSpec, catalog []*serverv1.DatabaseProv
 			Count:  types.Int64Value(int64(n.GetCount())),
 			Cloud:  types.StringValue(cloud),
 			Region: types.StringValue(region),
+			Tier:   types.StringValue(n.GetTier()),
 			Resources: resourcesModel{
 				CPU:          types.StringValue(res.GetCpu()),
 				Memory:       types.StringValue(res.GetMemory()),

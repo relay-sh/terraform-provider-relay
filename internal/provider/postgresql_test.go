@@ -49,6 +49,7 @@ func TestNodesRoundTrip(t *testing.T) {
 	nodes := map[string]nodeGroupModel{
 		"primary": {
 			Count: types.Int64Value(2), Cloud: types.StringValue("aws"), Region: types.StringValue("us-east-1"),
+			Tier: types.StringValue("R10"),
 			Resources: resourcesModel{
 				CPU: types.StringValue("1"), Memory: types.StringValue("1Gi"), Storage: types.StringValue("1Gi"),
 				StorageClass: types.StringUnknown(), IOPS: types.Int64Unknown(), Throughput: types.Int64Value(250),
@@ -57,6 +58,7 @@ func TestNodesRoundTrip(t *testing.T) {
 		},
 		"analytics": {
 			Count: types.Int64Value(1), Cloud: types.StringNull(), Region: types.StringNull(),
+			Tier: types.StringValue("R20"),
 			Resources: resourcesModel{
 				CPU: types.StringValue("2"), Memory: types.StringValue("4Gi"), Storage: types.StringValue("9Gi"),
 				StorageClass: types.StringValue("gp3"), IOPS: types.Int64Value(3000), Throughput: types.Int64Null(),
@@ -81,16 +83,37 @@ func TestNodesRoundTrip(t *testing.T) {
 		t.Errorf("placement = %q/%q", out[1].GetProvider(), out[1].GetRegion())
 	}
 	res := out[1].GetResources()
+	if res.GetCpu() != "" || res.GetMemory() != "" {
+		t.Errorf("cpu/memory must not be sent, got %q/%q", res.GetCpu(), res.GetMemory())
+	}
+	if out[0].GetTier() != "R20" || out[1].GetTier() != "R10" {
+		t.Errorf("tiers = %q, %q", out[0].GetTier(), out[1].GetTier())
+	}
 	if res.Iops != nil || res.GetThroughput() != 250 {
 		t.Errorf("unknown limits must be omitted and known ones sent: %+v", res)
 	}
 
 	back := nodesFromProto(out, testCatalog)
-	if g := back["analytics"]; g.Synchronous.ValueBool() || g.Failover.ValueBool() || g.Resources.IOPS.ValueInt64() != 3000 {
+	if g := back["analytics"]; g.Synchronous.ValueBool() || g.Failover.ValueBool() || g.Resources.IOPS.ValueInt64() != 3000 || g.Tier.ValueString() != "R20" {
 		t.Errorf("analytics round trip = %+v", g)
 	}
-	if g := back["primary"]; !g.Synchronous.ValueBool() || !g.Failover.ValueBool() || !g.Resources.IOPS.IsNull() || g.Cloud.ValueString() != "aws" {
+	if g := back["primary"]; !g.Synchronous.ValueBool() || !g.Failover.ValueBool() || !g.Resources.IOPS.IsNull() || g.Cloud.ValueString() != "aws" || g.Tier.ValueString() != "R10" {
 		t.Errorf("primary round trip = %+v", g)
+	}
+}
+
+func TestNodesToProtoSendsUnknownTierUnchanged(t *testing.T) {
+	out, err := nodesToProto(map[string]nodeGroupModel{"primary": {
+		Count: types.Int64Value(1), Cloud: types.StringValue("aws"), Region: types.StringValue("us-east-1"),
+		Tier:        types.StringValue("R99"),
+		Resources:   resourcesModel{Storage: types.StringValue("1Gi")},
+		Synchronous: types.BoolValue(true), Failover: types.BoolValue(true),
+	}}, testCatalog)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if out[0].GetTier() != "R99" {
+		t.Fatalf("unknown names must be sent unchanged, got %q", out[0].GetTier())
 	}
 }
 

@@ -2,7 +2,7 @@
 
 ENHANCEMENTS:
 
-* resource/relay_database: node groups take a catalog `tier`; CPU and memory are computed from it
+* resource/relay_postgresql_cluster: node groups take a catalog `tier`; CPU and memory are computed from it
 
 FEATURES:
 
