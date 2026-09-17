@@ -18,6 +18,7 @@ type nodeModel struct {
 	Count     types.Int64    `tfsdk:"count"`
 	Provider  types.String   `tfsdk:"provider"`
 	Region    types.String   `tfsdk:"region"`
+	Tier      types.String   `tfsdk:"tier"`
 	Resources resourcesModel `tfsdk:"resources"`
 	Tags      types.Map      `tfsdk:"tags"`
 }
@@ -40,8 +41,6 @@ func nodesToProto(nodes []nodeModel) []*serverv1.NodeSpec {
 	out := make([]*serverv1.NodeSpec, 0, len(nodes))
 	for _, n := range nodes {
 		res := &serverv1.ResourceRequirements{
-			Cpu:          n.Resources.CPU.ValueString(),
-			Memory:       n.Resources.Memory.ValueString(),
 			Storage:      n.Resources.Storage.ValueString(),
 			StorageClass: n.Resources.StorageClass.ValueString(),
 		}
@@ -56,6 +55,7 @@ func nodesToProto(nodes []nodeModel) []*serverv1.NodeSpec {
 			Count:     int32(n.Count.ValueInt64()),
 			Provider:  n.Provider.ValueString(),
 			Region:    n.Region.ValueString(),
+			Tier:      n.Tier.ValueString(),
 			Resources: res,
 			Tags:      stringMapToGo(n.Tags),
 		})
@@ -72,6 +72,7 @@ func nodesFromProto(nodes []*serverv1.NodeSpec) []nodeModel {
 			Count:    types.Int64Value(int64(n.GetCount())),
 			Provider: types.StringValue(n.GetProvider()),
 			Region:   types.StringValue(n.GetRegion()),
+			Tier:     types.StringValue(n.GetTier()),
 			Resources: resourcesModel{
 				CPU:          types.StringValue(res.GetCpu()),
 				Memory:       types.StringValue(res.GetMemory()),

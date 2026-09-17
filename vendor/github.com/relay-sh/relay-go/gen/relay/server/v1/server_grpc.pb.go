@@ -25,6 +25,7 @@ const (
 	ServerService_RevokeSession_FullMethodName                = "/relay.server.v1.ServerService/RevokeSession"
 	ServerService_CreateAPIKey_FullMethodName                 = "/relay.server.v1.ServerService/CreateAPIKey"
 	ServerService_ListAPIKeys_FullMethodName                  = "/relay.server.v1.ServerService/ListAPIKeys"
+	ServerService_UpdateAPIKey_FullMethodName                 = "/relay.server.v1.ServerService/UpdateAPIKey"
 	ServerService_RevokeAPIKey_FullMethodName                 = "/relay.server.v1.ServerService/RevokeAPIKey"
 	ServerService_ListConnections_FullMethodName              = "/relay.server.v1.ServerService/ListConnections"
 	ServerService_GetConnections_FullMethodName               = "/relay.server.v1.ServerService/GetConnections"
@@ -209,6 +210,7 @@ type ServerServiceClient interface {
 	// outlives it, stays within its allowed IPs, and is revoked with it.
 	CreateAPIKey(ctx context.Context, in *CreateAPIKeyRequest, opts ...grpc.CallOption) (*CreateAPIKeyResponse, error)
 	ListAPIKeys(ctx context.Context, in *ListAPIKeysRequest, opts ...grpc.CallOption) (*ListAPIKeysResponse, error)
+	UpdateAPIKey(ctx context.Context, in *UpdateAPIKeyRequest, opts ...grpc.CallOption) (*UpdateAPIKeyResponse, error)
 	RevokeAPIKey(ctx context.Context, in *RevokeAPIKeyRequest, opts ...grpc.CallOption) (*RevokeAPIKeyResponse, error)
 	// ListConnections returns all connections in the user's organization.
 	ListConnections(ctx context.Context, in *ListConnectionsRequest, opts ...grpc.CallOption) (*ListConnectionsResponse, error)
@@ -375,6 +377,7 @@ type ServerServiceClient interface {
 	// ListUserOrganizations returns all organizations the authenticated user belongs to.
 	ListUserOrganizations(ctx context.Context, in *ListUserOrganizationsRequest, opts ...grpc.CallOption) (*ListUserOrganizationsResponse, error)
 	// GetOrganization returns NotFound to non-members, whether or not the org exists.
+	// Without id or slug it returns the caller's current organization.
 	GetOrganization(ctx context.Context, in *GetOrganizationRequest, opts ...grpc.CallOption) (*GetOrganizationResponse, error)
 	// CreateOrganization creates a new organization and makes the caller the owner.
 	CreateOrganization(ctx context.Context, in *CreateOrganizationRequest, opts ...grpc.CallOption) (*CreateOrganizationResponse, error)
@@ -653,6 +656,16 @@ func (c *serverServiceClient) ListAPIKeys(ctx context.Context, in *ListAPIKeysRe
 	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
 	out := new(ListAPIKeysResponse)
 	err := c.cc.Invoke(ctx, ServerService_ListAPIKeys_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *serverServiceClient) UpdateAPIKey(ctx context.Context, in *UpdateAPIKeyRequest, opts ...grpc.CallOption) (*UpdateAPIKeyResponse, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(UpdateAPIKeyResponse)
+	err := c.cc.Invoke(ctx, ServerService_UpdateAPIKey_FullMethodName, in, out, cOpts...)
 	if err != nil {
 		return nil, err
 	}
@@ -2281,6 +2294,7 @@ type ServerServiceServer interface {
 	// outlives it, stays within its allowed IPs, and is revoked with it.
 	CreateAPIKey(context.Context, *CreateAPIKeyRequest) (*CreateAPIKeyResponse, error)
 	ListAPIKeys(context.Context, *ListAPIKeysRequest) (*ListAPIKeysResponse, error)
+	UpdateAPIKey(context.Context, *UpdateAPIKeyRequest) (*UpdateAPIKeyResponse, error)
 	RevokeAPIKey(context.Context, *RevokeAPIKeyRequest) (*RevokeAPIKeyResponse, error)
 	// ListConnections returns all connections in the user's organization.
 	ListConnections(context.Context, *ListConnectionsRequest) (*ListConnectionsResponse, error)
@@ -2447,6 +2461,7 @@ type ServerServiceServer interface {
 	// ListUserOrganizations returns all organizations the authenticated user belongs to.
 	ListUserOrganizations(context.Context, *ListUserOrganizationsRequest) (*ListUserOrganizationsResponse, error)
 	// GetOrganization returns NotFound to non-members, whether or not the org exists.
+	// Without id or slug it returns the caller's current organization.
 	GetOrganization(context.Context, *GetOrganizationRequest) (*GetOrganizationResponse, error)
 	// CreateOrganization creates a new organization and makes the caller the owner.
 	CreateOrganization(context.Context, *CreateOrganizationRequest) (*CreateOrganizationResponse, error)
@@ -2688,6 +2703,9 @@ func (UnimplementedServerServiceServer) CreateAPIKey(context.Context, *CreateAPI
 }
 func (UnimplementedServerServiceServer) ListAPIKeys(context.Context, *ListAPIKeysRequest) (*ListAPIKeysResponse, error) {
 	return nil, status.Error(codes.Unimplemented, "method ListAPIKeys not implemented")
+}
+func (UnimplementedServerServiceServer) UpdateAPIKey(context.Context, *UpdateAPIKeyRequest) (*UpdateAPIKeyResponse, error) {
+	return nil, status.Error(codes.Unimplemented, "method UpdateAPIKey not implemented")
 }
 func (UnimplementedServerServiceServer) RevokeAPIKey(context.Context, *RevokeAPIKeyRequest) (*RevokeAPIKeyResponse, error) {
 	return nil, status.Error(codes.Unimplemented, "method RevokeAPIKey not implemented")
@@ -3291,6 +3309,24 @@ func _ServerService_ListAPIKeys_Handler(srv interface{}, ctx context.Context, de
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
 		return srv.(ServerServiceServer).ListAPIKeys(ctx, req.(*ListAPIKeysRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _ServerService_UpdateAPIKey_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(UpdateAPIKeyRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(ServerServiceServer).UpdateAPIKey(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: ServerService_UpdateAPIKey_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(ServerServiceServer).UpdateAPIKey(ctx, req.(*UpdateAPIKeyRequest))
 	}
 	return interceptor(ctx, in, info, handler)
 }
@@ -6182,6 +6218,10 @@ var ServerService_ServiceDesc = grpc.ServiceDesc{
 			Handler:    _ServerService_ListAPIKeys_Handler,
 		},
 		{
+			MethodName: "UpdateAPIKey",
+			Handler:    _ServerService_UpdateAPIKey_Handler,
+		},
+		{
 			MethodName: "RevokeAPIKey",
 			Handler:    _ServerService_RevokeAPIKey_Handler,
 		},
@@ -6821,5 +6861,1583 @@ var ServerService_ServiceDesc = grpc.ServiceDesc{
 			ServerStreams: true,
 		},
 	},
+	Metadata: "relay/server/v1/server.proto",
+}
+
+const (
+	AdminService_AdminListOrganizations_FullMethodName          = "/relay.server.v1.AdminService/AdminListOrganizations"
+	AdminService_AdminGetOrganization_FullMethodName            = "/relay.server.v1.AdminService/AdminGetOrganization"
+	AdminService_AdminGetOrganizationResources_FullMethodName   = "/relay.server.v1.AdminService/AdminGetOrganizationResources"
+	AdminService_AdminGetOrganizationBilling_FullMethodName     = "/relay.server.v1.AdminService/AdminGetOrganizationBilling"
+	AdminService_AdminSetOrganizationPlan_FullMethodName        = "/relay.server.v1.AdminService/AdminSetOrganizationPlan"
+	AdminService_AdminGetOrganizationCost_FullMethodName        = "/relay.server.v1.AdminService/AdminGetOrganizationCost"
+	AdminService_AdminListSignupAllowlist_FullMethodName        = "/relay.server.v1.AdminService/AdminListSignupAllowlist"
+	AdminService_AdminAddSignupAllowlistEntry_FullMethodName    = "/relay.server.v1.AdminService/AdminAddSignupAllowlistEntry"
+	AdminService_AdminRemoveSignupAllowlistEntry_FullMethodName = "/relay.server.v1.AdminService/AdminRemoveSignupAllowlistEntry"
+	AdminService_AdminListSignupAttempts_FullMethodName         = "/relay.server.v1.AdminService/AdminListSignupAttempts"
+	AdminService_AdminDismissSignupAttempt_FullMethodName       = "/relay.server.v1.AdminService/AdminDismissSignupAttempt"
+	AdminService_AdminListAuditLog_FullMethodName               = "/relay.server.v1.AdminService/AdminListAuditLog"
+	AdminService_AdminGetCloudCosts_FullMethodName              = "/relay.server.v1.AdminService/AdminGetCloudCosts"
+	AdminService_AdminListSupportReports_FullMethodName         = "/relay.server.v1.AdminService/AdminListSupportReports"
+	AdminService_AdminGetSupportReport_FullMethodName           = "/relay.server.v1.AdminService/AdminGetSupportReport"
+	AdminService_AdminAddSupportReportComment_FullMethodName    = "/relay.server.v1.AdminService/AdminAddSupportReportComment"
+	AdminService_AdminUpdateSupportReportStatus_FullMethodName  = "/relay.server.v1.AdminService/AdminUpdateSupportReportStatus"
+	AdminService_AdminListMembers_FullMethodName                = "/relay.server.v1.AdminService/AdminListMembers"
+	AdminService_AdminSetMemberRole_FullMethodName              = "/relay.server.v1.AdminService/AdminSetMemberRole"
+	AdminService_AdminRemoveMember_FullMethodName               = "/relay.server.v1.AdminService/AdminRemoveMember"
+	AdminService_AdminInviteMember_FullMethodName               = "/relay.server.v1.AdminService/AdminInviteMember"
+	AdminService_AdminListInvitations_FullMethodName            = "/relay.server.v1.AdminService/AdminListInvitations"
+	AdminService_AdminRevokeInvitation_FullMethodName           = "/relay.server.v1.AdminService/AdminRevokeInvitation"
+	AdminService_AdminListClusters_FullMethodName               = "/relay.server.v1.AdminService/AdminListClusters"
+	AdminService_AdminListPendingOperations_FullMethodName      = "/relay.server.v1.AdminService/AdminListPendingOperations"
+	AdminService_AdminListAgents_FullMethodName                 = "/relay.server.v1.AdminService/AdminListAgents"
+	AdminService_AdminListTunnelSessions_FullMethodName         = "/relay.server.v1.AdminService/AdminListTunnelSessions"
+	AdminService_AdminRetryDeleteDatabase_FullMethodName        = "/relay.server.v1.AdminService/AdminRetryDeleteDatabase"
+	AdminService_AdminSearchUsers_FullMethodName                = "/relay.server.v1.AdminService/AdminSearchUsers"
+	AdminService_AdminGetUser_FullMethodName                    = "/relay.server.v1.AdminService/AdminGetUser"
+	AdminService_AdminRevokeUserSessions_FullMethodName         = "/relay.server.v1.AdminService/AdminRevokeUserSessions"
+	AdminService_AdminGetOrganizationActivity_FullMethodName    = "/relay.server.v1.AdminService/AdminGetOrganizationActivity"
+	AdminService_AdminGetOrganizationSecurity_FullMethodName    = "/relay.server.v1.AdminService/AdminGetOrganizationSecurity"
+	AdminService_AdminGetPlatformOverview_FullMethodName        = "/relay.server.v1.AdminService/AdminGetPlatformOverview"
+	AdminService_AdminListOrgActivation_FullMethodName          = "/relay.server.v1.AdminService/AdminListOrgActivation"
+)
+
+// AdminServiceClient is the client API for AdminService service.
+//
+// For semantics around ctx use and closing/ending streaming RPCs, please refer to https://pkg.go.dev/google.golang.org/grpc/?tab=doc#ClientConn.NewStream.
+//
+// AdminService is the internal backoffice control plane. Every method requires
+// a platform-admin user session (a row in platform_admins); the gRPC auth
+// interceptor rejects all non-admin and non-user principals before a handler
+// runs. It is a separate service from ServerService so the whole surface can
+// be blanket-gated and kept out of the customer dashboard's contract.
+type AdminServiceClient interface {
+	// AdminListOrganizations returns every organization in the platform,
+	// paginated and optionally filtered by a search term over name/slug. Not
+	// tenant-scoped — this is a cross-org staff view.
+	AdminListOrganizations(ctx context.Context, in *AdminListOrganizationsRequest, opts ...grpc.CallOption) (*AdminListOrganizationsResponse, error)
+	// AdminGetOrganization returns one organization by id or slug, with the same
+	// enriched fields as the list.
+	AdminGetOrganization(ctx context.Context, in *AdminGetOrganizationRequest, opts ...grpc.CallOption) (*AdminGetOrganizationResponse, error)
+	// AdminGetOrganizationResources returns the objects an organization has
+	// created across all its workspaces: clusters (managed databases),
+	// connections, agent pools, and agents.
+	AdminGetOrganizationResources(ctx context.Context, in *AdminGetOrganizationResourcesRequest, opts ...grpc.CallOption) (*AdminGetOrganizationResourcesResponse, error)
+	// AdminGetOrganizationBilling returns the organization's billing/revenue
+	// state (what Relay bills the customer). Cost-to-serve is not tracked and is
+	// therefore not part of this response.
+	AdminGetOrganizationBilling(ctx context.Context, in *AdminGetOrganizationBillingRequest, opts ...grpc.CallOption) (*GetBillingStateResponse, error)
+	// AdminSetOrganizationPlan overrides an organization's plan directly (a free
+	// platform-admin grant, up or down, no Stripe charge). The change is durable
+	// and takes effect across the platform immediately.
+	AdminSetOrganizationPlan(ctx context.Context, in *AdminSetOrganizationPlanRequest, opts ...grpc.CallOption) (*AdminSetOrganizationPlanResponse, error)
+	// AdminGetOrganizationCost returns an organization's direct infra
+	// cost-to-serve over a window, from Kubecost, allocated by org. This is direct
+	// tenant cost only (shared/overhead is not attributed). Windows are limited by
+	// Kubecost retention (currently ~4 days).
+	AdminGetOrganizationCost(ctx context.Context, in *AdminGetOrganizationCostRequest, opts ...grpc.CallOption) (*AdminGetOrganizationCostResponse, error)
+	// AdminListSignupAllowlist returns the closed-alpha signup allowlist: the
+	// emails / "@domain"s allowed to sign in while the platform is invite-only,
+	// plus any entries still coming from the server's static config.
+	AdminListSignupAllowlist(ctx context.Context, in *AdminListSignupAllowlistRequest, opts ...grpc.CallOption) (*AdminListSignupAllowlistResponse, error)
+	// AdminAddSignupAllowlistEntry allowlists one email or whole domain. Takes
+	// effect on the next sign-in attempt; no OAuth-console or deploy change needed.
+	AdminAddSignupAllowlistEntry(ctx context.Context, in *AdminAddSignupAllowlistEntryRequest, opts ...grpc.CallOption) (*AdminAddSignupAllowlistEntryResponse, error)
+	// AdminRemoveSignupAllowlistEntry drops an entry. Removing every entry (and
+	// the static config) reopens signup to everyone.
+	AdminRemoveSignupAllowlistEntry(ctx context.Context, in *AdminRemoveSignupAllowlistEntryRequest, opts ...grpc.CallOption) (*AdminRemoveSignupAllowlistEntryResponse, error)
+	// AdminListSignupAttempts returns the closed-alpha waitlist: sign-ins that
+	// were refused because the email was not allowlisted, most recent first.
+	AdminListSignupAttempts(ctx context.Context, in *AdminListSignupAttemptsRequest, opts ...grpc.CallOption) (*AdminListSignupAttemptsResponse, error)
+	// AdminDismissSignupAttempt hides a waitlist entry without allowlisting it.
+	// Allowing someone is AdminAddSignupAllowlistEntry, which also clears their
+	// waitlist rows.
+	AdminDismissSignupAttempt(ctx context.Context, in *AdminDismissSignupAttemptRequest, opts ...grpc.CallOption) (*AdminDismissSignupAttemptResponse, error)
+	// AdminListAuditLog returns the durable audit trail of the backoffice: one
+	// entry per AdminService call (reads included), newest first, filterable by
+	// admin, target organization, method, or mutations only. Listing the audit
+	// log itself is not recorded.
+	AdminListAuditLog(ctx context.Context, in *AdminListAuditLogRequest, opts ...grpc.CallOption) (*AdminListAuditLogResponse, error)
+	// AdminGetCloudCosts returns Relay's own AWS bill from Cost Explorer in the
+	// payer account: gross usage (credits excluded), credits applied, net, a
+	// daily/monthly series, and breakdowns by service and linked account.
+	// Windows: "mtd" (default, with month-end forecast), "30d", "90d", "12m".
+	AdminGetCloudCosts(ctx context.Context, in *AdminGetCloudCostsRequest, opts ...grpc.CallOption) (*AdminGetCloudCostsResponse, error)
+	// AdminListSupportReports returns support reports across every organization —
+	// the company support inbox. Optionally filtered by status. Org identity
+	// (org_name/org_slug) is always populated so the cross-org list is legible.
+	AdminListSupportReports(ctx context.Context, in *AdminListSupportReportsRequest, opts ...grpc.CallOption) (*AdminListSupportReportsResponse, error)
+	// AdminGetSupportReport returns one report by id with its full comment
+	// thread, across any organization.
+	AdminGetSupportReport(ctx context.Context, in *AdminGetSupportReportRequest, opts ...grpc.CallOption) (*AdminGetSupportReportResponse, error)
+	// AdminAddSupportReportComment posts a staff reply on a report, in any
+	// organization. The comment is flagged staff=true and emails the author.
+	AdminAddSupportReportComment(ctx context.Context, in *AdminAddSupportReportCommentRequest, opts ...grpc.CallOption) (*AdminAddSupportReportCommentResponse, error)
+	// AdminUpdateSupportReportStatus changes a report's status (open,
+	// in_progress, resolved), in any organization, and emails the author.
+	AdminUpdateSupportReportStatus(ctx context.Context, in *AdminUpdateSupportReportStatusRequest, opts ...grpc.CallOption) (*AdminUpdateSupportReportStatusResponse, error)
+	// AdminListMembers returns the roster of a specific organization.
+	AdminListMembers(ctx context.Context, in *AdminListMembersRequest, opts ...grpc.CallOption) (*ListMembersResponse, error)
+	// AdminSetMemberRole changes a member's org role. Last-owner is still
+	// refused — promote someone else first.
+	AdminSetMemberRole(ctx context.Context, in *AdminSetMemberRoleRequest, opts ...grpc.CallOption) (*SetMemberRoleResponse, error)
+	// AdminRemoveMember removes a member from the organization. Last-owner is
+	// refused. The user account itself is left intact.
+	AdminRemoveMember(ctx context.Context, in *AdminRemoveMemberRequest, opts ...grpc.CallOption) (*RemoveMemberResponse, error)
+	// AdminInviteMember creates a pending invitation for an organization. Seat
+	// limits are not applied — this is a staff override. Returns the join link
+	// (and emails the invitee when SMTP is configured).
+	AdminInviteMember(ctx context.Context, in *AdminInviteMemberRequest, opts ...grpc.CallOption) (*InviteMemberResponse, error)
+	// AdminListInvitations returns pending, unexpired invitations for the org.
+	AdminListInvitations(ctx context.Context, in *AdminListInvitationsRequest, opts ...grpc.CallOption) (*ListInvitationsResponse, error)
+	// AdminRevokeInvitation revokes one pending invitation.
+	AdminRevokeInvitation(ctx context.Context, in *AdminRevokeInvitationRequest, opts ...grpc.CallOption) (*RevokeInvitationResponse, error)
+	// Fleet: cross-tenant operational views for staff.
+	// AdminListClusters lists every managed cluster across organizations
+	// (fan-out over each org's workspaces), optionally filtered by phase/org.
+	AdminListClusters(ctx context.Context, in *AdminListClustersRequest, opts ...grpc.CallOption) (*AdminListClustersResponse, error)
+	// AdminListPendingOperations lists maestro's pending / in-progress / failed
+	// operations across organizations (completed ones are not retained).
+	AdminListPendingOperations(ctx context.Context, in *AdminListPendingOperationsRequest, opts ...grpc.CallOption) (*AdminListPendingOperationsResponse, error)
+	// AdminListAgents lists every registered data-plane agent with its online
+	// state. Agents without a heartbeat for over an hour are removed by the
+	// server's stale-agent cleanup and therefore never appear here.
+	AdminListAgents(ctx context.Context, in *AdminListAgentsRequest, opts ...grpc.CallOption) (*AdminListAgentsResponse, error)
+	// AdminListTunnelSessions lists tunnel sessions across organizations, open
+	// ones by default.
+	AdminListTunnelSessions(ctx context.Context, in *AdminListTunnelSessionsRequest, opts ...grpc.CallOption) (*AdminListTunnelSessionsResponse, error)
+	// AdminRetryDeleteDatabase re-issues a cluster delete that terminally
+	// failed. The org must own the cluster (cross-tenant guard).
+	AdminRetryDeleteDatabase(ctx context.Context, in *AdminRetryDeleteDatabaseRequest, opts ...grpc.CallOption) (*AdminRetryDeleteDatabaseResponse, error)
+	// Users: a person is one email with one users row per organization.
+	// AdminSearchUsers finds people across organizations by email or name.
+	AdminSearchUsers(ctx context.Context, in *AdminSearchUsersRequest, opts ...grpc.CallOption) (*AdminSearchUsersResponse, error)
+	// AdminGetUser returns one person with memberships, live sessions and
+	// pending invitations.
+	AdminGetUser(ctx context.Context, in *AdminGetUserRequest, opts ...grpc.CallOption) (*AdminGetUserResponse, error)
+	// AdminRevokeUserSessions deletes a person's session and/or tunnel tokens
+	// across every organization (or one), signing them out everywhere. The
+	// caller's own backoffice session is never revoked.
+	AdminRevokeUserSessions(ctx context.Context, in *AdminRevokeUserSessionsRequest, opts ...grpc.CallOption) (*AdminRevokeUserSessionsResponse, error)
+	// AdminGetOrganizationActivity returns an organization's recent activity
+	// log (customer-side actions), newest first.
+	AdminGetOrganizationActivity(ctx context.Context, in *AdminGetOrganizationActivityRequest, opts ...grpc.CallOption) (*AdminGetOrganizationActivityResponse, error)
+	// AdminGetOrganizationSecurity summarises an organization's security
+	// posture: API keys, SSO, cloud integrations, provisioned stores, session
+	// policy, pending invitations and platform admins.
+	AdminGetOrganizationSecurity(ctx context.Context, in *AdminGetOrganizationSecurityRequest, opts ...grpc.CallOption) (*AdminGetOrganizationSecurityResponse, error)
+	// AdminGetPlatformOverview returns platform-wide counts for the backoffice
+	// home: what needs attention and how the platform is growing. Cached for a
+	// short time server-side (it fans out to maestro).
+	AdminGetPlatformOverview(ctx context.Context, in *AdminGetPlatformOverviewRequest, opts ...grpc.CallOption) (*AdminGetPlatformOverviewResponse, error)
+	// AdminListOrgActivation returns one row per organization with activation
+	// signals (last sign-in, last tunnel, resources, tickets). Cached likewise.
+	AdminListOrgActivation(ctx context.Context, in *AdminListOrgActivationRequest, opts ...grpc.CallOption) (*AdminListOrgActivationResponse, error)
+}
+
+type adminServiceClient struct {
+	cc grpc.ClientConnInterface
+}
+
+func NewAdminServiceClient(cc grpc.ClientConnInterface) AdminServiceClient {
+	return &adminServiceClient{cc}
+}
+
+func (c *adminServiceClient) AdminListOrganizations(ctx context.Context, in *AdminListOrganizationsRequest, opts ...grpc.CallOption) (*AdminListOrganizationsResponse, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(AdminListOrganizationsResponse)
+	err := c.cc.Invoke(ctx, AdminService_AdminListOrganizations_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *adminServiceClient) AdminGetOrganization(ctx context.Context, in *AdminGetOrganizationRequest, opts ...grpc.CallOption) (*AdminGetOrganizationResponse, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(AdminGetOrganizationResponse)
+	err := c.cc.Invoke(ctx, AdminService_AdminGetOrganization_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *adminServiceClient) AdminGetOrganizationResources(ctx context.Context, in *AdminGetOrganizationResourcesRequest, opts ...grpc.CallOption) (*AdminGetOrganizationResourcesResponse, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(AdminGetOrganizationResourcesResponse)
+	err := c.cc.Invoke(ctx, AdminService_AdminGetOrganizationResources_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *adminServiceClient) AdminGetOrganizationBilling(ctx context.Context, in *AdminGetOrganizationBillingRequest, opts ...grpc.CallOption) (*GetBillingStateResponse, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(GetBillingStateResponse)
+	err := c.cc.Invoke(ctx, AdminService_AdminGetOrganizationBilling_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *adminServiceClient) AdminSetOrganizationPlan(ctx context.Context, in *AdminSetOrganizationPlanRequest, opts ...grpc.CallOption) (*AdminSetOrganizationPlanResponse, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(AdminSetOrganizationPlanResponse)
+	err := c.cc.Invoke(ctx, AdminService_AdminSetOrganizationPlan_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *adminServiceClient) AdminGetOrganizationCost(ctx context.Context, in *AdminGetOrganizationCostRequest, opts ...grpc.CallOption) (*AdminGetOrganizationCostResponse, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(AdminGetOrganizationCostResponse)
+	err := c.cc.Invoke(ctx, AdminService_AdminGetOrganizationCost_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *adminServiceClient) AdminListSignupAllowlist(ctx context.Context, in *AdminListSignupAllowlistRequest, opts ...grpc.CallOption) (*AdminListSignupAllowlistResponse, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(AdminListSignupAllowlistResponse)
+	err := c.cc.Invoke(ctx, AdminService_AdminListSignupAllowlist_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *adminServiceClient) AdminAddSignupAllowlistEntry(ctx context.Context, in *AdminAddSignupAllowlistEntryRequest, opts ...grpc.CallOption) (*AdminAddSignupAllowlistEntryResponse, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(AdminAddSignupAllowlistEntryResponse)
+	err := c.cc.Invoke(ctx, AdminService_AdminAddSignupAllowlistEntry_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *adminServiceClient) AdminRemoveSignupAllowlistEntry(ctx context.Context, in *AdminRemoveSignupAllowlistEntryRequest, opts ...grpc.CallOption) (*AdminRemoveSignupAllowlistEntryResponse, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(AdminRemoveSignupAllowlistEntryResponse)
+	err := c.cc.Invoke(ctx, AdminService_AdminRemoveSignupAllowlistEntry_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *adminServiceClient) AdminListSignupAttempts(ctx context.Context, in *AdminListSignupAttemptsRequest, opts ...grpc.CallOption) (*AdminListSignupAttemptsResponse, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(AdminListSignupAttemptsResponse)
+	err := c.cc.Invoke(ctx, AdminService_AdminListSignupAttempts_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *adminServiceClient) AdminDismissSignupAttempt(ctx context.Context, in *AdminDismissSignupAttemptRequest, opts ...grpc.CallOption) (*AdminDismissSignupAttemptResponse, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(AdminDismissSignupAttemptResponse)
+	err := c.cc.Invoke(ctx, AdminService_AdminDismissSignupAttempt_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *adminServiceClient) AdminListAuditLog(ctx context.Context, in *AdminListAuditLogRequest, opts ...grpc.CallOption) (*AdminListAuditLogResponse, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(AdminListAuditLogResponse)
+	err := c.cc.Invoke(ctx, AdminService_AdminListAuditLog_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *adminServiceClient) AdminGetCloudCosts(ctx context.Context, in *AdminGetCloudCostsRequest, opts ...grpc.CallOption) (*AdminGetCloudCostsResponse, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(AdminGetCloudCostsResponse)
+	err := c.cc.Invoke(ctx, AdminService_AdminGetCloudCosts_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *adminServiceClient) AdminListSupportReports(ctx context.Context, in *AdminListSupportReportsRequest, opts ...grpc.CallOption) (*AdminListSupportReportsResponse, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(AdminListSupportReportsResponse)
+	err := c.cc.Invoke(ctx, AdminService_AdminListSupportReports_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *adminServiceClient) AdminGetSupportReport(ctx context.Context, in *AdminGetSupportReportRequest, opts ...grpc.CallOption) (*AdminGetSupportReportResponse, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(AdminGetSupportReportResponse)
+	err := c.cc.Invoke(ctx, AdminService_AdminGetSupportReport_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *adminServiceClient) AdminAddSupportReportComment(ctx context.Context, in *AdminAddSupportReportCommentRequest, opts ...grpc.CallOption) (*AdminAddSupportReportCommentResponse, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(AdminAddSupportReportCommentResponse)
+	err := c.cc.Invoke(ctx, AdminService_AdminAddSupportReportComment_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *adminServiceClient) AdminUpdateSupportReportStatus(ctx context.Context, in *AdminUpdateSupportReportStatusRequest, opts ...grpc.CallOption) (*AdminUpdateSupportReportStatusResponse, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(AdminUpdateSupportReportStatusResponse)
+	err := c.cc.Invoke(ctx, AdminService_AdminUpdateSupportReportStatus_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *adminServiceClient) AdminListMembers(ctx context.Context, in *AdminListMembersRequest, opts ...grpc.CallOption) (*ListMembersResponse, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(ListMembersResponse)
+	err := c.cc.Invoke(ctx, AdminService_AdminListMembers_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *adminServiceClient) AdminSetMemberRole(ctx context.Context, in *AdminSetMemberRoleRequest, opts ...grpc.CallOption) (*SetMemberRoleResponse, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(SetMemberRoleResponse)
+	err := c.cc.Invoke(ctx, AdminService_AdminSetMemberRole_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *adminServiceClient) AdminRemoveMember(ctx context.Context, in *AdminRemoveMemberRequest, opts ...grpc.CallOption) (*RemoveMemberResponse, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(RemoveMemberResponse)
+	err := c.cc.Invoke(ctx, AdminService_AdminRemoveMember_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *adminServiceClient) AdminInviteMember(ctx context.Context, in *AdminInviteMemberRequest, opts ...grpc.CallOption) (*InviteMemberResponse, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(InviteMemberResponse)
+	err := c.cc.Invoke(ctx, AdminService_AdminInviteMember_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *adminServiceClient) AdminListInvitations(ctx context.Context, in *AdminListInvitationsRequest, opts ...grpc.CallOption) (*ListInvitationsResponse, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(ListInvitationsResponse)
+	err := c.cc.Invoke(ctx, AdminService_AdminListInvitations_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *adminServiceClient) AdminRevokeInvitation(ctx context.Context, in *AdminRevokeInvitationRequest, opts ...grpc.CallOption) (*RevokeInvitationResponse, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(RevokeInvitationResponse)
+	err := c.cc.Invoke(ctx, AdminService_AdminRevokeInvitation_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *adminServiceClient) AdminListClusters(ctx context.Context, in *AdminListClustersRequest, opts ...grpc.CallOption) (*AdminListClustersResponse, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(AdminListClustersResponse)
+	err := c.cc.Invoke(ctx, AdminService_AdminListClusters_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *adminServiceClient) AdminListPendingOperations(ctx context.Context, in *AdminListPendingOperationsRequest, opts ...grpc.CallOption) (*AdminListPendingOperationsResponse, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(AdminListPendingOperationsResponse)
+	err := c.cc.Invoke(ctx, AdminService_AdminListPendingOperations_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *adminServiceClient) AdminListAgents(ctx context.Context, in *AdminListAgentsRequest, opts ...grpc.CallOption) (*AdminListAgentsResponse, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(AdminListAgentsResponse)
+	err := c.cc.Invoke(ctx, AdminService_AdminListAgents_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *adminServiceClient) AdminListTunnelSessions(ctx context.Context, in *AdminListTunnelSessionsRequest, opts ...grpc.CallOption) (*AdminListTunnelSessionsResponse, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(AdminListTunnelSessionsResponse)
+	err := c.cc.Invoke(ctx, AdminService_AdminListTunnelSessions_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *adminServiceClient) AdminRetryDeleteDatabase(ctx context.Context, in *AdminRetryDeleteDatabaseRequest, opts ...grpc.CallOption) (*AdminRetryDeleteDatabaseResponse, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(AdminRetryDeleteDatabaseResponse)
+	err := c.cc.Invoke(ctx, AdminService_AdminRetryDeleteDatabase_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *adminServiceClient) AdminSearchUsers(ctx context.Context, in *AdminSearchUsersRequest, opts ...grpc.CallOption) (*AdminSearchUsersResponse, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(AdminSearchUsersResponse)
+	err := c.cc.Invoke(ctx, AdminService_AdminSearchUsers_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *adminServiceClient) AdminGetUser(ctx context.Context, in *AdminGetUserRequest, opts ...grpc.CallOption) (*AdminGetUserResponse, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(AdminGetUserResponse)
+	err := c.cc.Invoke(ctx, AdminService_AdminGetUser_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *adminServiceClient) AdminRevokeUserSessions(ctx context.Context, in *AdminRevokeUserSessionsRequest, opts ...grpc.CallOption) (*AdminRevokeUserSessionsResponse, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(AdminRevokeUserSessionsResponse)
+	err := c.cc.Invoke(ctx, AdminService_AdminRevokeUserSessions_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *adminServiceClient) AdminGetOrganizationActivity(ctx context.Context, in *AdminGetOrganizationActivityRequest, opts ...grpc.CallOption) (*AdminGetOrganizationActivityResponse, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(AdminGetOrganizationActivityResponse)
+	err := c.cc.Invoke(ctx, AdminService_AdminGetOrganizationActivity_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *adminServiceClient) AdminGetOrganizationSecurity(ctx context.Context, in *AdminGetOrganizationSecurityRequest, opts ...grpc.CallOption) (*AdminGetOrganizationSecurityResponse, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(AdminGetOrganizationSecurityResponse)
+	err := c.cc.Invoke(ctx, AdminService_AdminGetOrganizationSecurity_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *adminServiceClient) AdminGetPlatformOverview(ctx context.Context, in *AdminGetPlatformOverviewRequest, opts ...grpc.CallOption) (*AdminGetPlatformOverviewResponse, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(AdminGetPlatformOverviewResponse)
+	err := c.cc.Invoke(ctx, AdminService_AdminGetPlatformOverview_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *adminServiceClient) AdminListOrgActivation(ctx context.Context, in *AdminListOrgActivationRequest, opts ...grpc.CallOption) (*AdminListOrgActivationResponse, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(AdminListOrgActivationResponse)
+	err := c.cc.Invoke(ctx, AdminService_AdminListOrgActivation_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+// AdminServiceServer is the server API for AdminService service.
+// All implementations must embed UnimplementedAdminServiceServer
+// for forward compatibility.
+//
+// AdminService is the internal backoffice control plane. Every method requires
+// a platform-admin user session (a row in platform_admins); the gRPC auth
+// interceptor rejects all non-admin and non-user principals before a handler
+// runs. It is a separate service from ServerService so the whole surface can
+// be blanket-gated and kept out of the customer dashboard's contract.
+type AdminServiceServer interface {
+	// AdminListOrganizations returns every organization in the platform,
+	// paginated and optionally filtered by a search term over name/slug. Not
+	// tenant-scoped — this is a cross-org staff view.
+	AdminListOrganizations(context.Context, *AdminListOrganizationsRequest) (*AdminListOrganizationsResponse, error)
+	// AdminGetOrganization returns one organization by id or slug, with the same
+	// enriched fields as the list.
+	AdminGetOrganization(context.Context, *AdminGetOrganizationRequest) (*AdminGetOrganizationResponse, error)
+	// AdminGetOrganizationResources returns the objects an organization has
+	// created across all its workspaces: clusters (managed databases),
+	// connections, agent pools, and agents.
+	AdminGetOrganizationResources(context.Context, *AdminGetOrganizationResourcesRequest) (*AdminGetOrganizationResourcesResponse, error)
+	// AdminGetOrganizationBilling returns the organization's billing/revenue
+	// state (what Relay bills the customer). Cost-to-serve is not tracked and is
+	// therefore not part of this response.
+	AdminGetOrganizationBilling(context.Context, *AdminGetOrganizationBillingRequest) (*GetBillingStateResponse, error)
+	// AdminSetOrganizationPlan overrides an organization's plan directly (a free
+	// platform-admin grant, up or down, no Stripe charge). The change is durable
+	// and takes effect across the platform immediately.
+	AdminSetOrganizationPlan(context.Context, *AdminSetOrganizationPlanRequest) (*AdminSetOrganizationPlanResponse, error)
+	// AdminGetOrganizationCost returns an organization's direct infra
+	// cost-to-serve over a window, from Kubecost, allocated by org. This is direct
+	// tenant cost only (shared/overhead is not attributed). Windows are limited by
+	// Kubecost retention (currently ~4 days).
+	AdminGetOrganizationCost(context.Context, *AdminGetOrganizationCostRequest) (*AdminGetOrganizationCostResponse, error)
+	// AdminListSignupAllowlist returns the closed-alpha signup allowlist: the
+	// emails / "@domain"s allowed to sign in while the platform is invite-only,
+	// plus any entries still coming from the server's static config.
+	AdminListSignupAllowlist(context.Context, *AdminListSignupAllowlistRequest) (*AdminListSignupAllowlistResponse, error)
+	// AdminAddSignupAllowlistEntry allowlists one email or whole domain. Takes
+	// effect on the next sign-in attempt; no OAuth-console or deploy change needed.
+	AdminAddSignupAllowlistEntry(context.Context, *AdminAddSignupAllowlistEntryRequest) (*AdminAddSignupAllowlistEntryResponse, error)
+	// AdminRemoveSignupAllowlistEntry drops an entry. Removing every entry (and
+	// the static config) reopens signup to everyone.
+	AdminRemoveSignupAllowlistEntry(context.Context, *AdminRemoveSignupAllowlistEntryRequest) (*AdminRemoveSignupAllowlistEntryResponse, error)
+	// AdminListSignupAttempts returns the closed-alpha waitlist: sign-ins that
+	// were refused because the email was not allowlisted, most recent first.
+	AdminListSignupAttempts(context.Context, *AdminListSignupAttemptsRequest) (*AdminListSignupAttemptsResponse, error)
+	// AdminDismissSignupAttempt hides a waitlist entry without allowlisting it.
+	// Allowing someone is AdminAddSignupAllowlistEntry, which also clears their
+	// waitlist rows.
+	AdminDismissSignupAttempt(context.Context, *AdminDismissSignupAttemptRequest) (*AdminDismissSignupAttemptResponse, error)
+	// AdminListAuditLog returns the durable audit trail of the backoffice: one
+	// entry per AdminService call (reads included), newest first, filterable by
+	// admin, target organization, method, or mutations only. Listing the audit
+	// log itself is not recorded.
+	AdminListAuditLog(context.Context, *AdminListAuditLogRequest) (*AdminListAuditLogResponse, error)
+	// AdminGetCloudCosts returns Relay's own AWS bill from Cost Explorer in the
+	// payer account: gross usage (credits excluded), credits applied, net, a
+	// daily/monthly series, and breakdowns by service and linked account.
+	// Windows: "mtd" (default, with month-end forecast), "30d", "90d", "12m".
+	AdminGetCloudCosts(context.Context, *AdminGetCloudCostsRequest) (*AdminGetCloudCostsResponse, error)
+	// AdminListSupportReports returns support reports across every organization —
+	// the company support inbox. Optionally filtered by status. Org identity
+	// (org_name/org_slug) is always populated so the cross-org list is legible.
+	AdminListSupportReports(context.Context, *AdminListSupportReportsRequest) (*AdminListSupportReportsResponse, error)
+	// AdminGetSupportReport returns one report by id with its full comment
+	// thread, across any organization.
+	AdminGetSupportReport(context.Context, *AdminGetSupportReportRequest) (*AdminGetSupportReportResponse, error)
+	// AdminAddSupportReportComment posts a staff reply on a report, in any
+	// organization. The comment is flagged staff=true and emails the author.
+	AdminAddSupportReportComment(context.Context, *AdminAddSupportReportCommentRequest) (*AdminAddSupportReportCommentResponse, error)
+	// AdminUpdateSupportReportStatus changes a report's status (open,
+	// in_progress, resolved), in any organization, and emails the author.
+	AdminUpdateSupportReportStatus(context.Context, *AdminUpdateSupportReportStatusRequest) (*AdminUpdateSupportReportStatusResponse, error)
+	// AdminListMembers returns the roster of a specific organization.
+	AdminListMembers(context.Context, *AdminListMembersRequest) (*ListMembersResponse, error)
+	// AdminSetMemberRole changes a member's org role. Last-owner is still
+	// refused — promote someone else first.
+	AdminSetMemberRole(context.Context, *AdminSetMemberRoleRequest) (*SetMemberRoleResponse, error)
+	// AdminRemoveMember removes a member from the organization. Last-owner is
+	// refused. The user account itself is left intact.
+	AdminRemoveMember(context.Context, *AdminRemoveMemberRequest) (*RemoveMemberResponse, error)
+	// AdminInviteMember creates a pending invitation for an organization. Seat
+	// limits are not applied — this is a staff override. Returns the join link
+	// (and emails the invitee when SMTP is configured).
+	AdminInviteMember(context.Context, *AdminInviteMemberRequest) (*InviteMemberResponse, error)
+	// AdminListInvitations returns pending, unexpired invitations for the org.
+	AdminListInvitations(context.Context, *AdminListInvitationsRequest) (*ListInvitationsResponse, error)
+	// AdminRevokeInvitation revokes one pending invitation.
+	AdminRevokeInvitation(context.Context, *AdminRevokeInvitationRequest) (*RevokeInvitationResponse, error)
+	// Fleet: cross-tenant operational views for staff.
+	// AdminListClusters lists every managed cluster across organizations
+	// (fan-out over each org's workspaces), optionally filtered by phase/org.
+	AdminListClusters(context.Context, *AdminListClustersRequest) (*AdminListClustersResponse, error)
+	// AdminListPendingOperations lists maestro's pending / in-progress / failed
+	// operations across organizations (completed ones are not retained).
+	AdminListPendingOperations(context.Context, *AdminListPendingOperationsRequest) (*AdminListPendingOperationsResponse, error)
+	// AdminListAgents lists every registered data-plane agent with its online
+	// state. Agents without a heartbeat for over an hour are removed by the
+	// server's stale-agent cleanup and therefore never appear here.
+	AdminListAgents(context.Context, *AdminListAgentsRequest) (*AdminListAgentsResponse, error)
+	// AdminListTunnelSessions lists tunnel sessions across organizations, open
+	// ones by default.
+	AdminListTunnelSessions(context.Context, *AdminListTunnelSessionsRequest) (*AdminListTunnelSessionsResponse, error)
+	// AdminRetryDeleteDatabase re-issues a cluster delete that terminally
+	// failed. The org must own the cluster (cross-tenant guard).
+	AdminRetryDeleteDatabase(context.Context, *AdminRetryDeleteDatabaseRequest) (*AdminRetryDeleteDatabaseResponse, error)
+	// Users: a person is one email with one users row per organization.
+	// AdminSearchUsers finds people across organizations by email or name.
+	AdminSearchUsers(context.Context, *AdminSearchUsersRequest) (*AdminSearchUsersResponse, error)
+	// AdminGetUser returns one person with memberships, live sessions and
+	// pending invitations.
+	AdminGetUser(context.Context, *AdminGetUserRequest) (*AdminGetUserResponse, error)
+	// AdminRevokeUserSessions deletes a person's session and/or tunnel tokens
+	// across every organization (or one), signing them out everywhere. The
+	// caller's own backoffice session is never revoked.
+	AdminRevokeUserSessions(context.Context, *AdminRevokeUserSessionsRequest) (*AdminRevokeUserSessionsResponse, error)
+	// AdminGetOrganizationActivity returns an organization's recent activity
+	// log (customer-side actions), newest first.
+	AdminGetOrganizationActivity(context.Context, *AdminGetOrganizationActivityRequest) (*AdminGetOrganizationActivityResponse, error)
+	// AdminGetOrganizationSecurity summarises an organization's security
+	// posture: API keys, SSO, cloud integrations, provisioned stores, session
+	// policy, pending invitations and platform admins.
+	AdminGetOrganizationSecurity(context.Context, *AdminGetOrganizationSecurityRequest) (*AdminGetOrganizationSecurityResponse, error)
+	// AdminGetPlatformOverview returns platform-wide counts for the backoffice
+	// home: what needs attention and how the platform is growing. Cached for a
+	// short time server-side (it fans out to maestro).
+	AdminGetPlatformOverview(context.Context, *AdminGetPlatformOverviewRequest) (*AdminGetPlatformOverviewResponse, error)
+	// AdminListOrgActivation returns one row per organization with activation
+	// signals (last sign-in, last tunnel, resources, tickets). Cached likewise.
+	AdminListOrgActivation(context.Context, *AdminListOrgActivationRequest) (*AdminListOrgActivationResponse, error)
+	mustEmbedUnimplementedAdminServiceServer()
+}
+
+// UnimplementedAdminServiceServer must be embedded to have
+// forward compatible implementations.
+//
+// NOTE: this should be embedded by value instead of pointer to avoid a nil
+// pointer dereference when methods are called.
+type UnimplementedAdminServiceServer struct{}
+
+func (UnimplementedAdminServiceServer) AdminListOrganizations(context.Context, *AdminListOrganizationsRequest) (*AdminListOrganizationsResponse, error) {
+	return nil, status.Error(codes.Unimplemented, "method AdminListOrganizations not implemented")
+}
+func (UnimplementedAdminServiceServer) AdminGetOrganization(context.Context, *AdminGetOrganizationRequest) (*AdminGetOrganizationResponse, error) {
+	return nil, status.Error(codes.Unimplemented, "method AdminGetOrganization not implemented")
+}
+func (UnimplementedAdminServiceServer) AdminGetOrganizationResources(context.Context, *AdminGetOrganizationResourcesRequest) (*AdminGetOrganizationResourcesResponse, error) {
+	return nil, status.Error(codes.Unimplemented, "method AdminGetOrganizationResources not implemented")
+}
+func (UnimplementedAdminServiceServer) AdminGetOrganizationBilling(context.Context, *AdminGetOrganizationBillingRequest) (*GetBillingStateResponse, error) {
+	return nil, status.Error(codes.Unimplemented, "method AdminGetOrganizationBilling not implemented")
+}
+func (UnimplementedAdminServiceServer) AdminSetOrganizationPlan(context.Context, *AdminSetOrganizationPlanRequest) (*AdminSetOrganizationPlanResponse, error) {
+	return nil, status.Error(codes.Unimplemented, "method AdminSetOrganizationPlan not implemented")
+}
+func (UnimplementedAdminServiceServer) AdminGetOrganizationCost(context.Context, *AdminGetOrganizationCostRequest) (*AdminGetOrganizationCostResponse, error) {
+	return nil, status.Error(codes.Unimplemented, "method AdminGetOrganizationCost not implemented")
+}
+func (UnimplementedAdminServiceServer) AdminListSignupAllowlist(context.Context, *AdminListSignupAllowlistRequest) (*AdminListSignupAllowlistResponse, error) {
+	return nil, status.Error(codes.Unimplemented, "method AdminListSignupAllowlist not implemented")
+}
+func (UnimplementedAdminServiceServer) AdminAddSignupAllowlistEntry(context.Context, *AdminAddSignupAllowlistEntryRequest) (*AdminAddSignupAllowlistEntryResponse, error) {
+	return nil, status.Error(codes.Unimplemented, "method AdminAddSignupAllowlistEntry not implemented")
+}
+func (UnimplementedAdminServiceServer) AdminRemoveSignupAllowlistEntry(context.Context, *AdminRemoveSignupAllowlistEntryRequest) (*AdminRemoveSignupAllowlistEntryResponse, error) {
+	return nil, status.Error(codes.Unimplemented, "method AdminRemoveSignupAllowlistEntry not implemented")
+}
+func (UnimplementedAdminServiceServer) AdminListSignupAttempts(context.Context, *AdminListSignupAttemptsRequest) (*AdminListSignupAttemptsResponse, error) {
+	return nil, status.Error(codes.Unimplemented, "method AdminListSignupAttempts not implemented")
+}
+func (UnimplementedAdminServiceServer) AdminDismissSignupAttempt(context.Context, *AdminDismissSignupAttemptRequest) (*AdminDismissSignupAttemptResponse, error) {
+	return nil, status.Error(codes.Unimplemented, "method AdminDismissSignupAttempt not implemented")
+}
+func (UnimplementedAdminServiceServer) AdminListAuditLog(context.Context, *AdminListAuditLogRequest) (*AdminListAuditLogResponse, error) {
+	return nil, status.Error(codes.Unimplemented, "method AdminListAuditLog not implemented")
+}
+func (UnimplementedAdminServiceServer) AdminGetCloudCosts(context.Context, *AdminGetCloudCostsRequest) (*AdminGetCloudCostsResponse, error) {
+	return nil, status.Error(codes.Unimplemented, "method AdminGetCloudCosts not implemented")
+}
+func (UnimplementedAdminServiceServer) AdminListSupportReports(context.Context, *AdminListSupportReportsRequest) (*AdminListSupportReportsResponse, error) {
+	return nil, status.Error(codes.Unimplemented, "method AdminListSupportReports not implemented")
+}
+func (UnimplementedAdminServiceServer) AdminGetSupportReport(context.Context, *AdminGetSupportReportRequest) (*AdminGetSupportReportResponse, error) {
+	return nil, status.Error(codes.Unimplemented, "method AdminGetSupportReport not implemented")
+}
+func (UnimplementedAdminServiceServer) AdminAddSupportReportComment(context.Context, *AdminAddSupportReportCommentRequest) (*AdminAddSupportReportCommentResponse, error) {
+	return nil, status.Error(codes.Unimplemented, "method AdminAddSupportReportComment not implemented")
+}
+func (UnimplementedAdminServiceServer) AdminUpdateSupportReportStatus(context.Context, *AdminUpdateSupportReportStatusRequest) (*AdminUpdateSupportReportStatusResponse, error) {
+	return nil, status.Error(codes.Unimplemented, "method AdminUpdateSupportReportStatus not implemented")
+}
+func (UnimplementedAdminServiceServer) AdminListMembers(context.Context, *AdminListMembersRequest) (*ListMembersResponse, error) {
+	return nil, status.Error(codes.Unimplemented, "method AdminListMembers not implemented")
+}
+func (UnimplementedAdminServiceServer) AdminSetMemberRole(context.Context, *AdminSetMemberRoleRequest) (*SetMemberRoleResponse, error) {
+	return nil, status.Error(codes.Unimplemented, "method AdminSetMemberRole not implemented")
+}
+func (UnimplementedAdminServiceServer) AdminRemoveMember(context.Context, *AdminRemoveMemberRequest) (*RemoveMemberResponse, error) {
+	return nil, status.Error(codes.Unimplemented, "method AdminRemoveMember not implemented")
+}
+func (UnimplementedAdminServiceServer) AdminInviteMember(context.Context, *AdminInviteMemberRequest) (*InviteMemberResponse, error) {
+	return nil, status.Error(codes.Unimplemented, "method AdminInviteMember not implemented")
+}
+func (UnimplementedAdminServiceServer) AdminListInvitations(context.Context, *AdminListInvitationsRequest) (*ListInvitationsResponse, error) {
+	return nil, status.Error(codes.Unimplemented, "method AdminListInvitations not implemented")
+}
+func (UnimplementedAdminServiceServer) AdminRevokeInvitation(context.Context, *AdminRevokeInvitationRequest) (*RevokeInvitationResponse, error) {
+	return nil, status.Error(codes.Unimplemented, "method AdminRevokeInvitation not implemented")
+}
+func (UnimplementedAdminServiceServer) AdminListClusters(context.Context, *AdminListClustersRequest) (*AdminListClustersResponse, error) {
+	return nil, status.Error(codes.Unimplemented, "method AdminListClusters not implemented")
+}
+func (UnimplementedAdminServiceServer) AdminListPendingOperations(context.Context, *AdminListPendingOperationsRequest) (*AdminListPendingOperationsResponse, error) {
+	return nil, status.Error(codes.Unimplemented, "method AdminListPendingOperations not implemented")
+}
+func (UnimplementedAdminServiceServer) AdminListAgents(context.Context, *AdminListAgentsRequest) (*AdminListAgentsResponse, error) {
+	return nil, status.Error(codes.Unimplemented, "method AdminListAgents not implemented")
+}
+func (UnimplementedAdminServiceServer) AdminListTunnelSessions(context.Context, *AdminListTunnelSessionsRequest) (*AdminListTunnelSessionsResponse, error) {
+	return nil, status.Error(codes.Unimplemented, "method AdminListTunnelSessions not implemented")
+}
+func (UnimplementedAdminServiceServer) AdminRetryDeleteDatabase(context.Context, *AdminRetryDeleteDatabaseRequest) (*AdminRetryDeleteDatabaseResponse, error) {
+	return nil, status.Error(codes.Unimplemented, "method AdminRetryDeleteDatabase not implemented")
+}
+func (UnimplementedAdminServiceServer) AdminSearchUsers(context.Context, *AdminSearchUsersRequest) (*AdminSearchUsersResponse, error) {
+	return nil, status.Error(codes.Unimplemented, "method AdminSearchUsers not implemented")
+}
+func (UnimplementedAdminServiceServer) AdminGetUser(context.Context, *AdminGetUserRequest) (*AdminGetUserResponse, error) {
+	return nil, status.Error(codes.Unimplemented, "method AdminGetUser not implemented")
+}
+func (UnimplementedAdminServiceServer) AdminRevokeUserSessions(context.Context, *AdminRevokeUserSessionsRequest) (*AdminRevokeUserSessionsResponse, error) {
+	return nil, status.Error(codes.Unimplemented, "method AdminRevokeUserSessions not implemented")
+}
+func (UnimplementedAdminServiceServer) AdminGetOrganizationActivity(context.Context, *AdminGetOrganizationActivityRequest) (*AdminGetOrganizationActivityResponse, error) {
+	return nil, status.Error(codes.Unimplemented, "method AdminGetOrganizationActivity not implemented")
+}
+func (UnimplementedAdminServiceServer) AdminGetOrganizationSecurity(context.Context, *AdminGetOrganizationSecurityRequest) (*AdminGetOrganizationSecurityResponse, error) {
+	return nil, status.Error(codes.Unimplemented, "method AdminGetOrganizationSecurity not implemented")
+}
+func (UnimplementedAdminServiceServer) AdminGetPlatformOverview(context.Context, *AdminGetPlatformOverviewRequest) (*AdminGetPlatformOverviewResponse, error) {
+	return nil, status.Error(codes.Unimplemented, "method AdminGetPlatformOverview not implemented")
+}
+func (UnimplementedAdminServiceServer) AdminListOrgActivation(context.Context, *AdminListOrgActivationRequest) (*AdminListOrgActivationResponse, error) {
+	return nil, status.Error(codes.Unimplemented, "method AdminListOrgActivation not implemented")
+}
+func (UnimplementedAdminServiceServer) mustEmbedUnimplementedAdminServiceServer() {}
+func (UnimplementedAdminServiceServer) testEmbeddedByValue()                      {}
+
+// UnsafeAdminServiceServer may be embedded to opt out of forward compatibility for this service.
+// Use of this interface is not recommended, as added methods to AdminServiceServer will
+// result in compilation errors.
+type UnsafeAdminServiceServer interface {
+	mustEmbedUnimplementedAdminServiceServer()
+}
+
+func RegisterAdminServiceServer(s grpc.ServiceRegistrar, srv AdminServiceServer) {
+	// If the following call panics, it indicates UnimplementedAdminServiceServer was
+	// embedded by pointer and is nil.  This will cause panics if an
+	// unimplemented method is ever invoked, so we test this at initialization
+	// time to prevent it from happening at runtime later due to I/O.
+	if t, ok := srv.(interface{ testEmbeddedByValue() }); ok {
+		t.testEmbeddedByValue()
+	}
+	s.RegisterService(&AdminService_ServiceDesc, srv)
+}
+
+func _AdminService_AdminListOrganizations_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(AdminListOrganizationsRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(AdminServiceServer).AdminListOrganizations(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: AdminService_AdminListOrganizations_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(AdminServiceServer).AdminListOrganizations(ctx, req.(*AdminListOrganizationsRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _AdminService_AdminGetOrganization_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(AdminGetOrganizationRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(AdminServiceServer).AdminGetOrganization(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: AdminService_AdminGetOrganization_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(AdminServiceServer).AdminGetOrganization(ctx, req.(*AdminGetOrganizationRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _AdminService_AdminGetOrganizationResources_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(AdminGetOrganizationResourcesRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(AdminServiceServer).AdminGetOrganizationResources(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: AdminService_AdminGetOrganizationResources_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(AdminServiceServer).AdminGetOrganizationResources(ctx, req.(*AdminGetOrganizationResourcesRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _AdminService_AdminGetOrganizationBilling_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(AdminGetOrganizationBillingRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(AdminServiceServer).AdminGetOrganizationBilling(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: AdminService_AdminGetOrganizationBilling_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(AdminServiceServer).AdminGetOrganizationBilling(ctx, req.(*AdminGetOrganizationBillingRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _AdminService_AdminSetOrganizationPlan_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(AdminSetOrganizationPlanRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(AdminServiceServer).AdminSetOrganizationPlan(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: AdminService_AdminSetOrganizationPlan_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(AdminServiceServer).AdminSetOrganizationPlan(ctx, req.(*AdminSetOrganizationPlanRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _AdminService_AdminGetOrganizationCost_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(AdminGetOrganizationCostRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(AdminServiceServer).AdminGetOrganizationCost(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: AdminService_AdminGetOrganizationCost_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(AdminServiceServer).AdminGetOrganizationCost(ctx, req.(*AdminGetOrganizationCostRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _AdminService_AdminListSignupAllowlist_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(AdminListSignupAllowlistRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(AdminServiceServer).AdminListSignupAllowlist(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: AdminService_AdminListSignupAllowlist_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(AdminServiceServer).AdminListSignupAllowlist(ctx, req.(*AdminListSignupAllowlistRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _AdminService_AdminAddSignupAllowlistEntry_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(AdminAddSignupAllowlistEntryRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(AdminServiceServer).AdminAddSignupAllowlistEntry(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: AdminService_AdminAddSignupAllowlistEntry_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(AdminServiceServer).AdminAddSignupAllowlistEntry(ctx, req.(*AdminAddSignupAllowlistEntryRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _AdminService_AdminRemoveSignupAllowlistEntry_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(AdminRemoveSignupAllowlistEntryRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(AdminServiceServer).AdminRemoveSignupAllowlistEntry(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: AdminService_AdminRemoveSignupAllowlistEntry_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(AdminServiceServer).AdminRemoveSignupAllowlistEntry(ctx, req.(*AdminRemoveSignupAllowlistEntryRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _AdminService_AdminListSignupAttempts_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(AdminListSignupAttemptsRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(AdminServiceServer).AdminListSignupAttempts(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: AdminService_AdminListSignupAttempts_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(AdminServiceServer).AdminListSignupAttempts(ctx, req.(*AdminListSignupAttemptsRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _AdminService_AdminDismissSignupAttempt_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(AdminDismissSignupAttemptRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(AdminServiceServer).AdminDismissSignupAttempt(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: AdminService_AdminDismissSignupAttempt_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(AdminServiceServer).AdminDismissSignupAttempt(ctx, req.(*AdminDismissSignupAttemptRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _AdminService_AdminListAuditLog_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(AdminListAuditLogRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(AdminServiceServer).AdminListAuditLog(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: AdminService_AdminListAuditLog_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(AdminServiceServer).AdminListAuditLog(ctx, req.(*AdminListAuditLogRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _AdminService_AdminGetCloudCosts_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(AdminGetCloudCostsRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(AdminServiceServer).AdminGetCloudCosts(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: AdminService_AdminGetCloudCosts_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(AdminServiceServer).AdminGetCloudCosts(ctx, req.(*AdminGetCloudCostsRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _AdminService_AdminListSupportReports_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(AdminListSupportReportsRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(AdminServiceServer).AdminListSupportReports(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: AdminService_AdminListSupportReports_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(AdminServiceServer).AdminListSupportReports(ctx, req.(*AdminListSupportReportsRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _AdminService_AdminGetSupportReport_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(AdminGetSupportReportRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(AdminServiceServer).AdminGetSupportReport(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: AdminService_AdminGetSupportReport_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(AdminServiceServer).AdminGetSupportReport(ctx, req.(*AdminGetSupportReportRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _AdminService_AdminAddSupportReportComment_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(AdminAddSupportReportCommentRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(AdminServiceServer).AdminAddSupportReportComment(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: AdminService_AdminAddSupportReportComment_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(AdminServiceServer).AdminAddSupportReportComment(ctx, req.(*AdminAddSupportReportCommentRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _AdminService_AdminUpdateSupportReportStatus_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(AdminUpdateSupportReportStatusRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(AdminServiceServer).AdminUpdateSupportReportStatus(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: AdminService_AdminUpdateSupportReportStatus_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(AdminServiceServer).AdminUpdateSupportReportStatus(ctx, req.(*AdminUpdateSupportReportStatusRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _AdminService_AdminListMembers_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(AdminListMembersRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(AdminServiceServer).AdminListMembers(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: AdminService_AdminListMembers_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(AdminServiceServer).AdminListMembers(ctx, req.(*AdminListMembersRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _AdminService_AdminSetMemberRole_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(AdminSetMemberRoleRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(AdminServiceServer).AdminSetMemberRole(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: AdminService_AdminSetMemberRole_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(AdminServiceServer).AdminSetMemberRole(ctx, req.(*AdminSetMemberRoleRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _AdminService_AdminRemoveMember_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(AdminRemoveMemberRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(AdminServiceServer).AdminRemoveMember(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: AdminService_AdminRemoveMember_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(AdminServiceServer).AdminRemoveMember(ctx, req.(*AdminRemoveMemberRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _AdminService_AdminInviteMember_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(AdminInviteMemberRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(AdminServiceServer).AdminInviteMember(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: AdminService_AdminInviteMember_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(AdminServiceServer).AdminInviteMember(ctx, req.(*AdminInviteMemberRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _AdminService_AdminListInvitations_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(AdminListInvitationsRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(AdminServiceServer).AdminListInvitations(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: AdminService_AdminListInvitations_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(AdminServiceServer).AdminListInvitations(ctx, req.(*AdminListInvitationsRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _AdminService_AdminRevokeInvitation_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(AdminRevokeInvitationRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(AdminServiceServer).AdminRevokeInvitation(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: AdminService_AdminRevokeInvitation_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(AdminServiceServer).AdminRevokeInvitation(ctx, req.(*AdminRevokeInvitationRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _AdminService_AdminListClusters_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(AdminListClustersRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(AdminServiceServer).AdminListClusters(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: AdminService_AdminListClusters_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(AdminServiceServer).AdminListClusters(ctx, req.(*AdminListClustersRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _AdminService_AdminListPendingOperations_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(AdminListPendingOperationsRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(AdminServiceServer).AdminListPendingOperations(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: AdminService_AdminListPendingOperations_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(AdminServiceServer).AdminListPendingOperations(ctx, req.(*AdminListPendingOperationsRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _AdminService_AdminListAgents_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(AdminListAgentsRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(AdminServiceServer).AdminListAgents(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: AdminService_AdminListAgents_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(AdminServiceServer).AdminListAgents(ctx, req.(*AdminListAgentsRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _AdminService_AdminListTunnelSessions_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(AdminListTunnelSessionsRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(AdminServiceServer).AdminListTunnelSessions(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: AdminService_AdminListTunnelSessions_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(AdminServiceServer).AdminListTunnelSessions(ctx, req.(*AdminListTunnelSessionsRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _AdminService_AdminRetryDeleteDatabase_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(AdminRetryDeleteDatabaseRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(AdminServiceServer).AdminRetryDeleteDatabase(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: AdminService_AdminRetryDeleteDatabase_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(AdminServiceServer).AdminRetryDeleteDatabase(ctx, req.(*AdminRetryDeleteDatabaseRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _AdminService_AdminSearchUsers_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(AdminSearchUsersRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(AdminServiceServer).AdminSearchUsers(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: AdminService_AdminSearchUsers_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(AdminServiceServer).AdminSearchUsers(ctx, req.(*AdminSearchUsersRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _AdminService_AdminGetUser_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(AdminGetUserRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(AdminServiceServer).AdminGetUser(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: AdminService_AdminGetUser_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(AdminServiceServer).AdminGetUser(ctx, req.(*AdminGetUserRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _AdminService_AdminRevokeUserSessions_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(AdminRevokeUserSessionsRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(AdminServiceServer).AdminRevokeUserSessions(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: AdminService_AdminRevokeUserSessions_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(AdminServiceServer).AdminRevokeUserSessions(ctx, req.(*AdminRevokeUserSessionsRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _AdminService_AdminGetOrganizationActivity_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(AdminGetOrganizationActivityRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(AdminServiceServer).AdminGetOrganizationActivity(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: AdminService_AdminGetOrganizationActivity_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(AdminServiceServer).AdminGetOrganizationActivity(ctx, req.(*AdminGetOrganizationActivityRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _AdminService_AdminGetOrganizationSecurity_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(AdminGetOrganizationSecurityRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(AdminServiceServer).AdminGetOrganizationSecurity(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: AdminService_AdminGetOrganizationSecurity_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(AdminServiceServer).AdminGetOrganizationSecurity(ctx, req.(*AdminGetOrganizationSecurityRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _AdminService_AdminGetPlatformOverview_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(AdminGetPlatformOverviewRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(AdminServiceServer).AdminGetPlatformOverview(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: AdminService_AdminGetPlatformOverview_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(AdminServiceServer).AdminGetPlatformOverview(ctx, req.(*AdminGetPlatformOverviewRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _AdminService_AdminListOrgActivation_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(AdminListOrgActivationRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(AdminServiceServer).AdminListOrgActivation(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: AdminService_AdminListOrgActivation_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(AdminServiceServer).AdminListOrgActivation(ctx, req.(*AdminListOrgActivationRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+// AdminService_ServiceDesc is the grpc.ServiceDesc for AdminService service.
+// It's only intended for direct use with grpc.RegisterService,
+// and not to be introspected or modified (even as a copy)
+var AdminService_ServiceDesc = grpc.ServiceDesc{
+	ServiceName: "relay.server.v1.AdminService",
+	HandlerType: (*AdminServiceServer)(nil),
+	Methods: []grpc.MethodDesc{
+		{
+			MethodName: "AdminListOrganizations",
+			Handler:    _AdminService_AdminListOrganizations_Handler,
+		},
+		{
+			MethodName: "AdminGetOrganization",
+			Handler:    _AdminService_AdminGetOrganization_Handler,
+		},
+		{
+			MethodName: "AdminGetOrganizationResources",
+			Handler:    _AdminService_AdminGetOrganizationResources_Handler,
+		},
+		{
+			MethodName: "AdminGetOrganizationBilling",
+			Handler:    _AdminService_AdminGetOrganizationBilling_Handler,
+		},
+		{
+			MethodName: "AdminSetOrganizationPlan",
+			Handler:    _AdminService_AdminSetOrganizationPlan_Handler,
+		},
+		{
+			MethodName: "AdminGetOrganizationCost",
+			Handler:    _AdminService_AdminGetOrganizationCost_Handler,
+		},
+		{
+			MethodName: "AdminListSignupAllowlist",
+			Handler:    _AdminService_AdminListSignupAllowlist_Handler,
+		},
+		{
+			MethodName: "AdminAddSignupAllowlistEntry",
+			Handler:    _AdminService_AdminAddSignupAllowlistEntry_Handler,
+		},
+		{
+			MethodName: "AdminRemoveSignupAllowlistEntry",
+			Handler:    _AdminService_AdminRemoveSignupAllowlistEntry_Handler,
+		},
+		{
+			MethodName: "AdminListSignupAttempts",
+			Handler:    _AdminService_AdminListSignupAttempts_Handler,
+		},
+		{
+			MethodName: "AdminDismissSignupAttempt",
+			Handler:    _AdminService_AdminDismissSignupAttempt_Handler,
+		},
+		{
+			MethodName: "AdminListAuditLog",
+			Handler:    _AdminService_AdminListAuditLog_Handler,
+		},
+		{
+			MethodName: "AdminGetCloudCosts",
+			Handler:    _AdminService_AdminGetCloudCosts_Handler,
+		},
+		{
+			MethodName: "AdminListSupportReports",
+			Handler:    _AdminService_AdminListSupportReports_Handler,
+		},
+		{
+			MethodName: "AdminGetSupportReport",
+			Handler:    _AdminService_AdminGetSupportReport_Handler,
+		},
+		{
+			MethodName: "AdminAddSupportReportComment",
+			Handler:    _AdminService_AdminAddSupportReportComment_Handler,
+		},
+		{
+			MethodName: "AdminUpdateSupportReportStatus",
+			Handler:    _AdminService_AdminUpdateSupportReportStatus_Handler,
+		},
+		{
+			MethodName: "AdminListMembers",
+			Handler:    _AdminService_AdminListMembers_Handler,
+		},
+		{
+			MethodName: "AdminSetMemberRole",
+			Handler:    _AdminService_AdminSetMemberRole_Handler,
+		},
+		{
+			MethodName: "AdminRemoveMember",
+			Handler:    _AdminService_AdminRemoveMember_Handler,
+		},
+		{
+			MethodName: "AdminInviteMember",
+			Handler:    _AdminService_AdminInviteMember_Handler,
+		},
+		{
+			MethodName: "AdminListInvitations",
+			Handler:    _AdminService_AdminListInvitations_Handler,
+		},
+		{
+			MethodName: "AdminRevokeInvitation",
+			Handler:    _AdminService_AdminRevokeInvitation_Handler,
+		},
+		{
+			MethodName: "AdminListClusters",
+			Handler:    _AdminService_AdminListClusters_Handler,
+		},
+		{
+			MethodName: "AdminListPendingOperations",
+			Handler:    _AdminService_AdminListPendingOperations_Handler,
+		},
+		{
+			MethodName: "AdminListAgents",
+			Handler:    _AdminService_AdminListAgents_Handler,
+		},
+		{
+			MethodName: "AdminListTunnelSessions",
+			Handler:    _AdminService_AdminListTunnelSessions_Handler,
+		},
+		{
+			MethodName: "AdminRetryDeleteDatabase",
+			Handler:    _AdminService_AdminRetryDeleteDatabase_Handler,
+		},
+		{
+			MethodName: "AdminSearchUsers",
+			Handler:    _AdminService_AdminSearchUsers_Handler,
+		},
+		{
+			MethodName: "AdminGetUser",
+			Handler:    _AdminService_AdminGetUser_Handler,
+		},
+		{
+			MethodName: "AdminRevokeUserSessions",
+			Handler:    _AdminService_AdminRevokeUserSessions_Handler,
+		},
+		{
+			MethodName: "AdminGetOrganizationActivity",
+			Handler:    _AdminService_AdminGetOrganizationActivity_Handler,
+		},
+		{
+			MethodName: "AdminGetOrganizationSecurity",
+			Handler:    _AdminService_AdminGetOrganizationSecurity_Handler,
+		},
+		{
+			MethodName: "AdminGetPlatformOverview",
+			Handler:    _AdminService_AdminGetPlatformOverview_Handler,
+		},
+		{
+			MethodName: "AdminListOrgActivation",
+			Handler:    _AdminService_AdminListOrgActivation_Handler,
+		},
+	},
+	Streams:  []grpc.StreamDesc{},
 	Metadata: "relay/server/v1/server.proto",
 }

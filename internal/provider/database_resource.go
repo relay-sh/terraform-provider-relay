@@ -105,11 +105,15 @@ func (r *databaseResource) Schema(ctx context.Context, _ resource.SchemaRequest,
 					"count":    schema.Int64Attribute{Required: true, MarkdownDescription: "Number of nodes."},
 					"provider": schema.StringAttribute{Required: true, MarkdownDescription: "Infrastructure provider."},
 					"region":   schema.StringAttribute{Required: true, MarkdownDescription: "Provider region."},
+					"tier": schema.StringAttribute{
+						Required:            true,
+						MarkdownDescription: "Machine catalog name, for example `R20`. CPU and memory are derived from it; an unknown name is rejected.",
+					},
 					"resources": schema.SingleNestedAttribute{
 						Required: true,
 						Attributes: map[string]schema.Attribute{
-							"cpu":           schema.StringAttribute{Required: true, MarkdownDescription: "CPU request, Kubernetes quantity."},
-							"memory":        schema.StringAttribute{Required: true, MarkdownDescription: "Memory request, Kubernetes quantity."},
+							"cpu":           schema.StringAttribute{Computed: true, PlanModifiers: keepString, MarkdownDescription: "CPU request derived from `tier`."},
+							"memory":        schema.StringAttribute{Computed: true, PlanModifiers: keepString, MarkdownDescription: "Memory request derived from `tier`."},
 							"storage":       schema.StringAttribute{Required: true, MarkdownDescription: "Volume size, Kubernetes quantity."},
 							"storage_class": schema.StringAttribute{Optional: true, Computed: true, PlanModifiers: keepString, MarkdownDescription: "Storage class. Defaults to the platform's."},
 							"iops":          schema.Int64Attribute{Optional: true, Computed: true, PlanModifiers: keepInt, MarkdownDescription: "Provisioned IOPS."},
@@ -349,7 +353,6 @@ func databaseSpecToProto(m databaseResourceModel) *serverv1.DatabaseSpec {
 	spec := &serverv1.DatabaseSpec{
 		Engine:         m.Engine.ValueString(),
 		Version:        m.Version.ValueString(),
-		Topology:       "replication",
 		Nodes:          nodesToProto(m.Nodes),
 		Params:         stringMapToGo(m.Params),
 		BackupsEnabled: m.BackupsEnabled.ValueBool(),

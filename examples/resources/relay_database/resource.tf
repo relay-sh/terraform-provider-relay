@@ -9,9 +9,8 @@ resource "relay_database" "billing" {
     count    = 2
     provider = "aws"
     region   = "us-east-1"
+    tier     = "R20"
     resources = {
-      cpu     = "2"
-      memory  = "8Gi"
       storage = "100Gi"
     }
   }]

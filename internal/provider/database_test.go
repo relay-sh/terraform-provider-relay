@@ -31,13 +31,12 @@ resource "relay_database" "this" {
     count    = 2
     provider = "aws"
     region   = "us-east-1"
+    tier     = "R10"
     resources = {
-      cpu     = "1"
-      memory  = "2Gi"
       storage = %q
       iops    = 3000
     }
-    tags = { tier = "gold" }
+    tags = { env = "gold" }
   }]
 
   params                = { max_connections = "200" }
@@ -86,7 +85,8 @@ func TestDatabaseResource_Lifecycle(t *testing.T) {
 					resource.TestCheckResourceAttr("relay_database.this", "nodes.0.resources.storage_class", "standard"),
 					resource.TestCheckResourceAttr("relay_database.this", "nodes.0.resources.iops", "3000"),
 					resource.TestCheckNoResourceAttr("relay_database.this", "nodes.0.resources.throughput"),
-					resource.TestCheckResourceAttr("relay_database.this", "nodes.0.tags.tier", "gold"),
+					resource.TestCheckResourceAttr("relay_database.this", "nodes.0.tier", "R10"),
+					resource.TestCheckResourceAttr("relay_database.this", "nodes.0.tags.env", "gold"),
 					resource.TestCheckResourceAttr("relay_database.this", "postgresql_parameters.work_mem", "64MB"),
 					resource.TestCheckResourceAttr("relay_database.this", "replication.synchronous_replicas", "1"),
 					resource.TestCheckResourceAttr("relay_database.this", "endpoint_host", "billing.db.relay"),
@@ -100,8 +100,12 @@ func TestDatabaseResource_Lifecycle(t *testing.T) {
 						if !f.lastDBCreate.GetDefaultConnections().GetReadonly() || f.lastDBCreate.GetDefaultConnections().GetAdmin() {
 							return errors.New("default_connections must reach CreateDatabase")
 						}
-						if got := f.lastDBCreate.GetSpec().GetTopology(); got != "replication" {
-							return fmt.Errorf("topology = %q, want replication", got)
+						n := f.lastDBCreate.GetSpec().GetNodes()[0]
+						if n.GetTier() != "R10" {
+							return fmt.Errorf("tier = %q, want R10", n.GetTier())
+						}
+						if n.GetResources().GetCpu() != "" || n.GetResources().GetMemory() != "" {
+							return fmt.Errorf("cpu/memory must not be sent, got %q/%q", n.GetResources().GetCpu(), n.GetResources().GetMemory())
 						}
 						return nil
 					},

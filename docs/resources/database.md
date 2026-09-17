@@ -24,9 +24,8 @@ resource "relay_database" "billing" {
     count    = 2
     provider = "aws"
     region   = "us-east-1"
+    tier     = "R20"
     resources = {
-      cpu     = "2"
-      memory  = "8Gi"
       storage = "100Gi"
     }
   }]
@@ -88,6 +87,7 @@ Required:
 - `region` (String) Provider region.
 - `resources` (Attributes) (see [below for nested schema](#nestedatt--nodes--resources))
 - `role` (String) Node role, for example `data`.
+- `tier` (String) Machine catalog name, for example `R20`. CPU and memory are derived from it; an unknown name is rejected.
 
 Optional:
 
@@ -98,8 +98,6 @@ Optional:
 
 Required:
 
-- `cpu` (String) CPU request, Kubernetes quantity.
-- `memory` (String) Memory request, Kubernetes quantity.
 - `storage` (String) Volume size, Kubernetes quantity.
 
 Optional:
@@ -107,6 +105,11 @@ Optional:
 - `iops` (Number) Provisioned IOPS.
 - `storage_class` (String) Storage class. Defaults to the platform's.
 - `throughput` (Number) Provisioned throughput.
+
+Read-Only:
+
+- `cpu` (String) CPU request derived from `tier`.
+- `memory` (String) Memory request derived from `tier`.
 
 
 
