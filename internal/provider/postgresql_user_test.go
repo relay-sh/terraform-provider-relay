@@ -179,6 +179,26 @@ resource "relay_postgresql_user" "this" {
 					},
 				),
 			},
+			{
+				Config: providerBlock(f) + fmt.Sprintf(`
+resource "relay_postgresql_user" "this" {
+  workspace_id      = %q
+  cluster_id        = "db-1"
+  username          = "reporting"
+  generate_password = true
+  roles = [
+    { role = "admin" },
+    { role = "readOnly", database = "app" },
+  ]
+}
+`, dbWorkspace),
+				Check: func(*terraform.State) error {
+					if n := len(f.lastUserUpdate.GetRoles()); n != 2 {
+						return fmt.Errorf("granting an extra role must send the whole set, got %d roles", n)
+					}
+					return nil
+				},
+			},
 		},
 	})
 }
