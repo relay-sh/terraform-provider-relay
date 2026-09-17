@@ -88,7 +88,7 @@ resource "relay_connection" "this" {
 	})
 }
 
-func TestAccDatabaseAndUser(t *testing.T) {
+func TestAccPostgreSQLClusterAndUser(t *testing.T) {
 	if os.Getenv("TF_ACC") == "" || os.Getenv("RELAY_ACC_DATABASES") == "" {
 		t.Skip("set TF_ACC=1 and RELAY_ACC_DATABASES=1 to provision real clusters")
 	}
@@ -101,38 +101,38 @@ resource "relay_workspace" "this" {
   name = %[1]q
 }
 
-resource "relay_database" "this" {
+resource "relay_postgresql_cluster" "this" {
   workspace_id = relay_workspace.this.id
   name         = "pg"
-  engine       = "postgresql"
   version      = %[2]q
-  nodes = [{
-    role     = "data"
-    count    = 1
-    provider = %[3]q
-    region   = %[4]q
-    resources = { cpu = "500m", memory = "1Gi", storage = "5Gi" }
-  }]
+
+  nodes = {
+    primary = {
+      cloud     = %[3]q
+      region    = %[4]q
+      resources = { cpu = "500m", memory = "1Gi", storage = "5Gi" }
+    }
+  }
 }
 
-resource "relay_database_user" "this" {
+resource "relay_postgresql_user" "this" {
   workspace_id      = relay_workspace.this.id
-  database_id       = relay_database.this.id
+  cluster_id        = relay_postgresql_cluster.this.id
   username          = "tfacc"
   generate_password = true
-  roles             = [{ role = "readOnly", db = "postgres" }]
+  roles             = [{ role = "readOnly", database = "postgres" }]
 }
 
-data "relay_database" "this" {
+data "relay_postgresql_cluster" "this" {
   workspace_id = relay_workspace.this.id
-  name         = relay_database.this.name
+  name         = relay_postgresql_cluster.this.name
 }
-`, name, envOr("RELAY_ACC_PG_VERSION", "17"), envOr("RELAY_ACC_PROVIDER", "aws"), envOr("RELAY_ACC_REGION", "us-east-1")),
+`, name, envOr("RELAY_ACC_PG_VERSION", "17"), envOr("RELAY_ACC_CLOUD", "aws"), envOr("RELAY_ACC_REGION", "us-east-1")),
 			Check: resource.ComposeAggregateTestCheckFunc(
-				resource.TestCheckResourceAttr("relay_database.this", "phase", "running"),
-				resource.TestCheckResourceAttr("relay_database_user.this", "phase", "Ready"),
-				resource.TestCheckResourceAttrSet("relay_database_user.this", "generated_password"),
-				resource.TestCheckResourceAttrPair("data.relay_database.this", "id", "relay_database.this", "id"),
+				resource.TestCheckResourceAttr("relay_postgresql_cluster.this", "phase", "running"),
+				resource.TestCheckResourceAttr("relay_postgresql_user.this", "phase", "Ready"),
+				resource.TestCheckResourceAttrSet("relay_postgresql_user.this", "generated_password"),
+				resource.TestCheckResourceAttrPair("data.relay_postgresql_cluster.this", "id", "relay_postgresql_cluster.this", "id"),
 			),
 		}},
 	})
