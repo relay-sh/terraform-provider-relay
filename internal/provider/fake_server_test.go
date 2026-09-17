@@ -612,7 +612,7 @@ func (f *fakeServer) UpdateDatabaseUser(ctx context.Context, req *serverv1.Updat
 		return nil, status.Error(codes.NotFound, "user not found")
 	}
 	if len(req.GetRoles()) > 0 {
-		return nil, status.Error(codes.InvalidArgument, "role and database(s) are immutable")
+		u.Roles = req.GetRoles()
 	}
 	if req.GetDescription() != "" {
 		u.Description = req.GetDescription()

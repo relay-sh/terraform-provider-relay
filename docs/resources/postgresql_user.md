@@ -3,12 +3,12 @@
 page_title: "relay_postgresql_user Resource - relay"
 subcategory: ""
 description: |-
-  A PostgreSQL user on a managed cluster. Roles and the auth method cannot change in place; changing them replaces the user, because the operator only grants privileges and never revokes them. description, connection_limit and statement_timeout can be changed but not cleared.
+  A PostgreSQL user on a managed cluster. Username and auth method cannot change in place. Roles and databases can: the operator revokes the previous preset before granting the new one. description, connection_limit and statement_timeout can be changed but not cleared.
 ---
 
 # relay_postgresql_user (Resource)
 
-A PostgreSQL user on a managed cluster. Roles and the auth method cannot change in place; changing them replaces the user, because the operator only grants privileges and never revokes them. `description`, `connection_limit` and `statement_timeout` can be changed but not cleared.
+A PostgreSQL user on a managed cluster. Username and auth method cannot change in place. Roles and databases can: the operator revokes the previous preset before granting the new one. `description`, `connection_limit` and `statement_timeout` can be changed but not cleared.
 
 ## Example Usage
 
@@ -35,7 +35,7 @@ output "app_password" {
 ### Required
 
 - `cluster_id` (String) `relay_postgresql_cluster` ID.
-- `roles` (Attributes List) Roles granted to the user. (see [below for nested schema](#nestedatt--roles))
+- `roles` (Attributes List) Roles granted to the user. Changing them updates the user in place. (see [below for nested schema](#nestedatt--roles))
 - `username` (String) PostgreSQL role name.
 - `workspace_id` (String) Workspace of the cluster.
 

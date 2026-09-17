@@ -108,7 +108,7 @@ func TestPostgreSQLUserResource_Lifecycle(t *testing.T) {
 						case u.GetExpiresAt() == nil || !u.GetExpiresAt().AsTime().IsZero():
 							return errors.New("removing expires_at must send a zero expiry")
 						case len(u.GetRoles()) != 0:
-							return errors.New("roles are immutable and must never be sent on update")
+							return errors.New("unchanged roles must not be sent on update")
 						}
 						return nil
 					},
@@ -142,7 +142,7 @@ func TestPostgreSQLUserResource_Lifecycle(t *testing.T) {
 	})
 }
 
-func TestPostgreSQLUserResource_GeneratedPasswordAndReplace(t *testing.T) {
+func TestPostgreSQLUserResource_RoleChangeUpdatesInPlace(t *testing.T) {
 	f := startFakeServer(t)
 	resource.UnitTest(t, resource.TestCase{
 		ProtoV6ProviderFactories: factories(relay.Dial),
@@ -157,24 +157,23 @@ func TestPostgreSQLUserResource_GeneratedPasswordAndReplace(t *testing.T) {
 			{
 				Config: providerBlock(f) + fmt.Sprintf(`
 resource "relay_postgresql_user" "this" {
-  workspace_id         = %q
-  cluster_id           = "db-1"
-  username             = "reporting"
-  generate_password    = true
-  roles                = [{ role = "admin" }]
-  restricted_resources = []
+  workspace_id      = %q
+  cluster_id        = "db-1"
+  username          = "reporting"
+  generate_password = true
+  roles             = [{ role = "admin" }]
 }
 `, dbWorkspace),
 				Check: resource.ComposeAggregateTestCheckFunc(
 					resource.TestCheckResourceAttr("relay_postgresql_user.this", "roles.0.role", "admin"),
 					resource.TestCheckResourceAttr("relay_postgresql_user.this", "roles.0.database", ""),
-					resource.TestCheckResourceAttr("relay_postgresql_user.this", "restricted_resources.#", "0"),
 					func(*terraform.State) error {
-						if n := len(f.callsTo("CreateDatabaseUser")); n != 2 {
-							return fmt.Errorf("a role change must replace the user, got %d creates", n)
+						if n := len(f.callsTo("CreateDatabaseUser")); n != 1 {
+							return fmt.Errorf("a role change must update in place, got %d creates", n)
 						}
-						if len(f.callsTo("UpdateDatabaseUser")) != 0 {
-							return errors.New("a role change must never be sent as an update")
+						u := f.lastUserUpdate
+						if u == nil || len(u.GetRoles()) != 1 || u.GetRoles()[0].GetRole() != "admin" {
+							return fmt.Errorf("role change must be sent as an update, got %+v", u)
 						}
 						return nil
 					},

@@ -74,8 +74,7 @@ func (r *postgresqlUserResource) Schema(ctx context.Context, _ resource.SchemaRe
 	keep := []planmodifier.String{stringplanmodifier.UseStateForUnknown()}
 
 	resp.Schema = schema.Schema{
-		MarkdownDescription: "A PostgreSQL user on a managed cluster. Roles and the auth method cannot change in place; changing them replaces the user, " +
-			"because the operator only grants privileges and never revokes them. `description`, `connection_limit` and `statement_timeout` can be changed but not cleared.",
+		MarkdownDescription: "A PostgreSQL user on a managed cluster. Username and auth method cannot change in place. Roles and databases can: the operator revokes the previous preset before granting the new one. `description`, `connection_limit` and `statement_timeout` can be changed but not cleared.",
 		Attributes: map[string]schema.Attribute{
 			"id":           schema.StringAttribute{Computed: true, PlanModifiers: keep, MarkdownDescription: "`<cluster_id>/<username>`."},
 			"workspace_id": schema.StringAttribute{Required: true, PlanModifiers: replace, MarkdownDescription: "Workspace of the cluster."},
@@ -104,8 +103,7 @@ func (r *postgresqlUserResource) Schema(ctx context.Context, _ resource.SchemaRe
 			"roles": schema.ListNestedAttribute{
 				Required:            true,
 				Validators:          []validator.List{listvalidator.SizeAtLeast(1)},
-				PlanModifiers:       []planmodifier.List{listplanmodifier.RequiresReplace()},
-				MarkdownDescription: "Roles granted to the user.",
+				MarkdownDescription: "Roles granted to the user. Changing them updates the user in place.",
 				NestedObject: schema.NestedAttributeObject{Attributes: map[string]schema.Attribute{
 					"role": schema.StringAttribute{
 						Required:            true,
@@ -269,6 +267,9 @@ func (r *postgresqlUserResource) Update(ctx context.Context, req resource.Update
 	if !plan.Password.Equal(prior.Password) {
 		update.Password = stringPtr(plan.Password.ValueString())
 	}
+	if !rolesEqual(plan.Roles, prior.Roles) {
+		update.Roles = rolesToProto(plan.Roles)
+	}
 	if !plan.ExpiresAt.Equal(prior.ExpiresAt) {
 		update.ExpiresAt = expires
 		if expires == nil {
@@ -345,6 +346,18 @@ func rolesToProto(roles []userRoleModel) []*serverv1.DatabaseUserRole {
 		out = append(out, &serverv1.DatabaseUserRole{Role: r.Role.ValueString(), Db: r.Database.ValueString()})
 	}
 	return out
+}
+
+func rolesEqual(a, b []userRoleModel) bool {
+	if len(a) != len(b) {
+		return false
+	}
+	for i := range a {
+		if a[i].Role.ValueString() != b[i].Role.ValueString() || a[i].Database.ValueString() != b[i].Database.ValueString() {
+			return false
+		}
+	}
+	return true
 }
 
 func rolesFromProto(roles []*serverv1.DatabaseUserRole) []userRoleModel {
