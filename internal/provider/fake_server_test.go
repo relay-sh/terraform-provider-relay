@@ -82,6 +82,7 @@ func startFakeServer(t *testing.T) *fakeServer {
 		userCountdown: map[string]int{},
 		providers: []*serverv1.DatabaseProvider{
 			{Name: "aws-use1", Cloud: "aws", Region: "us-east-1", Engines: []string{"postgresql"}},
+			{Name: "aws-euw1", Cloud: "aws", Region: "eu-west-1", Engines: []string{"postgresql"}},
 			{Name: "mongo-euw1", Cloud: "aws", Region: "eu-west-1", Engines: []string{"mongodb"}},
 			{Name: "kubernetes"},
 		},

@@ -31,6 +31,7 @@ type ResourceRequirements struct {
 	StorageClass  string                 `protobuf:"bytes,4,opt,name=storage_class,json=storageClass,proto3" json:"storage_class,omitempty"`
 	Iops          *int32                 `protobuf:"varint,5,opt,name=iops,proto3,oneof" json:"iops,omitempty"`
 	Throughput    *int32                 `protobuf:"varint,6,opt,name=throughput,proto3,oneof" json:"throughput,omitempty"`
+	DiskType      string                 `protobuf:"bytes,7,opt,name=disk_type,json=diskType,proto3" json:"disk_type,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
@@ -105,6 +106,13 @@ func (x *ResourceRequirements) GetThroughput() int32 {
 		return *x.Throughput
 	}
 	return 0
+}
+
+func (x *ResourceRequirements) GetDiskType() string {
+	if x != nil {
+		return x.DiskType
+	}
+	return ""
 }
 
 type NodeSpec struct {
@@ -29835,7 +29843,7 @@ var File_relay_server_v1_server_proto protoreflect.FileDescriptor
 
 const file_relay_server_v1_server_proto_rawDesc = "" +
 	"\n" +
-	"\x1crelay/server/v1/server.proto\x12\x0frelay.server.v1\x1a google/protobuf/field_mask.proto\x1a\x1fgoogle/protobuf/timestamp.proto\"\xd5\x01\n" +
+	"\x1crelay/server/v1/server.proto\x12\x0frelay.server.v1\x1a google/protobuf/field_mask.proto\x1a\x1fgoogle/protobuf/timestamp.proto\"\xf2\x01\n" +
 	"\x14ResourceRequirements\x12\x10\n" +
 	"\x03cpu\x18\x01 \x01(\tR\x03cpu\x12\x16\n" +
 	"\x06memory\x18\x02 \x01(\tR\x06memory\x12\x18\n" +
@@ -29844,7 +29852,8 @@ const file_relay_server_v1_server_proto_rawDesc = "" +
 	"\x04iops\x18\x05 \x01(\x05H\x00R\x04iops\x88\x01\x01\x12#\n" +
 	"\n" +
 	"throughput\x18\x06 \x01(\x05H\x01R\n" +
-	"throughput\x88\x01\x01B\a\n" +
+	"throughput\x88\x01\x01\x12\x1b\n" +
+	"\tdisk_type\x18\a \x01(\tR\bdiskTypeB\a\n" +
 	"\x05_iopsB\r\n" +
 	"\v_throughput\"\xb3\x02\n" +
 	"\bNodeSpec\x12\x12\n" +
