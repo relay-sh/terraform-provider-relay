@@ -45,6 +45,7 @@ type resourcesModel struct {
 	StorageClass types.String `tfsdk:"storage_class"`
 	IOPS         types.Int64  `tfsdk:"iops"`
 	Throughput   types.Int64  `tfsdk:"throughput"`
+	DiskType     types.String `tfsdk:"disk_type"`
 }
 
 var (
@@ -112,6 +113,9 @@ func nodesToProto(nodes map[string]nodeGroupModel, catalog []*serverv1.DatabaseP
 		if v := n.Resources.Throughput; !v.IsNull() && !v.IsUnknown() {
 			res.Throughput = int32Ptr(v.ValueInt64())
 		}
+		if v := n.Resources.DiskType; !v.IsNull() && !v.IsUnknown() {
+			res.DiskType = v.ValueString()
+		}
 		out = append(out, &serverv1.NodeSpec{
 			Role:      name,
 			Count:     int32(n.Count.ValueInt64()),
@@ -156,6 +160,7 @@ func nodesFromProto(nodes []*serverv1.NodeSpec, catalog []*serverv1.DatabaseProv
 				StorageClass: types.StringValue(res.GetStorageClass()),
 				IOPS:         optionalInt64(res.Iops),
 				Throughput:   optionalInt64(res.Throughput),
+				DiskType:     types.StringValue(res.GetDiskType()),
 			},
 			Synchronous: types.BoolValue(n.GetTags()[tagNoSync] != tagTrue),
 			Failover:    types.BoolValue(n.GetTags()[tagNoFailover] != tagTrue),

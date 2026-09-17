@@ -179,6 +179,71 @@ func TestPostgreSQLClusterResource_Lifecycle(t *testing.T) {
 	})
 }
 
+func TestPostgreSQLClusterResource_VolumeAttrsInPlace(t *testing.T) {
+	f := startFakeServer(t)
+	base := func(iops int, diskType, storageClass string) string {
+		disk := ""
+		if diskType != "" {
+			disk = fmt.Sprintf("\n        disk_type = %q", diskType)
+		}
+		class := ""
+		if storageClass != "" {
+			class = fmt.Sprintf("\n        storage_class = %q", storageClass)
+		}
+		return providerBlock(f) + fmt.Sprintf(`
+resource "relay_postgresql_cluster" "this" {
+  workspace_id = %q
+  name         = "billing"
+  version      = "18"
+
+  nodes = {
+    primary = {
+      count  = 1
+      cloud  = "aws"
+      region = "us-east-1"
+      tier   = "R10"
+      resources = {
+        storage = "10Gi"
+        iops    = %d%s%s
+      }
+    }
+  }
+}
+`, dbWorkspace, iops, disk, class)
+	}
+
+	resource.UnitTest(t, resource.TestCase{
+		ProtoV6ProviderFactories: factories(relay.Dial),
+		Steps: []resource.TestStep{
+			{
+				Config: base(3000, "gp3", ""),
+				Check: resource.ComposeAggregateTestCheckFunc(
+					resource.TestCheckResourceAttr("relay_postgresql_cluster.this", "nodes.primary.resources.iops", "3000"),
+					resource.TestCheckResourceAttr("relay_postgresql_cluster.this", "nodes.primary.resources.disk_type", "gp3"),
+				),
+			},
+			{
+				Config: base(6000, "io1", ""),
+				Check: resource.ComposeAggregateTestCheckFunc(
+					resource.TestCheckResourceAttr("relay_postgresql_cluster.this", "nodes.primary.resources.iops", "6000"),
+					resource.TestCheckResourceAttr("relay_postgresql_cluster.this", "nodes.primary.resources.disk_type", "io1"),
+					func(*terraform.State) error {
+						res := f.lastDBUpdate.GetSpec().GetNodes()[0].GetResources()
+						if res.GetIops() != 6000 || res.GetDiskType() != "io1" {
+							return fmt.Errorf("update must send iops=6000 disk_type=io1, got iops=%d disk_type=%q", res.GetIops(), res.GetDiskType())
+						}
+						return nil
+					},
+				),
+			},
+			{
+				Config:      base(6000, "io1", "io2"),
+				ExpectError: regexp.MustCompile("Attribute cannot change after creation"),
+			},
+		},
+	})
+}
+
 func TestPostgreSQLClusterResource_MinimalCluster(t *testing.T) {
 	f := startFakeServer(t)
 	config := providerBlock(f) + fmt.Sprintf(`
@@ -351,10 +416,7 @@ resource "relay_postgresql_cluster" "this" {
 		Steps: []resource.TestStep{
 			{Config: primary(3, "us-east-1")},
 			{Config: primary(1, "us-east-1")},
-			{
-				Config:      primary(1, "eu-west-1"),
-				ExpectError: regexp.MustCompile("Attribute cannot change after creation"),
-			},
+			{Config: primary(1, "eu-west-1")},
 			{
 				Config:      withAnalytics,
 				ExpectError: regexp.MustCompile("Cannot place the cluster"),

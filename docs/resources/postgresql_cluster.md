@@ -119,9 +119,10 @@ Required:
 
 Optional:
 
-- `iops` (Number) Provisioned IOPS. Set once: a plan that changes it fails, and a cluster that sets it cannot grow its volume yet.
-- `storage_class` (String) Storage class. Defaults to the platform's. Set once: a plan that changes it fails.
-- `throughput` (Number) Provisioned throughput. Set once: a plan that changes it fails, and a cluster that sets it cannot grow its volume yet.
+- `disk_type` (String) Cloud volume type. AWS: `gp3` (default), `io1`, `io2`. GCP: `pd-ssd`, `pd-balanced`, `hyperdisk-balanced`. Azure: `PremiumV2_LRS`, `UltraSSD_LRS`. Can change in place. `io1`/`io2` require `iops`.
+- `iops` (Number) Provisioned IOPS. Can change in place. Required when `disk_type` is `io1` or `io2`.
+- `storage_class` (String) Kubernetes storage class (provisioner). Defaults to the platform's. Set once: a plan that changes it fails. Use `disk_type` for gp3/io1/io2.
+- `throughput` (Number) Provisioned throughput in MiB/s. Can change in place.
 
 Read-Only:
 

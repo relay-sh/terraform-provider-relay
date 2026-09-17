@@ -53,6 +53,7 @@ func TestNodesRoundTrip(t *testing.T) {
 			Resources: resourcesModel{
 				CPU: types.StringValue("1"), Memory: types.StringValue("1Gi"), Storage: types.StringValue("1Gi"),
 				StorageClass: types.StringUnknown(), IOPS: types.Int64Unknown(), Throughput: types.Int64Value(250),
+				DiskType: types.StringUnknown(),
 			},
 			Synchronous: types.BoolValue(true), Failover: types.BoolValue(true),
 		},
@@ -62,6 +63,7 @@ func TestNodesRoundTrip(t *testing.T) {
 			Resources: resourcesModel{
 				CPU: types.StringValue("2"), Memory: types.StringValue("4Gi"), Storage: types.StringValue("9Gi"),
 				StorageClass: types.StringValue("gp3"), IOPS: types.Int64Value(3000), Throughput: types.Int64Null(),
+				DiskType: types.StringValue("io1"),
 			},
 			Synchronous: types.BoolValue(false), Failover: types.BoolValue(false),
 		},
@@ -92,9 +94,15 @@ func TestNodesRoundTrip(t *testing.T) {
 	if res.Iops != nil || res.GetThroughput() != 250 {
 		t.Errorf("unknown limits must be omitted and known ones sent: %+v", res)
 	}
+	if res.GetDiskType() != "" {
+		t.Errorf("unknown disk_type must be omitted, got %q", res.GetDiskType())
+	}
+	if out[0].GetResources().GetDiskType() != "io1" {
+		t.Errorf("analytics disk_type = %q, want io1", out[0].GetResources().GetDiskType())
+	}
 
 	back := nodesFromProto(out, testCatalog)
-	if g := back["analytics"]; g.Synchronous.ValueBool() || g.Failover.ValueBool() || g.Resources.IOPS.ValueInt64() != 3000 || g.Tier.ValueString() != "R20" {
+	if g := back["analytics"]; g.Synchronous.ValueBool() || g.Failover.ValueBool() || g.Resources.IOPS.ValueInt64() != 3000 || g.Tier.ValueString() != "R20" || g.Resources.DiskType.ValueString() != "io1" {
 		t.Errorf("analytics round trip = %+v", g)
 	}
 	if g := back["primary"]; !g.Synchronous.ValueBool() || !g.Failover.ValueBool() || !g.Resources.IOPS.IsNull() || g.Cloud.ValueString() != "aws" || g.Tier.ValueString() != "R10" {

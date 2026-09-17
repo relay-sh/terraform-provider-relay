@@ -102,11 +102,11 @@ func (r *postgresqlClusterResource) Schema(ctx context.Context, _ resource.Schem
 					},
 					"cloud": schema.StringAttribute{
 						Optional: true, Computed: true, PlanModifiers: keepString,
-						MarkdownDescription: "Cloud the group runs in, for example `aws`. With `region` it selects one of the platform's provisioners; omit both to let the platform choose. Set once: a plan that changes it fails.",
+						MarkdownDescription: "Cloud the group runs in, for example `aws`. With `region` it selects the provisioner. Changing cloud or region moves the group (add dest, switchover, drain source).",
 					},
 					"region": schema.StringAttribute{
 						Optional: true, Computed: true, PlanModifiers: keepString,
-						MarkdownDescription: "Region the group runs in, for example `us-east-1`. Set once: a plan that changes it fails.",
+						MarkdownDescription: "Region the group runs in, for example `us-east-1`. Changing it moves the group to that region.",
 					},
 					"tier": schema.StringAttribute{
 						Required:            true,
@@ -120,15 +120,19 @@ func (r *postgresqlClusterResource) Schema(ctx context.Context, _ resource.Schem
 							"storage": schema.StringAttribute{Required: true, MarkdownDescription: "Volume size, Kubernetes quantity. It can only grow; a plan that shrinks it fails."},
 							"storage_class": schema.StringAttribute{
 								Optional: true, Computed: true, PlanModifiers: keepString,
-								MarkdownDescription: "Storage class. Defaults to the platform's. Set once: a plan that changes it fails.",
+								MarkdownDescription: "Kubernetes storage class (provisioner). Defaults to the platform's. Set once: a plan that changes it fails. Use `disk_type` for gp3/io1/io2.",
 							},
 							"iops": schema.Int64Attribute{
 								Optional: true, Computed: true, PlanModifiers: keepInt,
-								MarkdownDescription: "Provisioned IOPS. Set once: a plan that changes it fails, and a cluster that sets it cannot grow its volume yet.",
+								MarkdownDescription: "Provisioned IOPS. Can change in place. Required when `disk_type` is `io1` or `io2`.",
 							},
 							"throughput": schema.Int64Attribute{
 								Optional: true, Computed: true, PlanModifiers: keepInt,
-								MarkdownDescription: "Provisioned throughput. Set once: a plan that changes it fails, and a cluster that sets it cannot grow its volume yet.",
+								MarkdownDescription: "Provisioned throughput in MiB/s. Can change in place.",
+							},
+							"disk_type": schema.StringAttribute{
+								Optional: true, Computed: true, PlanModifiers: keepString,
+								MarkdownDescription: "Cloud volume type. AWS: `gp3` (default), `io1`, `io2`. GCP: `pd-ssd`, `pd-balanced`, `hyperdisk-balanced`. Azure: `PremiumV2_LRS`, `UltraSSD_LRS`. Can change in place. `io1`/`io2` require `iops`.",
 							},
 						},
 					},
@@ -233,15 +237,11 @@ func (r *postgresqlClusterResource) ModifyPlan(ctx context.Context, req resource
 		group := path.Root("nodes").AtMapKey(name)
 		resources := group.AtName("resources")
 		for _, f := range []createOnlyField{
-			{group.AtName("cloud"), planned.Cloud, current.Cloud},
-			{group.AtName("region"), planned.Region, current.Region},
 			{resources.AtName("storage_class"), planned.Resources.StorageClass, current.Resources.StorageClass},
-			{resources.AtName("iops"), planned.Resources.IOPS, current.Resources.IOPS},
-			{resources.AtName("throughput"), planned.Resources.Throughput, current.Resources.Throughput},
 		} {
 			if !f.planned.IsUnknown() && !f.planned.Equal(f.current) {
 				resp.Diagnostics.AddAttributeError(f.path, "Attribute cannot change after creation",
-					"Relay picks the group's placement and provisions its volume once. Destroy and recreate the cluster to change it.")
+					"The volume claim template is fixed at creation. Destroy and recreate the cluster to change storage_class.")
 			}
 		}
 		if shrinks(planned.Resources.Storage, current.Resources.Storage) {
