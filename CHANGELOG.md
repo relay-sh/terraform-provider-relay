@@ -3,6 +3,7 @@
 ENHANCEMENTS:
 
 * resource/relay_postgresql_cluster: node groups take a catalog `tier`; CPU and memory are computed from it
+* resource/relay_postgresql_user: `roles` accepts unknown values, so a user can reference a cluster created in the same apply
 
 FEATURES:
 

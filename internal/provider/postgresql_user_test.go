@@ -1,11 +1,14 @@
 package provider
 
 import (
+	"context"
 	"errors"
 	"fmt"
 	"regexp"
 	"testing"
 
+	"github.com/hashicorp/terraform-plugin-framework/attr"
+	"github.com/hashicorp/terraform-plugin-framework/types"
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
 	"github.com/hashicorp/terraform-plugin-testing/terraform"
 	"google.golang.org/grpc/codes"
@@ -201,6 +204,73 @@ resource "relay_postgresql_user" "this" {
 			},
 		},
 	})
+}
+
+func TestPostgreSQLUserResource_ClusterReference(t *testing.T) {
+	f := startFakeServer(t)
+	resource.UnitTest(t, resource.TestCase{
+		ProtoV6ProviderFactories: factories(relay.Dial),
+		Steps: []resource.TestStep{{
+			Config: providerBlock(f) + fmt.Sprintf(`
+resource "relay_postgresql_cluster" "this" {
+  workspace_id = %q
+  name         = "billing"
+  nodes = {
+    primary = {
+      tier      = "R5"
+      resources = { storage = "5Gi" }
+    }
+  }
+}
+
+resource "relay_postgresql_user" "this" {
+  workspace_id      = %q
+  cluster_id        = relay_postgresql_cluster.this.id
+  username          = "app"
+  generate_password = true
+  roles             = [{ role = "readWrite", database = "billing" }]
+}
+`, dbWorkspace, dbWorkspace),
+			Check: resource.ComposeAggregateTestCheckFunc(
+				resource.TestCheckResourceAttrPair("relay_postgresql_user.this", "cluster_id", "relay_postgresql_cluster.this", "id"),
+				resource.TestCheckResourceAttr("relay_postgresql_user.this", "roles.0.database", "billing"),
+			),
+		}},
+	})
+}
+
+func TestRolesToProtoSkipsUnknown(t *testing.T) {
+	elem := types.ObjectType{AttrTypes: userRoleAttrTypes}
+	if rolesToProto(types.ListNull(elem)) != nil || rolesToProto(types.ListUnknown(elem)) != nil {
+		t.Fatal("null or unknown roles must not be sent")
+	}
+}
+
+func TestForKnownUserRoles(t *testing.T) {
+	ctx := context.Background()
+	elem := types.ObjectType{AttrTypes: userRoleAttrTypes}
+	called := 0
+	forKnownUserRoles(ctx, types.ListNull(elem), func(int, userRoleModel) { called++ })
+	forKnownUserRoles(ctx, types.ListUnknown(elem), func(int, userRoleModel) { called++ })
+	unknownDB, _ := types.ObjectValue(userRoleAttrTypes, map[string]attr.Value{
+		"role":     types.StringValue("readWrite"),
+		"database": types.StringUnknown(),
+	})
+	knownUnknown, _ := types.ListValue(elem, []attr.Value{unknownDB})
+	forKnownUserRoles(ctx, knownUnknown, func(int, userRoleModel) { called++ })
+	if called != 0 {
+		t.Fatal("null, unknown, or unknown fields must be skipped")
+	}
+
+	missing, _ := types.ObjectValue(userRoleAttrTypes, map[string]attr.Value{
+		"role":     types.StringValue("readWrite"),
+		"database": types.StringNull(),
+	})
+	known, _ := types.ListValue(elem, []attr.Value{missing})
+	forKnownUserRoles(ctx, known, func(int, userRoleModel) { called++ })
+	if called != 1 {
+		t.Fatalf("a known role must be visited, got %d", called)
+	}
 }
 
 func TestPostgreSQLUserResource_ConfigGuards(t *testing.T) {
