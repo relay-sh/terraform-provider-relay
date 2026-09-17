@@ -93,7 +93,7 @@ func (r *postgresqlClusterResource) Schema(ctx context.Context, _ resource.Schem
 				Required:   true,
 				Validators: []validator.Map{mapvalidator.SizeAtLeast(1)},
 				MarkdownDescription: "Node groups, keyed by group name. The key is the group's Patroni member role, so changing a value inside one group " +
-					"is a diff on that group alone and `ignore_changes` can address it as `nodes[\"analytics\"].resources.cpu`.",
+					"is a diff on that group alone and `ignore_changes` can address it as `nodes[\"analytics\"].tier`.",
 				NestedObject: schema.NestedAttributeObject{Attributes: map[string]schema.Attribute{
 					"count": schema.Int64Attribute{
 						Optional: true, Computed: true, Default: int64default.StaticInt64(1),
@@ -108,11 +108,15 @@ func (r *postgresqlClusterResource) Schema(ctx context.Context, _ resource.Schem
 						Optional: true, Computed: true, PlanModifiers: keepString,
 						MarkdownDescription: "Region the group runs in, for example `us-east-1`. Set once: a plan that changes it fails.",
 					},
+					"tier": schema.StringAttribute{
+						Required:            true,
+						MarkdownDescription: "Machine catalog name, for example `R20`. CPU and memory are derived from it; an unknown name is rejected. Changing it restarts the group's pods.",
+					},
 					"resources": schema.SingleNestedAttribute{
 						Required: true,
 						Attributes: map[string]schema.Attribute{
-							"cpu":     schema.StringAttribute{Required: true, MarkdownDescription: "CPU request, Kubernetes quantity. Changing it restarts the group's pods."},
-							"memory":  schema.StringAttribute{Required: true, MarkdownDescription: "Memory request, Kubernetes quantity. Changing it restarts the group's pods."},
+							"cpu":     schema.StringAttribute{Computed: true, PlanModifiers: keepString, MarkdownDescription: "CPU request derived from `tier`."},
+							"memory":  schema.StringAttribute{Computed: true, PlanModifiers: keepString, MarkdownDescription: "Memory request derived from `tier`."},
 							"storage": schema.StringAttribute{Required: true, MarkdownDescription: "Volume size, Kubernetes quantity. It can only grow; a plan that shrinks it fails."},
 							"storage_class": schema.StringAttribute{
 								Optional: true, Computed: true, PlanModifiers: keepString,

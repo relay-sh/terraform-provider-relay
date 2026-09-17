@@ -23,9 +23,8 @@ resource "relay_postgresql_cluster" "billing" {
       count  = 3
       cloud  = "aws"
       region = "us-east-1"
+      tier = "R30"
       resources = {
-        cpu     = "2"
-        memory  = "8Gi"
         storage = "100Gi"
       }
     }
@@ -34,9 +33,8 @@ resource "relay_postgresql_cluster" "billing" {
       count  = 2
       cloud  = "aws"
       region = "us-east-1"
+      tier = "R40"
       resources = {
-        cpu     = "4"
-        memory  = "16Gi"
         storage = "200Gi"
       }
       synchronous = false
@@ -71,7 +69,7 @@ resource "relay_postgresql_cluster" "billing" {
 ### Required
 
 - `name` (String) Cluster name, unique in the workspace.
-- `nodes` (Attributes Map) Node groups, keyed by group name. The key is the group's Patroni member role, so changing a value inside one group is a diff on that group alone and `ignore_changes` can address it as `nodes["analytics"].resources.cpu`. (see [below for nested schema](#nestedatt--nodes))
+- `nodes` (Attributes Map) Node groups, keyed by group name. The key is the group's Patroni member role, so changing a value inside one group is a diff on that group alone and `ignore_changes` can address it as `nodes["analytics"].tier`. (see [below for nested schema](#nestedatt--nodes))
 - `workspace_id` (String) Workspace the cluster belongs to.
 
 ### Optional
@@ -102,6 +100,7 @@ resource "relay_postgresql_cluster" "billing" {
 Required:
 
 - `resources` (Attributes) (see [below for nested schema](#nestedatt--nodes--resources))
+- `tier` (String) Machine catalog name, for example `R20`. CPU and memory are derived from it; an unknown name is rejected. Changing it restarts the group's pods.
 
 Optional:
 
@@ -116,8 +115,6 @@ Optional:
 
 Required:
 
-- `cpu` (String) CPU request, Kubernetes quantity. Changing it restarts the group's pods.
-- `memory` (String) Memory request, Kubernetes quantity. Changing it restarts the group's pods.
 - `storage` (String) Volume size, Kubernetes quantity. It can only grow; a plan that shrinks it fails.
 
 Optional:
@@ -125,6 +122,11 @@ Optional:
 - `iops` (Number) Provisioned IOPS. Set once: a plan that changes it fails, and a cluster that sets it cannot grow its volume yet.
 - `storage_class` (String) Storage class. Defaults to the platform's. Set once: a plan that changes it fails.
 - `throughput` (Number) Provisioned throughput. Set once: a plan that changes it fails, and a cluster that sets it cannot grow its volume yet.
+
+Read-Only:
+
+- `cpu` (String) CPU request derived from `tier`.
+- `memory` (String) Memory request derived from `tier`.
 
 
 

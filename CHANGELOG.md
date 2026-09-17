@@ -1,5 +1,9 @@
 ## 0.0.1 (Unreleased)
 
+ENHANCEMENTS:
+
+* resource/relay_postgresql_cluster: node groups take a catalog `tier`; CPU and memory are computed from it
+
 FEATURES:
 
 * **New Data Source:** `relay_organization`
