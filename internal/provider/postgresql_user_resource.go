@@ -44,7 +44,7 @@ type postgresqlUserModel struct {
 	GeneratedPassword   types.String    `tfsdk:"generated_password"`
 	Description         types.String    `tfsdk:"description"`
 	AuthMethod          types.String    `tfsdk:"auth_method"`
-	Roles               []userRoleModel `tfsdk:"roles"`
+	Roles               types.List      `tfsdk:"roles"`
 	RestrictedResources types.List      `tfsdk:"restricted_resources"`
 	ExpiresAt           types.String    `tfsdk:"expires_at"`
 	ConnectionLimit     types.Int64     `tfsdk:"connection_limit"`
@@ -59,6 +59,11 @@ type postgresqlUserModel struct {
 type userRoleModel struct {
 	Role     types.String `tfsdk:"role"`
 	Database types.String `tfsdk:"database"`
+}
+
+var userRoleAttrTypes = map[string]attr.Type{
+	"role":     types.StringType,
+	"database": types.StringType,
 }
 
 func newPostgreSQLUserResource() resource.Resource {
@@ -148,14 +153,14 @@ func (r *postgresqlUserResource) ValidateConfig(ctx context.Context, req resourc
 		resp.Diagnostics.AddAttributeError(path.Root("generate_password"), "Conflicting password settings", "Set password or generate_password = true, not both.")
 	}
 
-	var roles []userRoleModel
+	var roles types.List
 	resp.Diagnostics.Append(req.Config.GetAttribute(ctx, path.Root("roles"), &roles)...)
-	for i, role := range roles {
+	forKnownUserRoles(ctx, roles, func(i int, role userRoleModel) {
 		if role.Role.ValueString() != "admin" && role.Database.IsNull() {
 			resp.Diagnostics.AddAttributeError(path.Root("roles").AtListIndex(i).AtName("database"),
 				"Missing database", role.Role.ValueString()+" grants privileges on one logical database, so it needs database to be set.")
 		}
-	}
+	})
 }
 
 func (r *postgresqlUserResource) Configure(_ context.Context, req resource.ConfigureRequest, resp *resource.ConfigureResponse) {
@@ -267,7 +272,7 @@ func (r *postgresqlUserResource) Update(ctx context.Context, req resource.Update
 	if !plan.Password.Equal(prior.Password) {
 		update.Password = stringPtr(plan.Password.ValueString())
 	}
-	if !rolesEqual(plan.Roles, prior.Roles) {
+	if !plan.Roles.Equal(prior.Roles) {
 		update.Roles = rolesToProto(plan.Roles)
 	}
 	if !plan.ExpiresAt.Equal(prior.ExpiresAt) {
@@ -340,32 +345,45 @@ func userFromProto(u *serverv1.DatabaseUser, prior postgresqlUserModel) postgres
 	return out
 }
 
-func rolesToProto(roles []userRoleModel) []*serverv1.DatabaseUserRole {
-	out := make([]*serverv1.DatabaseUserRole, 0, len(roles))
-	for _, r := range roles {
-		out = append(out, &serverv1.DatabaseUserRole{Role: r.Role.ValueString(), Db: r.Database.ValueString()})
+func forKnownUserRoles(ctx context.Context, roles types.List, fn func(int, userRoleModel)) {
+	if roles.IsNull() || roles.IsUnknown() {
+		return
 	}
-	return out
-}
-
-func rolesEqual(a, b []userRoleModel) bool {
-	if len(a) != len(b) {
-		return false
-	}
-	for i := range a {
-		if a[i].Role.ValueString() != b[i].Role.ValueString() || a[i].Database.ValueString() != b[i].Database.ValueString() {
-			return false
+	var parsed []userRoleModel
+	_ = roles.ElementsAs(ctx, &parsed, false)
+	for i, role := range parsed {
+		if role.Role.IsUnknown() || role.Database.IsUnknown() {
+			continue
 		}
+		fn(i, role)
 	}
-	return true
 }
 
-func rolesFromProto(roles []*serverv1.DatabaseUserRole) []userRoleModel {
-	out := make([]userRoleModel, 0, len(roles))
-	for _, r := range roles {
-		out = append(out, userRoleModel{Role: types.StringValue(r.GetRole()), Database: types.StringValue(r.GetDb())})
+func rolesToProto(roles types.List) []*serverv1.DatabaseUserRole {
+	if roles.IsNull() || roles.IsUnknown() {
+		return nil
+	}
+	out := make([]*serverv1.DatabaseUserRole, 0, len(roles.Elements()))
+	for _, e := range roles.Elements() {
+		attrs := e.(types.Object).Attributes()
+		out = append(out, &serverv1.DatabaseUserRole{
+			Role: attrs["role"].(types.String).ValueString(),
+			Db:   attrs["database"].(types.String).ValueString(),
+		})
 	}
 	return out
+}
+
+func rolesFromProto(roles []*serverv1.DatabaseUserRole) types.List {
+	elemType := types.ObjectType{AttrTypes: userRoleAttrTypes}
+	elems := make([]attr.Value, 0, len(roles))
+	for _, r := range roles {
+		elems = append(elems, types.ObjectValueMust(userRoleAttrTypes, map[string]attr.Value{
+			"role":     types.StringValue(r.GetRole()),
+			"database": types.StringValue(r.GetDb()),
+		}))
+	}
+	return types.ListValueMust(elemType, elems)
 }
 
 func parseExpiry(v types.String) (*timestamppb.Timestamp, error) {
