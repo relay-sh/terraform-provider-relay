@@ -75,13 +75,29 @@ func assertResourceGuards(t *testing.T, r resource.Resource) {
 	}
 }
 
+func TestClusterModifyPlanStopsOnMalformedInput(t *testing.T) {
+	ctx := context.Background()
+	r := newPostgreSQLClusterResource().(*postgresqlClusterResource)
+	var schemaResp resource.SchemaResponse
+	r.Schema(ctx, resource.SchemaRequest{}, &schemaResp)
+
+	var resp resource.ModifyPlanResponse
+	r.ModifyPlan(ctx, resource.ModifyPlanRequest{
+		Plan:  tfsdk.Plan{Schema: schemaResp.Schema, Raw: malformed},
+		State: tfsdk.State{Schema: schemaResp.Schema, Raw: malformed},
+	}, &resp)
+	if !resp.Diagnostics.HasError() {
+		t.Error("ModifyPlan must stop on malformed input")
+	}
+}
+
 func TestResourceGuards(t *testing.T) {
 	assertResourceGuards(t, newWorkspaceResource())
 	assertResourceGuards(t, newConnectionResource())
-	assertResourceGuards(t, newDatabaseResource())
-	assertResourceGuards(t, newDatabaseUserResource())
+	assertResourceGuards(t, newPostgreSQLClusterResource())
+	assertResourceGuards(t, newPostgreSQLUserResource())
 
-	for _, d := range []datasource.DataSource{newWorkspaceDataSource(), newDatabaseDataSource()} {
+	for _, d := range []datasource.DataSource{newWorkspaceDataSource(), newPostgreSQLClusterDataSource()} {
 		var dsSchema datasource.SchemaResponse
 		d.Schema(context.Background(), datasource.SchemaRequest{}, &dsSchema)
 		var readResp datasource.ReadResponse

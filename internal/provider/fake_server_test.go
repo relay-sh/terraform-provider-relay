@@ -34,6 +34,7 @@ type fakeServer struct {
 	addr  string
 	calls []call
 	errs  map[string]error
+	skip  map[string]int
 
 	orgs        map[string]*serverv1.Organization
 	workspaces  map[string]*serverv1.Workspace
@@ -55,6 +56,7 @@ type fakeServer struct {
 	userWithoutTimes  bool
 	lastUserCreate    *serverv1.CreateDatabaseUserRequest
 	lastUserUpdate    *serverv1.UpdateDatabaseUserRequest
+	providers         []*serverv1.DatabaseProvider
 	lastDBCreate      *serverv1.CreateDatabaseRequest
 	lastDBUpdate      *serverv1.UpdateDatabaseRequest
 	lastDBDelete      *serverv1.DeleteDatabaseRequest
@@ -69,6 +71,7 @@ func startFakeServer(t *testing.T) *fakeServer {
 	f := &fakeServer{
 		addr:          lis.Addr().String(),
 		errs:          map[string]error{},
+		skip:          map[string]int{},
 		orgs:          map[string]*serverv1.Organization{},
 		workspaces:    map[string]*serverv1.Workspace{},
 		connections:   map[string]*serverv1.Connection{},
@@ -77,6 +80,11 @@ func startFakeServer(t *testing.T) *fakeServer {
 		readyAfter:    2,
 		users:         map[string]*serverv1.DatabaseUser{},
 		userCountdown: map[string]int{},
+		providers: []*serverv1.DatabaseProvider{
+			{Name: "aws-use1", Cloud: "aws", Region: "us-east-1", Engines: []string{"postgresql"}},
+			{Name: "mongo-euw1", Cloud: "aws", Region: "eu-west-1", Engines: []string{"mongodb"}},
+			{Name: "kubernetes"},
+		},
 	}
 	srv := grpc.NewServer(grpc.UnaryInterceptor(f.snapshot))
 	serverv1.RegisterServerServiceServer(srv, f)
@@ -101,6 +109,12 @@ func (f *fakeServer) set(fn func()) {
 	fn()
 }
 
+func (f *fakeServer) failAfter(method string, calls int, err error) {
+	f.mu.Lock()
+	defer f.mu.Unlock()
+	f.errs[method], f.skip[method] = err, calls
+}
+
 func (f *fakeServer) failWith(method string, err error) {
 	f.mu.Lock()
 	defer f.mu.Unlock()
@@ -116,6 +130,10 @@ func (f *fakeServer) record(ctx context.Context, method string) error {
 		return ""
 	}
 	f.calls = append(f.calls, call{method: method, org: first("x-relay-org-id"), workspace: first("x-relay-workspace-id"), origin: first("x-relay-origin")})
+	if f.skip[method] > 0 {
+		f.skip[method]--
+		return nil
+	}
 	return f.errs[method]
 }
 
@@ -459,10 +477,6 @@ func (f *fakeServer) UpdateDatabase(ctx context.Context, req *serverv1.UpdateDat
 		switch p {
 		case "nodes":
 			db.Spec.Nodes = in.GetNodes()
-		case "params":
-			db.Spec.Params = in.GetParams()
-		case "backups_enabled":
-			db.Spec.BackupsEnabled = in.GetBackupsEnabled()
 		case "replication":
 			db.Spec.Replication = in.GetReplication()
 		case "postgresql":
@@ -514,6 +528,15 @@ func (f *fakeServer) ListDatabases(ctx context.Context, req *serverv1.ListDataba
 		}
 	}
 	return out, nil
+}
+
+func (f *fakeServer) ListDatabaseProviders(ctx context.Context, _ *serverv1.ListDatabaseProvidersRequest) (*serverv1.ListDatabaseProvidersResponse, error) {
+	f.mu.Lock()
+	defer f.mu.Unlock()
+	if err := f.record(ctx, "ListDatabaseProviders"); err != nil {
+		return nil, err
+	}
+	return &serverv1.ListDatabaseProvidersResponse{Providers: f.providers}, nil
 }
 
 func userKey(databaseID, username string) string {
