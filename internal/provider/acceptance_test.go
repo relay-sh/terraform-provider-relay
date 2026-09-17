@@ -106,7 +106,6 @@ resource "relay_database" "this" {
   name         = "pg"
   engine       = "postgresql"
   version      = %[2]q
-  topology     = "standalone"
   nodes = [{
     role     = "data"
     count    = 1

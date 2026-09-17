@@ -457,8 +457,6 @@ func (f *fakeServer) UpdateDatabase(ctx context.Context, req *serverv1.UpdateDat
 	in := req.GetSpec()
 	for _, p := range req.GetUpdateMask().GetPaths() {
 		switch p {
-		case "topology":
-			db.Spec.Topology = in.GetTopology()
 		case "nodes":
 			db.Spec.Nodes = in.GetNodes()
 		case "params":

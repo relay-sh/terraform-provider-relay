@@ -39,7 +39,6 @@ type databaseResourceModel struct {
 	Name                 types.String             `tfsdk:"name"`
 	Engine               types.String             `tfsdk:"engine"`
 	Version              types.String             `tfsdk:"version"`
-	Topology             types.String             `tfsdk:"topology"`
 	Nodes                []nodeModel              `tfsdk:"nodes"`
 	Params               types.Map                `tfsdk:"params"`
 	PostgreSQLParameters types.Map                `tfsdk:"postgresql_parameters"`
@@ -98,7 +97,6 @@ func (r *databaseResource) Schema(ctx context.Context, _ resource.SchemaRequest,
 				Required:            true,
 				MarkdownDescription: "Engine version. It cannot change here: major upgrades go through Relay's upgrade flow, and a plan that changes it fails.",
 			},
-			"topology": schema.StringAttribute{Required: true, MarkdownDescription: "Cluster topology, for example `standalone`, `replication` or `replicaset`."},
 			"nodes": schema.ListNestedAttribute{
 				Required:            true,
 				MarkdownDescription: "Node groups. Storage can only grow.",
@@ -351,7 +349,7 @@ func databaseSpecToProto(m databaseResourceModel) *serverv1.DatabaseSpec {
 	spec := &serverv1.DatabaseSpec{
 		Engine:         m.Engine.ValueString(),
 		Version:        m.Version.ValueString(),
-		Topology:       m.Topology.ValueString(),
+		Topology:       "replication",
 		Nodes:          nodesToProto(m.Nodes),
 		Params:         stringMapToGo(m.Params),
 		BackupsEnabled: m.BackupsEnabled.ValueBool(),
@@ -370,7 +368,6 @@ func databaseUpdateMask(plan, prior databaseResourceModel) []string {
 			paths = append(paths, p)
 		}
 	}
-	add(!plan.Topology.Equal(prior.Topology), "topology")
 	add(!reflect.DeepEqual(plan.Nodes, prior.Nodes), "nodes")
 	add(!plan.Params.Equal(prior.Params), "params")
 	add(!plan.BackupsEnabled.Equal(prior.BackupsEnabled), "backups_enabled")
@@ -387,7 +384,6 @@ func databaseFromProto(db *serverv1.Database, prior databaseResourceModel) datab
 		Name:                 types.StringValue(db.GetName()),
 		Engine:               types.StringValue(spec.GetEngine()),
 		Version:              types.StringValue(spec.GetVersion()),
-		Topology:             types.StringValue(spec.GetTopology()),
 		Nodes:                nodesFromProto(spec.GetNodes()),
 		Params:               stringMapFromGo(spec.GetParams()),
 		PostgreSQLParameters: stringMapFromGo(spec.GetPostgresql().GetParameters()),

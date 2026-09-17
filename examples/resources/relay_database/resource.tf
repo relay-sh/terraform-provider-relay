@@ -3,7 +3,6 @@ resource "relay_database" "billing" {
   name         = "billing"
   engine       = "postgresql"
   version      = "17"
-  topology     = "replication"
 
   nodes = [{
     role     = "data"

@@ -25,7 +25,6 @@ resource "relay_database" "this" {
   name         = "billing"
   engine       = "postgresql"
   version      = %q
-  topology     = "replication"
 
   nodes = [{
     role     = "data"
@@ -100,6 +99,9 @@ func TestDatabaseResource_Lifecycle(t *testing.T) {
 						}
 						if !f.lastDBCreate.GetDefaultConnections().GetReadonly() || f.lastDBCreate.GetDefaultConnections().GetAdmin() {
 							return errors.New("default_connections must reach CreateDatabase")
+						}
+						if got := f.lastDBCreate.GetSpec().GetTopology(); got != "replication" {
+							return fmt.Errorf("topology = %q, want replication", got)
 						}
 						return nil
 					},
@@ -340,7 +342,7 @@ func TestDatabaseDataSource(t *testing.T) {
 		id := "db-" + name
 		f.databases[id] = &serverv1.Database{
 			Id: id, Name: name, WorkspaceId: dbWorkspace,
-			Spec:   &serverv1.DatabaseSpec{Engine: "postgresql", Version: "17", Topology: "standalone", BackupsEnabled: true},
+			Spec:   &serverv1.DatabaseSpec{Engine: "postgresql", Version: "17", BackupsEnabled: true},
 			Status: &serverv1.DatabaseStatus{Phase: "running", Endpoint: &serverv1.Endpoint{Host: name + ".db", Port: 5432}, PrivateEndpoints: []*serverv1.PublicEndpoint{{Role: "primary", Host: name + ".pl", Port: 5432}}},
 		}
 	}
