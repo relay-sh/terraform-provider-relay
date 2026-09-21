@@ -334,7 +334,11 @@ func TestPostgreSQLUserResource_Failures(t *testing.T) {
 		}{
 			"rejected":     {func(f *fakeServer) { f.failWith("CreateDatabaseUser", unavailable) }, "", "Cannot create PostgreSQL user"},
 			"failed phase": {func(f *fakeServer) { f.failUser = "role missing" }, "", `(?s)did not become ready.*role missing`},
-			"poll error":   {func(f *fakeServer) { f.failWith("GetDatabaseUser", unavailable) }, "", `(?s)did not become ready.*down`},
+			"poll error": {func(f *fakeServer) { f.failWith("GetDatabaseUser", unavailable) }, `
+  timeouts {
+    create = "30ms"
+  }
+`, `(?s)did not become ready.*timed out.*down`},
 			"timeout": {func(f *fakeServer) { f.stuck = true }, `
   timeouts {
     create = "30ms"

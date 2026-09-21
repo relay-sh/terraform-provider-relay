@@ -498,7 +498,11 @@ func TestPostgreSQLClusterResource_ProvisioningOutcomes(t *testing.T) {
 		"status read failure": {func(f *fakeServer) {
 			f.readyAfter = 5
 			f.failWith("GetDatabase", status.Error(codes.Unavailable, "down"))
-		}, "", `(?s)did not become ready.*down`},
+		}, `
+  timeouts {
+    create = "30ms"
+  }
+`, `(?s)did not become ready.*timed out.*down`},
 	}
 	for name, tc := range cases {
 		t.Run(name, func(t *testing.T) {
@@ -647,7 +651,7 @@ func TestPostgreSQLClusterResource_DeleteTimeoutAndImportErrors(t *testing.T) {
 					f.mu.Lock()
 					defer f.mu.Unlock()
 					f.stuck = false
-					f.failWhileDeleting = status.Error(codes.Unavailable, "down")
+					f.failWhileDeleting = status.Error(codes.Internal, "down")
 					for _, db := range f.databases {
 						db.Status.Phase = "running"
 					}
