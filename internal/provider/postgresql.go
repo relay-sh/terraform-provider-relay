@@ -61,13 +61,17 @@ func placements(ctx context.Context, c *client.Client) ([]*serverv1.DatabaseProv
 	return catalog, nil
 }
 
+func servesPostgreSQL(engine string) bool {
+	return strings.EqualFold(engine, enginePostgreSQL)
+}
+
 func provisionerFor(catalog []*serverv1.DatabaseProvider, cloud, region string) (string, error) {
 	if cloud == "" && region == "" {
 		return "", nil
 	}
 	available := make([]string, 0, len(catalog))
 	for _, p := range catalog {
-		if len(p.GetEngines()) > 0 && !slices.Contains(p.GetEngines(), enginePostgreSQL) {
+		if len(p.GetEngines()) > 0 && !slices.ContainsFunc(p.GetEngines(), servesPostgreSQL) {
 			continue
 		}
 		if (cloud == "" || p.GetCloud() == cloud) && (region == "" || p.GetRegion() == region) {
