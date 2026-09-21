@@ -466,7 +466,7 @@ func clusterFromProto(db *serverv1.Database, prior postgresqlClusterModel, catal
 		WorkspaceID:          prior.WorkspaceID,
 		Name:                 types.StringValue(db.GetName()),
 		Version:              types.StringValue(spec.GetVersion()),
-		Nodes:                nodesFromProto(spec.GetNodes(), catalog, prior.Nodes),
+		Nodes:                nodesFromProto(spec.GetNodes(), prior.Nodes),
 		Parameters:           stringMapFromGo(spec.GetPostgresql().GetParameters()),
 		Replication:          replicationFromProto(spec.GetReplication()),
 		KeepBackupsOnDestroy: prior.KeepBackupsOnDestroy,

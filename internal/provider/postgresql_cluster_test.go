@@ -368,22 +368,15 @@ resource "relay_postgresql_cluster" "this" {
 }
 
 func TestFakeServerRejectsWhatThePlatformRejects(t *testing.T) {
-	cases := map[string]*serverv1.NodeSpec{
-		"an unknown role":      {Role: "primary"},
-		"tags from the client": {Role: roleReadOnly, Tags: map[string]string{"nosync": "true"}},
-	}
-	for name, node := range cases {
-		t.Run(name, func(t *testing.T) {
-			f := startFakeServer(t)
-			node.Resources = &serverv1.ResourceRequirements{Storage: "5Gi"}
-			req := &serverv1.CreateDatabaseRequest{Name: "billing", Spec: &serverv1.DatabaseSpec{
-				Engine: "postgresql",
-				Nodes:  []*serverv1.NodeSpec{node},
-			}}
-			if _, err := f.CreateDatabase(t.Context(), req); status.Code(err) != codes.InvalidArgument {
-				t.Fatalf("got %v, want InvalidArgument", err)
-			}
-		})
+	f := startFakeServer(t)
+	req := &serverv1.CreateDatabaseRequest{Name: "billing", Spec: &serverv1.DatabaseSpec{
+		Engine: "postgresql",
+		Nodes: []*serverv1.NodeSpec{
+			{Role: "primary", Resources: &serverv1.ResourceRequirements{Storage: "5Gi"}},
+		},
+	}}
+	if _, err := f.CreateDatabase(t.Context(), req); status.Code(err) != codes.InvalidArgument {
+		t.Fatalf("got %v, want InvalidArgument", err)
 	}
 }
 

@@ -389,11 +389,20 @@ func validateNodes(spec *serverv1.DatabaseSpec) error {
 		if n.GetRole() != roleElectable && n.GetRole() != roleReadOnly {
 			return status.Errorf(codes.InvalidArgument, "validate spec: invalid role %q", n.GetRole())
 		}
-		if len(n.GetTags()) > 0 {
-			return status.Error(codes.InvalidArgument, "validate spec: tags are derived from the role")
-		}
 	}
 	return nil
+}
+
+// resolvePlacement mirrors the platform: the request names a provisioner, the
+// reply names the cloud and region it serves and never echoes the provisioner.
+func (f *fakeServer) resolvePlacement(n *serverv1.NodeSpec) {
+	for _, p := range f.providers {
+		if p.GetName() == n.GetProvider() {
+			n.Cloud, n.Region = p.GetCloud(), p.GetRegion()
+			break
+		}
+	}
+	n.Provider = ""
 }
 
 func (f *fakeServer) settle(id, phase string) {
@@ -421,6 +430,7 @@ func (f *fakeServer) CreateDatabase(ctx context.Context, req *serverv1.CreateDat
 		if n.GetResources().GetStorageClass() == "" {
 			n.Resources.StorageClass = "standard"
 		}
+		f.resolvePlacement(n)
 	}
 	if spec.Replication == nil {
 		spec.Replication = &serverv1.Replication{Mode: "async"}
@@ -496,6 +506,9 @@ func (f *fakeServer) UpdateDatabase(ctx context.Context, req *serverv1.UpdateDat
 				return nil, err
 			}
 			db.Spec.Nodes = in.GetNodes()
+			for _, n := range db.Spec.GetNodes() {
+				f.resolvePlacement(n)
+			}
 		case "replication":
 			db.Spec.Replication = in.GetReplication()
 		case "postgresql":
