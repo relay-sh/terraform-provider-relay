@@ -384,10 +384,13 @@ func (f *fakeServer) DeleteConnection(ctx context.Context, req *serverv1.DeleteC
 	return &serverv1.DeleteConnectionResponse{}, nil
 }
 
-func validateRoles(spec *serverv1.DatabaseSpec) error {
+func validateNodes(spec *serverv1.DatabaseSpec) error {
 	for _, n := range spec.GetNodes() {
 		if n.GetRole() != roleElectable && n.GetRole() != roleReadOnly {
 			return status.Errorf(codes.InvalidArgument, "validate spec: invalid role %q", n.GetRole())
+		}
+		if len(n.GetTags()) > 0 {
+			return status.Error(codes.InvalidArgument, "validate spec: tags are derived from the role")
 		}
 	}
 	return nil
@@ -405,7 +408,7 @@ func (f *fakeServer) CreateDatabase(ctx context.Context, req *serverv1.CreateDat
 		return nil, err
 	}
 	f.lastDBCreate = req
-	if err := validateRoles(req.GetSpec()); err != nil {
+	if err := validateNodes(req.GetSpec()); err != nil {
 		return nil, err
 	}
 	for _, db := range f.databases {
@@ -489,7 +492,7 @@ func (f *fakeServer) UpdateDatabase(ctx context.Context, req *serverv1.UpdateDat
 	for _, p := range req.GetUpdateMask().GetPaths() {
 		switch p {
 		case "nodes":
-			if err := validateRoles(in); err != nil {
+			if err := validateNodes(in); err != nil {
 				return nil, err
 			}
 			db.Spec.Nodes = in.GetNodes()

@@ -76,12 +76,6 @@ func TestNodesRoundTrip(t *testing.T) {
 	if out[0].GetRole() != roleReadOnly || out[1].GetRole() != roleElectable {
 		t.Fatalf("the group's role must be sent, not its label, got %q then %q", out[0].GetRole(), out[1].GetRole())
 	}
-	if tags := out[0].GetTags(); tags["nosync"] != "true" || tags["nofailover"] != "true" {
-		t.Errorf("tags = %v", tags)
-	}
-	if out[1].GetTags() != nil {
-		t.Errorf("an electable group carries no tags, got %v", out[1].GetTags())
-	}
 	if out[1].GetProvider() != "aws-use1" || out[1].GetRegion() != "us-east-1" {
 		t.Errorf("placement = %q/%q", out[1].GetProvider(), out[1].GetRegion())
 	}

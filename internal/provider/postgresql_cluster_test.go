@@ -116,10 +116,6 @@ func TestPostgreSQLClusterResource_Lifecycle(t *testing.T) {
 							return fmt.Errorf("an unplaced group must not name a provisioner, got %q", spec.GetNodes()[0].GetProvider())
 						case spec.GetNodes()[0].GetRole() != "read_only" || spec.GetNodes()[1].GetRole() != "electable":
 							return fmt.Errorf("the group's role must be sent, not its label, got %q and %q", spec.GetNodes()[0].GetRole(), spec.GetNodes()[1].GetRole())
-						case spec.GetNodes()[0].GetTags()["nosync"] != "true" || spec.GetNodes()[0].GetTags()["nofailover"] != "true":
-							return fmt.Errorf("read_only must derive both tags, got %v", spec.GetNodes()[0].GetTags())
-						case spec.GetNodes()[1].GetTags() != nil:
-							return fmt.Errorf("electable must derive no tags, got %v", spec.GetNodes()[1].GetTags())
 						case spec.GetNodes()[1].GetTier() != "R10":
 							return fmt.Errorf("writers tier = %q, want R10", spec.GetNodes()[1].GetTier())
 						case spec.GetNodes()[0].GetTier() != "R20":
@@ -371,15 +367,23 @@ resource "relay_postgresql_cluster" "this" {
 	})
 }
 
-func TestFakeServerRejectsAnUnknownRole(t *testing.T) {
-	f := startFakeServer(t)
-	req := &serverv1.CreateDatabaseRequest{Name: "billing", Spec: &serverv1.DatabaseSpec{
-		Engine: "postgresql",
-		Nodes:  []*serverv1.NodeSpec{{Role: "primary", Resources: &serverv1.ResourceRequirements{Storage: "5Gi"}}},
-	}}
-	_, err := f.CreateDatabase(t.Context(), req)
-	if status.Code(err) != codes.InvalidArgument {
-		t.Fatalf("the fake must reject a role the platform rejects, got %v", err)
+func TestFakeServerRejectsWhatThePlatformRejects(t *testing.T) {
+	cases := map[string]*serverv1.NodeSpec{
+		"an unknown role":      {Role: "primary"},
+		"tags from the client": {Role: roleReadOnly, Tags: map[string]string{"nosync": "true"}},
+	}
+	for name, node := range cases {
+		t.Run(name, func(t *testing.T) {
+			f := startFakeServer(t)
+			node.Resources = &serverv1.ResourceRequirements{Storage: "5Gi"}
+			req := &serverv1.CreateDatabaseRequest{Name: "billing", Spec: &serverv1.DatabaseSpec{
+				Engine: "postgresql",
+				Nodes:  []*serverv1.NodeSpec{node},
+			}}
+			if _, err := f.CreateDatabase(t.Context(), req); status.Code(err) != codes.InvalidArgument {
+				t.Fatalf("got %v, want InvalidArgument", err)
+			}
+		})
 	}
 }
 

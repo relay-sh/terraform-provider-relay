@@ -23,9 +23,6 @@ const (
 	phaseRunning     = "running"
 	phaseFailed      = "failed"
 	phaseDeleted     = "deleted"
-	tagNoSync        = "nosync"
-	tagNoFailover    = "nofailover"
-	tagTrue          = "true"
 	roleElectable    = "electable"
 	roleReadOnly     = "read_only"
 )
@@ -124,17 +121,9 @@ func nodesToProto(nodes map[string]nodeGroupModel, catalog []*serverv1.DatabaseP
 			Region:    n.Region.ValueString(),
 			Tier:      n.Tier.ValueString(),
 			Resources: res,
-			Tags:      patroniTags(n.Role.ValueString()),
 		})
 	}
 	return out, nil
-}
-
-func patroniTags(role string) map[string]string {
-	if role != roleReadOnly {
-		return nil
-	}
-	return map[string]string{tagNoSync: tagTrue, tagNoFailover: tagTrue}
 }
 
 func nodeLabels(nodes []*serverv1.NodeSpec, prior map[string]nodeGroupModel) []string {

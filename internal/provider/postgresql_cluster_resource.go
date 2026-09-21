@@ -99,8 +99,8 @@ func (r *postgresqlClusterResource) Schema(ctx context.Context, _ resource.Schem
 					"role": schema.StringAttribute{
 						Required:   true,
 						Validators: []validator.String{stringvalidator.OneOf(roleElectable, roleReadOnly)},
-						MarkdownDescription: "`electable` or `read_only`. An `electable` group carries no Patroni member tags: it acknowledges synchronous commits and can be promoted. " +
-							"A `read_only` group is tagged `nosync` and `nofailover`, which keeps a read pool out of the commit path and out of elections.",
+						MarkdownDescription: "`electable` or `read_only`. An `electable` group acknowledges synchronous commits and can be promoted. A `read_only` group is kept out of " +
+							"the commit path and out of elections: the platform derives the `nosync` and `nofailover` Patroni tags from this role.",
 					},
 					"count": schema.Int64Attribute{
 						Optional: true, Computed: true, Default: int64default.StaticInt64(1),
