@@ -1,13 +1,19 @@
 package provider
 
 import (
+	"context"
 	"errors"
 	"fmt"
 	"os"
+	"os/exec"
 	"regexp"
 	"testing"
 	"time"
 
+	install "github.com/hashicorp/hc-install"
+	"github.com/hashicorp/hc-install/checkpoint"
+	"github.com/hashicorp/hc-install/product"
+	"github.com/hashicorp/hc-install/src"
 	"github.com/hashicorp/terraform-plugin-framework/providerserver"
 	"github.com/hashicorp/terraform-plugin-go/tfprotov6"
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
@@ -21,16 +27,44 @@ import (
 const testOrgID = "8f5c2f3e-8e9b-4b4f-9d52-3f0a4f2d9a11"
 
 func TestMain(m *testing.M) {
-	if os.Getenv("TF_ACC_TERRAFORM_PATH") == "" {
-		for _, candidate := range []string{"/opt/homebrew/bin/terraform", "/usr/local/bin/terraform", "/usr/bin/terraform"} {
-			if _, err := os.Stat(candidate); err == nil {
-				_ = os.Setenv("TF_ACC_TERRAFORM_PATH", candidate)
-				break
-			}
+	cleanup := resolveTerraformCLI()
+	pollInterval = time.Millisecond
+	code := m.Run()
+	cleanup()
+	os.Exit(code)
+}
+
+// Every resource.UnitTest resolves the CLI again, downloading its own copy of Terraform unless the path is pinned here.
+func resolveTerraformCLI() func() {
+	noop := func() {}
+	if os.Getenv("TF_ACC_TERRAFORM_PATH") != "" {
+		return noop
+	}
+	for _, candidate := range []string{"/opt/homebrew/bin/terraform", "/usr/local/bin/terraform", "/usr/bin/terraform"} {
+		if _, err := os.Stat(candidate); err == nil {
+			_ = os.Setenv("TF_ACC_TERRAFORM_PATH", candidate)
+			return noop
 		}
 	}
-	pollInterval = time.Millisecond
-	os.Exit(m.Run())
+	if path, err := exec.LookPath("terraform"); err == nil {
+		_ = os.Setenv("TF_ACC_TERRAFORM_PATH", path)
+		return noop
+	}
+	dir, err := os.MkdirTemp("", "terraform-cli")
+	if err != nil {
+		fmt.Fprintf(os.Stderr, "cannot create a directory for the Terraform CLI: %v\n", err)
+		os.Exit(1)
+	}
+	path, err := install.NewInstaller().Ensure(context.Background(), []src.Source{
+		&checkpoint.LatestVersion{Product: product.Terraform, InstallDir: dir},
+	})
+	if err != nil {
+		_ = os.RemoveAll(dir)
+		fmt.Fprintf(os.Stderr, "cannot install the Terraform CLI: %v\n", err)
+		os.Exit(1)
+	}
+	_ = os.Setenv("TF_ACC_TERRAFORM_PATH", path)
+	return func() { _ = os.RemoveAll(dir) }
 }
 
 func factories(dial func(relay.Options) (*relay.Client, error)) map[string]func() (tfprotov6.ProviderServer, error) {
