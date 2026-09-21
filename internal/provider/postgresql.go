@@ -23,19 +23,17 @@ const (
 	phaseRunning     = "running"
 	phaseFailed      = "failed"
 	phaseDeleted     = "deleted"
-	tagNoSync        = "nosync"
-	tagNoFailover    = "nofailover"
-	tagTrue          = "true"
+	roleElectable    = "electable"
+	roleReadOnly     = "read_only"
 )
 
 type nodeGroupModel struct {
-	Count       types.Int64    `tfsdk:"count"`
-	Cloud       types.String   `tfsdk:"cloud"`
-	Region      types.String   `tfsdk:"region"`
-	Tier        types.String   `tfsdk:"tier"`
-	Resources   resourcesModel `tfsdk:"resources"`
-	Synchronous types.Bool     `tfsdk:"synchronous"`
-	Failover    types.Bool     `tfsdk:"failover"`
+	Role      types.String   `tfsdk:"role"`
+	Count     types.Int64    `tfsdk:"count"`
+	Cloud     types.String   `tfsdk:"cloud"`
+	Region    types.String   `tfsdk:"region"`
+	Tier      types.String   `tfsdk:"tier"`
+	Resources resourcesModel `tfsdk:"resources"`
 }
 
 type resourcesModel struct {
@@ -117,38 +115,51 @@ func nodesToProto(nodes map[string]nodeGroupModel, catalog []*serverv1.DatabaseP
 			res.DiskType = v.ValueString()
 		}
 		out = append(out, &serverv1.NodeSpec{
-			Role:      name,
+			Role:      n.Role.ValueString(),
 			Count:     int32(n.Count.ValueInt64()),
 			Provider:  provisioner,
 			Region:    n.Region.ValueString(),
 			Tier:      n.Tier.ValueString(),
 			Resources: res,
-			Tags:      patroniTags(n),
 		})
 	}
 	return out, nil
 }
 
-func patroniTags(n nodeGroupModel) map[string]string {
-	tags := map[string]string{}
-	if !n.Synchronous.ValueBool() {
-		tags[tagNoSync] = tagTrue
+func nodeLabels(nodes []*serverv1.NodeSpec, prior map[string]nodeGroupModel) []string {
+	byRole := map[string][]string{}
+	for label, group := range prior {
+		role := group.Role.ValueString()
+		byRole[role] = append(byRole[role], label)
 	}
-	if !n.Failover.ValueBool() {
-		tags[tagNoFailover] = tagTrue
+	for _, labels := range byRole {
+		sort.Strings(labels)
 	}
-	if len(tags) == 0 {
-		return nil
+	out := make([]string, 0, len(nodes))
+	for _, n := range nodes {
+		role := n.GetRole()
+		if labels := byRole[role]; len(labels) > 0 {
+			byRole[role] = labels[1:]
+			out = append(out, labels[0])
+			continue
+		}
+		label := role
+		for i := 2; slices.Contains(out, label); i++ {
+			label = role + "_" + strconv.Itoa(i)
+		}
+		out = append(out, label)
 	}
-	return tags
+	return out
 }
 
-func nodesFromProto(nodes []*serverv1.NodeSpec, catalog []*serverv1.DatabaseProvider) map[string]nodeGroupModel {
+func nodesFromProto(nodes []*serverv1.NodeSpec, catalog []*serverv1.DatabaseProvider, prior map[string]nodeGroupModel) map[string]nodeGroupModel {
+	labels := nodeLabels(nodes, prior)
 	out := make(map[string]nodeGroupModel, len(nodes))
-	for _, n := range nodes {
+	for i, n := range nodes {
 		res := n.GetResources()
 		cloud, region := placementOf(catalog, n)
-		out[n.GetRole()] = nodeGroupModel{
+		out[labels[i]] = nodeGroupModel{
+			Role:   types.StringValue(n.GetRole()),
 			Count:  types.Int64Value(int64(n.GetCount())),
 			Cloud:  types.StringValue(cloud),
 			Region: types.StringValue(region),
@@ -162,8 +173,6 @@ func nodesFromProto(nodes []*serverv1.NodeSpec, catalog []*serverv1.DatabaseProv
 				Throughput:   optionalInt64(res.Throughput),
 				DiskType:     types.StringValue(res.GetDiskType()),
 			},
-			Synchronous: types.BoolValue(n.GetTags()[tagNoSync] != tagTrue),
-			Failover:    types.BoolValue(n.GetTags()[tagNoFailover] != tagTrue),
 		}
 	}
 	return out

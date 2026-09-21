@@ -1,6 +1,7 @@
 package provider
 
 import (
+	"slices"
 	"testing"
 	"time"
 
@@ -47,7 +48,8 @@ func TestPlacementOf(t *testing.T) {
 
 func TestNodesRoundTrip(t *testing.T) {
 	nodes := map[string]nodeGroupModel{
-		"primary": {
+		"writers": {
+			Role:  types.StringValue(roleElectable),
 			Count: types.Int64Value(2), Cloud: types.StringValue("aws"), Region: types.StringValue("us-east-1"),
 			Tier: types.StringValue("R10"),
 			Resources: resourcesModel{
@@ -55,9 +57,9 @@ func TestNodesRoundTrip(t *testing.T) {
 				StorageClass: types.StringUnknown(), IOPS: types.Int64Unknown(), Throughput: types.Int64Value(250),
 				DiskType: types.StringUnknown(),
 			},
-			Synchronous: types.BoolValue(true), Failover: types.BoolValue(true),
 		},
-		"analytics": {
+		"readers": {
+			Role:  types.StringValue(roleReadOnly),
 			Count: types.Int64Value(1), Cloud: types.StringNull(), Region: types.StringNull(),
 			Tier: types.StringValue("R20"),
 			Resources: resourcesModel{
@@ -65,21 +67,14 @@ func TestNodesRoundTrip(t *testing.T) {
 				StorageClass: types.StringValue("gp3"), IOPS: types.Int64Value(3000), Throughput: types.Int64Null(),
 				DiskType: types.StringValue("io1"),
 			},
-			Synchronous: types.BoolValue(false), Failover: types.BoolValue(false),
 		},
 	}
 	out, err := nodesToProto(nodes, testCatalog)
 	if err != nil {
 		t.Fatal(err)
 	}
-	if out[0].GetRole() != "analytics" || out[1].GetRole() != "primary" {
-		t.Fatalf("groups must be sent in a stable order, got %q then %q", out[0].GetRole(), out[1].GetRole())
-	}
-	if tags := out[0].GetTags(); tags["nosync"] != "true" || tags["nofailover"] != "true" {
-		t.Errorf("tags = %v", tags)
-	}
-	if out[1].GetTags() != nil {
-		t.Errorf("a group that stays in the commit path and can be promoted carries no tags, got %v", out[1].GetTags())
+	if out[0].GetRole() != roleReadOnly || out[1].GetRole() != roleElectable {
+		t.Fatalf("the group's role must be sent, not its label, got %q then %q", out[0].GetRole(), out[1].GetRole())
 	}
 	if out[1].GetProvider() != "aws-use1" || out[1].GetRegion() != "us-east-1" {
 		t.Errorf("placement = %q/%q", out[1].GetProvider(), out[1].GetRegion())
@@ -98,41 +93,41 @@ func TestNodesRoundTrip(t *testing.T) {
 		t.Errorf("unknown disk_type must be omitted, got %q", res.GetDiskType())
 	}
 	if out[0].GetResources().GetDiskType() != "io1" {
-		t.Errorf("analytics disk_type = %q, want io1", out[0].GetResources().GetDiskType())
+		t.Errorf("readers disk_type = %q, want io1", out[0].GetResources().GetDiskType())
 	}
 
-	back := nodesFromProto(out, testCatalog)
-	if g := back["analytics"]; g.Synchronous.ValueBool() || g.Failover.ValueBool() || g.Resources.IOPS.ValueInt64() != 3000 || g.Tier.ValueString() != "R20" || g.Resources.DiskType.ValueString() != "io1" {
-		t.Errorf("analytics round trip = %+v", g)
+	back := nodesFromProto(out, testCatalog, nodes)
+	if g := back["readers"]; g.Role.ValueString() != roleReadOnly || g.Resources.IOPS.ValueInt64() != 3000 || g.Tier.ValueString() != "R20" || g.Resources.DiskType.ValueString() != "io1" {
+		t.Errorf("readers round trip = %+v", g)
 	}
-	if g := back["primary"]; !g.Synchronous.ValueBool() || !g.Failover.ValueBool() || !g.Resources.IOPS.IsNull() || g.Cloud.ValueString() != "aws" || g.Tier.ValueString() != "R10" {
-		t.Errorf("primary round trip = %+v", g)
+	if g := back["writers"]; g.Role.ValueString() != roleElectable || !g.Resources.IOPS.IsNull() || g.Cloud.ValueString() != "aws" || g.Tier.ValueString() != "R10" {
+		t.Errorf("writers round trip = %+v", g)
 	}
 }
 
-func TestNodesToProtoSendsUnknownTierUnchanged(t *testing.T) {
-	out, err := nodesToProto(map[string]nodeGroupModel{"primary": {
-		Count: types.Int64Value(1), Cloud: types.StringValue("aws"), Region: types.StringValue("us-east-1"),
-		Tier:        types.StringValue("R99"),
-		Resources:   resourcesModel{Storage: types.StringValue("1Gi")},
-		Synchronous: types.BoolValue(true), Failover: types.BoolValue(true),
-	}}, testCatalog)
-	if err != nil {
-		t.Fatal(err)
-	}
-	if out[0].GetTier() != "R99" {
-		t.Fatalf("unknown names must be sent unchanged, got %q", out[0].GetTier())
-	}
-}
+func TestNodeLabels(t *testing.T) {
+	electable := &serverv1.NodeSpec{Role: roleElectable}
+	readOnly := &serverv1.NodeSpec{Role: roleReadOnly}
 
-func TestNodesToProtoRejectsAnUnservedRegion(t *testing.T) {
-	_, err := nodesToProto(map[string]nodeGroupModel{"primary": {
-		Cloud: types.StringValue("fly"), Region: types.StringValue("gru"),
-		Resources:   resourcesModel{},
-		Synchronous: types.BoolValue(true), Failover: types.BoolValue(true),
-	}}, testCatalog)
-	if err == nil {
-		t.Fatal("an unserved placement must fail before the cluster is created")
+	prior := map[string]nodeGroupModel{
+		"writers": {Role: types.StringValue(roleElectable)},
+		"readers": {Role: types.StringValue(roleReadOnly)},
+	}
+	if got := nodeLabels([]*serverv1.NodeSpec{readOnly, electable}, prior); !slices.Equal(got, []string{"readers", "writers"}) {
+		t.Errorf("labels must follow the role, whatever order the platform returns, got %v", got)
+	}
+
+	pools := map[string]nodeGroupModel{
+		"eu": {Role: types.StringValue(roleReadOnly)},
+		"br": {Role: types.StringValue(roleReadOnly)},
+	}
+	if got := nodeLabels([]*serverv1.NodeSpec{readOnly, readOnly}, pools); !slices.Equal(got, []string{"br", "eu"}) {
+		t.Errorf("groups sharing a role keep the order they were sent in, got %v", got)
+	}
+
+	got := nodeLabels([]*serverv1.NodeSpec{electable, readOnly, readOnly}, nil)
+	if !slices.Equal(got, []string{roleElectable, roleReadOnly, "read_only_2"}) {
+		t.Errorf("an imported cluster is labelled by role, got %v", got)
 	}
 }
 

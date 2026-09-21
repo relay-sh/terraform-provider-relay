@@ -92,9 +92,16 @@ func (r *postgresqlClusterResource) Schema(ctx context.Context, _ resource.Schem
 			"nodes": schema.MapNestedAttribute{
 				Required:   true,
 				Validators: []validator.Map{mapvalidator.SizeAtLeast(1)},
-				MarkdownDescription: "Node groups, keyed by group name. The key is the group's Patroni member role, so changing a value inside one group " +
-					"is a diff on that group alone and `ignore_changes` can address it as `nodes[\"analytics\"].tier`.",
+				MarkdownDescription: "Node groups, keyed by a label you choose. The label means nothing to the platform: it gives the group a stable address, so changing a value " +
+					"inside one group is a diff on that group alone and `ignore_changes` can reach `nodes[\"readers\"].tier`. What a group does comes from `role`. " +
+					"An imported cluster arrives with its groups labelled by role, because the platform does not store the label.",
 				NestedObject: schema.NestedAttributeObject{Attributes: map[string]schema.Attribute{
+					"role": schema.StringAttribute{
+						Required:   true,
+						Validators: []validator.String{stringvalidator.OneOf(roleElectable, roleReadOnly)},
+						MarkdownDescription: "`electable` or `read_only`. An `electable` group acknowledges synchronous commits and can be promoted. A `read_only` group is kept out of " +
+							"the commit path and out of elections: the platform derives the `nosync` and `nofailover` Patroni tags from this role.",
+					},
 					"count": schema.Int64Attribute{
 						Optional: true, Computed: true, Default: int64default.StaticInt64(1),
 						Validators:          []validator.Int64{int64validator.AtLeast(1)},
@@ -135,14 +142,6 @@ func (r *postgresqlClusterResource) Schema(ctx context.Context, _ resource.Schem
 								MarkdownDescription: "Cloud volume type. AWS: `gp3` (default), `io1`, `io2` (min 4Gi). GCP: `pd-ssd`, `pd-balanced`, `hyperdisk-balanced`. Azure: `PremiumV2_LRS`, `UltraSSD_LRS`. Can change in place. `io1`/`io2` require `iops` within the per-GiB cap.",
 							},
 						},
-					},
-					"synchronous": schema.BoolAttribute{
-						Optional: true, Computed: true, Default: booldefault.StaticBool(true),
-						MarkdownDescription: "Whether the group's nodes can acknowledge synchronous commits. `false` tags them `nosync`, which keeps a read pool out of the commit path.",
-					},
-					"failover": schema.BoolAttribute{
-						Optional: true, Computed: true, Default: booldefault.StaticBool(true),
-						MarkdownDescription: "Whether the group's nodes can be promoted. `false` tags them `nofailover`.",
 					},
 				}},
 			},
@@ -467,7 +466,7 @@ func clusterFromProto(db *serverv1.Database, prior postgresqlClusterModel, catal
 		WorkspaceID:          prior.WorkspaceID,
 		Name:                 types.StringValue(db.GetName()),
 		Version:              types.StringValue(spec.GetVersion()),
-		Nodes:                nodesFromProto(spec.GetNodes(), catalog),
+		Nodes:                nodesFromProto(spec.GetNodes(), catalog, prior.Nodes),
 		Parameters:           stringMapFromGo(spec.GetPostgresql().GetParameters()),
 		Replication:          replicationFromProto(spec.GetReplication()),
 		KeepBackupsOnDestroy: prior.KeepBackupsOnDestroy,

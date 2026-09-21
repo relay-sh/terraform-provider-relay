@@ -216,7 +216,8 @@ resource "relay_postgresql_cluster" "this" {
   workspace_id = %q
   name         = "billing"
   nodes = {
-    primary = {
+    writers = {
+      role      = "electable"
       tier      = "R5"
       resources = { storage = "5Gi" }
     }

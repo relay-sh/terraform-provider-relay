@@ -384,6 +384,18 @@ func (f *fakeServer) DeleteConnection(ctx context.Context, req *serverv1.DeleteC
 	return &serverv1.DeleteConnectionResponse{}, nil
 }
 
+func validateNodes(spec *serverv1.DatabaseSpec) error {
+	for _, n := range spec.GetNodes() {
+		if n.GetRole() != roleElectable && n.GetRole() != roleReadOnly {
+			return status.Errorf(codes.InvalidArgument, "validate spec: invalid role %q", n.GetRole())
+		}
+		if len(n.GetTags()) > 0 {
+			return status.Error(codes.InvalidArgument, "validate spec: tags are derived from the role")
+		}
+	}
+	return nil
+}
+
 func (f *fakeServer) settle(id, phase string) {
 	f.databases[id].Status.Phase = phase
 	f.dbCountdown[id] = f.readyAfter
@@ -396,6 +408,9 @@ func (f *fakeServer) CreateDatabase(ctx context.Context, req *serverv1.CreateDat
 		return nil, err
 	}
 	f.lastDBCreate = req
+	if err := validateNodes(req.GetSpec()); err != nil {
+		return nil, err
+	}
 	for _, db := range f.databases {
 		if db.GetWorkspaceId() == workspaceOf(ctx) && db.GetName() == req.GetName() {
 			return nil, status.Error(codes.AlreadyExists, "database already exists")
@@ -477,6 +492,9 @@ func (f *fakeServer) UpdateDatabase(ctx context.Context, req *serverv1.UpdateDat
 	for _, p := range req.GetUpdateMask().GetPaths() {
 		switch p {
 		case "nodes":
+			if err := validateNodes(in); err != nil {
+				return nil, err
+			}
 			db.Spec.Nodes = in.GetNodes()
 		case "replication":
 			db.Spec.Replication = in.GetReplication()

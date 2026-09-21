@@ -107,7 +107,8 @@ resource "relay_postgresql_cluster" "this" {
   version      = %[2]q
 
   nodes = {
-    primary = {
+    writers = {
+      role      = "electable"
       cloud     = %[3]q
       region    = %[4]q
       tier      = "R5"

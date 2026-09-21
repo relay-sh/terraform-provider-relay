@@ -19,26 +19,26 @@ resource "relay_postgresql_cluster" "billing" {
   version      = "18"
 
   nodes = {
-    primary = {
+    writers = {
+      role   = "electable"
       count  = 3
       cloud  = "aws"
       region = "us-east-1"
-      tier = "R30"
+      tier   = "R30"
       resources = {
         storage = "100Gi"
       }
     }
 
-    analytics = {
+    readers = {
+      role   = "read_only"
       count  = 2
       cloud  = "aws"
       region = "us-east-1"
-      tier = "R40"
+      tier   = "R40"
       resources = {
         storage = "200Gi"
       }
-      synchronous = false
-      failover    = false
     }
   }
 
@@ -69,7 +69,7 @@ resource "relay_postgresql_cluster" "billing" {
 ### Required
 
 - `name` (String) Cluster name, unique in the workspace.
-- `nodes` (Attributes Map) Node groups, keyed by group name. The key is the group's Patroni member role, so changing a value inside one group is a diff on that group alone and `ignore_changes` can address it as `nodes["analytics"].tier`. (see [below for nested schema](#nestedatt--nodes))
+- `nodes` (Attributes Map) Node groups, keyed by a label you choose. The label means nothing to the platform: it gives the group a stable address, so changing a value inside one group is a diff on that group alone and `ignore_changes` can reach `nodes["readers"].tier`. What a group does comes from `role`. An imported cluster arrives with its groups labelled by role, because the platform does not store the label. (see [below for nested schema](#nestedatt--nodes))
 - `workspace_id` (String) Workspace the cluster belongs to.
 
 ### Optional
@@ -100,15 +100,14 @@ resource "relay_postgresql_cluster" "billing" {
 Required:
 
 - `resources` (Attributes) (see [below for nested schema](#nestedatt--nodes--resources))
+- `role` (String) `electable` or `read_only`. An `electable` group acknowledges synchronous commits and can be promoted. A `read_only` group is kept out of the commit path and out of elections: the platform derives the `nosync` and `nofailover` Patroni tags from this role.
 - `tier` (String) Machine catalog name, for example `R20`. CPU and memory are derived from it; an unknown name is rejected. Changing it restarts the group's pods.
 
 Optional:
 
 - `cloud` (String) Cloud the group runs in, for example `aws`. With `region` it selects the provisioner. Changing cloud or region moves the group (add dest, switchover, drain source).
 - `count` (Number) Nodes in the group. Lowering it deletes the removed nodes' volumes without draining them first.
-- `failover` (Boolean) Whether the group's nodes can be promoted. `false` tags them `nofailover`.
 - `region` (String) Region the group runs in, for example `us-east-1`. Changing it moves the group to that region.
-- `synchronous` (Boolean) Whether the group's nodes can acknowledge synchronous commits. `false` tags them `nosync`, which keeps a read pool out of the commit path.
 
 <a id="nestedatt--nodes--resources"></a>
 ### Nested Schema for `nodes.resources`
