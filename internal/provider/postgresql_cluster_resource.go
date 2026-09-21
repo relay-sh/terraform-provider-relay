@@ -280,7 +280,12 @@ func (r *postgresqlClusterResource) Create(ctx context.Context, req resource.Cre
 		return
 	}
 	id := out.GetDatabase().GetId()
+	// The cluster exists from here on, so its identity goes to state before the wait:
+	// a wait that fails leaves a tainted resource, and a destroy has to be able to
+	// address it — including the workspace the delete is scoped to.
 	resp.Diagnostics.Append(resp.State.SetAttribute(ctx, path.Root("id"), id)...)
+	resp.Diagnostics.Append(resp.State.SetAttribute(ctx, path.Root("workspace_id"), plan.WorkspaceID)...)
+	resp.Diagnostics.Append(resp.State.SetAttribute(ctx, path.Root("name"), plan.Name)...)
 
 	db, err := r.waitRunning(scoped, id, timeout)
 	if err != nil {
@@ -466,7 +471,7 @@ func clusterFromProto(db *serverv1.Database, prior postgresqlClusterModel, catal
 		WorkspaceID:          prior.WorkspaceID,
 		Name:                 types.StringValue(db.GetName()),
 		Version:              types.StringValue(spec.GetVersion()),
-		Nodes:                nodesFromProto(spec.GetNodes(), catalog, prior.Nodes),
+		Nodes:                nodesFromProto(spec.GetNodes(), prior.Nodes),
 		Parameters:           stringMapFromGo(spec.GetPostgresql().GetParameters()),
 		Replication:          replicationFromProto(spec.GetReplication()),
 		KeepBackupsOnDestroy: prior.KeepBackupsOnDestroy,

@@ -61,13 +61,17 @@ func placements(ctx context.Context, c *client.Client) ([]*serverv1.DatabaseProv
 	return catalog, nil
 }
 
+func servesPostgreSQL(engine string) bool {
+	return strings.EqualFold(engine, enginePostgreSQL)
+}
+
 func provisionerFor(catalog []*serverv1.DatabaseProvider, cloud, region string) (string, error) {
 	if cloud == "" && region == "" {
 		return "", nil
 	}
 	available := make([]string, 0, len(catalog))
 	for _, p := range catalog {
-		if len(p.GetEngines()) > 0 && !slices.Contains(p.GetEngines(), enginePostgreSQL) {
+		if len(p.GetEngines()) > 0 && !slices.ContainsFunc(p.GetEngines(), servesPostgreSQL) {
 			continue
 		}
 		if (cloud == "" || p.GetCloud() == cloud) && (region == "" || p.GetRegion() == region) {
@@ -76,15 +80,6 @@ func provisionerFor(catalog []*serverv1.DatabaseProvider, cloud, region string) 
 		available = append(available, p.GetCloud()+"/"+p.GetRegion())
 	}
 	return "", fmt.Errorf("no PostgreSQL provisioner serves cloud %q in region %q; the platform offers [%s]", cloud, region, strings.Join(available, " "))
-}
-
-func placementOf(catalog []*serverv1.DatabaseProvider, n *serverv1.NodeSpec) (string, string) {
-	for _, p := range catalog {
-		if p.GetName() == n.GetProvider() {
-			return p.GetCloud(), p.GetRegion()
-		}
-	}
-	return "", n.GetRegion()
 }
 
 func nodesToProto(nodes map[string]nodeGroupModel, catalog []*serverv1.DatabaseProvider) ([]*serverv1.NodeSpec, error) {
@@ -152,17 +147,16 @@ func nodeLabels(nodes []*serverv1.NodeSpec, prior map[string]nodeGroupModel) []s
 	return out
 }
 
-func nodesFromProto(nodes []*serverv1.NodeSpec, catalog []*serverv1.DatabaseProvider, prior map[string]nodeGroupModel) map[string]nodeGroupModel {
+func nodesFromProto(nodes []*serverv1.NodeSpec, prior map[string]nodeGroupModel) map[string]nodeGroupModel {
 	labels := nodeLabels(nodes, prior)
 	out := make(map[string]nodeGroupModel, len(nodes))
 	for i, n := range nodes {
 		res := n.GetResources()
-		cloud, region := placementOf(catalog, n)
 		out[labels[i]] = nodeGroupModel{
 			Role:   types.StringValue(n.GetRole()),
 			Count:  types.Int64Value(int64(n.GetCount())),
-			Cloud:  types.StringValue(cloud),
-			Region: types.StringValue(region),
+			Cloud:  types.StringValue(n.GetCloud()),
+			Region: types.StringValue(n.GetRegion()),
 			Tier:   types.StringValue(n.GetTier()),
 			Resources: resourcesModel{
 				CPU:          types.StringValue(res.GetCpu()),

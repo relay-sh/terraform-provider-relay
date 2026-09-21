@@ -368,22 +368,15 @@ resource "relay_postgresql_cluster" "this" {
 }
 
 func TestFakeServerRejectsWhatThePlatformRejects(t *testing.T) {
-	cases := map[string]*serverv1.NodeSpec{
-		"an unknown role":      {Role: "primary"},
-		"tags from the client": {Role: roleReadOnly, Tags: map[string]string{"nosync": "true"}},
-	}
-	for name, node := range cases {
-		t.Run(name, func(t *testing.T) {
-			f := startFakeServer(t)
-			node.Resources = &serverv1.ResourceRequirements{Storage: "5Gi"}
-			req := &serverv1.CreateDatabaseRequest{Name: "billing", Spec: &serverv1.DatabaseSpec{
-				Engine: "postgresql",
-				Nodes:  []*serverv1.NodeSpec{node},
-			}}
-			if _, err := f.CreateDatabase(t.Context(), req); status.Code(err) != codes.InvalidArgument {
-				t.Fatalf("got %v, want InvalidArgument", err)
-			}
-		})
+	f := startFakeServer(t)
+	req := &serverv1.CreateDatabaseRequest{Name: "billing", Spec: &serverv1.DatabaseSpec{
+		Engine: "postgresql",
+		Nodes: []*serverv1.NodeSpec{
+			{Role: "primary", Resources: &serverv1.ResourceRequirements{Storage: "5Gi"}},
+		},
+	}}
+	if _, err := f.CreateDatabase(t.Context(), req); status.Code(err) != codes.InvalidArgument {
+		t.Fatalf("got %v, want InvalidArgument", err)
 	}
 }
 
@@ -505,7 +498,11 @@ func TestPostgreSQLClusterResource_ProvisioningOutcomes(t *testing.T) {
 		"status read failure": {func(f *fakeServer) {
 			f.readyAfter = 5
 			f.failWith("GetDatabase", status.Error(codes.Unavailable, "down"))
-		}, "", `(?s)did not become ready.*down`},
+		}, `
+  timeouts {
+    create = "30ms"
+  }
+`, `(?s)did not become ready.*timed out.*down`},
 	}
 	for name, tc := range cases {
 		t.Run(name, func(t *testing.T) {
@@ -654,7 +651,7 @@ func TestPostgreSQLClusterResource_DeleteTimeoutAndImportErrors(t *testing.T) {
 					f.mu.Lock()
 					defer f.mu.Unlock()
 					f.stuck = false
-					f.failWhileDeleting = status.Error(codes.Unavailable, "down")
+					f.failWhileDeleting = status.Error(codes.Internal, "down")
 					for _, db := range f.databases {
 						db.Status.Phase = "running"
 					}
@@ -751,5 +748,22 @@ func TestPostgreSQLClusterDataSource_Errors(t *testing.T) {
 				}},
 			})
 		})
+	}
+}
+
+func TestPostgreSQLClusterResource_DestroyAfterAFailedCreate(t *testing.T) {
+	f := startFakeServer(t)
+	f.failProvision = "no capacity"
+	resource.UnitTest(t, resource.TestCase{
+		ProtoV6ProviderFactories: factories(relay.Dial),
+		Steps: []resource.TestStep{{
+			Config:      clusterConfig(f, "18", "10Gi", `{}`, ""),
+			ExpectError: regexp.MustCompile(`(?s)did not become ready.*no capacity`),
+		}},
+	})
+	f.mu.Lock()
+	defer f.mu.Unlock()
+	if len(f.databases) != 0 {
+		t.Fatalf("clusters left after destroy: %v", f.databases)
 	}
 }

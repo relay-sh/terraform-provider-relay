@@ -81,9 +81,9 @@ func startFakeServer(t *testing.T) *fakeServer {
 		users:         map[string]*serverv1.DatabaseUser{},
 		userCountdown: map[string]int{},
 		providers: []*serverv1.DatabaseProvider{
-			{Name: "aws-use1", Cloud: "aws", Region: "us-east-1", Engines: []string{"postgresql"}},
-			{Name: "aws-euw1", Cloud: "aws", Region: "eu-west-1", Engines: []string{"postgresql"}},
-			{Name: "mongo-euw1", Cloud: "aws", Region: "eu-west-1", Engines: []string{"mongodb"}},
+			{Name: "aws-use1", Cloud: "aws", Region: "us-east-1", Engines: []string{"PostgreSQL"}},
+			{Name: "aws-euw1", Cloud: "aws", Region: "eu-west-1", Engines: []string{"PostgreSQL"}},
+			{Name: "mongo-euw1", Cloud: "aws", Region: "eu-west-1", Engines: []string{"MongoDB"}},
 			{Name: "kubernetes"},
 		},
 	}
@@ -389,11 +389,20 @@ func validateNodes(spec *serverv1.DatabaseSpec) error {
 		if n.GetRole() != roleElectable && n.GetRole() != roleReadOnly {
 			return status.Errorf(codes.InvalidArgument, "validate spec: invalid role %q", n.GetRole())
 		}
-		if len(n.GetTags()) > 0 {
-			return status.Error(codes.InvalidArgument, "validate spec: tags are derived from the role")
-		}
 	}
 	return nil
+}
+
+// resolvePlacement mirrors the platform: the request names a provisioner, the
+// reply names the cloud and region it serves and never echoes the provisioner.
+func (f *fakeServer) resolvePlacement(n *serverv1.NodeSpec) {
+	for _, p := range f.providers {
+		if p.GetName() == n.GetProvider() {
+			n.Cloud, n.Region = p.GetCloud(), p.GetRegion()
+			break
+		}
+	}
+	n.Provider = ""
 }
 
 func (f *fakeServer) settle(id, phase string) {
@@ -421,6 +430,7 @@ func (f *fakeServer) CreateDatabase(ctx context.Context, req *serverv1.CreateDat
 		if n.GetResources().GetStorageClass() == "" {
 			n.Resources.StorageClass = "standard"
 		}
+		f.resolvePlacement(n)
 	}
 	if spec.Replication == nil {
 		spec.Replication = &serverv1.Replication{Mode: "async"}
@@ -496,6 +506,9 @@ func (f *fakeServer) UpdateDatabase(ctx context.Context, req *serverv1.UpdateDat
 				return nil, err
 			}
 			db.Spec.Nodes = in.GetNodes()
+			for _, n := range db.Spec.GetNodes() {
+				f.resolvePlacement(n)
+			}
 		case "replication":
 			db.Spec.Replication = in.GetReplication()
 		case "postgresql":
@@ -515,7 +528,10 @@ func (f *fakeServer) DeleteDatabase(ctx context.Context, req *serverv1.DeleteDat
 		return nil, err
 	}
 	f.lastDBDelete = req
-	if _, ok := f.databases[req.GetId()]; !ok {
+	db, ok := f.databases[req.GetId()]
+	// The server resolves the cluster in the caller's workspace and answers NotFound
+	// outside it, so a delete without the workspace scope must not find anything.
+	if !ok || db.GetWorkspaceId() != workspaceOf(ctx) {
 		return nil, status.Error(codes.NotFound, "database not found")
 	}
 	f.settle(req.GetId(), "deleting")
@@ -658,6 +674,9 @@ func (f *fakeServer) DeleteDatabaseUser(ctx context.Context, req *serverv1.Delet
 	defer f.mu.Unlock()
 	if err := f.record(ctx, "DeleteDatabaseUser"); err != nil {
 		return nil, err
+	}
+	if req.GetUsername() == "" {
+		return nil, status.Error(codes.InvalidArgument, "username is required")
 	}
 	key := userKey(req.GetDatabaseId(), req.GetUsername())
 	if _, ok := f.users[key]; !ok {

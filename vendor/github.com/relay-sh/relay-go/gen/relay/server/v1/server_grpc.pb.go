@@ -23,6 +23,7 @@ const (
 	ServerService_Logout_FullMethodName                       = "/relay.server.v1.ServerService/Logout"
 	ServerService_ListSessions_FullMethodName                 = "/relay.server.v1.ServerService/ListSessions"
 	ServerService_RevokeSession_FullMethodName                = "/relay.server.v1.ServerService/RevokeSession"
+	ServerService_GetMaintenanceBanner_FullMethodName         = "/relay.server.v1.ServerService/GetMaintenanceBanner"
 	ServerService_CreateAPIKey_FullMethodName                 = "/relay.server.v1.ServerService/CreateAPIKey"
 	ServerService_ListAPIKeys_FullMethodName                  = "/relay.server.v1.ServerService/ListAPIKeys"
 	ServerService_UpdateAPIKey_FullMethodName                 = "/relay.server.v1.ServerService/UpdateAPIKey"
@@ -92,6 +93,11 @@ const (
 	ServerService_UpdateCloudIntegration_FullMethodName       = "/relay.server.v1.ServerService/UpdateCloudIntegration"
 	ServerService_DeleteCloudIntegration_FullMethodName       = "/relay.server.v1.ServerService/DeleteCloudIntegration"
 	ServerService_TestCloudIntegration_FullMethodName         = "/relay.server.v1.ServerService/TestCloudIntegration"
+	ServerService_GetLogStream_FullMethodName                 = "/relay.server.v1.ServerService/GetLogStream"
+	ServerService_UpsertLogStream_FullMethodName              = "/relay.server.v1.ServerService/UpsertLogStream"
+	ServerService_GetBackupAutoExport_FullMethodName          = "/relay.server.v1.ServerService/GetBackupAutoExport"
+	ServerService_UpsertBackupAutoExport_FullMethodName       = "/relay.server.v1.ServerService/UpsertBackupAutoExport"
+	ServerService_ExportToCloud_FullMethodName                = "/relay.server.v1.ServerService/ExportToCloud"
 	ServerService_IngestAuditEvents_FullMethodName            = "/relay.server.v1.ServerService/IngestAuditEvents"
 	ServerService_ListAuditLogs_FullMethodName                = "/relay.server.v1.ServerService/ListAuditLogs"
 	ServerService_GetAuditMetrics_FullMethodName              = "/relay.server.v1.ServerService/GetAuditMetrics"
@@ -147,8 +153,6 @@ const (
 	ServerService_AddIPAllowlistEntry_FullMethodName          = "/relay.server.v1.ServerService/AddIPAllowlistEntry"
 	ServerService_UpdateIPAllowlistEntry_FullMethodName       = "/relay.server.v1.ServerService/UpdateIPAllowlistEntry"
 	ServerService_RemoveIPAllowlistEntry_FullMethodName       = "/relay.server.v1.ServerService/RemoveIPAllowlistEntry"
-	ServerService_GetWorkspaceNetworking_FullMethodName       = "/relay.server.v1.ServerService/GetWorkspaceNetworking"
-	ServerService_SetWorkspacePrivateAccess_FullMethodName    = "/relay.server.v1.ServerService/SetWorkspacePrivateAccess"
 	ServerService_ListPrivateEndpointRegions_FullMethodName   = "/relay.server.v1.ServerService/ListPrivateEndpointRegions"
 	ServerService_CreatePrivateEndpointService_FullMethodName = "/relay.server.v1.ServerService/CreatePrivateEndpointService"
 	ServerService_ListPrivateEndpointServices_FullMethodName  = "/relay.server.v1.ServerService/ListPrivateEndpointServices"
@@ -185,6 +189,7 @@ const (
 	ServerService_UpsertOrgSSOConnection_FullMethodName       = "/relay.server.v1.ServerService/UpsertOrgSSOConnection"
 	ServerService_DeleteOrgSSOConnection_FullMethodName       = "/relay.server.v1.ServerService/DeleteOrgSSOConnection"
 	ServerService_TestOrgSSOConnection_FullMethodName         = "/relay.server.v1.ServerService/TestOrgSSOConnection"
+	ServerService_ListPostgreSQLExtensions_FullMethodName     = "/relay.server.v1.ServerService/ListPostgreSQLExtensions"
 )
 
 // ServerServiceClient is the client API for ServerService service.
@@ -206,6 +211,11 @@ type ServerServiceClient interface {
 	// RevokeSession revokes one of the caller's own sessions by id (e.g. "log out
 	// that other device"). A user can only revoke their own sessions.
 	RevokeSession(ctx context.Context, in *RevokeSessionRequest, opts ...grpc.CallOption) (*RevokeSessionResponse, error)
+	// GetMaintenanceBanner returns the platform-wide maintenance notice, if one
+	// is live (set by staff, not cleared, ends_at not passed). Any authenticated
+	// caller; it carries no tenant data and is not dismissible. Memoised briefly
+	// server-side, so a change shows up within seconds, not instantly.
+	GetMaintenanceBanner(ctx context.Context, in *GetMaintenanceBannerRequest, opts ...grpc.CallOption) (*GetMaintenanceBannerResponse, error)
 	// A key created by another key never
 	// outlives it, stays within its allowed IPs, and is revoked with it.
 	CreateAPIKey(ctx context.Context, in *CreateAPIKeyRequest, opts ...grpc.CallOption) (*CreateAPIKeyResponse, error)
@@ -358,6 +368,12 @@ type ServerServiceClient interface {
 	DeleteCloudIntegration(ctx context.Context, in *DeleteCloudIntegrationRequest, opts ...grpc.CallOption) (*DeleteCloudIntegrationResponse, error)
 	// Assumes the role once and records the outcome as status.
 	TestCloudIntegration(ctx context.Context, in *TestCloudIntegrationRequest, opts ...grpc.CallOption) (*TestCloudIntegrationResponse, error)
+	// Workspace-level destinations that use a connected cloud integration.
+	GetLogStream(ctx context.Context, in *GetLogStreamRequest, opts ...grpc.CallOption) (*GetLogStreamResponse, error)
+	UpsertLogStream(ctx context.Context, in *UpsertLogStreamRequest, opts ...grpc.CallOption) (*UpsertLogStreamResponse, error)
+	GetBackupAutoExport(ctx context.Context, in *GetBackupAutoExportRequest, opts ...grpc.CallOption) (*GetBackupAutoExportResponse, error)
+	UpsertBackupAutoExport(ctx context.Context, in *UpsertBackupAutoExportRequest, opts ...grpc.CallOption) (*UpsertBackupAutoExportResponse, error)
+	ExportToCloud(ctx context.Context, in *ExportToCloudRequest, opts ...grpc.CallOption) (*ExportToCloudResponse, error)
 	// IngestAuditEvents receives audit events from an agent.
 	IngestAuditEvents(ctx context.Context, in *IngestAuditEventsRequest, opts ...grpc.CallOption) (*IngestAuditEventsResponse, error)
 	// ListAuditLogs returns audit logs for the user's organization.
@@ -494,14 +510,6 @@ type ServerServiceClient interface {
 	UpdateIPAllowlistEntry(ctx context.Context, in *UpdateIPAllowlistEntryRequest, opts ...grpc.CallOption) (*UpdateIPAllowlistEntryResponse, error)
 	// RemoveIPAllowlistEntry deletes an entry by id.
 	RemoveIPAllowlistEntry(ctx context.Context, in *RemoveIPAllowlistEntryRequest, opts ...grpc.CallOption) (*RemoveIPAllowlistEntryResponse, error)
-	// GetWorkspaceNetworking returns the workspace's connectivity posture —
-	// private (-pl) endpoints and public-access disablement — plus whether a
-	// networking re-apply is still propagating to the edge.
-	GetWorkspaceNetworking(ctx context.Context, in *GetWorkspaceNetworkingRequest, opts ...grpc.CallOption) (*GetWorkspaceNetworkingResponse, error)
-	// SetWorkspacePrivateAccess flips the workspace's private-access and/or
-	// public-access flags (each optional, independently). Disabling public
-	// access requires private access to be (or become) enabled.
-	SetWorkspacePrivateAccess(ctx context.Context, in *SetWorkspacePrivateAccessRequest, opts ...grpc.CallOption) (*SetWorkspacePrivateAccessResponse, error)
 	// ListPrivateEndpointRegions returns the (provider, region) pairs the platform can
 	// serve private endpoints in.
 	ListPrivateEndpointRegions(ctx context.Context, in *ListPrivateEndpointRegionsRequest, opts ...grpc.CallOption) (*ListPrivateEndpointRegionsResponse, error)
@@ -592,6 +600,9 @@ type ServerServiceClient interface {
 	// returns the resolved endpoints, so an admin can validate configuration
 	// before enabling it. Does not persist anything.
 	TestOrgSSOConnection(ctx context.Context, in *TestOrgSSOConnectionRequest, opts ...grpc.CallOption) (*TestOrgSSOConnectionResponse, error)
+	// ListPostgreSQLExtensions returns the curated extension set bundled for a
+	// PostgreSQL major.
+	ListPostgreSQLExtensions(ctx context.Context, in *ListPostgreSQLExtensionsRequest, opts ...grpc.CallOption) (*ListPostgreSQLExtensionsResponse, error)
 }
 
 type serverServiceClient struct {
@@ -636,6 +647,16 @@ func (c *serverServiceClient) RevokeSession(ctx context.Context, in *RevokeSessi
 	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
 	out := new(RevokeSessionResponse)
 	err := c.cc.Invoke(ctx, ServerService_RevokeSession_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *serverServiceClient) GetMaintenanceBanner(ctx context.Context, in *GetMaintenanceBannerRequest, opts ...grpc.CallOption) (*GetMaintenanceBannerResponse, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(GetMaintenanceBannerResponse)
+	err := c.cc.Invoke(ctx, ServerService_GetMaintenanceBanner_FullMethodName, in, out, cOpts...)
 	if err != nil {
 		return nil, err
 	}
@@ -1332,6 +1353,56 @@ func (c *serverServiceClient) TestCloudIntegration(ctx context.Context, in *Test
 	return out, nil
 }
 
+func (c *serverServiceClient) GetLogStream(ctx context.Context, in *GetLogStreamRequest, opts ...grpc.CallOption) (*GetLogStreamResponse, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(GetLogStreamResponse)
+	err := c.cc.Invoke(ctx, ServerService_GetLogStream_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *serverServiceClient) UpsertLogStream(ctx context.Context, in *UpsertLogStreamRequest, opts ...grpc.CallOption) (*UpsertLogStreamResponse, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(UpsertLogStreamResponse)
+	err := c.cc.Invoke(ctx, ServerService_UpsertLogStream_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *serverServiceClient) GetBackupAutoExport(ctx context.Context, in *GetBackupAutoExportRequest, opts ...grpc.CallOption) (*GetBackupAutoExportResponse, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(GetBackupAutoExportResponse)
+	err := c.cc.Invoke(ctx, ServerService_GetBackupAutoExport_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *serverServiceClient) UpsertBackupAutoExport(ctx context.Context, in *UpsertBackupAutoExportRequest, opts ...grpc.CallOption) (*UpsertBackupAutoExportResponse, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(UpsertBackupAutoExportResponse)
+	err := c.cc.Invoke(ctx, ServerService_UpsertBackupAutoExport_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *serverServiceClient) ExportToCloud(ctx context.Context, in *ExportToCloudRequest, opts ...grpc.CallOption) (*ExportToCloudResponse, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(ExportToCloudResponse)
+	err := c.cc.Invoke(ctx, ServerService_ExportToCloud_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
 func (c *serverServiceClient) IngestAuditEvents(ctx context.Context, in *IngestAuditEventsRequest, opts ...grpc.CallOption) (*IngestAuditEventsResponse, error) {
 	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
 	out := new(IngestAuditEventsResponse)
@@ -1891,26 +1962,6 @@ func (c *serverServiceClient) RemoveIPAllowlistEntry(ctx context.Context, in *Re
 	return out, nil
 }
 
-func (c *serverServiceClient) GetWorkspaceNetworking(ctx context.Context, in *GetWorkspaceNetworkingRequest, opts ...grpc.CallOption) (*GetWorkspaceNetworkingResponse, error) {
-	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
-	out := new(GetWorkspaceNetworkingResponse)
-	err := c.cc.Invoke(ctx, ServerService_GetWorkspaceNetworking_FullMethodName, in, out, cOpts...)
-	if err != nil {
-		return nil, err
-	}
-	return out, nil
-}
-
-func (c *serverServiceClient) SetWorkspacePrivateAccess(ctx context.Context, in *SetWorkspacePrivateAccessRequest, opts ...grpc.CallOption) (*SetWorkspacePrivateAccessResponse, error) {
-	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
-	out := new(SetWorkspacePrivateAccessResponse)
-	err := c.cc.Invoke(ctx, ServerService_SetWorkspacePrivateAccess_FullMethodName, in, out, cOpts...)
-	if err != nil {
-		return nil, err
-	}
-	return out, nil
-}
-
 func (c *serverServiceClient) ListPrivateEndpointRegions(ctx context.Context, in *ListPrivateEndpointRegionsRequest, opts ...grpc.CallOption) (*ListPrivateEndpointRegionsResponse, error) {
 	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
 	out := new(ListPrivateEndpointRegionsResponse)
@@ -2271,6 +2322,16 @@ func (c *serverServiceClient) TestOrgSSOConnection(ctx context.Context, in *Test
 	return out, nil
 }
 
+func (c *serverServiceClient) ListPostgreSQLExtensions(ctx context.Context, in *ListPostgreSQLExtensionsRequest, opts ...grpc.CallOption) (*ListPostgreSQLExtensionsResponse, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(ListPostgreSQLExtensionsResponse)
+	err := c.cc.Invoke(ctx, ServerService_ListPostgreSQLExtensions_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
 // ServerServiceServer is the server API for ServerService service.
 // All implementations must embed UnimplementedServerServiceServer
 // for forward compatibility.
@@ -2290,6 +2351,11 @@ type ServerServiceServer interface {
 	// RevokeSession revokes one of the caller's own sessions by id (e.g. "log out
 	// that other device"). A user can only revoke their own sessions.
 	RevokeSession(context.Context, *RevokeSessionRequest) (*RevokeSessionResponse, error)
+	// GetMaintenanceBanner returns the platform-wide maintenance notice, if one
+	// is live (set by staff, not cleared, ends_at not passed). Any authenticated
+	// caller; it carries no tenant data and is not dismissible. Memoised briefly
+	// server-side, so a change shows up within seconds, not instantly.
+	GetMaintenanceBanner(context.Context, *GetMaintenanceBannerRequest) (*GetMaintenanceBannerResponse, error)
 	// A key created by another key never
 	// outlives it, stays within its allowed IPs, and is revoked with it.
 	CreateAPIKey(context.Context, *CreateAPIKeyRequest) (*CreateAPIKeyResponse, error)
@@ -2442,6 +2508,12 @@ type ServerServiceServer interface {
 	DeleteCloudIntegration(context.Context, *DeleteCloudIntegrationRequest) (*DeleteCloudIntegrationResponse, error)
 	// Assumes the role once and records the outcome as status.
 	TestCloudIntegration(context.Context, *TestCloudIntegrationRequest) (*TestCloudIntegrationResponse, error)
+	// Workspace-level destinations that use a connected cloud integration.
+	GetLogStream(context.Context, *GetLogStreamRequest) (*GetLogStreamResponse, error)
+	UpsertLogStream(context.Context, *UpsertLogStreamRequest) (*UpsertLogStreamResponse, error)
+	GetBackupAutoExport(context.Context, *GetBackupAutoExportRequest) (*GetBackupAutoExportResponse, error)
+	UpsertBackupAutoExport(context.Context, *UpsertBackupAutoExportRequest) (*UpsertBackupAutoExportResponse, error)
+	ExportToCloud(context.Context, *ExportToCloudRequest) (*ExportToCloudResponse, error)
 	// IngestAuditEvents receives audit events from an agent.
 	IngestAuditEvents(context.Context, *IngestAuditEventsRequest) (*IngestAuditEventsResponse, error)
 	// ListAuditLogs returns audit logs for the user's organization.
@@ -2578,14 +2650,6 @@ type ServerServiceServer interface {
 	UpdateIPAllowlistEntry(context.Context, *UpdateIPAllowlistEntryRequest) (*UpdateIPAllowlistEntryResponse, error)
 	// RemoveIPAllowlistEntry deletes an entry by id.
 	RemoveIPAllowlistEntry(context.Context, *RemoveIPAllowlistEntryRequest) (*RemoveIPAllowlistEntryResponse, error)
-	// GetWorkspaceNetworking returns the workspace's connectivity posture —
-	// private (-pl) endpoints and public-access disablement — plus whether a
-	// networking re-apply is still propagating to the edge.
-	GetWorkspaceNetworking(context.Context, *GetWorkspaceNetworkingRequest) (*GetWorkspaceNetworkingResponse, error)
-	// SetWorkspacePrivateAccess flips the workspace's private-access and/or
-	// public-access flags (each optional, independently). Disabling public
-	// access requires private access to be (or become) enabled.
-	SetWorkspacePrivateAccess(context.Context, *SetWorkspacePrivateAccessRequest) (*SetWorkspacePrivateAccessResponse, error)
 	// ListPrivateEndpointRegions returns the (provider, region) pairs the platform can
 	// serve private endpoints in.
 	ListPrivateEndpointRegions(context.Context, *ListPrivateEndpointRegionsRequest) (*ListPrivateEndpointRegionsResponse, error)
@@ -2676,6 +2740,9 @@ type ServerServiceServer interface {
 	// returns the resolved endpoints, so an admin can validate configuration
 	// before enabling it. Does not persist anything.
 	TestOrgSSOConnection(context.Context, *TestOrgSSOConnectionRequest) (*TestOrgSSOConnectionResponse, error)
+	// ListPostgreSQLExtensions returns the curated extension set bundled for a
+	// PostgreSQL major.
+	ListPostgreSQLExtensions(context.Context, *ListPostgreSQLExtensionsRequest) (*ListPostgreSQLExtensionsResponse, error)
 	mustEmbedUnimplementedServerServiceServer()
 }
 
@@ -2697,6 +2764,9 @@ func (UnimplementedServerServiceServer) ListSessions(context.Context, *ListSessi
 }
 func (UnimplementedServerServiceServer) RevokeSession(context.Context, *RevokeSessionRequest) (*RevokeSessionResponse, error) {
 	return nil, status.Error(codes.Unimplemented, "method RevokeSession not implemented")
+}
+func (UnimplementedServerServiceServer) GetMaintenanceBanner(context.Context, *GetMaintenanceBannerRequest) (*GetMaintenanceBannerResponse, error) {
+	return nil, status.Error(codes.Unimplemented, "method GetMaintenanceBanner not implemented")
 }
 func (UnimplementedServerServiceServer) CreateAPIKey(context.Context, *CreateAPIKeyRequest) (*CreateAPIKeyResponse, error) {
 	return nil, status.Error(codes.Unimplemented, "method CreateAPIKey not implemented")
@@ -2905,6 +2975,21 @@ func (UnimplementedServerServiceServer) DeleteCloudIntegration(context.Context, 
 func (UnimplementedServerServiceServer) TestCloudIntegration(context.Context, *TestCloudIntegrationRequest) (*TestCloudIntegrationResponse, error) {
 	return nil, status.Error(codes.Unimplemented, "method TestCloudIntegration not implemented")
 }
+func (UnimplementedServerServiceServer) GetLogStream(context.Context, *GetLogStreamRequest) (*GetLogStreamResponse, error) {
+	return nil, status.Error(codes.Unimplemented, "method GetLogStream not implemented")
+}
+func (UnimplementedServerServiceServer) UpsertLogStream(context.Context, *UpsertLogStreamRequest) (*UpsertLogStreamResponse, error) {
+	return nil, status.Error(codes.Unimplemented, "method UpsertLogStream not implemented")
+}
+func (UnimplementedServerServiceServer) GetBackupAutoExport(context.Context, *GetBackupAutoExportRequest) (*GetBackupAutoExportResponse, error) {
+	return nil, status.Error(codes.Unimplemented, "method GetBackupAutoExport not implemented")
+}
+func (UnimplementedServerServiceServer) UpsertBackupAutoExport(context.Context, *UpsertBackupAutoExportRequest) (*UpsertBackupAutoExportResponse, error) {
+	return nil, status.Error(codes.Unimplemented, "method UpsertBackupAutoExport not implemented")
+}
+func (UnimplementedServerServiceServer) ExportToCloud(context.Context, *ExportToCloudRequest) (*ExportToCloudResponse, error) {
+	return nil, status.Error(codes.Unimplemented, "method ExportToCloud not implemented")
+}
 func (UnimplementedServerServiceServer) IngestAuditEvents(context.Context, *IngestAuditEventsRequest) (*IngestAuditEventsResponse, error) {
 	return nil, status.Error(codes.Unimplemented, "method IngestAuditEvents not implemented")
 }
@@ -3070,12 +3155,6 @@ func (UnimplementedServerServiceServer) UpdateIPAllowlistEntry(context.Context, 
 func (UnimplementedServerServiceServer) RemoveIPAllowlistEntry(context.Context, *RemoveIPAllowlistEntryRequest) (*RemoveIPAllowlistEntryResponse, error) {
 	return nil, status.Error(codes.Unimplemented, "method RemoveIPAllowlistEntry not implemented")
 }
-func (UnimplementedServerServiceServer) GetWorkspaceNetworking(context.Context, *GetWorkspaceNetworkingRequest) (*GetWorkspaceNetworkingResponse, error) {
-	return nil, status.Error(codes.Unimplemented, "method GetWorkspaceNetworking not implemented")
-}
-func (UnimplementedServerServiceServer) SetWorkspacePrivateAccess(context.Context, *SetWorkspacePrivateAccessRequest) (*SetWorkspacePrivateAccessResponse, error) {
-	return nil, status.Error(codes.Unimplemented, "method SetWorkspacePrivateAccess not implemented")
-}
 func (UnimplementedServerServiceServer) ListPrivateEndpointRegions(context.Context, *ListPrivateEndpointRegionsRequest) (*ListPrivateEndpointRegionsResponse, error) {
 	return nil, status.Error(codes.Unimplemented, "method ListPrivateEndpointRegions not implemented")
 }
@@ -3184,6 +3263,9 @@ func (UnimplementedServerServiceServer) DeleteOrgSSOConnection(context.Context, 
 func (UnimplementedServerServiceServer) TestOrgSSOConnection(context.Context, *TestOrgSSOConnectionRequest) (*TestOrgSSOConnectionResponse, error) {
 	return nil, status.Error(codes.Unimplemented, "method TestOrgSSOConnection not implemented")
 }
+func (UnimplementedServerServiceServer) ListPostgreSQLExtensions(context.Context, *ListPostgreSQLExtensionsRequest) (*ListPostgreSQLExtensionsResponse, error) {
+	return nil, status.Error(codes.Unimplemented, "method ListPostgreSQLExtensions not implemented")
+}
 func (UnimplementedServerServiceServer) mustEmbedUnimplementedServerServiceServer() {}
 func (UnimplementedServerServiceServer) testEmbeddedByValue()                       {}
 
@@ -3273,6 +3355,24 @@ func _ServerService_RevokeSession_Handler(srv interface{}, ctx context.Context, 
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
 		return srv.(ServerServiceServer).RevokeSession(ctx, req.(*RevokeSessionRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _ServerService_GetMaintenanceBanner_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(GetMaintenanceBannerRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(ServerServiceServer).GetMaintenanceBanner(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: ServerService_GetMaintenanceBanner_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(ServerServiceServer).GetMaintenanceBanner(ctx, req.(*GetMaintenanceBannerRequest))
 	}
 	return interceptor(ctx, in, info, handler)
 }
@@ -4519,6 +4619,96 @@ func _ServerService_TestCloudIntegration_Handler(srv interface{}, ctx context.Co
 	return interceptor(ctx, in, info, handler)
 }
 
+func _ServerService_GetLogStream_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(GetLogStreamRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(ServerServiceServer).GetLogStream(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: ServerService_GetLogStream_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(ServerServiceServer).GetLogStream(ctx, req.(*GetLogStreamRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _ServerService_UpsertLogStream_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(UpsertLogStreamRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(ServerServiceServer).UpsertLogStream(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: ServerService_UpsertLogStream_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(ServerServiceServer).UpsertLogStream(ctx, req.(*UpsertLogStreamRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _ServerService_GetBackupAutoExport_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(GetBackupAutoExportRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(ServerServiceServer).GetBackupAutoExport(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: ServerService_GetBackupAutoExport_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(ServerServiceServer).GetBackupAutoExport(ctx, req.(*GetBackupAutoExportRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _ServerService_UpsertBackupAutoExport_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(UpsertBackupAutoExportRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(ServerServiceServer).UpsertBackupAutoExport(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: ServerService_UpsertBackupAutoExport_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(ServerServiceServer).UpsertBackupAutoExport(ctx, req.(*UpsertBackupAutoExportRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _ServerService_ExportToCloud_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(ExportToCloudRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(ServerServiceServer).ExportToCloud(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: ServerService_ExportToCloud_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(ServerServiceServer).ExportToCloud(ctx, req.(*ExportToCloudRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
 func _ServerService_IngestAuditEvents_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
 	in := new(IngestAuditEventsRequest)
 	if err := dec(in); err != nil {
@@ -5502,42 +5692,6 @@ func _ServerService_RemoveIPAllowlistEntry_Handler(srv interface{}, ctx context.
 	return interceptor(ctx, in, info, handler)
 }
 
-func _ServerService_GetWorkspaceNetworking_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(GetWorkspaceNetworkingRequest)
-	if err := dec(in); err != nil {
-		return nil, err
-	}
-	if interceptor == nil {
-		return srv.(ServerServiceServer).GetWorkspaceNetworking(ctx, in)
-	}
-	info := &grpc.UnaryServerInfo{
-		Server:     srv,
-		FullMethod: ServerService_GetWorkspaceNetworking_FullMethodName,
-	}
-	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(ServerServiceServer).GetWorkspaceNetworking(ctx, req.(*GetWorkspaceNetworkingRequest))
-	}
-	return interceptor(ctx, in, info, handler)
-}
-
-func _ServerService_SetWorkspacePrivateAccess_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(SetWorkspacePrivateAccessRequest)
-	if err := dec(in); err != nil {
-		return nil, err
-	}
-	if interceptor == nil {
-		return srv.(ServerServiceServer).SetWorkspacePrivateAccess(ctx, in)
-	}
-	info := &grpc.UnaryServerInfo{
-		Server:     srv,
-		FullMethod: ServerService_SetWorkspacePrivateAccess_FullMethodName,
-	}
-	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(ServerServiceServer).SetWorkspacePrivateAccess(ctx, req.(*SetWorkspacePrivateAccessRequest))
-	}
-	return interceptor(ctx, in, info, handler)
-}
-
 func _ServerService_ListPrivateEndpointRegions_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
 	in := new(ListPrivateEndpointRegionsRequest)
 	if err := dec(in); err != nil {
@@ -6186,6 +6340,24 @@ func _ServerService_TestOrgSSOConnection_Handler(srv interface{}, ctx context.Co
 	return interceptor(ctx, in, info, handler)
 }
 
+func _ServerService_ListPostgreSQLExtensions_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(ListPostgreSQLExtensionsRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(ServerServiceServer).ListPostgreSQLExtensions(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: ServerService_ListPostgreSQLExtensions_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(ServerServiceServer).ListPostgreSQLExtensions(ctx, req.(*ListPostgreSQLExtensionsRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
 // ServerService_ServiceDesc is the grpc.ServiceDesc for ServerService service.
 // It's only intended for direct use with grpc.RegisterService,
 // and not to be introspected or modified (even as a copy)
@@ -6208,6 +6380,10 @@ var ServerService_ServiceDesc = grpc.ServiceDesc{
 		{
 			MethodName: "RevokeSession",
 			Handler:    _ServerService_RevokeSession_Handler,
+		},
+		{
+			MethodName: "GetMaintenanceBanner",
+			Handler:    _ServerService_GetMaintenanceBanner_Handler,
 		},
 		{
 			MethodName: "CreateAPIKey",
@@ -6486,6 +6662,26 @@ var ServerService_ServiceDesc = grpc.ServiceDesc{
 			Handler:    _ServerService_TestCloudIntegration_Handler,
 		},
 		{
+			MethodName: "GetLogStream",
+			Handler:    _ServerService_GetLogStream_Handler,
+		},
+		{
+			MethodName: "UpsertLogStream",
+			Handler:    _ServerService_UpsertLogStream_Handler,
+		},
+		{
+			MethodName: "GetBackupAutoExport",
+			Handler:    _ServerService_GetBackupAutoExport_Handler,
+		},
+		{
+			MethodName: "UpsertBackupAutoExport",
+			Handler:    _ServerService_UpsertBackupAutoExport_Handler,
+		},
+		{
+			MethodName: "ExportToCloud",
+			Handler:    _ServerService_ExportToCloud_Handler,
+		},
+		{
 			MethodName: "IngestAuditEvents",
 			Handler:    _ServerService_IngestAuditEvents_Handler,
 		},
@@ -6702,14 +6898,6 @@ var ServerService_ServiceDesc = grpc.ServiceDesc{
 			Handler:    _ServerService_RemoveIPAllowlistEntry_Handler,
 		},
 		{
-			MethodName: "GetWorkspaceNetworking",
-			Handler:    _ServerService_GetWorkspaceNetworking_Handler,
-		},
-		{
-			MethodName: "SetWorkspacePrivateAccess",
-			Handler:    _ServerService_SetWorkspacePrivateAccess_Handler,
-		},
-		{
 			MethodName: "ListPrivateEndpointRegions",
 			Handler:    _ServerService_ListPrivateEndpointRegions_Handler,
 		},
@@ -6853,6 +7041,10 @@ var ServerService_ServiceDesc = grpc.ServiceDesc{
 			MethodName: "TestOrgSSOConnection",
 			Handler:    _ServerService_TestOrgSSOConnection_Handler,
 		},
+		{
+			MethodName: "ListPostgreSQLExtensions",
+			Handler:    _ServerService_ListPostgreSQLExtensions_Handler,
+		},
 	},
 	Streams: []grpc.StreamDesc{
 		{
@@ -6878,6 +7070,7 @@ const (
 	AdminService_AdminDismissSignupAttempt_FullMethodName       = "/relay.server.v1.AdminService/AdminDismissSignupAttempt"
 	AdminService_AdminListAuditLog_FullMethodName               = "/relay.server.v1.AdminService/AdminListAuditLog"
 	AdminService_AdminGetCloudCosts_FullMethodName              = "/relay.server.v1.AdminService/AdminGetCloudCosts"
+	AdminService_AdminGetRevenueOverview_FullMethodName         = "/relay.server.v1.AdminService/AdminGetRevenueOverview"
 	AdminService_AdminListSupportReports_FullMethodName         = "/relay.server.v1.AdminService/AdminListSupportReports"
 	AdminService_AdminGetSupportReport_FullMethodName           = "/relay.server.v1.AdminService/AdminGetSupportReport"
 	AdminService_AdminAddSupportReportComment_FullMethodName    = "/relay.server.v1.AdminService/AdminAddSupportReportComment"
@@ -6900,6 +7093,11 @@ const (
 	AdminService_AdminGetOrganizationSecurity_FullMethodName    = "/relay.server.v1.AdminService/AdminGetOrganizationSecurity"
 	AdminService_AdminGetPlatformOverview_FullMethodName        = "/relay.server.v1.AdminService/AdminGetPlatformOverview"
 	AdminService_AdminListOrgActivation_FullMethodName          = "/relay.server.v1.AdminService/AdminListOrgActivation"
+	AdminService_AdminSuspendOrganization_FullMethodName        = "/relay.server.v1.AdminService/AdminSuspendOrganization"
+	AdminService_AdminUnsuspendOrganization_FullMethodName      = "/relay.server.v1.AdminService/AdminUnsuspendOrganization"
+	AdminService_AdminGetMaintenanceBanner_FullMethodName       = "/relay.server.v1.AdminService/AdminGetMaintenanceBanner"
+	AdminService_AdminSetMaintenanceBanner_FullMethodName       = "/relay.server.v1.AdminService/AdminSetMaintenanceBanner"
+	AdminService_AdminClearMaintenanceBanner_FullMethodName     = "/relay.server.v1.AdminService/AdminClearMaintenanceBanner"
 )
 
 // AdminServiceClient is the client API for AdminService service.
@@ -6963,6 +7161,10 @@ type AdminServiceClient interface {
 	// daily/monthly series, and breakdowns by service and linked account.
 	// Windows: "mtd" (default, with month-end forecast), "30d", "90d", "12m".
 	AdminGetCloudCosts(ctx context.Context, in *AdminGetCloudCostsRequest, opts ...grpc.CallOption) (*AdminGetCloudCostsResponse, error)
+	// AdminGetRevenueOverview joins revenue (payments), cost to serve (Kubecost)
+	// and Relay's own AWS bill into MRR/ARR, per-organization margins and the
+	// platform gross margin over the trailing 30 days. Cached briefly server-side.
+	AdminGetRevenueOverview(ctx context.Context, in *AdminGetRevenueOverviewRequest, opts ...grpc.CallOption) (*AdminGetRevenueOverviewResponse, error)
 	// AdminListSupportReports returns support reports across every organization —
 	// the company support inbox. Optionally filtered by status. Org identity
 	// (org_name/org_slug) is always populated so the cross-org list is legible.
@@ -7033,6 +7235,23 @@ type AdminServiceClient interface {
 	// AdminListOrgActivation returns one row per organization with activation
 	// signals (last sign-in, last tunnel, resources, tickets). Cached likewise.
 	AdminListOrgActivation(ctx context.Context, in *AdminListOrgActivationRequest, opts ...grpc.CallOption) (*AdminListOrgActivationResponse, error)
+	// AdminSuspendOrganization is the staff kill switch: members can no longer
+	// sign in or call the API, the org's agents and API keys are refused, and
+	// every session and tunnel token of its members is revoked. Backoffice
+	// users keep access. The reason is required and shown to staff only.
+	AdminSuspendOrganization(ctx context.Context, in *AdminSuspendOrganizationRequest, opts ...grpc.CallOption) (*AdminSuspendOrganizationResponse, error)
+	// AdminUnsuspendOrganization lifts a suspension. Members sign in again as
+	// usual; the sessions revoked at suspension time stay revoked.
+	AdminUnsuspendOrganization(ctx context.Context, in *AdminUnsuspendOrganizationRequest, opts ...grpc.CallOption) (*AdminUnsuspendOrganizationResponse, error)
+	// AdminGetMaintenanceBanner returns the live platform maintenance banner
+	// (unset when none) and up to 20 past banners, newest first.
+	AdminGetMaintenanceBanner(ctx context.Context, in *AdminGetMaintenanceBannerRequest, opts ...grpc.CallOption) (*AdminGetMaintenanceBannerResponse, error)
+	// AdminSetMaintenanceBanner publishes a maintenance notice to every signed-in
+	// dashboard user, replacing (clearing) the live one in the same transaction.
+	AdminSetMaintenanceBanner(ctx context.Context, in *AdminSetMaintenanceBannerRequest, opts ...grpc.CallOption) (*AdminSetMaintenanceBannerResponse, error)
+	// AdminClearMaintenanceBanner takes the live banner down. FAILED_PRECONDITION
+	// (code MAINTENANCE_BANNER_NOT_LIVE) when none is live.
+	AdminClearMaintenanceBanner(ctx context.Context, in *AdminClearMaintenanceBannerRequest, opts ...grpc.CallOption) (*AdminClearMaintenanceBannerResponse, error)
 }
 
 type adminServiceClient struct {
@@ -7167,6 +7386,16 @@ func (c *adminServiceClient) AdminGetCloudCosts(ctx context.Context, in *AdminGe
 	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
 	out := new(AdminGetCloudCostsResponse)
 	err := c.cc.Invoke(ctx, AdminService_AdminGetCloudCosts_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *adminServiceClient) AdminGetRevenueOverview(ctx context.Context, in *AdminGetRevenueOverviewRequest, opts ...grpc.CallOption) (*AdminGetRevenueOverviewResponse, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(AdminGetRevenueOverviewResponse)
+	err := c.cc.Invoke(ctx, AdminService_AdminGetRevenueOverview_FullMethodName, in, out, cOpts...)
 	if err != nil {
 		return nil, err
 	}
@@ -7393,6 +7622,56 @@ func (c *adminServiceClient) AdminListOrgActivation(ctx context.Context, in *Adm
 	return out, nil
 }
 
+func (c *adminServiceClient) AdminSuspendOrganization(ctx context.Context, in *AdminSuspendOrganizationRequest, opts ...grpc.CallOption) (*AdminSuspendOrganizationResponse, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(AdminSuspendOrganizationResponse)
+	err := c.cc.Invoke(ctx, AdminService_AdminSuspendOrganization_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *adminServiceClient) AdminUnsuspendOrganization(ctx context.Context, in *AdminUnsuspendOrganizationRequest, opts ...grpc.CallOption) (*AdminUnsuspendOrganizationResponse, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(AdminUnsuspendOrganizationResponse)
+	err := c.cc.Invoke(ctx, AdminService_AdminUnsuspendOrganization_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *adminServiceClient) AdminGetMaintenanceBanner(ctx context.Context, in *AdminGetMaintenanceBannerRequest, opts ...grpc.CallOption) (*AdminGetMaintenanceBannerResponse, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(AdminGetMaintenanceBannerResponse)
+	err := c.cc.Invoke(ctx, AdminService_AdminGetMaintenanceBanner_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *adminServiceClient) AdminSetMaintenanceBanner(ctx context.Context, in *AdminSetMaintenanceBannerRequest, opts ...grpc.CallOption) (*AdminSetMaintenanceBannerResponse, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(AdminSetMaintenanceBannerResponse)
+	err := c.cc.Invoke(ctx, AdminService_AdminSetMaintenanceBanner_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *adminServiceClient) AdminClearMaintenanceBanner(ctx context.Context, in *AdminClearMaintenanceBannerRequest, opts ...grpc.CallOption) (*AdminClearMaintenanceBannerResponse, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(AdminClearMaintenanceBannerResponse)
+	err := c.cc.Invoke(ctx, AdminService_AdminClearMaintenanceBanner_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
 // AdminServiceServer is the server API for AdminService service.
 // All implementations must embed UnimplementedAdminServiceServer
 // for forward compatibility.
@@ -7454,6 +7733,10 @@ type AdminServiceServer interface {
 	// daily/monthly series, and breakdowns by service and linked account.
 	// Windows: "mtd" (default, with month-end forecast), "30d", "90d", "12m".
 	AdminGetCloudCosts(context.Context, *AdminGetCloudCostsRequest) (*AdminGetCloudCostsResponse, error)
+	// AdminGetRevenueOverview joins revenue (payments), cost to serve (Kubecost)
+	// and Relay's own AWS bill into MRR/ARR, per-organization margins and the
+	// platform gross margin over the trailing 30 days. Cached briefly server-side.
+	AdminGetRevenueOverview(context.Context, *AdminGetRevenueOverviewRequest) (*AdminGetRevenueOverviewResponse, error)
 	// AdminListSupportReports returns support reports across every organization —
 	// the company support inbox. Optionally filtered by status. Org identity
 	// (org_name/org_slug) is always populated so the cross-org list is legible.
@@ -7524,6 +7807,23 @@ type AdminServiceServer interface {
 	// AdminListOrgActivation returns one row per organization with activation
 	// signals (last sign-in, last tunnel, resources, tickets). Cached likewise.
 	AdminListOrgActivation(context.Context, *AdminListOrgActivationRequest) (*AdminListOrgActivationResponse, error)
+	// AdminSuspendOrganization is the staff kill switch: members can no longer
+	// sign in or call the API, the org's agents and API keys are refused, and
+	// every session and tunnel token of its members is revoked. Backoffice
+	// users keep access. The reason is required and shown to staff only.
+	AdminSuspendOrganization(context.Context, *AdminSuspendOrganizationRequest) (*AdminSuspendOrganizationResponse, error)
+	// AdminUnsuspendOrganization lifts a suspension. Members sign in again as
+	// usual; the sessions revoked at suspension time stay revoked.
+	AdminUnsuspendOrganization(context.Context, *AdminUnsuspendOrganizationRequest) (*AdminUnsuspendOrganizationResponse, error)
+	// AdminGetMaintenanceBanner returns the live platform maintenance banner
+	// (unset when none) and up to 20 past banners, newest first.
+	AdminGetMaintenanceBanner(context.Context, *AdminGetMaintenanceBannerRequest) (*AdminGetMaintenanceBannerResponse, error)
+	// AdminSetMaintenanceBanner publishes a maintenance notice to every signed-in
+	// dashboard user, replacing (clearing) the live one in the same transaction.
+	AdminSetMaintenanceBanner(context.Context, *AdminSetMaintenanceBannerRequest) (*AdminSetMaintenanceBannerResponse, error)
+	// AdminClearMaintenanceBanner takes the live banner down. FAILED_PRECONDITION
+	// (code MAINTENANCE_BANNER_NOT_LIVE) when none is live.
+	AdminClearMaintenanceBanner(context.Context, *AdminClearMaintenanceBannerRequest) (*AdminClearMaintenanceBannerResponse, error)
 	mustEmbedUnimplementedAdminServiceServer()
 }
 
@@ -7572,6 +7872,9 @@ func (UnimplementedAdminServiceServer) AdminListAuditLog(context.Context, *Admin
 }
 func (UnimplementedAdminServiceServer) AdminGetCloudCosts(context.Context, *AdminGetCloudCostsRequest) (*AdminGetCloudCostsResponse, error) {
 	return nil, status.Error(codes.Unimplemented, "method AdminGetCloudCosts not implemented")
+}
+func (UnimplementedAdminServiceServer) AdminGetRevenueOverview(context.Context, *AdminGetRevenueOverviewRequest) (*AdminGetRevenueOverviewResponse, error) {
+	return nil, status.Error(codes.Unimplemented, "method AdminGetRevenueOverview not implemented")
 }
 func (UnimplementedAdminServiceServer) AdminListSupportReports(context.Context, *AdminListSupportReportsRequest) (*AdminListSupportReportsResponse, error) {
 	return nil, status.Error(codes.Unimplemented, "method AdminListSupportReports not implemented")
@@ -7638,6 +7941,21 @@ func (UnimplementedAdminServiceServer) AdminGetPlatformOverview(context.Context,
 }
 func (UnimplementedAdminServiceServer) AdminListOrgActivation(context.Context, *AdminListOrgActivationRequest) (*AdminListOrgActivationResponse, error) {
 	return nil, status.Error(codes.Unimplemented, "method AdminListOrgActivation not implemented")
+}
+func (UnimplementedAdminServiceServer) AdminSuspendOrganization(context.Context, *AdminSuspendOrganizationRequest) (*AdminSuspendOrganizationResponse, error) {
+	return nil, status.Error(codes.Unimplemented, "method AdminSuspendOrganization not implemented")
+}
+func (UnimplementedAdminServiceServer) AdminUnsuspendOrganization(context.Context, *AdminUnsuspendOrganizationRequest) (*AdminUnsuspendOrganizationResponse, error) {
+	return nil, status.Error(codes.Unimplemented, "method AdminUnsuspendOrganization not implemented")
+}
+func (UnimplementedAdminServiceServer) AdminGetMaintenanceBanner(context.Context, *AdminGetMaintenanceBannerRequest) (*AdminGetMaintenanceBannerResponse, error) {
+	return nil, status.Error(codes.Unimplemented, "method AdminGetMaintenanceBanner not implemented")
+}
+func (UnimplementedAdminServiceServer) AdminSetMaintenanceBanner(context.Context, *AdminSetMaintenanceBannerRequest) (*AdminSetMaintenanceBannerResponse, error) {
+	return nil, status.Error(codes.Unimplemented, "method AdminSetMaintenanceBanner not implemented")
+}
+func (UnimplementedAdminServiceServer) AdminClearMaintenanceBanner(context.Context, *AdminClearMaintenanceBannerRequest) (*AdminClearMaintenanceBannerResponse, error) {
+	return nil, status.Error(codes.Unimplemented, "method AdminClearMaintenanceBanner not implemented")
 }
 func (UnimplementedAdminServiceServer) mustEmbedUnimplementedAdminServiceServer() {}
 func (UnimplementedAdminServiceServer) testEmbeddedByValue()                      {}
@@ -7890,6 +8208,24 @@ func _AdminService_AdminGetCloudCosts_Handler(srv interface{}, ctx context.Conte
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
 		return srv.(AdminServiceServer).AdminGetCloudCosts(ctx, req.(*AdminGetCloudCostsRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _AdminService_AdminGetRevenueOverview_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(AdminGetRevenueOverviewRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(AdminServiceServer).AdminGetRevenueOverview(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: AdminService_AdminGetRevenueOverview_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(AdminServiceServer).AdminGetRevenueOverview(ctx, req.(*AdminGetRevenueOverviewRequest))
 	}
 	return interceptor(ctx, in, info, handler)
 }
@@ -8290,6 +8626,96 @@ func _AdminService_AdminListOrgActivation_Handler(srv interface{}, ctx context.C
 	return interceptor(ctx, in, info, handler)
 }
 
+func _AdminService_AdminSuspendOrganization_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(AdminSuspendOrganizationRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(AdminServiceServer).AdminSuspendOrganization(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: AdminService_AdminSuspendOrganization_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(AdminServiceServer).AdminSuspendOrganization(ctx, req.(*AdminSuspendOrganizationRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _AdminService_AdminUnsuspendOrganization_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(AdminUnsuspendOrganizationRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(AdminServiceServer).AdminUnsuspendOrganization(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: AdminService_AdminUnsuspendOrganization_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(AdminServiceServer).AdminUnsuspendOrganization(ctx, req.(*AdminUnsuspendOrganizationRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _AdminService_AdminGetMaintenanceBanner_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(AdminGetMaintenanceBannerRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(AdminServiceServer).AdminGetMaintenanceBanner(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: AdminService_AdminGetMaintenanceBanner_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(AdminServiceServer).AdminGetMaintenanceBanner(ctx, req.(*AdminGetMaintenanceBannerRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _AdminService_AdminSetMaintenanceBanner_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(AdminSetMaintenanceBannerRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(AdminServiceServer).AdminSetMaintenanceBanner(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: AdminService_AdminSetMaintenanceBanner_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(AdminServiceServer).AdminSetMaintenanceBanner(ctx, req.(*AdminSetMaintenanceBannerRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _AdminService_AdminClearMaintenanceBanner_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(AdminClearMaintenanceBannerRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(AdminServiceServer).AdminClearMaintenanceBanner(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: AdminService_AdminClearMaintenanceBanner_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(AdminServiceServer).AdminClearMaintenanceBanner(ctx, req.(*AdminClearMaintenanceBannerRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
 // AdminService_ServiceDesc is the grpc.ServiceDesc for AdminService service.
 // It's only intended for direct use with grpc.RegisterService,
 // and not to be introspected or modified (even as a copy)
@@ -8348,6 +8774,10 @@ var AdminService_ServiceDesc = grpc.ServiceDesc{
 		{
 			MethodName: "AdminGetCloudCosts",
 			Handler:    _AdminService_AdminGetCloudCosts_Handler,
+		},
+		{
+			MethodName: "AdminGetRevenueOverview",
+			Handler:    _AdminService_AdminGetRevenueOverview_Handler,
 		},
 		{
 			MethodName: "AdminListSupportReports",
@@ -8436,6 +8866,26 @@ var AdminService_ServiceDesc = grpc.ServiceDesc{
 		{
 			MethodName: "AdminListOrgActivation",
 			Handler:    _AdminService_AdminListOrgActivation_Handler,
+		},
+		{
+			MethodName: "AdminSuspendOrganization",
+			Handler:    _AdminService_AdminSuspendOrganization_Handler,
+		},
+		{
+			MethodName: "AdminUnsuspendOrganization",
+			Handler:    _AdminService_AdminUnsuspendOrganization_Handler,
+		},
+		{
+			MethodName: "AdminGetMaintenanceBanner",
+			Handler:    _AdminService_AdminGetMaintenanceBanner_Handler,
+		},
+		{
+			MethodName: "AdminSetMaintenanceBanner",
+			Handler:    _AdminService_AdminSetMaintenanceBanner_Handler,
+		},
+		{
+			MethodName: "AdminClearMaintenanceBanner",
+			Handler:    _AdminService_AdminClearMaintenanceBanner_Handler,
 		},
 	},
 	Streams:  []grpc.StreamDesc{},

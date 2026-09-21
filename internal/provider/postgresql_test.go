@@ -37,15 +37,6 @@ func TestProvisionerFor(t *testing.T) {
 	}
 }
 
-func TestPlacementOf(t *testing.T) {
-	if cloud, region := placementOf(testCatalog, &serverv1.NodeSpec{Provider: "aws-use1"}); cloud != "aws" || region != "us-east-1" {
-		t.Errorf("placement = %q/%q", cloud, region)
-	}
-	if cloud, region := placementOf(testCatalog, &serverv1.NodeSpec{Provider: "gone", Region: "us-west-2"}); cloud != "" || region != "us-west-2" {
-		t.Errorf("a provisioner missing from the catalog must fall back to the node's own region, got %q/%q", cloud, region)
-	}
-}
-
 func TestNodesRoundTrip(t *testing.T) {
 	nodes := map[string]nodeGroupModel{
 		"writers": {
@@ -96,7 +87,11 @@ func TestNodesRoundTrip(t *testing.T) {
 		t.Errorf("readers disk_type = %q, want io1", out[0].GetResources().GetDiskType())
 	}
 
-	back := nodesFromProto(out, testCatalog, nodes)
+	// The platform answers cloud+region on a node and never echoes the provisioner.
+	for _, n := range out {
+		n.Cloud, n.Provider = "aws", ""
+	}
+	back := nodesFromProto(out, nodes)
 	if g := back["readers"]; g.Role.ValueString() != roleReadOnly || g.Resources.IOPS.ValueInt64() != 3000 || g.Tier.ValueString() != "R20" || g.Resources.DiskType.ValueString() != "io1" {
 		t.Errorf("readers round trip = %+v", g)
 	}
