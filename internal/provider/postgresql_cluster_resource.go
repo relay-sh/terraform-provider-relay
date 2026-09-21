@@ -124,7 +124,7 @@ func (r *postgresqlClusterResource) Schema(ctx context.Context, _ resource.Schem
 							},
 							"iops": schema.Int64Attribute{
 								Optional: true, Computed: true, PlanModifiers: keepInt,
-								MarkdownDescription: "Provisioned IOPS. Can change in place. Required when `disk_type` is `io1` or `io2`.",
+								MarkdownDescription: "Provisioned IOPS. Can change in place. Required for `io1`/`io2`. AWS caps: gp3 3000–80000 (500/GiB above 3000), io1 100–64000 (50/GiB), io2 100–256000 (1000/GiB).",
 							},
 							"throughput": schema.Int64Attribute{
 								Optional: true, Computed: true, PlanModifiers: keepInt,
@@ -132,7 +132,7 @@ func (r *postgresqlClusterResource) Schema(ctx context.Context, _ resource.Schem
 							},
 							"disk_type": schema.StringAttribute{
 								Optional: true, Computed: true, PlanModifiers: keepString,
-								MarkdownDescription: "Cloud volume type. AWS: `gp3` (default), `io1`, `io2`. GCP: `pd-ssd`, `pd-balanced`, `hyperdisk-balanced`. Azure: `PremiumV2_LRS`, `UltraSSD_LRS`. Can change in place. `io1`/`io2` require `iops`.",
+								MarkdownDescription: "Cloud volume type. AWS: `gp3` (default), `io1`, `io2` (min 4Gi). GCP: `pd-ssd`, `pd-balanced`, `hyperdisk-balanced`. Azure: `PremiumV2_LRS`, `UltraSSD_LRS`. Can change in place. `io1`/`io2` require `iops` within the per-GiB cap.",
 							},
 						},
 					},
