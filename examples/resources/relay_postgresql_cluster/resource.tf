@@ -4,26 +4,26 @@ resource "relay_postgresql_cluster" "billing" {
   version      = "18"
 
   nodes = {
-    primary = {
+    writers = {
+      role   = "electable"
       count  = 3
       cloud  = "aws"
       region = "us-east-1"
-      tier = "R30"
+      tier   = "R30"
       resources = {
         storage = "100Gi"
       }
     }
 
-    analytics = {
+    readers = {
+      role   = "read_only"
       count  = 2
       cloud  = "aws"
       region = "us-east-1"
-      tier = "R40"
+      tier   = "R40"
       resources = {
         storage = "200Gi"
       }
-      synchronous = false
-      failover    = false
     }
   }
 

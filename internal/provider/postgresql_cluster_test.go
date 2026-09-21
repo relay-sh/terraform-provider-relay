@@ -26,7 +26,8 @@ resource "relay_postgresql_cluster" "this" {
   version      = %q
 
   nodes = {
-    primary = {
+    writers = {
+      role   = "electable"
       count  = 2
       cloud  = "aws"
       region = "us-east-1"
@@ -37,14 +38,13 @@ resource "relay_postgresql_cluster" "this" {
       }
     }
 
-    analytics = {
+    readers = {
+      role  = "read_only"
       count = 1
       tier  = "R20"
       resources = {
         storage = "20Gi"
       }
-      synchronous = false
-      failover    = false
     }
   }
 
@@ -85,16 +85,15 @@ func TestPostgreSQLClusterResource_Lifecycle(t *testing.T) {
 				Config: clusterConfig(f, "18", "10Gi", `{ work_mem = "64MB" }`, ""),
 				Check: resource.ComposeAggregateTestCheckFunc(
 					resource.TestCheckResourceAttr("relay_postgresql_cluster.this", "phase", "running"),
-					resource.TestCheckResourceAttr("relay_postgresql_cluster.this", "nodes.primary.resources.storage_class", "standard"),
-					resource.TestCheckResourceAttr("relay_postgresql_cluster.this", "nodes.primary.resources.iops", "3000"),
-					resource.TestCheckNoResourceAttr("relay_postgresql_cluster.this", "nodes.primary.resources.throughput"),
-					resource.TestCheckResourceAttr("relay_postgresql_cluster.this", "nodes.primary.tier", "R10"),
-					resource.TestCheckResourceAttr("relay_postgresql_cluster.this", "nodes.analytics.tier", "R20"),
-					resource.TestCheckResourceAttr("relay_postgresql_cluster.this", "nodes.primary.synchronous", "true"),
-					resource.TestCheckResourceAttr("relay_postgresql_cluster.this", "nodes.primary.failover", "true"),
-					resource.TestCheckResourceAttr("relay_postgresql_cluster.this", "nodes.analytics.synchronous", "false"),
-					resource.TestCheckResourceAttr("relay_postgresql_cluster.this", "nodes.analytics.count", "1"),
-					resource.TestCheckResourceAttr("relay_postgresql_cluster.this", "nodes.analytics.cloud", ""),
+					resource.TestCheckResourceAttr("relay_postgresql_cluster.this", "nodes.writers.resources.storage_class", "standard"),
+					resource.TestCheckResourceAttr("relay_postgresql_cluster.this", "nodes.writers.resources.iops", "3000"),
+					resource.TestCheckNoResourceAttr("relay_postgresql_cluster.this", "nodes.writers.resources.throughput"),
+					resource.TestCheckResourceAttr("relay_postgresql_cluster.this", "nodes.writers.tier", "R10"),
+					resource.TestCheckResourceAttr("relay_postgresql_cluster.this", "nodes.readers.tier", "R20"),
+					resource.TestCheckResourceAttr("relay_postgresql_cluster.this", "nodes.writers.role", "electable"),
+					resource.TestCheckResourceAttr("relay_postgresql_cluster.this", "nodes.readers.role", "read_only"),
+					resource.TestCheckResourceAttr("relay_postgresql_cluster.this", "nodes.readers.count", "1"),
+					resource.TestCheckResourceAttr("relay_postgresql_cluster.this", "nodes.readers.cloud", ""),
 					resource.TestCheckResourceAttr("relay_postgresql_cluster.this", "parameters.work_mem", "64MB"),
 					resource.TestCheckResourceAttr("relay_postgresql_cluster.this", "replication.synchronous_replicas", "1"),
 					resource.TestCheckResourceAttr("relay_postgresql_cluster.this", "endpoint_host", "billing.db.relay"),
@@ -115,12 +114,16 @@ func TestPostgreSQLClusterResource_Lifecycle(t *testing.T) {
 							return fmt.Errorf("cloud and region must resolve to a provisioner, got %q", spec.GetNodes()[1].GetProvider())
 						case spec.GetNodes()[0].GetProvider() != "":
 							return fmt.Errorf("an unplaced group must not name a provisioner, got %q", spec.GetNodes()[0].GetProvider())
-						case spec.GetNodes()[0].GetTags()["nosync"] != "true":
-							return fmt.Errorf("synchronous = false must become the nosync tag, got %v", spec.GetNodes()[0].GetTags())
+						case spec.GetNodes()[0].GetRole() != "read_only" || spec.GetNodes()[1].GetRole() != "electable":
+							return fmt.Errorf("the group's role must be sent, not its label, got %q and %q", spec.GetNodes()[0].GetRole(), spec.GetNodes()[1].GetRole())
+						case spec.GetNodes()[0].GetTags()["nosync"] != "true" || spec.GetNodes()[0].GetTags()["nofailover"] != "true":
+							return fmt.Errorf("read_only must derive both tags, got %v", spec.GetNodes()[0].GetTags())
+						case spec.GetNodes()[1].GetTags() != nil:
+							return fmt.Errorf("electable must derive no tags, got %v", spec.GetNodes()[1].GetTags())
 						case spec.GetNodes()[1].GetTier() != "R10":
-							return fmt.Errorf("primary tier = %q, want R10", spec.GetNodes()[1].GetTier())
+							return fmt.Errorf("writers tier = %q, want R10", spec.GetNodes()[1].GetTier())
 						case spec.GetNodes()[0].GetTier() != "R20":
-							return fmt.Errorf("analytics tier = %q, want R20", spec.GetNodes()[0].GetTier())
+							return fmt.Errorf("readers tier = %q, want R20", spec.GetNodes()[0].GetTier())
 						case spec.GetNodes()[1].GetResources().GetCpu() != "" || spec.GetNodes()[1].GetResources().GetMemory() != "":
 							return fmt.Errorf("cpu/memory must not be sent, got %q/%q", spec.GetNodes()[1].GetResources().GetCpu(), spec.GetNodes()[1].GetResources().GetMemory())
 						}
@@ -131,7 +134,7 @@ func TestPostgreSQLClusterResource_Lifecycle(t *testing.T) {
 			{
 				Config: clusterConfig(f, "18", "20Gi", `{}`, ""),
 				Check: resource.ComposeAggregateTestCheckFunc(
-					resource.TestCheckResourceAttr("relay_postgresql_cluster.this", "nodes.primary.resources.storage", "20Gi"),
+					resource.TestCheckResourceAttr("relay_postgresql_cluster.this", "nodes.writers.resources.storage", "20Gi"),
 					resource.TestCheckResourceAttr("relay_postgresql_cluster.this", "parameters.%", "0"),
 					func(*terraform.State) error {
 						paths := f.lastDBUpdate.GetUpdateMask().GetPaths()
@@ -173,7 +176,7 @@ func TestPostgreSQLClusterResource_Lifecycle(t *testing.T) {
 					return dbWorkspace + "/" + s.RootModule().Resources["relay_postgresql_cluster.this"].Primary.ID, nil
 				},
 				ImportStateVerify:       true,
-				ImportStateVerifyIgnore: []string{"keep_backups_on_destroy", "timeouts"},
+				ImportStateVerifyIgnore: []string{"keep_backups_on_destroy", "timeouts", "nodes"},
 			},
 		},
 	})
@@ -197,7 +200,8 @@ resource "relay_postgresql_cluster" "this" {
   version      = "18"
 
   nodes = {
-    primary = {
+    writers = {
+      role   = "electable"
       count  = 1
       cloud  = "aws"
       region = "us-east-1"
@@ -218,15 +222,15 @@ resource "relay_postgresql_cluster" "this" {
 			{
 				Config: base(3000, "gp3", ""),
 				Check: resource.ComposeAggregateTestCheckFunc(
-					resource.TestCheckResourceAttr("relay_postgresql_cluster.this", "nodes.primary.resources.iops", "3000"),
-					resource.TestCheckResourceAttr("relay_postgresql_cluster.this", "nodes.primary.resources.disk_type", "gp3"),
+					resource.TestCheckResourceAttr("relay_postgresql_cluster.this", "nodes.writers.resources.iops", "3000"),
+					resource.TestCheckResourceAttr("relay_postgresql_cluster.this", "nodes.writers.resources.disk_type", "gp3"),
 				),
 			},
 			{
 				Config: base(6000, "io1", ""),
 				Check: resource.ComposeAggregateTestCheckFunc(
-					resource.TestCheckResourceAttr("relay_postgresql_cluster.this", "nodes.primary.resources.iops", "6000"),
-					resource.TestCheckResourceAttr("relay_postgresql_cluster.this", "nodes.primary.resources.disk_type", "io1"),
+					resource.TestCheckResourceAttr("relay_postgresql_cluster.this", "nodes.writers.resources.iops", "6000"),
+					resource.TestCheckResourceAttr("relay_postgresql_cluster.this", "nodes.writers.resources.disk_type", "io1"),
 					func(*terraform.State) error {
 						res := f.lastDBUpdate.GetSpec().GetNodes()[0].GetResources()
 						if res.GetIops() != 6000 || res.GetDiskType() != "io1" {
@@ -252,7 +256,8 @@ resource "relay_postgresql_cluster" "dev" {
   name         = "orders"
 
   nodes = {
-    primary = {
+    only = {
+      role = "electable"
       tier = "R5"
       resources = {
         storage = "5Gi"
@@ -267,7 +272,7 @@ resource "relay_postgresql_cluster" "dev" {
 			{
 				Config: config,
 				Check: resource.ComposeAggregateTestCheckFunc(
-					resource.TestCheckResourceAttr("relay_postgresql_cluster.dev", "nodes.primary.count", "1"),
+					resource.TestCheckResourceAttr("relay_postgresql_cluster.dev", "nodes.only.count", "1"),
 					resource.TestCheckResourceAttr("relay_postgresql_cluster.dev", "replication.mode", "async"),
 					resource.TestCheckResourceAttr("relay_postgresql_cluster.dev", "keep_backups_on_destroy", "false"),
 					resource.TestCheckResourceAttr("relay_postgresql_cluster.dev", "created_at", ""),
@@ -308,7 +313,8 @@ resource "relay_postgresql_cluster" "this" {
   name         = "billing"
 
   nodes = {
-    primary = {
+    writers = {
+      role = "electable"
       tier = "R10"
       resources = { storage = "5Gi" }
     }
@@ -341,6 +347,42 @@ resource "relay_postgresql_cluster" "this" {
 	})
 }
 
+func TestPostgreSQLClusterResource_RejectsAnUnknownRole(t *testing.T) {
+	f := startFakeServer(t)
+	resource.UnitTest(t, resource.TestCase{
+		ProtoV6ProviderFactories: factories(relay.Dial),
+		Steps: []resource.TestStep{{
+			Config: providerBlock(f) + fmt.Sprintf(`
+resource "relay_postgresql_cluster" "this" {
+  workspace_id = %q
+  name         = "billing"
+
+  nodes = {
+    writers = {
+      role = "data"
+      tier = "R10"
+      resources = { storage = "5Gi" }
+    }
+  }
+}
+`, dbWorkspace),
+			ExpectError: regexp.MustCompile(`(?s)nodes\["writers"\].role value must be one of.*electable.*read_only.*got: "data"`),
+		}},
+	})
+}
+
+func TestFakeServerRejectsAnUnknownRole(t *testing.T) {
+	f := startFakeServer(t)
+	req := &serverv1.CreateDatabaseRequest{Name: "billing", Spec: &serverv1.DatabaseSpec{
+		Engine: "postgresql",
+		Nodes:  []*serverv1.NodeSpec{{Role: "primary", Resources: &serverv1.ResourceRequirements{Storage: "5Gi"}}},
+	}}
+	_, err := f.CreateDatabase(t.Context(), req)
+	if status.Code(err) != codes.InvalidArgument {
+		t.Fatalf("the fake must reject a role the platform rejects, got %v", err)
+	}
+}
+
 func TestPostgreSQLClusterResource_UnservedPlacement(t *testing.T) {
 	f := startFakeServer(t)
 	resource.UnitTest(t, resource.TestCase{
@@ -352,7 +394,8 @@ resource "relay_postgresql_cluster" "this" {
   name         = "billing"
 
   nodes = {
-    primary = {
+    writers = {
+      role   = "electable"
       cloud  = "fly"
       region = "gru"
       tier = "R10"
@@ -369,14 +412,15 @@ resource "relay_postgresql_cluster" "this" {
 func TestPostgreSQLClusterResource_NodeGroupChanges(t *testing.T) {
 	f := startFakeServer(t)
 	unavailable := status.Error(codes.Unavailable, "down")
-	primary := func(count int, region string) string {
+	writers := func(count int, region string) string {
 		return providerBlock(f) + fmt.Sprintf(`
 resource "relay_postgresql_cluster" "this" {
   workspace_id = %q
   name         = "billing"
 
   nodes = {
-    primary = {
+    writers = {
+      role   = "electable"
       count  = %d
       cloud  = "aws"
       region = %q
@@ -387,13 +431,14 @@ resource "relay_postgresql_cluster" "this" {
 }
 `, dbWorkspace, count, region)
 	}
-	withAnalytics := providerBlock(f) + fmt.Sprintf(`
+	withReaders := providerBlock(f) + fmt.Sprintf(`
 resource "relay_postgresql_cluster" "this" {
   workspace_id = %q
   name         = "billing"
 
   nodes = {
-    primary = {
+    writers = {
+      role   = "electable"
       count  = 1
       cloud  = "aws"
       region = "us-east-1"
@@ -401,7 +446,8 @@ resource "relay_postgresql_cluster" "this" {
       resources = { storage = "5Gi" }
     }
 
-    analytics = {
+    readers = {
+      role   = "read_only"
       cloud  = "fly"
       region = "gru"
       tier = "R10"
@@ -414,21 +460,21 @@ resource "relay_postgresql_cluster" "this" {
 	resource.UnitTest(t, resource.TestCase{
 		ProtoV6ProviderFactories: factories(relay.Dial),
 		Steps: []resource.TestStep{
-			{Config: primary(3, "us-east-1")},
-			{Config: primary(1, "us-east-1")},
-			{Config: primary(1, "eu-west-1")},
+			{Config: writers(3, "us-east-1")},
+			{Config: writers(1, "us-east-1")},
+			{Config: writers(1, "eu-west-1")},
 			{
-				Config:      withAnalytics,
+				Config:      withReaders,
 				ExpectError: regexp.MustCompile("Cannot place the cluster"),
 			},
 			{
 				PreConfig:   func() { f.failAfter("ListDatabaseProviders", 1, unavailable) },
-				Config:      primary(2, "us-east-1"),
+				Config:      writers(2, "us-east-1"),
 				ExpectError: regexp.MustCompile("Cannot list the platform's provisioners"),
 			},
 			{
 				PreConfig: func() { f.failWith("ListDatabaseProviders", nil) },
-				Config:    primary(2, "us-east-1"),
+				Config:    writers(2, "us-east-1"),
 			},
 		},
 	})

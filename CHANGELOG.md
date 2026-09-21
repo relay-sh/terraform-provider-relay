@@ -1,5 +1,9 @@
 ## 0.0.1 (Unreleased)
 
+BREAKING CHANGES:
+
+* resource/relay_postgresql_cluster: node groups take a required `role` of `electable` or `read_only`; the map key is now a free label, and the per-group `synchronous` and `failover` booleans are gone
+
 ENHANCEMENTS:
 
 * resource/relay_postgresql_cluster: node groups take a catalog `tier`; CPU and memory are computed from it
