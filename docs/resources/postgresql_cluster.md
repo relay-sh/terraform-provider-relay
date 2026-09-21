@@ -104,10 +104,10 @@ Required:
 
 Optional:
 
-- `cloud` (String) Cloud the group runs in, for example `aws`. With `region` it selects one of the platform's provisioners; omit both to let the platform choose. Set once: a plan that changes it fails.
+- `cloud` (String) Cloud the group runs in, for example `aws`. With `region` it selects the provisioner. Changing cloud or region moves the group (add dest, switchover, drain source).
 - `count` (Number) Nodes in the group. Lowering it deletes the removed nodes' volumes without draining them first.
 - `failover` (Boolean) Whether the group's nodes can be promoted. `false` tags them `nofailover`.
-- `region` (String) Region the group runs in, for example `us-east-1`. Set once: a plan that changes it fails.
+- `region` (String) Region the group runs in, for example `us-east-1`. Changing it moves the group to that region.
 - `synchronous` (Boolean) Whether the group's nodes can acknowledge synchronous commits. `false` tags them `nosync`, which keeps a read pool out of the commit path.
 
 <a id="nestedatt--nodes--resources"></a>
