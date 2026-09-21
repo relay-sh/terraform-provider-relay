@@ -122,7 +122,7 @@ resource "relay_postgresql_user" "this" {
   cluster_id        = relay_postgresql_cluster.this.id
   username          = "tfacc"
   generate_password = true
-  roles             = [{ role = "readOnly", database = "postgres" }]
+  roles             = [{ role = "readOnly", database = "relay" }]
 }
 
 data "relay_postgresql_cluster" "this" {

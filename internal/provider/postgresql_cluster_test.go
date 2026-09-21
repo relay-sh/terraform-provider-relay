@@ -750,3 +750,20 @@ func TestPostgreSQLClusterDataSource_Errors(t *testing.T) {
 		})
 	}
 }
+
+func TestPostgreSQLClusterResource_DestroyAfterAFailedCreate(t *testing.T) {
+	f := startFakeServer(t)
+	f.failProvision = "no capacity"
+	resource.UnitTest(t, resource.TestCase{
+		ProtoV6ProviderFactories: factories(relay.Dial),
+		Steps: []resource.TestStep{{
+			Config:      clusterConfig(f, "18", "10Gi", `{}`, ""),
+			ExpectError: regexp.MustCompile(`(?s)did not become ready.*no capacity`),
+		}},
+	})
+	f.mu.Lock()
+	defer f.mu.Unlock()
+	if len(f.databases) != 0 {
+		t.Fatalf("clusters left after destroy: %v", f.databases)
+	}
+}

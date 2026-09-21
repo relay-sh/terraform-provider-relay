@@ -203,8 +203,21 @@ func (r *postgresqlUserResource) Create(ctx context.Context, req resource.Create
 	}
 	plan.ID = types.StringValue(plan.ClusterID.ValueString() + "/" + plan.Username.ValueString())
 	plan.GeneratedPassword = types.StringValue(out.GetGeneratedPassword())
-	resp.Diagnostics.Append(resp.State.SetAttribute(ctx, path.Root("id"), plan.ID)...)
-	resp.Diagnostics.Append(resp.State.SetAttribute(ctx, path.Root("generated_password"), plan.GeneratedPassword)...)
+	// The user exists from here on, so its identity goes to state before the wait:
+	// a wait that fails leaves a tainted resource, and a destroy has to be able to
+	// address it.
+	for _, attr := range []struct {
+		path  string
+		value types.String
+	}{
+		{"id", plan.ID},
+		{"generated_password", plan.GeneratedPassword},
+		{"workspace_id", plan.WorkspaceID},
+		{"cluster_id", plan.ClusterID},
+		{"username", plan.Username},
+	} {
+		resp.Diagnostics.Append(resp.State.SetAttribute(ctx, path.Root(attr.path), attr.value)...)
+	}
 
 	var user *serverv1.DatabaseUser
 	err = waitFor(scoped, timeout, func(ctx context.Context) (bool, error) {

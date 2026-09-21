@@ -426,3 +426,16 @@ func TestPostgreSQLUserResource_Failures(t *testing.T) {
 		})
 	})
 }
+
+func TestPostgreSQLUserResource_DestroyAfterAFailedCreate(t *testing.T) {
+	f := startFakeServer(t)
+	f.failUser = "role missing"
+	resource.UnitTest(t, resource.TestCase{
+		ProtoV6ProviderFactories: factories(relay.Dial),
+		CheckDestroy:             noUsersLeft(f),
+		Steps: []resource.TestStep{{
+			Config:      userConfig(f, "app", ""),
+			ExpectError: regexp.MustCompile(`(?s)did not become ready.*role missing`),
+		}},
+	})
+}

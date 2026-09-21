@@ -528,7 +528,10 @@ func (f *fakeServer) DeleteDatabase(ctx context.Context, req *serverv1.DeleteDat
 		return nil, err
 	}
 	f.lastDBDelete = req
-	if _, ok := f.databases[req.GetId()]; !ok {
+	db, ok := f.databases[req.GetId()]
+	// The server resolves the cluster in the caller's workspace and answers NotFound
+	// outside it, so a delete without the workspace scope must not find anything.
+	if !ok || db.GetWorkspaceId() != workspaceOf(ctx) {
 		return nil, status.Error(codes.NotFound, "database not found")
 	}
 	f.settle(req.GetId(), "deleting")
@@ -671,6 +674,9 @@ func (f *fakeServer) DeleteDatabaseUser(ctx context.Context, req *serverv1.Delet
 	defer f.mu.Unlock()
 	if err := f.record(ctx, "DeleteDatabaseUser"); err != nil {
 		return nil, err
+	}
+	if req.GetUsername() == "" {
+		return nil, status.Error(codes.InvalidArgument, "username is required")
 	}
 	key := userKey(req.GetDatabaseId(), req.GetUsername())
 	if _, ok := f.users[key]; !ok {
