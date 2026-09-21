@@ -39,7 +39,6 @@ type connectionModel struct {
 	Database          types.String      `tfsdk:"database"`
 	Listen            types.String      `tfsdk:"listen"`
 	AgentPool         types.String      `tfsdk:"agent_pool"`
-	Kind              types.String      `tfsdk:"kind"`
 	ManagedDatabaseID types.String      `tfsdk:"managed_database_id"`
 	RedactEnabled     types.Bool        `tfsdk:"redact_enabled"`
 	AuditEnabled      types.Bool        `tfsdk:"audit_enabled"`
@@ -97,17 +96,10 @@ func (r *connectionResource) Schema(_ context.Context, _ resource.SchemaRequest,
 				Sensitive:           true,
 				MarkdownDescription: "Upstream password. Write-only on the API: changes made outside Terraform are not detected. Prefer `credential_ref`.",
 			},
-			"credential_ref":    emptyString("Reference the agent resolves to a credential. Takes precedence over `password`."),
-			"credential_source": emptyString("Name of the external secret source that resolves `credential_ref`. Empty uses the agent's built-in source."),
-			"database":          emptyString("Default database name."),
-			"listen":            emptyString("Local listen address on the agent."),
-			"kind": schema.StringAttribute{
-				Optional:            true,
-				Computed:            true,
-				Default:             stringdefault.StaticString("interactive"),
-				Validators:          []validator.String{stringvalidator.OneOf("interactive", "service")},
-				MarkdownDescription: "`interactive` for human sessions through the CLI, `service` for always-on application traffic.",
-			},
+			"credential_ref":      emptyString("Reference the agent resolves to a credential. Takes precedence over `password`."),
+			"credential_source":   emptyString("Name of the external secret source that resolves `credential_ref`. Empty uses the agent's built-in source."),
+			"database":            emptyString("Default database name."),
+			"listen":              emptyString("Local listen address on the agent."),
 			"managed_database_id": schema.StringAttribute{Optional: true, MarkdownDescription: "Managed database this connection belongs to."},
 			"redact_enabled": schema.BoolAttribute{
 				Optional: true, Computed: true, Default: booldefault.StaticBool(false),
@@ -175,7 +167,6 @@ func (r *connectionResource) Create(ctx context.Context, req resource.CreateRequ
 			Database:          plan.Database.ValueString(),
 			Listen:            plan.Listen.ValueString(),
 			AgentPool:         plan.AgentPool.ValueString(),
-			Kind:              plan.Kind.ValueString(),
 			ManagedDatabaseId: plan.ManagedDatabaseID.ValueString(),
 			ManagedBy:         plan.ManagedBy.ValueString(),
 			Config: &serverv1.ConnectionConfig{
@@ -234,7 +225,6 @@ func (r *connectionResource) Update(ctx context.Context, req resource.UpdateRequ
 		Database:         plan.Database.ValueStringPointer(),
 		Listen:           plan.Listen.ValueStringPointer(),
 		AgentPool:        plan.AgentPool.ValueStringPointer(),
-		Kind:             plan.Kind.ValueStringPointer(),
 		RedactEnabled:    plan.RedactEnabled.ValueBoolPointer(),
 		AuditEnabled:     plan.AuditEnabled.ValueBoolPointer(),
 		PolicyFailMode:   plan.PolicyFailMode.ValueStringPointer(),
@@ -299,7 +289,6 @@ func connectionFromProto(c *serverv1.Connection, prior connectionModel) connecti
 		Database:          types.StringValue(c.GetDatabase()),
 		Listen:            types.StringValue(c.GetListen()),
 		AgentPool:         types.StringValue(c.GetAgentPool()),
-		Kind:              types.StringValue(c.GetKind()),
 		ManagedDatabaseID: nullIfEmpty(c.GetManagedDatabaseId()),
 		RedactEnabled:     types.BoolValue(cfg.GetRedactEnabled()),
 		AuditEnabled:      types.BoolValue(cfg.GetAuditEnabled()),

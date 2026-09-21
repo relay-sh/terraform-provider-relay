@@ -286,9 +286,6 @@ func (f *fakeServer) CreateConnection(ctx context.Context, req *serverv1.CreateC
 	c.Status = "unknown"
 	c.PasswordSet = c.GetPassword() != ""
 	c.Password = ""
-	if c.GetKind() == "" {
-		c.Kind = "interactive"
-	}
 	normalizeTLS(c)
 	f.connections[key] = c
 	return &serverv1.CreateConnectionResponse{Connection: c}, nil
@@ -335,7 +332,6 @@ func (f *fakeServer) UpdateConnection(ctx context.Context, req *serverv1.UpdateC
 	set(&c.Database, req.Database)
 	set(&c.Listen, req.Listen)
 	set(&c.AgentPool, req.AgentPool)
-	set(&c.Kind, req.Kind)
 	set(&c.ManagedBy, req.ManagedBy)
 	if req.Password != nil {
 		c.PasswordSet = req.GetPassword() != ""

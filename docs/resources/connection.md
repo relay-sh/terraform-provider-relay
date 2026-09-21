@@ -49,7 +49,6 @@ resource "relay_connection" "orders" {
 - `credential_source` (String) Name of the external secret source that resolves `credential_ref`. Empty uses the agent's built-in source.
 - `database` (String) Default database name.
 - `host_tls_ca` (String) CA bundle used to verify the upstream server, PEM.
-- `kind` (String) `interactive` for human sessions through the CLI, `service` for always-on application traffic.
 - `listen` (String) Local listen address on the agent.
 - `managed_by` (String) Owner tag the dashboard shows. Defaults to `terraform`; set it to another tool or an empty string.
 - `managed_database_id` (String) Managed database this connection belongs to.
