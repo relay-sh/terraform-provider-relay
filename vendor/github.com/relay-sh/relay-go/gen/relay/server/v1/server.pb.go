@@ -8710,7 +8710,6 @@ type AdminConnection struct {
 	Name          string                 `protobuf:"bytes,2,opt,name=name,proto3" json:"name,omitempty"`
 	WorkspaceId   string                 `protobuf:"bytes,3,opt,name=workspace_id,json=workspaceId,proto3" json:"workspace_id,omitempty"`
 	Engine        string                 `protobuf:"bytes,4,opt,name=engine,proto3" json:"engine,omitempty"`
-	Kind          string                 `protobuf:"bytes,5,opt,name=kind,proto3" json:"kind,omitempty"`
 	Status        string                 `protobuf:"bytes,6,opt,name=status,proto3" json:"status,omitempty"`
 	AgentPool     string                 `protobuf:"bytes,7,opt,name=agent_pool,json=agentPool,proto3" json:"agent_pool,omitempty"`
 	WorkspaceName string                 `protobuf:"bytes,8,opt,name=workspace_name,json=workspaceName,proto3" json:"workspace_name,omitempty"`
@@ -8772,13 +8771,6 @@ func (x *AdminConnection) GetWorkspaceId() string {
 func (x *AdminConnection) GetEngine() string {
 	if x != nil {
 		return x.Engine
-	}
-	return ""
-}
-
-func (x *AdminConnection) GetKind() string {
-	if x != nil {
-		return x.Kind
 	}
 	return ""
 }
@@ -15504,12 +15496,6 @@ type Connection struct {
 	// The value itself is never returned: the agent fetches it over its own token
 	// (ResolveConnectionCredential), so no reader on this path needs it.
 	PasswordSet bool `protobuf:"varint,23,opt,name=password_set,json=passwordSet,proto3" json:"password_set,omitempty"`
-	// kind classifies how the connection is used: "interactive" (default) for
-	// human sessions opened through the CLI tunnel, "service" for an always-on
-	// application connection routed through the agent listener. Service
-	// connections are metered by duration (connection-hours); interactive ones
-	// are covered by the seat and capped on concurrency.
-	Kind string `protobuf:"bytes,24,opt,name=kind,proto3" json:"kind,omitempty"`
 	// Free-text owner tag (e.g. "terraform"); never blocks an edit.
 	ManagedBy     string `protobuf:"bytes,25,opt,name=managed_by,json=managedBy,proto3" json:"managed_by,omitempty"`
 	unknownFields protoimpl.UnknownFields
@@ -15677,13 +15663,6 @@ func (x *Connection) GetPasswordSet() bool {
 		return x.PasswordSet
 	}
 	return false
-}
-
-func (x *Connection) GetKind() string {
-	if x != nil {
-		return x.Kind
-	}
-	return ""
 }
 
 func (x *Connection) GetManagedBy() string {
@@ -16123,8 +16102,6 @@ type UpdateConnectionRequest struct {
 	// credential_source set to an empty string detaches the connection from its
 	// source, leaving the agent's built-in resolution.
 	CredentialSource *string `protobuf:"bytes,26,opt,name=credential_source,json=credentialSource,proto3,oneof" json:"credential_source,omitempty"`
-	// kind is "interactive" or "service"; see Connection.kind.
-	Kind *string `protobuf:"bytes,27,opt,name=kind,proto3,oneof" json:"kind,omitempty"`
 	// Empty string clears it.
 	ManagedBy     *string `protobuf:"bytes,28,opt,name=managed_by,json=managedBy,proto3,oneof" json:"managed_by,omitempty"`
 	unknownFields protoimpl.UnknownFields
@@ -16304,13 +16281,6 @@ func (x *UpdateConnectionRequest) GetCredentialRef() string {
 func (x *UpdateConnectionRequest) GetCredentialSource() string {
 	if x != nil && x.CredentialSource != nil {
 		return *x.CredentialSource
-	}
-	return ""
-}
-
-func (x *UpdateConnectionRequest) GetKind() string {
-	if x != nil && x.Kind != nil {
-		return *x.Kind
 	}
 	return ""
 }
@@ -32770,17 +32740,16 @@ const file_relay_server_v1_server_proto_rawDesc = "" +
 	"\n" +
 	"active_ops\x18\x0e \x03(\tR\tactiveOps\x129\n" +
 	"\n" +
-	"created_at\x18\x0f \x01(\v2\x1a.google.protobuf.TimestampR\tcreatedAt\"\xe2\x01\n" +
+	"created_at\x18\x0f \x01(\v2\x1a.google.protobuf.TimestampR\tcreatedAt\"\xd4\x01\n" +
 	"\x0fAdminConnection\x12\x0e\n" +
 	"\x02id\x18\x01 \x01(\tR\x02id\x12\x12\n" +
 	"\x04name\x18\x02 \x01(\tR\x04name\x12!\n" +
 	"\fworkspace_id\x18\x03 \x01(\tR\vworkspaceId\x12\x16\n" +
-	"\x06engine\x18\x04 \x01(\tR\x06engine\x12\x12\n" +
-	"\x04kind\x18\x05 \x01(\tR\x04kind\x12\x16\n" +
+	"\x06engine\x18\x04 \x01(\tR\x06engine\x12\x16\n" +
 	"\x06status\x18\x06 \x01(\tR\x06status\x12\x1d\n" +
 	"\n" +
 	"agent_pool\x18\a \x01(\tR\tagentPool\x12%\n" +
-	"\x0eworkspace_name\x18\b \x01(\tR\rworkspaceName\"\x9d\x01\n" +
+	"\x0eworkspace_name\x18\b \x01(\tR\rworkspaceNameJ\x04\b\x05\x10\x06\"\x9d\x01\n" +
 	"\x0eAdminAgentPool\x12\x0e\n" +
 	"\x02id\x18\x01 \x01(\tR\x02id\x12\x12\n" +
 	"\x04name\x18\x02 \x01(\tR\x04name\x12!\n" +
@@ -33368,7 +33337,7 @@ const file_relay_server_v1_server_proto_rawDesc = "" +
 	"\aenabled\x18\x01 \x01(\bR\aenabled\x12\x0e\n" +
 	"\x02ca\x18\x02 \x01(\tR\x02ca\x12\x1f\n" +
 	"\vskip_verify\x18\x03 \x01(\bR\n" +
-	"skipVerify\"\xcf\x05\n" +
+	"skipVerify\"\xc1\x05\n" +
 	"\n" +
 	"Connection\x12\x0e\n" +
 	"\x02id\x18\x01 \x01(\tR\x02id\x12\x12\n" +
@@ -33392,10 +33361,9 @@ const file_relay_server_v1_server_proto_rawDesc = "" +
 	"\x13managed_database_id\x18\x11 \x01(\tR\x11managedDatabaseId\x12%\n" +
 	"\x0ecredential_ref\x18\x15 \x01(\tR\rcredentialRef\x12+\n" +
 	"\x11credential_source\x18\x16 \x01(\tR\x10credentialSource\x12!\n" +
-	"\fpassword_set\x18\x17 \x01(\bR\vpasswordSet\x12\x12\n" +
-	"\x04kind\x18\x18 \x01(\tR\x04kind\x12\x1d\n" +
+	"\fpassword_set\x18\x17 \x01(\bR\vpasswordSet\x12\x1d\n" +
 	"\n" +
-	"managed_by\x18\x19 \x01(\tR\tmanagedByJ\x04\b\x0e\x10\x0fJ\x04\b\x12\x10\x13J\x04\b\x13\x10\x14J\x04\b\x14\x10\x15\"r\n" +
+	"managed_by\x18\x19 \x01(\tR\tmanagedByJ\x04\b\x0e\x10\x0fJ\x04\b\x12\x10\x13J\x04\b\x13\x10\x14J\x04\b\x14\x10\x15J\x04\b\x18\x10\x19\"r\n" +
 	"\n" +
 	"RedactRule\x12%\n" +
 	"\x0ecolumn_pattern\x18\x01 \x01(\tR\rcolumnPattern\x12\x1a\n" +
@@ -33420,7 +33388,7 @@ const file_relay_server_v1_server_proto_rawDesc = "" +
 	"connection\"-\n" +
 	"\x17DeleteConnectionRequest\x12\x12\n" +
 	"\x04name\x18\x01 \x01(\tR\x04name\"\x1a\n" +
-	"\x18DeleteConnectionResponse\"\xca\t\n" +
+	"\x18DeleteConnectionResponse\"\xae\t\n" +
 	"\x17UpdateConnectionRequest\x12\x12\n" +
 	"\x04name\x18\x01 \x01(\tR\x04name\x12\x1b\n" +
 	"\x06engine\x18\x03 \x01(\tH\x00R\x06engine\x88\x01\x01\x12\x1b\n" +
@@ -33445,10 +33413,9 @@ const file_relay_server_v1_server_proto_rawDesc = "" +
 	"\x19clear_managed_database_id\x18\x14 \x01(\bR\x16clearManagedDatabaseId\x12-\n" +
 	"\x10policy_fail_mode\x18\x16 \x01(\tH\fR\x0epolicyFailMode\x88\x01\x01\x12*\n" +
 	"\x0ecredential_ref\x18\x19 \x01(\tH\rR\rcredentialRef\x88\x01\x01\x120\n" +
-	"\x11credential_source\x18\x1a \x01(\tH\x0eR\x10credentialSource\x88\x01\x01\x12\x17\n" +
-	"\x04kind\x18\x1b \x01(\tH\x0fR\x04kind\x88\x01\x01\x12\"\n" +
+	"\x11credential_source\x18\x1a \x01(\tH\x0eR\x10credentialSource\x88\x01\x01\x12\"\n" +
 	"\n" +
-	"managed_by\x18\x1c \x01(\tH\x10R\tmanagedBy\x88\x01\x01B\t\n" +
+	"managed_by\x18\x1c \x01(\tH\x0fR\tmanagedBy\x88\x01\x01B\t\n" +
 	"\a_engineB\t\n" +
 	"\a_listenB\a\n" +
 	"\x05_hostB\a\n" +
@@ -33463,9 +33430,8 @@ const file_relay_server_v1_server_proto_rawDesc = "" +
 	"\x14_managed_database_idB\x13\n" +
 	"\x11_policy_fail_modeB\x11\n" +
 	"\x0f_credential_refB\x14\n" +
-	"\x12_credential_sourceB\a\n" +
-	"\x05_kindB\r\n" +
-	"\v_managed_byJ\x04\b\x02\x10\x03J\x04\b\x12\x10\x13J\x04\b\x15\x10\x16J\x04\b\x17\x10\x18J\x04\b\x18\x10\x19\"W\n" +
+	"\x12_credential_sourceB\r\n" +
+	"\v_managed_byJ\x04\b\x02\x10\x03J\x04\b\x12\x10\x13J\x04\b\x15\x10\x16J\x04\b\x17\x10\x18J\x04\b\x18\x10\x19J\x04\b\x1b\x10\x1c\"W\n" +
 	"\x18UpdateConnectionResponse\x12;\n" +
 	"\n" +
 	"connection\x18\x01 \x01(\v2\x1b.relay.server.v1.ConnectionR\n" +

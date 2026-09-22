@@ -52,7 +52,6 @@ const fullConnectionBody = `
   credential_source   = "vault"
   database            = "app"
   listen              = "127.0.0.1:5433"
-  kind                = "service"
   managed_database_id = "db-1"
   redact_enabled      = true
   audit_enabled       = false
@@ -72,7 +71,6 @@ const trimmedConnectionBody = `
   user     = "app"
   password = "second"
   database = "app"
-  kind     = "service"
 `
 
 func noConnectionsLeft(f *fakeServer) resource.TestCheckFunc {
@@ -96,7 +94,6 @@ func TestConnectionResource_Lifecycle(t *testing.T) {
 				Config: connectionConfig(f, "pg", fullConnectionBody),
 				Check: resource.ComposeAggregateTestCheckFunc(
 					resource.TestCheckResourceAttrSet("relay_connection.this", "id"),
-					resource.TestCheckResourceAttr("relay_connection.this", "kind", "service"),
 					resource.TestCheckResourceAttr("relay_connection.this", "credential_source", "vault"),
 					resource.TestCheckResourceAttr("relay_connection.this", "managed_database_id", "db-1"),
 					resource.TestCheckResourceAttr("relay_connection.this", "redact_rules.#", "2"),
