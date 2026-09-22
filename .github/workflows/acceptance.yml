@@ -49,4 +49,50 @@ jobs:
         run: |
           echo "TF_ACC_TERRAFORM_PATH=$(command -v ${{ matrix.cli }})" >> "$GITHUB_ENV"
           if [ "${{ matrix.cli }}" = "tofu" ]; then echo "TF_ACC_PROVIDER_HOST=registry.opentofu.org" >> "$GITHUB_ENV"; fi
+      - name: Enrol the runner in WARP
+        id: warp
+        if: env.RELAY_ENDPOINT != ''
+        continue-on-error: true
+        uses: Boostport/setup-cloudflare-warp@v1
+        with:
+          organization: userelay
+          auth_client_id: ${{ secrets.CLOUDFLARE_AUTH_CLIENT_ID }}
+          auth_client_secret: ${{ secrets.CLOUDFLARE_AUTH_CLIENT_SECRET }}
+      - name: Wait for WARP to report Connected
+        if: env.RELAY_ENDPOINT != ''
+        run: |
+          echo "enrolment step outcome: ${{ steps.warp.outcome }}"
+          for attempt in $(seq 1 6); do
+            status=$(warp-cli --accept-tos status 2>&1 || true)
+            echo "attempt ${attempt}: ${status}"
+            case "${status}" in
+              *Connected*) exit 0 ;;
+            esac
+            if [ "${attempt}" -eq 3 ]; then
+              warp-cli --accept-tos tunnel protocol set WireGuard || true
+            fi
+            warp-cli --accept-tos connect || true
+            sleep 20
+          done
+          echo "::error::WARP never reported Connected"
+          warp-cli --accept-tos status || true
+          exit 1
+      - name: Check the staging API routes through WARP
+        if: env.RELAY_ENDPOINT != ''
+        run: |
+          host=${RELAY_ENDPOINT%%:*}
+          port=${RELAY_ENDPOINT##*:}
+          [ "${port}" = "${host}" ] && port=443
+          for attempt in $(seq 1 5); do
+            if openssl s_client -connect "${host}:${port}" -servername "${host}" </dev/null 2>/dev/null | grep -q "BEGIN CERTIFICATE"; then
+              echo "TLS handshake with ${host}:${port} succeeded"
+              exit 0
+            fi
+            echo "attempt ${attempt}: no TLS handshake with ${host}:${port}"
+            sleep 10
+          done
+          echo "::error::${host}:${port} unreachable: WARP is connected but is not routing to the staging VPC (check the device profile the runner matched)"
+          warp-cli --accept-tos status || true
+          warp-cli --accept-tos settings || true
+          exit 1
       - run: go test -count=1 -timeout 80m -run '^TestAcc' ./internal/provider/
