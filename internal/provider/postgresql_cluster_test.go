@@ -85,7 +85,6 @@ func TestPostgreSQLClusterResource_Lifecycle(t *testing.T) {
 				Config: clusterConfig(f, "18", "10Gi", `{ work_mem = "64MB" }`, ""),
 				Check: resource.ComposeAggregateTestCheckFunc(
 					resource.TestCheckResourceAttr("relay_postgresql_cluster.this", "phase", "running"),
-					resource.TestCheckResourceAttr("relay_postgresql_cluster.this", "nodes.writers.resources.storage_class", "standard"),
 					resource.TestCheckResourceAttr("relay_postgresql_cluster.this", "nodes.writers.resources.iops", "3000"),
 					resource.TestCheckNoResourceAttr("relay_postgresql_cluster.this", "nodes.writers.resources.throughput"),
 					resource.TestCheckResourceAttr("relay_postgresql_cluster.this", "nodes.writers.tier", "R10"),
@@ -180,14 +179,10 @@ func TestPostgreSQLClusterResource_Lifecycle(t *testing.T) {
 
 func TestPostgreSQLClusterResource_VolumeAttrsInPlace(t *testing.T) {
 	f := startFakeServer(t)
-	base := func(iops int, diskType, storageClass string) string {
+	base := func(iops int, diskType string) string {
 		disk := ""
 		if diskType != "" {
 			disk = fmt.Sprintf("\n        disk_type = %q", diskType)
-		}
-		class := ""
-		if storageClass != "" {
-			class = fmt.Sprintf("\n        storage_class = %q", storageClass)
 		}
 		return providerBlock(f) + fmt.Sprintf(`
 resource "relay_postgresql_cluster" "this" {
@@ -204,26 +199,26 @@ resource "relay_postgresql_cluster" "this" {
       tier   = "R10"
       resources = {
         storage = "10Gi"
-        iops    = %d%s%s
+        iops    = %d%s
       }
     }
   }
 }
-`, dbWorkspace, iops, disk, class)
+`, dbWorkspace, iops, disk)
 	}
 
 	resource.UnitTest(t, resource.TestCase{
 		ProtoV6ProviderFactories: factories(relay.Dial),
 		Steps: []resource.TestStep{
 			{
-				Config: base(3000, "gp3", ""),
+				Config: base(3000, "gp3"),
 				Check: resource.ComposeAggregateTestCheckFunc(
 					resource.TestCheckResourceAttr("relay_postgresql_cluster.this", "nodes.writers.resources.iops", "3000"),
 					resource.TestCheckResourceAttr("relay_postgresql_cluster.this", "nodes.writers.resources.disk_type", "gp3"),
 				),
 			},
 			{
-				Config: base(6000, "io1", ""),
+				Config: base(6000, "io1"),
 				Check: resource.ComposeAggregateTestCheckFunc(
 					resource.TestCheckResourceAttr("relay_postgresql_cluster.this", "nodes.writers.resources.iops", "6000"),
 					resource.TestCheckResourceAttr("relay_postgresql_cluster.this", "nodes.writers.resources.disk_type", "io1"),
@@ -235,10 +230,6 @@ resource "relay_postgresql_cluster" "this" {
 						return nil
 					},
 				),
-			},
-			{
-				Config:      base(6000, "io1", "io2"),
-				ExpectError: regexp.MustCompile("Attribute cannot change after creation"),
 			},
 		},
 	})
@@ -362,7 +353,7 @@ resource "relay_postgresql_cluster" "this" {
   }
 }
 `, dbWorkspace),
-			ExpectError: regexp.MustCompile(`(?s)nodes\["writers"\].role value must be one of.*electable.*read_only.*got: "data"`),
+			ExpectError: regexp.MustCompile(`(?s)nodes\["writers"\].role value must be one of.*electable.*standby.*read_only.*got: "data"`),
 		}},
 	})
 }
@@ -766,4 +757,59 @@ func TestPostgreSQLClusterResource_DestroyAfterAFailedCreate(t *testing.T) {
 	if len(f.databases) != 0 {
 		t.Fatalf("clusters left after destroy: %v", f.databases)
 	}
+}
+
+// A remote group is standby: promotable, but never in the commit path, so a
+// distant member cannot hold up a write and the synchronous replica lands on a
+// group near the primary.
+func TestPostgreSQLClusterResource_StandbyGroup(t *testing.T) {
+	f := startFakeServer(t)
+	resource.UnitTest(t, resource.TestCase{
+		ProtoV6ProviderFactories: factories(relay.Dial),
+		Steps: []resource.TestStep{
+			{
+				Config: providerBlock(f) + fmt.Sprintf(`
+resource "relay_postgresql_cluster" "this" {
+  workspace_id = %q
+  name         = "billing"
+
+  nodes = {
+    writers = {
+      role      = "electable"
+      count     = 2
+      cloud     = "aws"
+      region    = "us-east-1"
+      tier      = "R10"
+      resources = { storage = "10Gi" }
+    }
+
+    tokyo = {
+      role      = "standby"
+      cloud     = "aws"
+      region    = "us-east-1"
+      tier      = "R10"
+      resources = { storage = "10Gi" }
+    }
+  }
+
+  replication = {
+    mode                 = "synchronous"
+    synchronous_replicas = 1
+  }
+}
+`, dbWorkspace),
+				Check: resource.ComposeAggregateTestCheckFunc(
+					resource.TestCheckResourceAttr("relay_postgresql_cluster.this", "nodes.tokyo.role", "standby"),
+					func(*terraform.State) error {
+						for _, n := range f.lastDBCreate.GetSpec().GetNodes() {
+							if n.GetRole() == "standby" {
+								return nil
+							}
+						}
+						return fmt.Errorf("standby role not carried to the platform: %+v", f.lastDBCreate.GetSpec().GetNodes())
+					},
+				),
+			},
+		},
+	})
 }

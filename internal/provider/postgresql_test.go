@@ -45,7 +45,7 @@ func TestNodesRoundTrip(t *testing.T) {
 			Tier: types.StringValue("R10"),
 			Resources: resourcesModel{
 				CPU: types.StringValue("1"), Memory: types.StringValue("1Gi"), Storage: types.StringValue("1Gi"),
-				StorageClass: types.StringUnknown(), IOPS: types.Int64Unknown(), Throughput: types.Int64Value(250),
+				IOPS: types.Int64Unknown(), Throughput: types.Int64Value(250),
 				DiskType: types.StringUnknown(),
 			},
 		},
@@ -55,7 +55,7 @@ func TestNodesRoundTrip(t *testing.T) {
 			Tier: types.StringValue("R20"),
 			Resources: resourcesModel{
 				CPU: types.StringValue("2"), Memory: types.StringValue("4Gi"), Storage: types.StringValue("9Gi"),
-				StorageClass: types.StringValue("gp3"), IOPS: types.Int64Value(3000), Throughput: types.Int64Null(),
+				IOPS: types.Int64Value(3000), Throughput: types.Int64Null(),
 				DiskType: types.StringValue("io1"),
 			},
 		},

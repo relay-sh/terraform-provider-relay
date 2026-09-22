@@ -382,7 +382,7 @@ func (f *fakeServer) DeleteConnection(ctx context.Context, req *serverv1.DeleteC
 
 func validateNodes(spec *serverv1.DatabaseSpec) error {
 	for _, n := range spec.GetNodes() {
-		if n.GetRole() != roleElectable && n.GetRole() != roleReadOnly {
+		if n.GetRole() != roleElectable && n.GetRole() != roleStandby && n.GetRole() != roleReadOnly {
 			return status.Errorf(codes.InvalidArgument, "validate spec: invalid role %q", n.GetRole())
 		}
 	}

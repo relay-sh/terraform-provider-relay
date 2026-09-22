@@ -24,6 +24,7 @@ const (
 	phaseFailed      = "failed"
 	phaseDeleted     = "deleted"
 	roleElectable    = "electable"
+	roleStandby      = "standby"
 	roleReadOnly     = "read_only"
 )
 
@@ -40,7 +41,6 @@ type resourcesModel struct {
 	CPU          types.String `tfsdk:"cpu"`
 	Memory       types.String `tfsdk:"memory"`
 	Storage      types.String `tfsdk:"storage"`
-	StorageClass types.String `tfsdk:"storage_class"`
 	IOPS         types.Int64  `tfsdk:"iops"`
 	Throughput   types.Int64  `tfsdk:"throughput"`
 	DiskType     types.String `tfsdk:"disk_type"`
@@ -98,7 +98,6 @@ func nodesToProto(nodes map[string]nodeGroupModel, catalog []*serverv1.DatabaseP
 		}
 		res := &serverv1.ResourceRequirements{
 			Storage:      n.Resources.Storage.ValueString(),
-			StorageClass: n.Resources.StorageClass.ValueString(),
 		}
 		if v := n.Resources.IOPS; !v.IsNull() && !v.IsUnknown() {
 			res.Iops = int32Ptr(v.ValueInt64())
@@ -162,7 +161,6 @@ func nodesFromProto(nodes []*serverv1.NodeSpec, prior map[string]nodeGroupModel)
 				CPU:          types.StringValue(res.GetCpu()),
 				Memory:       types.StringValue(res.GetMemory()),
 				Storage:      types.StringValue(res.GetStorage()),
-				StorageClass: types.StringValue(res.GetStorageClass()),
 				IOPS:         optionalInt64(res.Iops),
 				Throughput:   optionalInt64(res.Throughput),
 				DiskType:     types.StringValue(res.GetDiskType()),

@@ -98,9 +98,11 @@ func (r *postgresqlClusterResource) Schema(ctx context.Context, _ resource.Schem
 				NestedObject: schema.NestedAttributeObject{Attributes: map[string]schema.Attribute{
 					"role": schema.StringAttribute{
 						Required:   true,
-						Validators: []validator.String{stringvalidator.OneOf(roleElectable, roleReadOnly)},
-						MarkdownDescription: "`electable` or `read_only`. An `electable` group acknowledges synchronous commits and can be promoted. A `read_only` group is kept out of " +
-							"the commit path and out of elections: the platform derives the `nosync` and `nofailover` Patroni tags from this role.",
+						Validators: []validator.String{stringvalidator.OneOf(roleElectable, roleStandby, roleReadOnly)},
+						MarkdownDescription: "How much of the cluster's consensus this group takes part in. `electable` acknowledges synchronous commits and can be promoted. " +
+							"`standby` can be promoted but never acknowledges a commit, which is how a remote group stays out of the commit path — and, since the engine has no " +
+							"per-member preference, how you pin the synchronous replica to the groups near the primary. `read_only` does neither. The platform derives the " +
+							"`nosync` and `nofailover` tags from this.",
 					},
 					"count": schema.Int64Attribute{
 						Optional: true, Computed: true, Default: int64default.StaticInt64(1),
@@ -125,10 +127,6 @@ func (r *postgresqlClusterResource) Schema(ctx context.Context, _ resource.Schem
 							"cpu":     schema.StringAttribute{Computed: true, PlanModifiers: keepString, MarkdownDescription: "CPU request derived from `tier`."},
 							"memory":  schema.StringAttribute{Computed: true, PlanModifiers: keepString, MarkdownDescription: "Memory request derived from `tier`."},
 							"storage": schema.StringAttribute{Required: true, MarkdownDescription: "Volume size, Kubernetes quantity. It can only grow; a plan that shrinks it fails."},
-							"storage_class": schema.StringAttribute{
-								Optional: true, Computed: true, PlanModifiers: keepString,
-								MarkdownDescription: "Kubernetes storage class (provisioner). Defaults to the platform's. Set once: a plan that changes it fails. Use `disk_type` for gp3/io1/io2.",
-							},
 							"iops": schema.Int64Attribute{
 								Optional: true, Computed: true, PlanModifiers: keepInt,
 								MarkdownDescription: "Provisioned IOPS. Can change in place. Required for `io1`/`io2`. AWS caps: gp3 3000–80000 (500/GiB above 3000), io1 100–64000 (50/GiB), io2 100–256000 (1000/GiB).",
@@ -208,12 +206,6 @@ func (r *postgresqlClusterResource) ValidateConfig(ctx context.Context, req reso
 	}
 }
 
-type createOnlyField struct {
-	path    path.Path
-	planned attr.Value
-	current attr.Value
-}
-
 func (r *postgresqlClusterResource) ModifyPlan(ctx context.Context, req resource.ModifyPlanRequest, resp *resource.ModifyPlanResponse) {
 	if req.State.Raw.IsNull() || req.Plan.Raw.IsNull() {
 		return
@@ -234,15 +226,6 @@ func (r *postgresqlClusterResource) ModifyPlan(ctx context.Context, req resource
 			continue
 		}
 		group := path.Root("nodes").AtMapKey(name)
-		resources := group.AtName("resources")
-		for _, f := range []createOnlyField{
-			{resources.AtName("storage_class"), planned.Resources.StorageClass, current.Resources.StorageClass},
-		} {
-			if !f.planned.IsUnknown() && !f.planned.Equal(f.current) {
-				resp.Diagnostics.AddAttributeError(f.path, "Attribute cannot change after creation",
-					"The volume claim template is fixed at creation. Destroy and recreate the cluster to change storage_class.")
-			}
-		}
 		if shrinks(planned.Resources.Storage, current.Resources.Storage) {
 			resp.Diagnostics.AddAttributeError(group.AtName("resources").AtName("storage"), "Storage cannot shrink",
 				"Volumes only grow. Group "+name+" is at "+current.Resources.Storage.ValueString()+" and the plan asks for "+planned.Resources.Storage.ValueString()+".")
