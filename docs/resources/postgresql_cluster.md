@@ -100,7 +100,7 @@ resource "relay_postgresql_cluster" "billing" {
 Required:
 
 - `resources` (Attributes) (see [below for nested schema](#nestedatt--nodes--resources))
-- `role` (String) `electable` or `read_only`. An `electable` group acknowledges synchronous commits and can be promoted. A `read_only` group is kept out of the commit path and out of elections: the platform derives the `nosync` and `nofailover` Patroni tags from this role.
+- `role` (String) How much of the cluster's consensus this group takes part in. `electable` acknowledges synchronous commits and can be promoted. `standby` can be promoted but never acknowledges a commit, which is how a remote group stays out of the commit path — and, since the engine has no per-member preference, how you pin the synchronous replica to the groups near the primary. `read_only` does neither. The platform derives the `nosync` and `nofailover` tags from this.
 - `tier` (String) Machine catalog name, for example `R20`. CPU and memory are derived from it; an unknown name is rejected. Changing it restarts the group's pods.
 
 Optional:
@@ -120,7 +120,6 @@ Optional:
 
 - `disk_type` (String) Cloud volume type. AWS: `gp3` (default), `io1`, `io2` (min 4Gi). GCP: `pd-ssd`, `pd-balanced`, `hyperdisk-balanced`. Azure: `PremiumV2_LRS`, `UltraSSD_LRS`. Can change in place. `io1`/`io2` require `iops` within the per-GiB cap.
 - `iops` (Number) Provisioned IOPS. Can change in place. Required for `io1`/`io2`. AWS caps: gp3 3000–80000 (500/GiB above 3000), io1 100–64000 (50/GiB), io2 100–256000 (1000/GiB).
-- `storage_class` (String) Kubernetes storage class (provisioner). Defaults to the platform's. Set once: a plan that changes it fails. Use `disk_type` for gp3/io1/io2.
 - `throughput` (Number) Provisioned throughput in MiB/s. Can change in place.
 
 Read-Only:
