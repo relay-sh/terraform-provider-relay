@@ -87,7 +87,8 @@ func nodesToProto(nodes map[string]nodeGroupModel, catalog []*serverv1.DatabaseP
 	for name := range nodes {
 		names = append(names, name)
 	}
-	// The platform takes the first group as the one holding the primary.
+	// The platform reads a group's identity from its name, but the order still decides
+	// which member each per-node hostname addresses, so keep it deterministic.
 	sort.Slice(names, func(i, j int) bool {
 		ri, rj := roleOrder(nodes[names[i]]), roleOrder(nodes[names[j]])
 		if ri != rj {
@@ -116,6 +117,7 @@ func nodesToProto(nodes map[string]nodeGroupModel, catalog []*serverv1.DatabaseP
 			res.DiskType = v.ValueString()
 		}
 		out = append(out, &serverv1.NodeSpec{
+			Name:      name,
 			Role:      n.Role.ValueString(),
 			Count:     int32(n.Count.ValueInt64()),
 			Provider:  provisioner,
@@ -125,6 +127,27 @@ func nodesToProto(nodes map[string]nodeGroupModel, catalog []*serverv1.DatabaseP
 		})
 	}
 	return out, nil
+}
+
+// primaryNodeGroup keeps the group the platform already chose when it is still electable,
+// so adding a group never moves the primary; otherwise it takes the first electable label.
+func primaryNodeGroup(nodes map[string]nodeGroupModel, current types.String) string {
+	if name := current.ValueString(); name != "" && !current.IsUnknown() {
+		if g, ok := nodes[name]; ok && g.Role.ValueString() == roleElectable {
+			return name
+		}
+	}
+	labels := make([]string, 0, len(nodes))
+	for name, g := range nodes {
+		if g.Role.ValueString() == roleElectable {
+			labels = append(labels, name)
+		}
+	}
+	sort.Strings(labels)
+	if len(labels) == 0 {
+		return ""
+	}
+	return labels[0]
 }
 
 func roleOrder(n nodeGroupModel) int {
@@ -137,38 +160,11 @@ func roleOrder(n nodeGroupModel) int {
 	return 2
 }
 
-func nodeLabels(nodes []*serverv1.NodeSpec, prior map[string]nodeGroupModel) []string {
-	byRole := map[string][]string{}
-	for label, group := range prior {
-		role := group.Role.ValueString()
-		byRole[role] = append(byRole[role], label)
-	}
-	for _, labels := range byRole {
-		sort.Strings(labels)
-	}
-	out := make([]string, 0, len(nodes))
-	for _, n := range nodes {
-		role := n.GetRole()
-		if labels := byRole[role]; len(labels) > 0 {
-			byRole[role] = labels[1:]
-			out = append(out, labels[0])
-			continue
-		}
-		label := role
-		for i := 2; slices.Contains(out, label); i++ {
-			label = role + "_" + strconv.Itoa(i)
-		}
-		out = append(out, label)
-	}
-	return out
-}
-
-func nodesFromProto(nodes []*serverv1.NodeSpec, prior map[string]nodeGroupModel) map[string]nodeGroupModel {
-	labels := nodeLabels(nodes, prior)
+func nodesFromProto(nodes []*serverv1.NodeSpec) map[string]nodeGroupModel {
 	out := make(map[string]nodeGroupModel, len(nodes))
-	for i, n := range nodes {
+	for _, n := range nodes {
 		res := n.GetResources()
-		out[labels[i]] = nodeGroupModel{
+		out[n.GetName()] = nodeGroupModel{
 			Role:   types.StringValue(n.GetRole()),
 			Count:  types.Int64Value(int64(n.GetCount())),
 			Cloud:  types.StringValue(n.GetCloud()),

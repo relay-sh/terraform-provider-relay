@@ -390,12 +390,32 @@ func validateNodes(spec *serverv1.DatabaseSpec) error {
 	if len(nodes) == 0 {
 		return nil
 	}
-	if nodes[0].GetRole() != roleElectable {
-		return status.Errorf(codes.InvalidArgument, "validate spec: nodes[0] holds the primary and must have role %q, got %q", roleElectable, nodes[0].GetRole())
+	seen := map[string]bool{}
+	var primary *serverv1.NodeSpec
+	for i, n := range nodes {
+		if n.GetName() == "" {
+			return status.Errorf(codes.InvalidArgument, "validate spec: nodes[%d]: name is required", i)
+		}
+		if seen[n.GetName()] {
+			return status.Errorf(codes.InvalidArgument, "validate spec: nodes[%d]: duplicate name %q", i, n.GetName())
+		}
+		seen[n.GetName()] = true
+		if n.GetName() == spec.GetPrimaryNodeGroup() {
+			primary = n
+		}
 	}
-	for i, n := range nodes[1:] {
-		if n.GetProvider() != "" && nodes[0].GetProvider() != "" && n.GetProvider() != nodes[0].GetProvider() {
-			return status.Errorf(codes.InvalidArgument, "validate spec: nodes[%d]: provider %q does not match nodes[0] %q", i+1, n.GetProvider(), nodes[0].GetProvider())
+	if primary == nil {
+		return status.Errorf(codes.InvalidArgument, "validate spec: primaryNodeGroup %q does not name any node group", spec.GetPrimaryNodeGroup())
+	}
+	if primary.GetRole() != roleElectable {
+		return status.Errorf(codes.InvalidArgument, "validate spec: primaryNodeGroup %q must have role %q, got %q", primary.GetName(), roleElectable, primary.GetRole())
+	}
+	for _, n := range nodes {
+		if n.GetName() == primary.GetName() {
+			continue
+		}
+		if n.GetProvider() != "" && primary.GetProvider() != "" && n.GetProvider() != primary.GetProvider() {
+			return status.Errorf(codes.InvalidArgument, "validate spec: node group %q: provider %q does not match the primary group %q", n.GetName(), n.GetProvider(), primary.GetProvider())
 		}
 	}
 	return nil

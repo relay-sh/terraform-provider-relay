@@ -121,7 +121,7 @@ func TestNodesRoundTrip(t *testing.T) {
 	for _, n := range out {
 		n.Cloud, n.Provider = "aws", ""
 	}
-	back := nodesFromProto(out, nodes)
+	back := nodesFromProto(out)
 	if g := back["readers"]; g.Role.ValueString() != roleReadOnly || g.Resources.IOPS.ValueInt64() != 3000 || g.Tier.ValueString() != "R20" || g.Resources.DiskType.ValueString() != "io1" {
 		t.Errorf("readers round trip = %+v", g)
 	}
@@ -130,29 +130,31 @@ func TestNodesRoundTrip(t *testing.T) {
 	}
 }
 
-func TestNodeLabels(t *testing.T) {
-	electable := &serverv1.NodeSpec{Role: roleElectable}
-	readOnly := &serverv1.NodeSpec{Role: roleReadOnly}
-
-	prior := map[string]nodeGroupModel{
-		"writers": {Role: types.StringValue(roleElectable)},
-		"readers": {Role: types.StringValue(roleReadOnly)},
+func TestPrimaryNodeGroup(t *testing.T) {
+	nodes := map[string]nodeGroupModel{
+		"analytics": {Role: types.StringValue(roleReadOnly)},
+		"dr":        {Role: types.StringValue(roleStandby)},
+		"writers":   {Role: types.StringValue(roleElectable)},
+		"backup":    {Role: types.StringValue(roleElectable)},
 	}
-	if got := nodeLabels([]*serverv1.NodeSpec{readOnly, electable}, prior); !slices.Equal(got, []string{"readers", "writers"}) {
-		t.Errorf("labels must follow the role, whatever order the platform returns, got %v", got)
+	if got := primaryNodeGroup(nodes, types.StringNull()); got != "backup" {
+		t.Errorf("with nothing chosen yet the first electable label wins, got %q", got)
 	}
-
-	pools := map[string]nodeGroupModel{
-		"eu": {Role: types.StringValue(roleReadOnly)},
-		"br": {Role: types.StringValue(roleReadOnly)},
+	if got := primaryNodeGroup(nodes, types.StringValue("writers")); got != "writers" {
+		t.Errorf("an electable group the platform already chose must be kept, got %q", got)
 	}
-	if got := nodeLabels([]*serverv1.NodeSpec{readOnly, readOnly}, pools); !slices.Equal(got, []string{"br", "eu"}) {
-		t.Errorf("groups sharing a role keep the order they were sent in, got %v", got)
+	if got := primaryNodeGroup(nodes, types.StringValue("analytics")); got != "backup" {
+		t.Errorf("a group that is no longer electable must be replaced, got %q", got)
 	}
-
-	got := nodeLabels([]*serverv1.NodeSpec{electable, readOnly, readOnly}, nil)
-	if !slices.Equal(got, []string{roleElectable, roleReadOnly, "read_only_2"}) {
-		t.Errorf("an imported cluster is labelled by role, got %v", got)
+	if got := primaryNodeGroup(nodes, types.StringValue("gone")); got != "backup" {
+		t.Errorf("a group that no longer exists must be replaced, got %q", got)
+	}
+	if got := primaryNodeGroup(nodes, types.StringUnknown()); got != "backup" {
+		t.Errorf("an unknown value must not be sent, got %q", got)
+	}
+	readOnly := map[string]nodeGroupModel{"analytics": {Role: types.StringValue(roleReadOnly)}}
+	if got := primaryNodeGroup(readOnly, types.StringNull()); got != "" {
+		t.Errorf("no electable group means nothing to name, got %q", got)
 	}
 }
 

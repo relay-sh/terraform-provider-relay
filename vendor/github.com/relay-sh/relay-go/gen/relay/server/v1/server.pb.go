@@ -117,8 +117,11 @@ func (x *ResourceRequirements) GetDiskType() string {
 
 type NodeSpec struct {
 	state protoimpl.MessageState `protogen:"open.v1"`
-	Role  string                 `protobuf:"bytes,1,opt,name=role,proto3" json:"role,omitempty"`
-	Count int32                  `protobuf:"varint,2,opt,name=count,proto3" json:"count,omitempty"`
+	// name identifies the group. It is the group's identity in the platform: the
+	// objects a group owns are named after it, so renaming one replaces it.
+	Name  string `protobuf:"bytes,9,opt,name=name,proto3" json:"name,omitempty"`
+	Role  string `protobuf:"bytes,1,opt,name=role,proto3" json:"role,omitempty"`
+	Count int32  `protobuf:"varint,2,opt,name=count,proto3" json:"count,omitempty"`
 	// provider is internal fleet identity. Customers send cloud+region; Get/List
 	// leave this empty.
 	Provider  string                `protobuf:"bytes,3,opt,name=provider,proto3" json:"provider,omitempty"`
@@ -159,6 +162,13 @@ func (x *NodeSpec) ProtoReflect() protoreflect.Message {
 // Deprecated: Use NodeSpec.ProtoReflect.Descriptor instead.
 func (*NodeSpec) Descriptor() ([]byte, []int) {
 	return file_relay_server_v1_server_proto_rawDescGZIP(), []int{1}
+}
+
+func (x *NodeSpec) GetName() string {
+	if x != nil {
+		return x.Name
+	}
+	return ""
 }
 
 func (x *NodeSpec) GetRole() string {
@@ -290,9 +300,12 @@ type DatabaseSpec struct {
 	// update: unset leaves the cluster's live configuration untouched, while set
 	// with an empty parameters map clears every user-supplied parameter (reset to
 	// the operator defaults).
-	Postgresql    *PostgreSQLConfig `protobuf:"bytes,10,opt,name=postgresql,proto3" json:"postgresql,omitempty"`
-	unknownFields protoimpl.UnknownFields
-	sizeCache     protoimpl.SizeCache
+	Postgresql *PostgreSQLConfig `protobuf:"bytes,10,opt,name=postgresql,proto3" json:"postgresql,omitempty"`
+	// primary_node_group names the group in nodes holding the primary and is
+	// authoritative for the core cluster size. The order of nodes means nothing.
+	PrimaryNodeGroup string `protobuf:"bytes,11,opt,name=primary_node_group,json=primaryNodeGroup,proto3" json:"primary_node_group,omitempty"`
+	unknownFields    protoimpl.UnknownFields
+	sizeCache        protoimpl.SizeCache
 }
 
 func (x *DatabaseSpec) Reset() {
@@ -386,6 +399,13 @@ func (x *DatabaseSpec) GetPostgresql() *PostgreSQLConfig {
 		return x.Postgresql
 	}
 	return nil
+}
+
+func (x *DatabaseSpec) GetPrimaryNodeGroup() string {
+	if x != nil {
+		return x.PrimaryNodeGroup
+	}
+	return ""
 }
 
 // PostgreSQLConfig carries raw PostgreSQL settings (GUCs, snake_case names such
@@ -11748,15 +11768,13 @@ func (x *AdminListAgentsResponse) GetOfflineCount() int32 {
 }
 
 type AdminTunnelSession struct {
-	state          protoimpl.MessageState `protogen:"open.v1"`
-	Id             string                 `protobuf:"bytes,1,opt,name=id,proto3" json:"id,omitempty"`
-	OrgId          string                 `protobuf:"bytes,2,opt,name=org_id,json=orgId,proto3" json:"org_id,omitempty"`
-	OrgName        string                 `protobuf:"bytes,3,opt,name=org_name,json=orgName,proto3" json:"org_name,omitempty"`
-	WorkspaceId    string                 `protobuf:"bytes,4,opt,name=workspace_id,json=workspaceId,proto3" json:"workspace_id,omitempty"`
-	WorkspaceName  string                 `protobuf:"bytes,5,opt,name=workspace_name,json=workspaceName,proto3" json:"workspace_name,omitempty"`
-	ConnectionName string                 `protobuf:"bytes,6,opt,name=connection_name,json=connectionName,proto3" json:"connection_name,omitempty"`
-	// interactive | service
-	Kind                string                 `protobuf:"bytes,7,opt,name=kind,proto3" json:"kind,omitempty"`
+	state               protoimpl.MessageState `protogen:"open.v1"`
+	Id                  string                 `protobuf:"bytes,1,opt,name=id,proto3" json:"id,omitempty"`
+	OrgId               string                 `protobuf:"bytes,2,opt,name=org_id,json=orgId,proto3" json:"org_id,omitempty"`
+	OrgName             string                 `protobuf:"bytes,3,opt,name=org_name,json=orgName,proto3" json:"org_name,omitempty"`
+	WorkspaceId         string                 `protobuf:"bytes,4,opt,name=workspace_id,json=workspaceId,proto3" json:"workspace_id,omitempty"`
+	WorkspaceName       string                 `protobuf:"bytes,5,opt,name=workspace_name,json=workspaceName,proto3" json:"workspace_name,omitempty"`
+	ConnectionName      string                 `protobuf:"bytes,6,opt,name=connection_name,json=connectionName,proto3" json:"connection_name,omitempty"`
 	Identity            string                 `protobuf:"bytes,8,opt,name=identity,proto3" json:"identity,omitempty"`
 	UserEmail           string                 `protobuf:"bytes,9,opt,name=user_email,json=userEmail,proto3" json:"user_email,omitempty"`
 	AgentId             string                 `protobuf:"bytes,10,opt,name=agent_id,json=agentId,proto3" json:"agent_id,omitempty"`
@@ -11838,13 +11856,6 @@ func (x *AdminTunnelSession) GetWorkspaceName() string {
 func (x *AdminTunnelSession) GetConnectionName() string {
 	if x != nil {
 		return x.ConnectionName
-	}
-	return ""
-}
-
-func (x *AdminTunnelSession) GetKind() string {
-	if x != nil {
-		return x.Kind
 	}
 	return ""
 }
@@ -16341,12 +16352,8 @@ type IssueTunnelTokenRequest struct {
 	// connection_name binds the token to one connection; it is only valid for a
 	// tunnel to that connection.
 	ConnectionName string `protobuf:"bytes,1,opt,name=connection_name,json=connectionName,proto3" json:"connection_name,omitempty"`
-	// kind declares the session the token will open: "interactive" (default,
-	// what the CLI does) or "service" for a long-lived application session.
-	// Recorded on the session; it does not change authorization.
-	Kind          string `protobuf:"bytes,2,opt,name=kind,proto3" json:"kind,omitempty"`
-	unknownFields protoimpl.UnknownFields
-	sizeCache     protoimpl.SizeCache
+	unknownFields  protoimpl.UnknownFields
+	sizeCache      protoimpl.SizeCache
 }
 
 func (x *IssueTunnelTokenRequest) Reset() {
@@ -16386,19 +16393,10 @@ func (x *IssueTunnelTokenRequest) GetConnectionName() string {
 	return ""
 }
 
-func (x *IssueTunnelTokenRequest) GetKind() string {
-	if x != nil {
-		return x.Kind
-	}
-	return ""
-}
-
 type IssueTunnelTokenResponse struct {
-	state     protoimpl.MessageState `protogen:"open.v1"`
-	Token     string                 `protobuf:"bytes,1,opt,name=token,proto3" json:"token,omitempty"`
-	ExpiresAt *timestamppb.Timestamp `protobuf:"bytes,2,opt,name=expires_at,json=expiresAt,proto3" json:"expires_at,omitempty"`
-	// kind echoes the effective session kind the token was issued for.
-	Kind          string `protobuf:"bytes,3,opt,name=kind,proto3" json:"kind,omitempty"`
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	Token         string                 `protobuf:"bytes,1,opt,name=token,proto3" json:"token,omitempty"`
+	ExpiresAt     *timestamppb.Timestamp `protobuf:"bytes,2,opt,name=expires_at,json=expiresAt,proto3" json:"expires_at,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
@@ -16445,13 +16443,6 @@ func (x *IssueTunnelTokenResponse) GetExpiresAt() *timestamppb.Timestamp {
 		return x.ExpiresAt
 	}
 	return nil
-}
-
-func (x *IssueTunnelTokenResponse) GetKind() string {
-	if x != nil {
-		return x.Kind
-	}
-	return ""
 }
 
 type ResolveTunnelTokenRequest struct {
@@ -16524,10 +16515,7 @@ type ResolveTunnelTokenResponse struct {
 	state protoimpl.MessageState `protogen:"open.v1"`
 	// identity is the verified user (email), used by the agent for audit
 	// attribution. Policies are identity-agnostic, so no roles are returned.
-	Identity string `protobuf:"bytes,1,opt,name=identity,proto3" json:"identity,omitempty"`
-	// kind is the session kind the token was issued for ("interactive" or
-	// "service"); the agent reports it back on the session.
-	Kind          string `protobuf:"bytes,3,opt,name=kind,proto3" json:"kind,omitempty"`
+	Identity      string `protobuf:"bytes,1,opt,name=identity,proto3" json:"identity,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
@@ -16569,21 +16557,12 @@ func (x *ResolveTunnelTokenResponse) GetIdentity() string {
 	return ""
 }
 
-func (x *ResolveTunnelTokenResponse) GetKind() string {
-	if x != nil {
-		return x.Kind
-	}
-	return ""
-}
-
 type TunnelSessionReport struct {
 	state protoimpl.MessageState `protogen:"open.v1"`
 	// session_id is the agent-side id of the proxied client connection; unique
 	// per agent and stable for the session's lifetime.
 	SessionId      string `protobuf:"bytes,1,opt,name=session_id,json=sessionId,proto3" json:"session_id,omitempty"`
 	ConnectionName string `protobuf:"bytes,2,opt,name=connection_name,json=connectionName,proto3" json:"connection_name,omitempty"`
-	// kind is "interactive" (CLI tunnel) or "service" (listener connection).
-	Kind string `protobuf:"bytes,3,opt,name=kind,proto3" json:"kind,omitempty"`
 	// identity is the verified user (email) or the client certificate subject.
 	Identity  string                 `protobuf:"bytes,4,opt,name=identity,proto3" json:"identity,omitempty"`
 	StartedAt *timestamppb.Timestamp `protobuf:"bytes,5,opt,name=started_at,json=startedAt,proto3" json:"started_at,omitempty"`
@@ -16635,13 +16614,6 @@ func (x *TunnelSessionReport) GetSessionId() string {
 func (x *TunnelSessionReport) GetConnectionName() string {
 	if x != nil {
 		return x.ConnectionName
-	}
-	return ""
-}
-
-func (x *TunnelSessionReport) GetKind() string {
-	if x != nil {
-		return x.Kind
 	}
 	return ""
 }
@@ -16775,8 +16747,6 @@ type TunnelSession struct {
 	ConnectionName string                 `protobuf:"bytes,2,opt,name=connection_name,json=connectionName,proto3" json:"connection_name,omitempty"`
 	// connection_id is empty when the connection has since been deleted.
 	ConnectionId string `protobuf:"bytes,3,opt,name=connection_id,json=connectionId,proto3" json:"connection_id,omitempty"`
-	// kind is "interactive" or "service".
-	Kind string `protobuf:"bytes,4,opt,name=kind,proto3" json:"kind,omitempty"`
 	// identity is the verified user (email) or client certificate subject.
 	Identity   string                 `protobuf:"bytes,5,opt,name=identity,proto3" json:"identity,omitempty"`
 	AgentId    string                 `protobuf:"bytes,6,opt,name=agent_id,json=agentId,proto3" json:"agent_id,omitempty"`
@@ -16837,13 +16807,6 @@ func (x *TunnelSession) GetConnectionName() string {
 func (x *TunnelSession) GetConnectionId() string {
 	if x != nil {
 		return x.ConnectionId
-	}
-	return ""
-}
-
-func (x *TunnelSession) GetKind() string {
-	if x != nil {
-		return x.Kind
 	}
 	return ""
 }
@@ -27473,11 +27436,6 @@ type GetBillingStateResponse struct {
 	SeatMonthlyCents int64 `protobuf:"varint,15,opt,name=seat_monthly_cents,json=seatMonthlyCents,proto3" json:"seat_monthly_cents,omitempty"`
 	// Charge accrued this cycle for seats beyond the allowance.
 	CurrentCycleSeatCents int64 `protobuf:"varint,16,opt,name=current_cycle_seat_cents,json=currentCycleSeatCents,proto3" json:"current_cycle_seat_cents,omitempty"`
-	// Service-connection time accrued this cycle (Decision 3: always-on
-	// connections bill by duration), its charge, and the unit price.
-	CurrentCycleConnectionSeconds int64 `protobuf:"varint,17,opt,name=current_cycle_connection_seconds,json=currentCycleConnectionSeconds,proto3" json:"current_cycle_connection_seconds,omitempty"`
-	CurrentCycleConnectionCents   int64 `protobuf:"varint,18,opt,name=current_cycle_connection_cents,json=currentCycleConnectionCents,proto3" json:"current_cycle_connection_cents,omitempty"`
-	ConnectionHourCents           int64 `protobuf:"varint,19,opt,name=connection_hour_cents,json=connectionHourCents,proto3" json:"connection_hour_cents,omitempty"`
 	// Entitlement bands (Decisions 1 and 6): usage over the trailing 30 days,
 	// the band that usage alone reaches, the plan the org is entitled to (the
 	// higher of the stored plan and the usage band), its monthly platform fee,
@@ -27498,8 +27456,15 @@ type GetBillingStateResponse struct {
 	CurrentCycleStorageGbMonths int64 `protobuf:"varint,28,opt,name=current_cycle_storage_gb_months,json=currentCycleStorageGbMonths,proto3" json:"current_cycle_storage_gb_months,omitempty"`
 	CurrentCycleStorageCents    int64 `protobuf:"varint,29,opt,name=current_cycle_storage_cents,json=currentCycleStorageCents,proto3" json:"current_cycle_storage_cents,omitempty"`
 	StorageGbMonthCents         int64 `protobuf:"varint,30,opt,name=storage_gb_month_cents,json=storageGbMonthCents,proto3" json:"storage_gb_month_cents,omitempty"`
-	unknownFields               protoimpl.UnknownFields
-	sizeCache                   protoimpl.SizeCache
+	// How the stored plan was set: "subscription" (Stripe checkout/webhook),
+	// "usage" (auto-upgrade sweeper) or "manual" (a complimentary staff grant;
+	// the org is never charged for it). Lets the dashboard stop offering
+	// checkout for a plan the org already holds and label the grant.
+	PlanSource string `protobuf:"bytes,31,opt,name=plan_source,json=planSource,proto3" json:"plan_source,omitempty"`
+	// True when a Stripe subscription id is on file for the org.
+	HasSubscription bool `protobuf:"varint,32,opt,name=has_subscription,json=hasSubscription,proto3" json:"has_subscription,omitempty"`
+	unknownFields   protoimpl.UnknownFields
+	sizeCache       protoimpl.SizeCache
 }
 
 func (x *GetBillingStateResponse) Reset() {
@@ -27644,27 +27609,6 @@ func (x *GetBillingStateResponse) GetCurrentCycleSeatCents() int64 {
 	return 0
 }
 
-func (x *GetBillingStateResponse) GetCurrentCycleConnectionSeconds() int64 {
-	if x != nil {
-		return x.CurrentCycleConnectionSeconds
-	}
-	return 0
-}
-
-func (x *GetBillingStateResponse) GetCurrentCycleConnectionCents() int64 {
-	if x != nil {
-		return x.CurrentCycleConnectionCents
-	}
-	return 0
-}
-
-func (x *GetBillingStateResponse) GetConnectionHourCents() int64 {
-	if x != nil {
-		return x.ConnectionHourCents
-	}
-	return 0
-}
-
 func (x *GetBillingStateResponse) GetRollingUsageCents() int64 {
 	if x != nil {
 		return x.RollingUsageCents
@@ -27740,6 +27684,20 @@ func (x *GetBillingStateResponse) GetStorageGbMonthCents() int64 {
 		return x.StorageGbMonthCents
 	}
 	return 0
+}
+
+func (x *GetBillingStateResponse) GetPlanSource() string {
+	if x != nil {
+		return x.PlanSource
+	}
+	return ""
+}
+
+func (x *GetBillingStateResponse) GetHasSubscription() bool {
+	if x != nil {
+		return x.HasSubscription
+	}
+	return false
 }
 
 type CreateCheckoutSessionRequest struct {
@@ -30378,8 +30336,11 @@ type SupportReportComment struct {
 	Body        string                 `protobuf:"bytes,2,opt,name=body,proto3" json:"body,omitempty"`
 	AuthorEmail string                 `protobuf:"bytes,3,opt,name=author_email,json=authorEmail,proto3" json:"author_email,omitempty"`
 	// True when the comment was written by support staff.
-	Staff         bool                   `protobuf:"varint,4,opt,name=staff,proto3" json:"staff,omitempty"`
-	CreatedAt     *timestamppb.Timestamp `protobuf:"bytes,5,opt,name=created_at,json=createdAt,proto3" json:"created_at,omitempty"`
+	Staff     bool                   `protobuf:"varint,4,opt,name=staff,proto3" json:"staff,omitempty"`
+	CreatedAt *timestamppb.Timestamp `protobuf:"bytes,5,opt,name=created_at,json=createdAt,proto3" json:"created_at,omitempty"`
+	// Images attached to the comment (metadata only; fetch bytes with
+	// GetSupportAttachment / AdminGetSupportAttachment).
+	Attachments   []*SupportAttachment `protobuf:"bytes,6,rep,name=attachments,proto3" json:"attachments,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
@@ -30449,6 +30410,156 @@ func (x *SupportReportComment) GetCreatedAt() *timestamppb.Timestamp {
 	return nil
 }
 
+func (x *SupportReportComment) GetAttachments() []*SupportAttachment {
+	if x != nil {
+		return x.Attachments
+	}
+	return nil
+}
+
+// SupportAttachment describes one image attached to a support comment.
+type SupportAttachment struct {
+	state protoimpl.MessageState `protogen:"open.v1"`
+	Id    string                 `protobuf:"bytes,1,opt,name=id,proto3" json:"id,omitempty"`
+	// Original file name, for display and download.
+	Name string `protobuf:"bytes,2,opt,name=name,proto3" json:"name,omitempty"`
+	// image/png, image/jpeg, image/webp or image/gif.
+	ContentType   string                 `protobuf:"bytes,3,opt,name=content_type,json=contentType,proto3" json:"content_type,omitempty"`
+	SizeBytes     int64                  `protobuf:"varint,4,opt,name=size_bytes,json=sizeBytes,proto3" json:"size_bytes,omitempty"`
+	CreatedAt     *timestamppb.Timestamp `protobuf:"bytes,5,opt,name=created_at,json=createdAt,proto3" json:"created_at,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *SupportAttachment) Reset() {
+	*x = SupportAttachment{}
+	mi := &file_relay_server_v1_server_proto_msgTypes[502]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *SupportAttachment) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*SupportAttachment) ProtoMessage() {}
+
+func (x *SupportAttachment) ProtoReflect() protoreflect.Message {
+	mi := &file_relay_server_v1_server_proto_msgTypes[502]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use SupportAttachment.ProtoReflect.Descriptor instead.
+func (*SupportAttachment) Descriptor() ([]byte, []int) {
+	return file_relay_server_v1_server_proto_rawDescGZIP(), []int{502}
+}
+
+func (x *SupportAttachment) GetId() string {
+	if x != nil {
+		return x.Id
+	}
+	return ""
+}
+
+func (x *SupportAttachment) GetName() string {
+	if x != nil {
+		return x.Name
+	}
+	return ""
+}
+
+func (x *SupportAttachment) GetContentType() string {
+	if x != nil {
+		return x.ContentType
+	}
+	return ""
+}
+
+func (x *SupportAttachment) GetSizeBytes() int64 {
+	if x != nil {
+		return x.SizeBytes
+	}
+	return 0
+}
+
+func (x *SupportAttachment) GetCreatedAt() *timestamppb.Timestamp {
+	if x != nil {
+		return x.CreatedAt
+	}
+	return nil
+}
+
+// SupportAttachmentUpload is one image to store with a new comment. Only
+// PNG, JPEG, WebP and GIF are accepted; the server sniffs the bytes and
+// rejects a mismatch with content_type. At most 3 per comment, 1.5 MB each
+// and 3.5 MB in total, so a reply always fits the default gRPC message size.
+type SupportAttachmentUpload struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	Name          string                 `protobuf:"bytes,1,opt,name=name,proto3" json:"name,omitempty"`
+	ContentType   string                 `protobuf:"bytes,2,opt,name=content_type,json=contentType,proto3" json:"content_type,omitempty"`
+	Data          []byte                 `protobuf:"bytes,3,opt,name=data,proto3" json:"data,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *SupportAttachmentUpload) Reset() {
+	*x = SupportAttachmentUpload{}
+	mi := &file_relay_server_v1_server_proto_msgTypes[503]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *SupportAttachmentUpload) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*SupportAttachmentUpload) ProtoMessage() {}
+
+func (x *SupportAttachmentUpload) ProtoReflect() protoreflect.Message {
+	mi := &file_relay_server_v1_server_proto_msgTypes[503]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use SupportAttachmentUpload.ProtoReflect.Descriptor instead.
+func (*SupportAttachmentUpload) Descriptor() ([]byte, []int) {
+	return file_relay_server_v1_server_proto_rawDescGZIP(), []int{503}
+}
+
+func (x *SupportAttachmentUpload) GetName() string {
+	if x != nil {
+		return x.Name
+	}
+	return ""
+}
+
+func (x *SupportAttachmentUpload) GetContentType() string {
+	if x != nil {
+		return x.ContentType
+	}
+	return ""
+}
+
+func (x *SupportAttachmentUpload) GetData() []byte {
+	if x != nil {
+		return x.Data
+	}
+	return nil
+}
+
 type CreateSupportReportRequest struct {
 	state       protoimpl.MessageState `protogen:"open.v1"`
 	Category    string                 `protobuf:"bytes,1,opt,name=category,proto3" json:"category,omitempty"`
@@ -30464,7 +30575,7 @@ type CreateSupportReportRequest struct {
 
 func (x *CreateSupportReportRequest) Reset() {
 	*x = CreateSupportReportRequest{}
-	mi := &file_relay_server_v1_server_proto_msgTypes[502]
+	mi := &file_relay_server_v1_server_proto_msgTypes[504]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -30476,7 +30587,7 @@ func (x *CreateSupportReportRequest) String() string {
 func (*CreateSupportReportRequest) ProtoMessage() {}
 
 func (x *CreateSupportReportRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_relay_server_v1_server_proto_msgTypes[502]
+	mi := &file_relay_server_v1_server_proto_msgTypes[504]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -30489,7 +30600,7 @@ func (x *CreateSupportReportRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use CreateSupportReportRequest.ProtoReflect.Descriptor instead.
 func (*CreateSupportReportRequest) Descriptor() ([]byte, []int) {
-	return file_relay_server_v1_server_proto_rawDescGZIP(), []int{502}
+	return file_relay_server_v1_server_proto_rawDescGZIP(), []int{504}
 }
 
 func (x *CreateSupportReportRequest) GetCategory() string {
@@ -30536,7 +30647,7 @@ type CreateSupportReportResponse struct {
 
 func (x *CreateSupportReportResponse) Reset() {
 	*x = CreateSupportReportResponse{}
-	mi := &file_relay_server_v1_server_proto_msgTypes[503]
+	mi := &file_relay_server_v1_server_proto_msgTypes[505]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -30548,7 +30659,7 @@ func (x *CreateSupportReportResponse) String() string {
 func (*CreateSupportReportResponse) ProtoMessage() {}
 
 func (x *CreateSupportReportResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_relay_server_v1_server_proto_msgTypes[503]
+	mi := &file_relay_server_v1_server_proto_msgTypes[505]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -30561,7 +30672,7 @@ func (x *CreateSupportReportResponse) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use CreateSupportReportResponse.ProtoReflect.Descriptor instead.
 func (*CreateSupportReportResponse) Descriptor() ([]byte, []int) {
-	return file_relay_server_v1_server_proto_rawDescGZIP(), []int{503}
+	return file_relay_server_v1_server_proto_rawDescGZIP(), []int{505}
 }
 
 func (x *CreateSupportReportResponse) GetReport() *SupportReport {
@@ -30582,7 +30693,7 @@ type ListSupportReportsRequest struct {
 
 func (x *ListSupportReportsRequest) Reset() {
 	*x = ListSupportReportsRequest{}
-	mi := &file_relay_server_v1_server_proto_msgTypes[504]
+	mi := &file_relay_server_v1_server_proto_msgTypes[506]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -30594,7 +30705,7 @@ func (x *ListSupportReportsRequest) String() string {
 func (*ListSupportReportsRequest) ProtoMessage() {}
 
 func (x *ListSupportReportsRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_relay_server_v1_server_proto_msgTypes[504]
+	mi := &file_relay_server_v1_server_proto_msgTypes[506]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -30607,7 +30718,7 @@ func (x *ListSupportReportsRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use ListSupportReportsRequest.ProtoReflect.Descriptor instead.
 func (*ListSupportReportsRequest) Descriptor() ([]byte, []int) {
-	return file_relay_server_v1_server_proto_rawDescGZIP(), []int{504}
+	return file_relay_server_v1_server_proto_rawDescGZIP(), []int{506}
 }
 
 func (x *ListSupportReportsRequest) GetStatus() string {
@@ -30633,7 +30744,7 @@ type ListSupportReportsResponse struct {
 
 func (x *ListSupportReportsResponse) Reset() {
 	*x = ListSupportReportsResponse{}
-	mi := &file_relay_server_v1_server_proto_msgTypes[505]
+	mi := &file_relay_server_v1_server_proto_msgTypes[507]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -30645,7 +30756,7 @@ func (x *ListSupportReportsResponse) String() string {
 func (*ListSupportReportsResponse) ProtoMessage() {}
 
 func (x *ListSupportReportsResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_relay_server_v1_server_proto_msgTypes[505]
+	mi := &file_relay_server_v1_server_proto_msgTypes[507]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -30658,7 +30769,7 @@ func (x *ListSupportReportsResponse) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use ListSupportReportsResponse.ProtoReflect.Descriptor instead.
 func (*ListSupportReportsResponse) Descriptor() ([]byte, []int) {
-	return file_relay_server_v1_server_proto_rawDescGZIP(), []int{505}
+	return file_relay_server_v1_server_proto_rawDescGZIP(), []int{507}
 }
 
 func (x *ListSupportReportsResponse) GetReports() []*SupportReport {
@@ -30677,7 +30788,7 @@ type GetSupportReportRequest struct {
 
 func (x *GetSupportReportRequest) Reset() {
 	*x = GetSupportReportRequest{}
-	mi := &file_relay_server_v1_server_proto_msgTypes[506]
+	mi := &file_relay_server_v1_server_proto_msgTypes[508]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -30689,7 +30800,7 @@ func (x *GetSupportReportRequest) String() string {
 func (*GetSupportReportRequest) ProtoMessage() {}
 
 func (x *GetSupportReportRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_relay_server_v1_server_proto_msgTypes[506]
+	mi := &file_relay_server_v1_server_proto_msgTypes[508]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -30702,7 +30813,7 @@ func (x *GetSupportReportRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use GetSupportReportRequest.ProtoReflect.Descriptor instead.
 func (*GetSupportReportRequest) Descriptor() ([]byte, []int) {
-	return file_relay_server_v1_server_proto_rawDescGZIP(), []int{506}
+	return file_relay_server_v1_server_proto_rawDescGZIP(), []int{508}
 }
 
 func (x *GetSupportReportRequest) GetId() string {
@@ -30722,7 +30833,7 @@ type GetSupportReportResponse struct {
 
 func (x *GetSupportReportResponse) Reset() {
 	*x = GetSupportReportResponse{}
-	mi := &file_relay_server_v1_server_proto_msgTypes[507]
+	mi := &file_relay_server_v1_server_proto_msgTypes[509]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -30734,7 +30845,7 @@ func (x *GetSupportReportResponse) String() string {
 func (*GetSupportReportResponse) ProtoMessage() {}
 
 func (x *GetSupportReportResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_relay_server_v1_server_proto_msgTypes[507]
+	mi := &file_relay_server_v1_server_proto_msgTypes[509]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -30747,7 +30858,7 @@ func (x *GetSupportReportResponse) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use GetSupportReportResponse.ProtoReflect.Descriptor instead.
 func (*GetSupportReportResponse) Descriptor() ([]byte, []int) {
-	return file_relay_server_v1_server_proto_rawDescGZIP(), []int{507}
+	return file_relay_server_v1_server_proto_rawDescGZIP(), []int{509}
 }
 
 func (x *GetSupportReportResponse) GetReport() *SupportReport {
@@ -30774,7 +30885,7 @@ type AddSupportReportCommentRequest struct {
 
 func (x *AddSupportReportCommentRequest) Reset() {
 	*x = AddSupportReportCommentRequest{}
-	mi := &file_relay_server_v1_server_proto_msgTypes[508]
+	mi := &file_relay_server_v1_server_proto_msgTypes[510]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -30786,7 +30897,7 @@ func (x *AddSupportReportCommentRequest) String() string {
 func (*AddSupportReportCommentRequest) ProtoMessage() {}
 
 func (x *AddSupportReportCommentRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_relay_server_v1_server_proto_msgTypes[508]
+	mi := &file_relay_server_v1_server_proto_msgTypes[510]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -30799,7 +30910,7 @@ func (x *AddSupportReportCommentRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use AddSupportReportCommentRequest.ProtoReflect.Descriptor instead.
 func (*AddSupportReportCommentRequest) Descriptor() ([]byte, []int) {
-	return file_relay_server_v1_server_proto_rawDescGZIP(), []int{508}
+	return file_relay_server_v1_server_proto_rawDescGZIP(), []int{510}
 }
 
 func (x *AddSupportReportCommentRequest) GetId() string {
@@ -30825,7 +30936,7 @@ type AddSupportReportCommentResponse struct {
 
 func (x *AddSupportReportCommentResponse) Reset() {
 	*x = AddSupportReportCommentResponse{}
-	mi := &file_relay_server_v1_server_proto_msgTypes[509]
+	mi := &file_relay_server_v1_server_proto_msgTypes[511]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -30837,7 +30948,7 @@ func (x *AddSupportReportCommentResponse) String() string {
 func (*AddSupportReportCommentResponse) ProtoMessage() {}
 
 func (x *AddSupportReportCommentResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_relay_server_v1_server_proto_msgTypes[509]
+	mi := &file_relay_server_v1_server_proto_msgTypes[511]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -30850,12 +30961,116 @@ func (x *AddSupportReportCommentResponse) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use AddSupportReportCommentResponse.ProtoReflect.Descriptor instead.
 func (*AddSupportReportCommentResponse) Descriptor() ([]byte, []int) {
-	return file_relay_server_v1_server_proto_rawDescGZIP(), []int{509}
+	return file_relay_server_v1_server_proto_rawDescGZIP(), []int{511}
 }
 
 func (x *AddSupportReportCommentResponse) GetComment() *SupportReportComment {
 	if x != nil {
 		return x.Comment
+	}
+	return nil
+}
+
+type GetSupportAttachmentRequest struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	ReportId      string                 `protobuf:"bytes,1,opt,name=report_id,json=reportId,proto3" json:"report_id,omitempty"`
+	AttachmentId  string                 `protobuf:"bytes,2,opt,name=attachment_id,json=attachmentId,proto3" json:"attachment_id,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *GetSupportAttachmentRequest) Reset() {
+	*x = GetSupportAttachmentRequest{}
+	mi := &file_relay_server_v1_server_proto_msgTypes[512]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *GetSupportAttachmentRequest) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*GetSupportAttachmentRequest) ProtoMessage() {}
+
+func (x *GetSupportAttachmentRequest) ProtoReflect() protoreflect.Message {
+	mi := &file_relay_server_v1_server_proto_msgTypes[512]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use GetSupportAttachmentRequest.ProtoReflect.Descriptor instead.
+func (*GetSupportAttachmentRequest) Descriptor() ([]byte, []int) {
+	return file_relay_server_v1_server_proto_rawDescGZIP(), []int{512}
+}
+
+func (x *GetSupportAttachmentRequest) GetReportId() string {
+	if x != nil {
+		return x.ReportId
+	}
+	return ""
+}
+
+func (x *GetSupportAttachmentRequest) GetAttachmentId() string {
+	if x != nil {
+		return x.AttachmentId
+	}
+	return ""
+}
+
+type GetSupportAttachmentResponse struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	Attachment    *SupportAttachment     `protobuf:"bytes,1,opt,name=attachment,proto3" json:"attachment,omitempty"`
+	Data          []byte                 `protobuf:"bytes,2,opt,name=data,proto3" json:"data,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *GetSupportAttachmentResponse) Reset() {
+	*x = GetSupportAttachmentResponse{}
+	mi := &file_relay_server_v1_server_proto_msgTypes[513]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *GetSupportAttachmentResponse) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*GetSupportAttachmentResponse) ProtoMessage() {}
+
+func (x *GetSupportAttachmentResponse) ProtoReflect() protoreflect.Message {
+	mi := &file_relay_server_v1_server_proto_msgTypes[513]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use GetSupportAttachmentResponse.ProtoReflect.Descriptor instead.
+func (*GetSupportAttachmentResponse) Descriptor() ([]byte, []int) {
+	return file_relay_server_v1_server_proto_rawDescGZIP(), []int{513}
+}
+
+func (x *GetSupportAttachmentResponse) GetAttachment() *SupportAttachment {
+	if x != nil {
+		return x.Attachment
+	}
+	return nil
+}
+
+func (x *GetSupportAttachmentResponse) GetData() []byte {
+	if x != nil {
+		return x.Data
 	}
 	return nil
 }
@@ -30870,7 +31085,7 @@ type UpdateSupportReportStatusRequest struct {
 
 func (x *UpdateSupportReportStatusRequest) Reset() {
 	*x = UpdateSupportReportStatusRequest{}
-	mi := &file_relay_server_v1_server_proto_msgTypes[510]
+	mi := &file_relay_server_v1_server_proto_msgTypes[514]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -30882,7 +31097,7 @@ func (x *UpdateSupportReportStatusRequest) String() string {
 func (*UpdateSupportReportStatusRequest) ProtoMessage() {}
 
 func (x *UpdateSupportReportStatusRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_relay_server_v1_server_proto_msgTypes[510]
+	mi := &file_relay_server_v1_server_proto_msgTypes[514]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -30895,7 +31110,7 @@ func (x *UpdateSupportReportStatusRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use UpdateSupportReportStatusRequest.ProtoReflect.Descriptor instead.
 func (*UpdateSupportReportStatusRequest) Descriptor() ([]byte, []int) {
-	return file_relay_server_v1_server_proto_rawDescGZIP(), []int{510}
+	return file_relay_server_v1_server_proto_rawDescGZIP(), []int{514}
 }
 
 func (x *UpdateSupportReportStatusRequest) GetId() string {
@@ -30921,7 +31136,7 @@ type UpdateSupportReportStatusResponse struct {
 
 func (x *UpdateSupportReportStatusResponse) Reset() {
 	*x = UpdateSupportReportStatusResponse{}
-	mi := &file_relay_server_v1_server_proto_msgTypes[511]
+	mi := &file_relay_server_v1_server_proto_msgTypes[515]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -30933,7 +31148,7 @@ func (x *UpdateSupportReportStatusResponse) String() string {
 func (*UpdateSupportReportStatusResponse) ProtoMessage() {}
 
 func (x *UpdateSupportReportStatusResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_relay_server_v1_server_proto_msgTypes[511]
+	mi := &file_relay_server_v1_server_proto_msgTypes[515]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -30946,7 +31161,7 @@ func (x *UpdateSupportReportStatusResponse) ProtoReflect() protoreflect.Message 
 
 // Deprecated: Use UpdateSupportReportStatusResponse.ProtoReflect.Descriptor instead.
 func (*UpdateSupportReportStatusResponse) Descriptor() ([]byte, []int) {
-	return file_relay_server_v1_server_proto_rawDescGZIP(), []int{511}
+	return file_relay_server_v1_server_proto_rawDescGZIP(), []int{515}
 }
 
 func (x *UpdateSupportReportStatusResponse) GetReport() *SupportReport {
@@ -30969,7 +31184,7 @@ type AdminListSupportReportsRequest struct {
 
 func (x *AdminListSupportReportsRequest) Reset() {
 	*x = AdminListSupportReportsRequest{}
-	mi := &file_relay_server_v1_server_proto_msgTypes[512]
+	mi := &file_relay_server_v1_server_proto_msgTypes[516]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -30981,7 +31196,7 @@ func (x *AdminListSupportReportsRequest) String() string {
 func (*AdminListSupportReportsRequest) ProtoMessage() {}
 
 func (x *AdminListSupportReportsRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_relay_server_v1_server_proto_msgTypes[512]
+	mi := &file_relay_server_v1_server_proto_msgTypes[516]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -30994,7 +31209,7 @@ func (x *AdminListSupportReportsRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use AdminListSupportReportsRequest.ProtoReflect.Descriptor instead.
 func (*AdminListSupportReportsRequest) Descriptor() ([]byte, []int) {
-	return file_relay_server_v1_server_proto_rawDescGZIP(), []int{512}
+	return file_relay_server_v1_server_proto_rawDescGZIP(), []int{516}
 }
 
 func (x *AdminListSupportReportsRequest) GetStatus() string {
@@ -31027,7 +31242,7 @@ type AdminListSupportReportsResponse struct {
 
 func (x *AdminListSupportReportsResponse) Reset() {
 	*x = AdminListSupportReportsResponse{}
-	mi := &file_relay_server_v1_server_proto_msgTypes[513]
+	mi := &file_relay_server_v1_server_proto_msgTypes[517]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -31039,7 +31254,7 @@ func (x *AdminListSupportReportsResponse) String() string {
 func (*AdminListSupportReportsResponse) ProtoMessage() {}
 
 func (x *AdminListSupportReportsResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_relay_server_v1_server_proto_msgTypes[513]
+	mi := &file_relay_server_v1_server_proto_msgTypes[517]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -31052,7 +31267,7 @@ func (x *AdminListSupportReportsResponse) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use AdminListSupportReportsResponse.ProtoReflect.Descriptor instead.
 func (*AdminListSupportReportsResponse) Descriptor() ([]byte, []int) {
-	return file_relay_server_v1_server_proto_rawDescGZIP(), []int{513}
+	return file_relay_server_v1_server_proto_rawDescGZIP(), []int{517}
 }
 
 func (x *AdminListSupportReportsResponse) GetReports() []*SupportReport {
@@ -31071,7 +31286,7 @@ type AdminGetSupportReportRequest struct {
 
 func (x *AdminGetSupportReportRequest) Reset() {
 	*x = AdminGetSupportReportRequest{}
-	mi := &file_relay_server_v1_server_proto_msgTypes[514]
+	mi := &file_relay_server_v1_server_proto_msgTypes[518]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -31083,7 +31298,7 @@ func (x *AdminGetSupportReportRequest) String() string {
 func (*AdminGetSupportReportRequest) ProtoMessage() {}
 
 func (x *AdminGetSupportReportRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_relay_server_v1_server_proto_msgTypes[514]
+	mi := &file_relay_server_v1_server_proto_msgTypes[518]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -31096,7 +31311,7 @@ func (x *AdminGetSupportReportRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use AdminGetSupportReportRequest.ProtoReflect.Descriptor instead.
 func (*AdminGetSupportReportRequest) Descriptor() ([]byte, []int) {
-	return file_relay_server_v1_server_proto_rawDescGZIP(), []int{514}
+	return file_relay_server_v1_server_proto_rawDescGZIP(), []int{518}
 }
 
 func (x *AdminGetSupportReportRequest) GetId() string {
@@ -31116,7 +31331,7 @@ type AdminGetSupportReportResponse struct {
 
 func (x *AdminGetSupportReportResponse) Reset() {
 	*x = AdminGetSupportReportResponse{}
-	mi := &file_relay_server_v1_server_proto_msgTypes[515]
+	mi := &file_relay_server_v1_server_proto_msgTypes[519]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -31128,7 +31343,7 @@ func (x *AdminGetSupportReportResponse) String() string {
 func (*AdminGetSupportReportResponse) ProtoMessage() {}
 
 func (x *AdminGetSupportReportResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_relay_server_v1_server_proto_msgTypes[515]
+	mi := &file_relay_server_v1_server_proto_msgTypes[519]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -31141,7 +31356,7 @@ func (x *AdminGetSupportReportResponse) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use AdminGetSupportReportResponse.ProtoReflect.Descriptor instead.
 func (*AdminGetSupportReportResponse) Descriptor() ([]byte, []int) {
-	return file_relay_server_v1_server_proto_rawDescGZIP(), []int{515}
+	return file_relay_server_v1_server_proto_rawDescGZIP(), []int{519}
 }
 
 func (x *AdminGetSupportReportResponse) GetReport() *SupportReport {
@@ -31159,16 +31374,18 @@ func (x *AdminGetSupportReportResponse) GetComments() []*SupportReportComment {
 }
 
 type AdminAddSupportReportCommentRequest struct {
-	state         protoimpl.MessageState `protogen:"open.v1"`
-	Id            string                 `protobuf:"bytes,1,opt,name=id,proto3" json:"id,omitempty"`
-	Body          string                 `protobuf:"bytes,2,opt,name=body,proto3" json:"body,omitempty"`
+	state protoimpl.MessageState `protogen:"open.v1"`
+	Id    string                 `protobuf:"bytes,1,opt,name=id,proto3" json:"id,omitempty"`
+	Body  string                 `protobuf:"bytes,2,opt,name=body,proto3" json:"body,omitempty"`
+	// Screenshots to attach to the reply. See SupportAttachmentUpload limits.
+	Attachments   []*SupportAttachmentUpload `protobuf:"bytes,3,rep,name=attachments,proto3" json:"attachments,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
 
 func (x *AdminAddSupportReportCommentRequest) Reset() {
 	*x = AdminAddSupportReportCommentRequest{}
-	mi := &file_relay_server_v1_server_proto_msgTypes[516]
+	mi := &file_relay_server_v1_server_proto_msgTypes[520]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -31180,7 +31397,7 @@ func (x *AdminAddSupportReportCommentRequest) String() string {
 func (*AdminAddSupportReportCommentRequest) ProtoMessage() {}
 
 func (x *AdminAddSupportReportCommentRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_relay_server_v1_server_proto_msgTypes[516]
+	mi := &file_relay_server_v1_server_proto_msgTypes[520]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -31193,7 +31410,7 @@ func (x *AdminAddSupportReportCommentRequest) ProtoReflect() protoreflect.Messag
 
 // Deprecated: Use AdminAddSupportReportCommentRequest.ProtoReflect.Descriptor instead.
 func (*AdminAddSupportReportCommentRequest) Descriptor() ([]byte, []int) {
-	return file_relay_server_v1_server_proto_rawDescGZIP(), []int{516}
+	return file_relay_server_v1_server_proto_rawDescGZIP(), []int{520}
 }
 
 func (x *AdminAddSupportReportCommentRequest) GetId() string {
@@ -31210,6 +31427,13 @@ func (x *AdminAddSupportReportCommentRequest) GetBody() string {
 	return ""
 }
 
+func (x *AdminAddSupportReportCommentRequest) GetAttachments() []*SupportAttachmentUpload {
+	if x != nil {
+		return x.Attachments
+	}
+	return nil
+}
+
 type AdminAddSupportReportCommentResponse struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
 	Comment       *SupportReportComment  `protobuf:"bytes,1,opt,name=comment,proto3" json:"comment,omitempty"`
@@ -31219,7 +31443,7 @@ type AdminAddSupportReportCommentResponse struct {
 
 func (x *AdminAddSupportReportCommentResponse) Reset() {
 	*x = AdminAddSupportReportCommentResponse{}
-	mi := &file_relay_server_v1_server_proto_msgTypes[517]
+	mi := &file_relay_server_v1_server_proto_msgTypes[521]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -31231,7 +31455,7 @@ func (x *AdminAddSupportReportCommentResponse) String() string {
 func (*AdminAddSupportReportCommentResponse) ProtoMessage() {}
 
 func (x *AdminAddSupportReportCommentResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_relay_server_v1_server_proto_msgTypes[517]
+	mi := &file_relay_server_v1_server_proto_msgTypes[521]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -31244,12 +31468,116 @@ func (x *AdminAddSupportReportCommentResponse) ProtoReflect() protoreflect.Messa
 
 // Deprecated: Use AdminAddSupportReportCommentResponse.ProtoReflect.Descriptor instead.
 func (*AdminAddSupportReportCommentResponse) Descriptor() ([]byte, []int) {
-	return file_relay_server_v1_server_proto_rawDescGZIP(), []int{517}
+	return file_relay_server_v1_server_proto_rawDescGZIP(), []int{521}
 }
 
 func (x *AdminAddSupportReportCommentResponse) GetComment() *SupportReportComment {
 	if x != nil {
 		return x.Comment
+	}
+	return nil
+}
+
+type AdminGetSupportAttachmentRequest struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	ReportId      string                 `protobuf:"bytes,1,opt,name=report_id,json=reportId,proto3" json:"report_id,omitempty"`
+	AttachmentId  string                 `protobuf:"bytes,2,opt,name=attachment_id,json=attachmentId,proto3" json:"attachment_id,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *AdminGetSupportAttachmentRequest) Reset() {
+	*x = AdminGetSupportAttachmentRequest{}
+	mi := &file_relay_server_v1_server_proto_msgTypes[522]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *AdminGetSupportAttachmentRequest) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*AdminGetSupportAttachmentRequest) ProtoMessage() {}
+
+func (x *AdminGetSupportAttachmentRequest) ProtoReflect() protoreflect.Message {
+	mi := &file_relay_server_v1_server_proto_msgTypes[522]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use AdminGetSupportAttachmentRequest.ProtoReflect.Descriptor instead.
+func (*AdminGetSupportAttachmentRequest) Descriptor() ([]byte, []int) {
+	return file_relay_server_v1_server_proto_rawDescGZIP(), []int{522}
+}
+
+func (x *AdminGetSupportAttachmentRequest) GetReportId() string {
+	if x != nil {
+		return x.ReportId
+	}
+	return ""
+}
+
+func (x *AdminGetSupportAttachmentRequest) GetAttachmentId() string {
+	if x != nil {
+		return x.AttachmentId
+	}
+	return ""
+}
+
+type AdminGetSupportAttachmentResponse struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	Attachment    *SupportAttachment     `protobuf:"bytes,1,opt,name=attachment,proto3" json:"attachment,omitempty"`
+	Data          []byte                 `protobuf:"bytes,2,opt,name=data,proto3" json:"data,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *AdminGetSupportAttachmentResponse) Reset() {
+	*x = AdminGetSupportAttachmentResponse{}
+	mi := &file_relay_server_v1_server_proto_msgTypes[523]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *AdminGetSupportAttachmentResponse) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*AdminGetSupportAttachmentResponse) ProtoMessage() {}
+
+func (x *AdminGetSupportAttachmentResponse) ProtoReflect() protoreflect.Message {
+	mi := &file_relay_server_v1_server_proto_msgTypes[523]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use AdminGetSupportAttachmentResponse.ProtoReflect.Descriptor instead.
+func (*AdminGetSupportAttachmentResponse) Descriptor() ([]byte, []int) {
+	return file_relay_server_v1_server_proto_rawDescGZIP(), []int{523}
+}
+
+func (x *AdminGetSupportAttachmentResponse) GetAttachment() *SupportAttachment {
+	if x != nil {
+		return x.Attachment
+	}
+	return nil
+}
+
+func (x *AdminGetSupportAttachmentResponse) GetData() []byte {
+	if x != nil {
+		return x.Data
 	}
 	return nil
 }
@@ -31264,7 +31592,7 @@ type AdminUpdateSupportReportStatusRequest struct {
 
 func (x *AdminUpdateSupportReportStatusRequest) Reset() {
 	*x = AdminUpdateSupportReportStatusRequest{}
-	mi := &file_relay_server_v1_server_proto_msgTypes[518]
+	mi := &file_relay_server_v1_server_proto_msgTypes[524]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -31276,7 +31604,7 @@ func (x *AdminUpdateSupportReportStatusRequest) String() string {
 func (*AdminUpdateSupportReportStatusRequest) ProtoMessage() {}
 
 func (x *AdminUpdateSupportReportStatusRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_relay_server_v1_server_proto_msgTypes[518]
+	mi := &file_relay_server_v1_server_proto_msgTypes[524]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -31289,7 +31617,7 @@ func (x *AdminUpdateSupportReportStatusRequest) ProtoReflect() protoreflect.Mess
 
 // Deprecated: Use AdminUpdateSupportReportStatusRequest.ProtoReflect.Descriptor instead.
 func (*AdminUpdateSupportReportStatusRequest) Descriptor() ([]byte, []int) {
-	return file_relay_server_v1_server_proto_rawDescGZIP(), []int{518}
+	return file_relay_server_v1_server_proto_rawDescGZIP(), []int{524}
 }
 
 func (x *AdminUpdateSupportReportStatusRequest) GetId() string {
@@ -31315,7 +31643,7 @@ type AdminUpdateSupportReportStatusResponse struct {
 
 func (x *AdminUpdateSupportReportStatusResponse) Reset() {
 	*x = AdminUpdateSupportReportStatusResponse{}
-	mi := &file_relay_server_v1_server_proto_msgTypes[519]
+	mi := &file_relay_server_v1_server_proto_msgTypes[525]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -31327,7 +31655,7 @@ func (x *AdminUpdateSupportReportStatusResponse) String() string {
 func (*AdminUpdateSupportReportStatusResponse) ProtoMessage() {}
 
 func (x *AdminUpdateSupportReportStatusResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_relay_server_v1_server_proto_msgTypes[519]
+	mi := &file_relay_server_v1_server_proto_msgTypes[525]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -31340,7 +31668,7 @@ func (x *AdminUpdateSupportReportStatusResponse) ProtoReflect() protoreflect.Mes
 
 // Deprecated: Use AdminUpdateSupportReportStatusResponse.ProtoReflect.Descriptor instead.
 func (*AdminUpdateSupportReportStatusResponse) Descriptor() ([]byte, []int) {
-	return file_relay_server_v1_server_proto_rawDescGZIP(), []int{519}
+	return file_relay_server_v1_server_proto_rawDescGZIP(), []int{525}
 }
 
 func (x *AdminUpdateSupportReportStatusResponse) GetReport() *SupportReport {
@@ -31371,7 +31699,7 @@ type OrgSSOConnection struct {
 
 func (x *OrgSSOConnection) Reset() {
 	*x = OrgSSOConnection{}
-	mi := &file_relay_server_v1_server_proto_msgTypes[520]
+	mi := &file_relay_server_v1_server_proto_msgTypes[526]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -31383,7 +31711,7 @@ func (x *OrgSSOConnection) String() string {
 func (*OrgSSOConnection) ProtoMessage() {}
 
 func (x *OrgSSOConnection) ProtoReflect() protoreflect.Message {
-	mi := &file_relay_server_v1_server_proto_msgTypes[520]
+	mi := &file_relay_server_v1_server_proto_msgTypes[526]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -31396,7 +31724,7 @@ func (x *OrgSSOConnection) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use OrgSSOConnection.ProtoReflect.Descriptor instead.
 func (*OrgSSOConnection) Descriptor() ([]byte, []int) {
-	return file_relay_server_v1_server_proto_rawDescGZIP(), []int{520}
+	return file_relay_server_v1_server_proto_rawDescGZIP(), []int{526}
 }
 
 func (x *OrgSSOConnection) GetId() string {
@@ -31477,7 +31805,7 @@ type GetOrgSSOConnectionRequest struct {
 
 func (x *GetOrgSSOConnectionRequest) Reset() {
 	*x = GetOrgSSOConnectionRequest{}
-	mi := &file_relay_server_v1_server_proto_msgTypes[521]
+	mi := &file_relay_server_v1_server_proto_msgTypes[527]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -31489,7 +31817,7 @@ func (x *GetOrgSSOConnectionRequest) String() string {
 func (*GetOrgSSOConnectionRequest) ProtoMessage() {}
 
 func (x *GetOrgSSOConnectionRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_relay_server_v1_server_proto_msgTypes[521]
+	mi := &file_relay_server_v1_server_proto_msgTypes[527]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -31502,7 +31830,7 @@ func (x *GetOrgSSOConnectionRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use GetOrgSSOConnectionRequest.ProtoReflect.Descriptor instead.
 func (*GetOrgSSOConnectionRequest) Descriptor() ([]byte, []int) {
-	return file_relay_server_v1_server_proto_rawDescGZIP(), []int{521}
+	return file_relay_server_v1_server_proto_rawDescGZIP(), []int{527}
 }
 
 type GetOrgSSOConnectionResponse struct {
@@ -31515,7 +31843,7 @@ type GetOrgSSOConnectionResponse struct {
 
 func (x *GetOrgSSOConnectionResponse) Reset() {
 	*x = GetOrgSSOConnectionResponse{}
-	mi := &file_relay_server_v1_server_proto_msgTypes[522]
+	mi := &file_relay_server_v1_server_proto_msgTypes[528]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -31527,7 +31855,7 @@ func (x *GetOrgSSOConnectionResponse) String() string {
 func (*GetOrgSSOConnectionResponse) ProtoMessage() {}
 
 func (x *GetOrgSSOConnectionResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_relay_server_v1_server_proto_msgTypes[522]
+	mi := &file_relay_server_v1_server_proto_msgTypes[528]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -31540,7 +31868,7 @@ func (x *GetOrgSSOConnectionResponse) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use GetOrgSSOConnectionResponse.ProtoReflect.Descriptor instead.
 func (*GetOrgSSOConnectionResponse) Descriptor() ([]byte, []int) {
-	return file_relay_server_v1_server_proto_rawDescGZIP(), []int{522}
+	return file_relay_server_v1_server_proto_rawDescGZIP(), []int{528}
 }
 
 func (x *GetOrgSSOConnectionResponse) GetConnection() *OrgSSOConnection {
@@ -31567,7 +31895,7 @@ type UpsertOrgSSOConnectionRequest struct {
 
 func (x *UpsertOrgSSOConnectionRequest) Reset() {
 	*x = UpsertOrgSSOConnectionRequest{}
-	mi := &file_relay_server_v1_server_proto_msgTypes[523]
+	mi := &file_relay_server_v1_server_proto_msgTypes[529]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -31579,7 +31907,7 @@ func (x *UpsertOrgSSOConnectionRequest) String() string {
 func (*UpsertOrgSSOConnectionRequest) ProtoMessage() {}
 
 func (x *UpsertOrgSSOConnectionRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_relay_server_v1_server_proto_msgTypes[523]
+	mi := &file_relay_server_v1_server_proto_msgTypes[529]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -31592,7 +31920,7 @@ func (x *UpsertOrgSSOConnectionRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use UpsertOrgSSOConnectionRequest.ProtoReflect.Descriptor instead.
 func (*UpsertOrgSSOConnectionRequest) Descriptor() ([]byte, []int) {
-	return file_relay_server_v1_server_proto_rawDescGZIP(), []int{523}
+	return file_relay_server_v1_server_proto_rawDescGZIP(), []int{529}
 }
 
 func (x *UpsertOrgSSOConnectionRequest) GetIssuer() string {
@@ -31647,7 +31975,7 @@ type UpsertOrgSSOConnectionResponse struct {
 
 func (x *UpsertOrgSSOConnectionResponse) Reset() {
 	*x = UpsertOrgSSOConnectionResponse{}
-	mi := &file_relay_server_v1_server_proto_msgTypes[524]
+	mi := &file_relay_server_v1_server_proto_msgTypes[530]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -31659,7 +31987,7 @@ func (x *UpsertOrgSSOConnectionResponse) String() string {
 func (*UpsertOrgSSOConnectionResponse) ProtoMessage() {}
 
 func (x *UpsertOrgSSOConnectionResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_relay_server_v1_server_proto_msgTypes[524]
+	mi := &file_relay_server_v1_server_proto_msgTypes[530]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -31672,7 +32000,7 @@ func (x *UpsertOrgSSOConnectionResponse) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use UpsertOrgSSOConnectionResponse.ProtoReflect.Descriptor instead.
 func (*UpsertOrgSSOConnectionResponse) Descriptor() ([]byte, []int) {
-	return file_relay_server_v1_server_proto_rawDescGZIP(), []int{524}
+	return file_relay_server_v1_server_proto_rawDescGZIP(), []int{530}
 }
 
 func (x *UpsertOrgSSOConnectionResponse) GetConnection() *OrgSSOConnection {
@@ -31697,7 +32025,7 @@ type DeleteOrgSSOConnectionRequest struct {
 
 func (x *DeleteOrgSSOConnectionRequest) Reset() {
 	*x = DeleteOrgSSOConnectionRequest{}
-	mi := &file_relay_server_v1_server_proto_msgTypes[525]
+	mi := &file_relay_server_v1_server_proto_msgTypes[531]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -31709,7 +32037,7 @@ func (x *DeleteOrgSSOConnectionRequest) String() string {
 func (*DeleteOrgSSOConnectionRequest) ProtoMessage() {}
 
 func (x *DeleteOrgSSOConnectionRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_relay_server_v1_server_proto_msgTypes[525]
+	mi := &file_relay_server_v1_server_proto_msgTypes[531]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -31722,7 +32050,7 @@ func (x *DeleteOrgSSOConnectionRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use DeleteOrgSSOConnectionRequest.ProtoReflect.Descriptor instead.
 func (*DeleteOrgSSOConnectionRequest) Descriptor() ([]byte, []int) {
-	return file_relay_server_v1_server_proto_rawDescGZIP(), []int{525}
+	return file_relay_server_v1_server_proto_rawDescGZIP(), []int{531}
 }
 
 type DeleteOrgSSOConnectionResponse struct {
@@ -31733,7 +32061,7 @@ type DeleteOrgSSOConnectionResponse struct {
 
 func (x *DeleteOrgSSOConnectionResponse) Reset() {
 	*x = DeleteOrgSSOConnectionResponse{}
-	mi := &file_relay_server_v1_server_proto_msgTypes[526]
+	mi := &file_relay_server_v1_server_proto_msgTypes[532]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -31745,7 +32073,7 @@ func (x *DeleteOrgSSOConnectionResponse) String() string {
 func (*DeleteOrgSSOConnectionResponse) ProtoMessage() {}
 
 func (x *DeleteOrgSSOConnectionResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_relay_server_v1_server_proto_msgTypes[526]
+	mi := &file_relay_server_v1_server_proto_msgTypes[532]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -31758,7 +32086,7 @@ func (x *DeleteOrgSSOConnectionResponse) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use DeleteOrgSSOConnectionResponse.ProtoReflect.Descriptor instead.
 func (*DeleteOrgSSOConnectionResponse) Descriptor() ([]byte, []int) {
-	return file_relay_server_v1_server_proto_rawDescGZIP(), []int{526}
+	return file_relay_server_v1_server_proto_rawDescGZIP(), []int{532}
 }
 
 type TestOrgSSOConnectionRequest struct {
@@ -31770,7 +32098,7 @@ type TestOrgSSOConnectionRequest struct {
 
 func (x *TestOrgSSOConnectionRequest) Reset() {
 	*x = TestOrgSSOConnectionRequest{}
-	mi := &file_relay_server_v1_server_proto_msgTypes[527]
+	mi := &file_relay_server_v1_server_proto_msgTypes[533]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -31782,7 +32110,7 @@ func (x *TestOrgSSOConnectionRequest) String() string {
 func (*TestOrgSSOConnectionRequest) ProtoMessage() {}
 
 func (x *TestOrgSSOConnectionRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_relay_server_v1_server_proto_msgTypes[527]
+	mi := &file_relay_server_v1_server_proto_msgTypes[533]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -31795,7 +32123,7 @@ func (x *TestOrgSSOConnectionRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use TestOrgSSOConnectionRequest.ProtoReflect.Descriptor instead.
 func (*TestOrgSSOConnectionRequest) Descriptor() ([]byte, []int) {
-	return file_relay_server_v1_server_proto_rawDescGZIP(), []int{527}
+	return file_relay_server_v1_server_proto_rawDescGZIP(), []int{533}
 }
 
 func (x *TestOrgSSOConnectionRequest) GetIssuer() string {
@@ -31818,7 +32146,7 @@ type TestOrgSSOConnectionResponse struct {
 
 func (x *TestOrgSSOConnectionResponse) Reset() {
 	*x = TestOrgSSOConnectionResponse{}
-	mi := &file_relay_server_v1_server_proto_msgTypes[528]
+	mi := &file_relay_server_v1_server_proto_msgTypes[534]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -31830,7 +32158,7 @@ func (x *TestOrgSSOConnectionResponse) String() string {
 func (*TestOrgSSOConnectionResponse) ProtoMessage() {}
 
 func (x *TestOrgSSOConnectionResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_relay_server_v1_server_proto_msgTypes[528]
+	mi := &file_relay_server_v1_server_proto_msgTypes[534]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -31843,7 +32171,7 @@ func (x *TestOrgSSOConnectionResponse) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use TestOrgSSOConnectionResponse.ProtoReflect.Descriptor instead.
 func (*TestOrgSSOConnectionResponse) Descriptor() ([]byte, []int) {
-	return file_relay_server_v1_server_proto_rawDescGZIP(), []int{528}
+	return file_relay_server_v1_server_proto_rawDescGZIP(), []int{534}
 }
 
 func (x *TestOrgSSOConnectionResponse) GetIssuer() string {
@@ -31891,7 +32219,7 @@ type PostgreSQLExtensionInfo struct {
 
 func (x *PostgreSQLExtensionInfo) Reset() {
 	*x = PostgreSQLExtensionInfo{}
-	mi := &file_relay_server_v1_server_proto_msgTypes[529]
+	mi := &file_relay_server_v1_server_proto_msgTypes[535]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -31903,7 +32231,7 @@ func (x *PostgreSQLExtensionInfo) String() string {
 func (*PostgreSQLExtensionInfo) ProtoMessage() {}
 
 func (x *PostgreSQLExtensionInfo) ProtoReflect() protoreflect.Message {
-	mi := &file_relay_server_v1_server_proto_msgTypes[529]
+	mi := &file_relay_server_v1_server_proto_msgTypes[535]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -31916,7 +32244,7 @@ func (x *PostgreSQLExtensionInfo) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use PostgreSQLExtensionInfo.ProtoReflect.Descriptor instead.
 func (*PostgreSQLExtensionInfo) Descriptor() ([]byte, []int) {
-	return file_relay_server_v1_server_proto_rawDescGZIP(), []int{529}
+	return file_relay_server_v1_server_proto_rawDescGZIP(), []int{535}
 }
 
 func (x *PostgreSQLExtensionInfo) GetName() string {
@@ -31942,7 +32270,7 @@ type ListPostgreSQLExtensionsRequest struct {
 
 func (x *ListPostgreSQLExtensionsRequest) Reset() {
 	*x = ListPostgreSQLExtensionsRequest{}
-	mi := &file_relay_server_v1_server_proto_msgTypes[530]
+	mi := &file_relay_server_v1_server_proto_msgTypes[536]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -31954,7 +32282,7 @@ func (x *ListPostgreSQLExtensionsRequest) String() string {
 func (*ListPostgreSQLExtensionsRequest) ProtoMessage() {}
 
 func (x *ListPostgreSQLExtensionsRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_relay_server_v1_server_proto_msgTypes[530]
+	mi := &file_relay_server_v1_server_proto_msgTypes[536]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -31967,7 +32295,7 @@ func (x *ListPostgreSQLExtensionsRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use ListPostgreSQLExtensionsRequest.ProtoReflect.Descriptor instead.
 func (*ListPostgreSQLExtensionsRequest) Descriptor() ([]byte, []int) {
-	return file_relay_server_v1_server_proto_rawDescGZIP(), []int{530}
+	return file_relay_server_v1_server_proto_rawDescGZIP(), []int{536}
 }
 
 func (x *ListPostgreSQLExtensionsRequest) GetVersion() string {
@@ -31986,7 +32314,7 @@ type ListPostgreSQLExtensionsResponse struct {
 
 func (x *ListPostgreSQLExtensionsResponse) Reset() {
 	*x = ListPostgreSQLExtensionsResponse{}
-	mi := &file_relay_server_v1_server_proto_msgTypes[531]
+	mi := &file_relay_server_v1_server_proto_msgTypes[537]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -31998,7 +32326,7 @@ func (x *ListPostgreSQLExtensionsResponse) String() string {
 func (*ListPostgreSQLExtensionsResponse) ProtoMessage() {}
 
 func (x *ListPostgreSQLExtensionsResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_relay_server_v1_server_proto_msgTypes[531]
+	mi := &file_relay_server_v1_server_proto_msgTypes[537]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -32011,7 +32339,7 @@ func (x *ListPostgreSQLExtensionsResponse) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use ListPostgreSQLExtensionsResponse.ProtoReflect.Descriptor instead.
 func (*ListPostgreSQLExtensionsResponse) Descriptor() ([]byte, []int) {
-	return file_relay_server_v1_server_proto_rawDescGZIP(), []int{531}
+	return file_relay_server_v1_server_proto_rawDescGZIP(), []int{537}
 }
 
 func (x *ListPostgreSQLExtensionsResponse) GetExtensions() []*PostgreSQLExtensionInfo {
@@ -32037,8 +32365,9 @@ const file_relay_server_v1_server_proto_rawDesc = "" +
 	"throughput\x88\x01\x01\x12\x1b\n" +
 	"\tdisk_type\x18\a \x01(\tR\bdiskTypeB\a\n" +
 	"\x05_iopsB\r\n" +
-	"\v_throughput\"\xe3\x01\n" +
+	"\v_throughput\"\xf7\x01\n" +
 	"\bNodeSpec\x12\x12\n" +
+	"\x04name\x18\t \x01(\tR\x04name\x12\x12\n" +
 	"\x04role\x18\x01 \x01(\tR\x04role\x12\x14\n" +
 	"\x05count\x18\x02 \x01(\x05R\x05count\x12\x1a\n" +
 	"\bprovider\x18\x03 \x01(\tR\bprovider\x12\x16\n" +
@@ -32049,7 +32378,7 @@ const file_relay_server_v1_server_proto_rawDesc = "" +
 	"\bEndpoint\x12\x12\n" +
 	"\x04host\x18\x01 \x01(\tR\x04host\x12\x12\n" +
 	"\x04port\x18\x02 \x01(\x05R\x04port\x12'\n" +
-	"\x0fcredentials_ref\x18\x03 \x01(\tR\x0ecredentialsRef\"\x96\x04\n" +
+	"\x0fcredentials_ref\x18\x03 \x01(\tR\x0ecredentialsRef\"\xc4\x04\n" +
 	"\fDatabaseSpec\x12\x16\n" +
 	"\x06engine\x18\x01 \x01(\tR\x06engine\x12\x18\n" +
 	"\aversion\x18\x02 \x01(\tR\aversion\x12/\n" +
@@ -32062,7 +32391,8 @@ const file_relay_server_v1_server_proto_rawDesc = "" +
 	"\n" +
 	"postgresql\x18\n" +
 	" \x01(\v2!.relay.server.v1.PostgreSQLConfigR\n" +
-	"postgresql\x1a9\n" +
+	"postgresql\x12,\n" +
+	"\x12primary_node_group\x18\v \x01(\tR\x10primaryNodeGroup\x1a9\n" +
 	"\vParamsEntry\x12\x10\n" +
 	"\x03key\x18\x01 \x01(\tR\x03key\x12\x14\n" +
 	"\x05value\x18\x02 \x01(\tR\x05value:\x028\x01J\x04\b\x03\x10\x04R\btopology\"\xc4\x01\n" +
@@ -33023,15 +33353,14 @@ const file_relay_server_v1_server_proto_rawDesc = "" +
 	"\x17AdminListAgentsResponse\x123\n" +
 	"\x06agents\x18\x01 \x03(\v2\x1b.relay.server.v1.AdminAgentR\x06agents\x12!\n" +
 	"\fonline_count\x18\x02 \x01(\x05R\vonlineCount\x12#\n" +
-	"\roffline_count\x18\x03 \x01(\x05R\fofflineCount\"\xec\x04\n" +
+	"\roffline_count\x18\x03 \x01(\x05R\fofflineCount\"\xde\x04\n" +
 	"\x12AdminTunnelSession\x12\x0e\n" +
 	"\x02id\x18\x01 \x01(\tR\x02id\x12\x15\n" +
 	"\x06org_id\x18\x02 \x01(\tR\x05orgId\x12\x19\n" +
 	"\borg_name\x18\x03 \x01(\tR\aorgName\x12!\n" +
 	"\fworkspace_id\x18\x04 \x01(\tR\vworkspaceId\x12%\n" +
 	"\x0eworkspace_name\x18\x05 \x01(\tR\rworkspaceName\x12'\n" +
-	"\x0fconnection_name\x18\x06 \x01(\tR\x0econnectionName\x12\x12\n" +
-	"\x04kind\x18\a \x01(\tR\x04kind\x12\x1a\n" +
+	"\x0fconnection_name\x18\x06 \x01(\tR\x0econnectionName\x12\x1a\n" +
 	"\bidentity\x18\b \x01(\tR\bidentity\x12\x1d\n" +
 	"\n" +
 	"user_email\x18\t \x01(\tR\tuserEmail\x12\x19\n" +
@@ -33045,7 +33374,7 @@ const file_relay_server_v1_server_proto_rawDesc = "" +
 	"lastSeenAt\x125\n" +
 	"\bended_at\x18\x0e \x01(\v2\x1a.google.protobuf.TimestampR\aendedAt\x123\n" +
 	"\x16bytes_client_to_server\x18\x0f \x01(\x03R\x13bytesClientToServer\x123\n" +
-	"\x16bytes_server_to_client\x18\x10 \x01(\x03R\x13bytesServerToClient\"t\n" +
+	"\x16bytes_server_to_client\x18\x10 \x01(\x03R\x13bytesServerToClientJ\x04\b\a\x10\b\"t\n" +
 	"\x1eAdminListTunnelSessionsRequest\x12\x15\n" +
 	"\x06org_id\x18\x01 \x01(\tR\x05orgId\x12%\n" +
 	"\x0einclude_closed\x18\x02 \x01(\bR\rincludeClosed\x12\x14\n" +
@@ -33435,43 +33764,38 @@ const file_relay_server_v1_server_proto_rawDesc = "" +
 	"\x18UpdateConnectionResponse\x12;\n" +
 	"\n" +
 	"connection\x18\x01 \x01(\v2\x1b.relay.server.v1.ConnectionR\n" +
-	"connection\"V\n" +
+	"connection\"H\n" +
 	"\x17IssueTunnelTokenRequest\x12'\n" +
-	"\x0fconnection_name\x18\x01 \x01(\tR\x0econnectionName\x12\x12\n" +
-	"\x04kind\x18\x02 \x01(\tR\x04kind\"\x7f\n" +
+	"\x0fconnection_name\x18\x01 \x01(\tR\x0econnectionNameJ\x04\b\x02\x10\x03\"q\n" +
 	"\x18IssueTunnelTokenResponse\x12\x14\n" +
 	"\x05token\x18\x01 \x01(\tR\x05token\x129\n" +
 	"\n" +
-	"expires_at\x18\x02 \x01(\v2\x1a.google.protobuf.TimestampR\texpiresAt\x12\x12\n" +
-	"\x04kind\x18\x03 \x01(\tR\x04kind\"y\n" +
+	"expires_at\x18\x02 \x01(\v2\x1a.google.protobuf.TimestampR\texpiresAtJ\x04\b\x03\x10\x04\"y\n" +
 	"\x19ResolveTunnelTokenRequest\x12\x14\n" +
 	"\x05token\x18\x01 \x01(\tR\x05token\x12'\n" +
 	"\x0fconnection_name\x18\x02 \x01(\tR\x0econnectionName\x12\x1d\n" +
 	"\n" +
-	"session_id\x18\x03 \x01(\tR\tsessionId\"R\n" +
+	"session_id\x18\x03 \x01(\tR\tsessionId\"D\n" +
 	"\x1aResolveTunnelTokenResponse\x12\x1a\n" +
-	"\bidentity\x18\x01 \x01(\tR\bidentity\x12\x12\n" +
-	"\x04kind\x18\x03 \x01(\tR\x04kindJ\x04\b\x02\x10\x03\"\xe9\x02\n" +
+	"\bidentity\x18\x01 \x01(\tR\bidentityJ\x04\b\x02\x10\x03J\x04\b\x03\x10\x04\"\xdb\x02\n" +
 	"\x13TunnelSessionReport\x12\x1d\n" +
 	"\n" +
 	"session_id\x18\x01 \x01(\tR\tsessionId\x12'\n" +
-	"\x0fconnection_name\x18\x02 \x01(\tR\x0econnectionName\x12\x12\n" +
-	"\x04kind\x18\x03 \x01(\tR\x04kind\x12\x1a\n" +
+	"\x0fconnection_name\x18\x02 \x01(\tR\x0econnectionName\x12\x1a\n" +
 	"\bidentity\x18\x04 \x01(\tR\bidentity\x129\n" +
 	"\n" +
 	"started_at\x18\x05 \x01(\v2\x1a.google.protobuf.TimestampR\tstartedAt\x125\n" +
 	"\bended_at\x18\x06 \x01(\v2\x1a.google.protobuf.TimestampR\aendedAt\x123\n" +
 	"\x16bytes_client_to_server\x18\a \x01(\x03R\x13bytesClientToServer\x123\n" +
-	"\x16bytes_server_to_client\x18\b \x01(\x03R\x13bytesServerToClient\"_\n" +
+	"\x16bytes_server_to_client\x18\b \x01(\x03R\x13bytesServerToClientJ\x04\b\x03\x10\x04\"_\n" +
 	"\x1bReportTunnelSessionsRequest\x12@\n" +
 	"\bsessions\x18\x01 \x03(\v2$.relay.server.v1.TunnelSessionReportR\bsessions\":\n" +
 	"\x1cReportTunnelSessionsResponse\x12\x1a\n" +
-	"\baccepted\x18\x01 \x01(\x05R\baccepted\"\xd2\x03\n" +
+	"\baccepted\x18\x01 \x01(\x05R\baccepted\"\xc4\x03\n" +
 	"\rTunnelSession\x12\x0e\n" +
 	"\x02id\x18\x01 \x01(\tR\x02id\x12'\n" +
 	"\x0fconnection_name\x18\x02 \x01(\tR\x0econnectionName\x12#\n" +
-	"\rconnection_id\x18\x03 \x01(\tR\fconnectionId\x12\x12\n" +
-	"\x04kind\x18\x04 \x01(\tR\x04kind\x12\x1a\n" +
+	"\rconnection_id\x18\x03 \x01(\tR\fconnectionId\x12\x1a\n" +
 	"\bidentity\x18\x05 \x01(\tR\bidentity\x12\x19\n" +
 	"\bagent_id\x18\x06 \x01(\tR\aagentId\x129\n" +
 	"\n" +
@@ -33481,7 +33805,7 @@ const file_relay_server_v1_server_proto_rawDesc = "" +
 	"\bended_at\x18\t \x01(\v2\x1a.google.protobuf.TimestampR\aendedAt\x123\n" +
 	"\x16bytes_client_to_server\x18\n" +
 	" \x01(\x03R\x13bytesClientToServer\x123\n" +
-	"\x16bytes_server_to_client\x18\v \x01(\x03R\x13bytesServerToClient\"\x81\x01\n" +
+	"\x16bytes_server_to_client\x18\v \x01(\x03R\x13bytesServerToClientJ\x04\b\x04\x10\x05\"\x81\x01\n" +
 	"\x19ListTunnelSessionsRequest\x12'\n" +
 	"\x0fconnection_name\x18\x01 \x01(\tR\x0econnectionName\x12%\n" +
 	"\x0einclude_closed\x18\x02 \x01(\bR\rincludeClosed\x12\x14\n" +
@@ -34169,7 +34493,7 @@ const file_relay_server_v1_server_proto_rawDesc = "" +
 	"\n" +
 	"node_hours\x18\x02 \x01(\x03R\tnodeHours\x12%\n" +
 	"\x0esubtotal_cents\x18\x03 \x01(\x03R\rsubtotalCents\"\x18\n" +
-	"\x16GetBillingStateRequest\"\x83\r\n" +
+	"\x16GetBillingStateRequest\"\x9f\f\n" +
 	"\x17GetBillingStateResponse\x12\x12\n" +
 	"\x04plan\x18\x01 \x01(\tR\x04plan\x12\x16\n" +
 	"\x06status\x18\x02 \x01(\tR\x06status\x12H\n" +
@@ -34189,10 +34513,7 @@ const file_relay_server_v1_server_proto_rawDesc = "" +
 	"\x18current_cycle_peak_seats\x18\r \x01(\x05R\x15currentCyclePeakSeats\x12%\n" +
 	"\x0eincluded_seats\x18\x0e \x01(\x05R\rincludedSeats\x12,\n" +
 	"\x12seat_monthly_cents\x18\x0f \x01(\x03R\x10seatMonthlyCents\x127\n" +
-	"\x18current_cycle_seat_cents\x18\x10 \x01(\x03R\x15currentCycleSeatCents\x12G\n" +
-	" current_cycle_connection_seconds\x18\x11 \x01(\x03R\x1dcurrentCycleConnectionSeconds\x12C\n" +
-	"\x1ecurrent_cycle_connection_cents\x18\x12 \x01(\x03R\x1bcurrentCycleConnectionCents\x122\n" +
-	"\x15connection_hour_cents\x18\x13 \x01(\x03R\x13connectionHourCents\x12.\n" +
+	"\x18current_cycle_seat_cents\x18\x10 \x01(\x03R\x15currentCycleSeatCents\x12.\n" +
 	"\x13rolling_usage_cents\x18\x14 \x01(\x03R\x11rollingUsageCents\x12\x1d\n" +
 	"\n" +
 	"usage_band\x18\x15 \x01(\tR\tusageBand\x12%\n" +
@@ -34204,7 +34525,10 @@ const file_relay_server_v1_server_proto_rawDesc = "" +
 	"\x17current_cycle_due_cents\x18\x1b \x01(\x03R\x14currentCycleDueCents\x12D\n" +
 	"\x1fcurrent_cycle_storage_gb_months\x18\x1c \x01(\x03R\x1bcurrentCycleStorageGbMonths\x12=\n" +
 	"\x1bcurrent_cycle_storage_cents\x18\x1d \x01(\x03R\x18currentCycleStorageCents\x123\n" +
-	"\x16storage_gb_month_cents\x18\x1e \x01(\x03R\x13storageGbMonthCents\"2\n" +
+	"\x16storage_gb_month_cents\x18\x1e \x01(\x03R\x13storageGbMonthCents\x12\x1f\n" +
+	"\vplan_source\x18\x1f \x01(\tR\n" +
+	"planSource\x12)\n" +
+	"\x10has_subscription\x18  \x01(\bR\x0fhasSubscriptionJ\x04\b\x11\x10\x12J\x04\b\x12\x10\x13J\x04\b\x13\x10\x14\"2\n" +
 	"\x1cCreateCheckoutSessionRequest\x12\x12\n" +
 	"\x04plan\x18\x01 \x01(\tR\x04plan\"1\n" +
 	"\x1dCreateCheckoutSessionResponse\x12\x10\n" +
@@ -34386,14 +34710,27 @@ const file_relay_server_v1_server_proto_rawDesc = "" +
 	"created_at\x18\v \x01(\v2\x1a.google.protobuf.TimestampR\tcreatedAt\x129\n" +
 	"\n" +
 	"updated_at\x18\f \x01(\v2\x1a.google.protobuf.TimestampR\tupdatedAt\x12\x15\n" +
-	"\x06org_id\x18\r \x01(\tR\x05orgId\"\xae\x01\n" +
+	"\x06org_id\x18\r \x01(\tR\x05orgId\"\xf4\x01\n" +
 	"\x14SupportReportComment\x12\x0e\n" +
 	"\x02id\x18\x01 \x01(\tR\x02id\x12\x12\n" +
 	"\x04body\x18\x02 \x01(\tR\x04body\x12!\n" +
 	"\fauthor_email\x18\x03 \x01(\tR\vauthorEmail\x12\x14\n" +
 	"\x05staff\x18\x04 \x01(\bR\x05staff\x129\n" +
 	"\n" +
-	"created_at\x18\x05 \x01(\v2\x1a.google.protobuf.TimestampR\tcreatedAt\"\xcc\x01\n" +
+	"created_at\x18\x05 \x01(\v2\x1a.google.protobuf.TimestampR\tcreatedAt\x12D\n" +
+	"\vattachments\x18\x06 \x03(\v2\".relay.server.v1.SupportAttachmentR\vattachments\"\xb4\x01\n" +
+	"\x11SupportAttachment\x12\x0e\n" +
+	"\x02id\x18\x01 \x01(\tR\x02id\x12\x12\n" +
+	"\x04name\x18\x02 \x01(\tR\x04name\x12!\n" +
+	"\fcontent_type\x18\x03 \x01(\tR\vcontentType\x12\x1d\n" +
+	"\n" +
+	"size_bytes\x18\x04 \x01(\x03R\tsizeBytes\x129\n" +
+	"\n" +
+	"created_at\x18\x05 \x01(\v2\x1a.google.protobuf.TimestampR\tcreatedAt\"d\n" +
+	"\x17SupportAttachmentUpload\x12\x12\n" +
+	"\x04name\x18\x01 \x01(\tR\x04name\x12!\n" +
+	"\fcontent_type\x18\x02 \x01(\tR\vcontentType\x12\x12\n" +
+	"\x04data\x18\x03 \x01(\fR\x04data\"\xcc\x01\n" +
 	"\x1aCreateSupportReportRequest\x12\x1a\n" +
 	"\bcategory\x18\x01 \x01(\tR\bcategory\x12\x14\n" +
 	"\x05title\x18\x02 \x01(\tR\x05title\x12 \n" +
@@ -34418,7 +34755,15 @@ const file_relay_server_v1_server_proto_rawDesc = "" +
 	"\x02id\x18\x01 \x01(\tR\x02id\x12\x12\n" +
 	"\x04body\x18\x02 \x01(\tR\x04body\"b\n" +
 	"\x1fAddSupportReportCommentResponse\x12?\n" +
-	"\acomment\x18\x01 \x01(\v2%.relay.server.v1.SupportReportCommentR\acomment\"J\n" +
+	"\acomment\x18\x01 \x01(\v2%.relay.server.v1.SupportReportCommentR\acomment\"_\n" +
+	"\x1bGetSupportAttachmentRequest\x12\x1b\n" +
+	"\treport_id\x18\x01 \x01(\tR\breportId\x12#\n" +
+	"\rattachment_id\x18\x02 \x01(\tR\fattachmentId\"v\n" +
+	"\x1cGetSupportAttachmentResponse\x12B\n" +
+	"\n" +
+	"attachment\x18\x01 \x01(\v2\".relay.server.v1.SupportAttachmentR\n" +
+	"attachment\x12\x12\n" +
+	"\x04data\x18\x02 \x01(\fR\x04data\"J\n" +
 	" UpdateSupportReportStatusRequest\x12\x0e\n" +
 	"\x02id\x18\x01 \x01(\tR\x02id\x12\x16\n" +
 	"\x06status\x18\x02 \x01(\tR\x06status\"[\n" +
@@ -34435,12 +34780,21 @@ const file_relay_server_v1_server_proto_rawDesc = "" +
 	"\x02id\x18\x01 \x01(\tR\x02id\"\x9a\x01\n" +
 	"\x1dAdminGetSupportReportResponse\x126\n" +
 	"\x06report\x18\x01 \x01(\v2\x1e.relay.server.v1.SupportReportR\x06report\x12A\n" +
-	"\bcomments\x18\x02 \x03(\v2%.relay.server.v1.SupportReportCommentR\bcomments\"I\n" +
+	"\bcomments\x18\x02 \x03(\v2%.relay.server.v1.SupportReportCommentR\bcomments\"\x95\x01\n" +
 	"#AdminAddSupportReportCommentRequest\x12\x0e\n" +
 	"\x02id\x18\x01 \x01(\tR\x02id\x12\x12\n" +
-	"\x04body\x18\x02 \x01(\tR\x04body\"g\n" +
+	"\x04body\x18\x02 \x01(\tR\x04body\x12J\n" +
+	"\vattachments\x18\x03 \x03(\v2(.relay.server.v1.SupportAttachmentUploadR\vattachments\"g\n" +
 	"$AdminAddSupportReportCommentResponse\x12?\n" +
-	"\acomment\x18\x01 \x01(\v2%.relay.server.v1.SupportReportCommentR\acomment\"O\n" +
+	"\acomment\x18\x01 \x01(\v2%.relay.server.v1.SupportReportCommentR\acomment\"d\n" +
+	" AdminGetSupportAttachmentRequest\x12\x1b\n" +
+	"\treport_id\x18\x01 \x01(\tR\breportId\x12#\n" +
+	"\rattachment_id\x18\x02 \x01(\tR\fattachmentId\"{\n" +
+	"!AdminGetSupportAttachmentResponse\x12B\n" +
+	"\n" +
+	"attachment\x18\x01 \x01(\v2\".relay.server.v1.SupportAttachmentR\n" +
+	"attachment\x12\x12\n" +
+	"\x04data\x18\x02 \x01(\fR\x04data\"O\n" +
 	"%AdminUpdateSupportReportStatusRequest\x12\x0e\n" +
 	"\x02id\x18\x01 \x01(\tR\x02id\x12\x16\n" +
 	"\x06status\x18\x02 \x01(\tR\x06status\"`\n" +
@@ -34498,7 +34852,7 @@ const file_relay_server_v1_server_proto_rawDesc = "" +
 	" ListPostgreSQLExtensionsResponse\x12H\n" +
 	"\n" +
 	"extensions\x18\x01 \x03(\v2(.relay.server.v1.PostgreSQLExtensionInfoR\n" +
-	"extensions2\x82\x91\x01\n" +
+	"extensions2\xf7\x91\x01\n" +
 	"\rServerService\x12I\n" +
 	"\x06WhoAmI\x12\x1e.relay.server.v1.WhoAmIRequest\x1a\x1f.relay.server.v1.WhoAmIResponse\x12I\n" +
 	"\x06Logout\x12\x1e.relay.server.v1.LogoutRequest\x1a\x1f.relay.server.v1.LogoutResponse\x12[\n" +
@@ -34672,13 +35026,14 @@ const file_relay_server_v1_server_proto_rawDesc = "" +
 	"\x13CreateSupportReport\x12+.relay.server.v1.CreateSupportReportRequest\x1a,.relay.server.v1.CreateSupportReportResponse\x12m\n" +
 	"\x12ListSupportReports\x12*.relay.server.v1.ListSupportReportsRequest\x1a+.relay.server.v1.ListSupportReportsResponse\x12g\n" +
 	"\x10GetSupportReport\x12(.relay.server.v1.GetSupportReportRequest\x1a).relay.server.v1.GetSupportReportResponse\x12|\n" +
-	"\x17AddSupportReportComment\x12/.relay.server.v1.AddSupportReportCommentRequest\x1a0.relay.server.v1.AddSupportReportCommentResponse\x12\x82\x01\n" +
+	"\x17AddSupportReportComment\x12/.relay.server.v1.AddSupportReportCommentRequest\x1a0.relay.server.v1.AddSupportReportCommentResponse\x12s\n" +
+	"\x14GetSupportAttachment\x12,.relay.server.v1.GetSupportAttachmentRequest\x1a-.relay.server.v1.GetSupportAttachmentResponse\x12\x82\x01\n" +
 	"\x19UpdateSupportReportStatus\x121.relay.server.v1.UpdateSupportReportStatusRequest\x1a2.relay.server.v1.UpdateSupportReportStatusResponse\x12p\n" +
 	"\x13GetOrgSSOConnection\x12+.relay.server.v1.GetOrgSSOConnectionRequest\x1a,.relay.server.v1.GetOrgSSOConnectionResponse\x12y\n" +
 	"\x16UpsertOrgSSOConnection\x12..relay.server.v1.UpsertOrgSSOConnectionRequest\x1a/.relay.server.v1.UpsertOrgSSOConnectionResponse\x12y\n" +
 	"\x16DeleteOrgSSOConnection\x12..relay.server.v1.DeleteOrgSSOConnectionRequest\x1a/.relay.server.v1.DeleteOrgSSOConnectionResponse\x12s\n" +
 	"\x14TestOrgSSOConnection\x12,.relay.server.v1.TestOrgSSOConnectionRequest\x1a-.relay.server.v1.TestOrgSSOConnectionResponse\x12\x7f\n" +
-	"\x18ListPostgreSQLExtensions\x120.relay.server.v1.ListPostgreSQLExtensionsRequest\x1a1.relay.server.v1.ListPostgreSQLExtensionsResponse2\xfb'\n" +
+	"\x18ListPostgreSQLExtensions\x120.relay.server.v1.ListPostgreSQLExtensionsRequest\x1a1.relay.server.v1.ListPostgreSQLExtensionsResponse2\x80)\n" +
 	"\fAdminService\x12y\n" +
 	"\x16AdminListOrganizations\x12..relay.server.v1.AdminListOrganizationsRequest\x1a/.relay.server.v1.AdminListOrganizationsResponse\x12s\n" +
 	"\x14AdminGetOrganization\x12,.relay.server.v1.AdminGetOrganizationRequest\x1a-.relay.server.v1.AdminGetOrganizationResponse\x12\x8e\x01\n" +
@@ -34696,7 +35051,8 @@ const file_relay_server_v1_server_proto_rawDesc = "" +
 	"\x17AdminGetRevenueOverview\x12/.relay.server.v1.AdminGetRevenueOverviewRequest\x1a0.relay.server.v1.AdminGetRevenueOverviewResponse\x12|\n" +
 	"\x17AdminListSupportReports\x12/.relay.server.v1.AdminListSupportReportsRequest\x1a0.relay.server.v1.AdminListSupportReportsResponse\x12v\n" +
 	"\x15AdminGetSupportReport\x12-.relay.server.v1.AdminGetSupportReportRequest\x1a..relay.server.v1.AdminGetSupportReportResponse\x12\x8b\x01\n" +
-	"\x1cAdminAddSupportReportComment\x124.relay.server.v1.AdminAddSupportReportCommentRequest\x1a5.relay.server.v1.AdminAddSupportReportCommentResponse\x12\x91\x01\n" +
+	"\x1cAdminAddSupportReportComment\x124.relay.server.v1.AdminAddSupportReportCommentRequest\x1a5.relay.server.v1.AdminAddSupportReportCommentResponse\x12\x82\x01\n" +
+	"\x19AdminGetSupportAttachment\x121.relay.server.v1.AdminGetSupportAttachmentRequest\x1a2.relay.server.v1.AdminGetSupportAttachmentResponse\x12\x91\x01\n" +
 	"\x1eAdminUpdateSupportReportStatus\x126.relay.server.v1.AdminUpdateSupportReportStatusRequest\x1a7.relay.server.v1.AdminUpdateSupportReportStatusResponse\x12b\n" +
 	"\x10AdminListMembers\x12(.relay.server.v1.AdminListMembersRequest\x1a$.relay.server.v1.ListMembersResponse\x12h\n" +
 	"\x12AdminSetMemberRole\x12*.relay.server.v1.AdminSetMemberRoleRequest\x1a&.relay.server.v1.SetMemberRoleResponse\x12e\n" +
@@ -34735,7 +35091,7 @@ func file_relay_server_v1_server_proto_rawDescGZIP() []byte {
 	return file_relay_server_v1_server_proto_rawDescData
 }
 
-var file_relay_server_v1_server_proto_msgTypes = make([]protoimpl.MessageInfo, 539)
+var file_relay_server_v1_server_proto_msgTypes = make([]protoimpl.MessageInfo, 545)
 var file_relay_server_v1_server_proto_goTypes = []any{
 	(*ResourceRequirements)(nil),                    // 0: relay.server.v1.ResourceRequirements
 	(*NodeSpec)(nil),                                // 1: relay.server.v1.NodeSpec
@@ -35239,78 +35595,84 @@ var file_relay_server_v1_server_proto_goTypes = []any{
 	(*ExportToCloudResponse)(nil),                   // 499: relay.server.v1.ExportToCloudResponse
 	(*SupportReport)(nil),                           // 500: relay.server.v1.SupportReport
 	(*SupportReportComment)(nil),                    // 501: relay.server.v1.SupportReportComment
-	(*CreateSupportReportRequest)(nil),              // 502: relay.server.v1.CreateSupportReportRequest
-	(*CreateSupportReportResponse)(nil),             // 503: relay.server.v1.CreateSupportReportResponse
-	(*ListSupportReportsRequest)(nil),               // 504: relay.server.v1.ListSupportReportsRequest
-	(*ListSupportReportsResponse)(nil),              // 505: relay.server.v1.ListSupportReportsResponse
-	(*GetSupportReportRequest)(nil),                 // 506: relay.server.v1.GetSupportReportRequest
-	(*GetSupportReportResponse)(nil),                // 507: relay.server.v1.GetSupportReportResponse
-	(*AddSupportReportCommentRequest)(nil),          // 508: relay.server.v1.AddSupportReportCommentRequest
-	(*AddSupportReportCommentResponse)(nil),         // 509: relay.server.v1.AddSupportReportCommentResponse
-	(*UpdateSupportReportStatusRequest)(nil),        // 510: relay.server.v1.UpdateSupportReportStatusRequest
-	(*UpdateSupportReportStatusResponse)(nil),       // 511: relay.server.v1.UpdateSupportReportStatusResponse
-	(*AdminListSupportReportsRequest)(nil),          // 512: relay.server.v1.AdminListSupportReportsRequest
-	(*AdminListSupportReportsResponse)(nil),         // 513: relay.server.v1.AdminListSupportReportsResponse
-	(*AdminGetSupportReportRequest)(nil),            // 514: relay.server.v1.AdminGetSupportReportRequest
-	(*AdminGetSupportReportResponse)(nil),           // 515: relay.server.v1.AdminGetSupportReportResponse
-	(*AdminAddSupportReportCommentRequest)(nil),     // 516: relay.server.v1.AdminAddSupportReportCommentRequest
-	(*AdminAddSupportReportCommentResponse)(nil),    // 517: relay.server.v1.AdminAddSupportReportCommentResponse
-	(*AdminUpdateSupportReportStatusRequest)(nil),   // 518: relay.server.v1.AdminUpdateSupportReportStatusRequest
-	(*AdminUpdateSupportReportStatusResponse)(nil),  // 519: relay.server.v1.AdminUpdateSupportReportStatusResponse
-	(*OrgSSOConnection)(nil),                        // 520: relay.server.v1.OrgSSOConnection
-	(*GetOrgSSOConnectionRequest)(nil),              // 521: relay.server.v1.GetOrgSSOConnectionRequest
-	(*GetOrgSSOConnectionResponse)(nil),             // 522: relay.server.v1.GetOrgSSOConnectionResponse
-	(*UpsertOrgSSOConnectionRequest)(nil),           // 523: relay.server.v1.UpsertOrgSSOConnectionRequest
-	(*UpsertOrgSSOConnectionResponse)(nil),          // 524: relay.server.v1.UpsertOrgSSOConnectionResponse
-	(*DeleteOrgSSOConnectionRequest)(nil),           // 525: relay.server.v1.DeleteOrgSSOConnectionRequest
-	(*DeleteOrgSSOConnectionResponse)(nil),          // 526: relay.server.v1.DeleteOrgSSOConnectionResponse
-	(*TestOrgSSOConnectionRequest)(nil),             // 527: relay.server.v1.TestOrgSSOConnectionRequest
-	(*TestOrgSSOConnectionResponse)(nil),            // 528: relay.server.v1.TestOrgSSOConnectionResponse
-	(*PostgreSQLExtensionInfo)(nil),                 // 529: relay.server.v1.PostgreSQLExtensionInfo
-	(*ListPostgreSQLExtensionsRequest)(nil),         // 530: relay.server.v1.ListPostgreSQLExtensionsRequest
-	(*ListPostgreSQLExtensionsResponse)(nil),        // 531: relay.server.v1.ListPostgreSQLExtensionsResponse
-	nil,                                             // 532: relay.server.v1.DatabaseSpec.ParamsEntry
-	nil,                                             // 533: relay.server.v1.PostgreSQLConfig.ParametersEntry
-	nil,                                             // 534: relay.server.v1.Distribution.CloudsEntry
-	nil,                                             // 535: relay.server.v1.CloudRegions.RegionsEntry
-	nil,                                             // 536: relay.server.v1.AdminGetPlatformOverviewResponse.ClustersByPhaseEntry
-	nil,                                             // 537: relay.server.v1.AdminListClustersResponse.ByPhaseEntry
-	nil,                                             // 538: relay.server.v1.EmitActivityRequest.MetadataEntry
-	(*timestamppb.Timestamp)(nil),                   // 539: google.protobuf.Timestamp
-	(*fieldmaskpb.FieldMask)(nil),                   // 540: google.protobuf.FieldMask
+	(*SupportAttachment)(nil),                       // 502: relay.server.v1.SupportAttachment
+	(*SupportAttachmentUpload)(nil),                 // 503: relay.server.v1.SupportAttachmentUpload
+	(*CreateSupportReportRequest)(nil),              // 504: relay.server.v1.CreateSupportReportRequest
+	(*CreateSupportReportResponse)(nil),             // 505: relay.server.v1.CreateSupportReportResponse
+	(*ListSupportReportsRequest)(nil),               // 506: relay.server.v1.ListSupportReportsRequest
+	(*ListSupportReportsResponse)(nil),              // 507: relay.server.v1.ListSupportReportsResponse
+	(*GetSupportReportRequest)(nil),                 // 508: relay.server.v1.GetSupportReportRequest
+	(*GetSupportReportResponse)(nil),                // 509: relay.server.v1.GetSupportReportResponse
+	(*AddSupportReportCommentRequest)(nil),          // 510: relay.server.v1.AddSupportReportCommentRequest
+	(*AddSupportReportCommentResponse)(nil),         // 511: relay.server.v1.AddSupportReportCommentResponse
+	(*GetSupportAttachmentRequest)(nil),             // 512: relay.server.v1.GetSupportAttachmentRequest
+	(*GetSupportAttachmentResponse)(nil),            // 513: relay.server.v1.GetSupportAttachmentResponse
+	(*UpdateSupportReportStatusRequest)(nil),        // 514: relay.server.v1.UpdateSupportReportStatusRequest
+	(*UpdateSupportReportStatusResponse)(nil),       // 515: relay.server.v1.UpdateSupportReportStatusResponse
+	(*AdminListSupportReportsRequest)(nil),          // 516: relay.server.v1.AdminListSupportReportsRequest
+	(*AdminListSupportReportsResponse)(nil),         // 517: relay.server.v1.AdminListSupportReportsResponse
+	(*AdminGetSupportReportRequest)(nil),            // 518: relay.server.v1.AdminGetSupportReportRequest
+	(*AdminGetSupportReportResponse)(nil),           // 519: relay.server.v1.AdminGetSupportReportResponse
+	(*AdminAddSupportReportCommentRequest)(nil),     // 520: relay.server.v1.AdminAddSupportReportCommentRequest
+	(*AdminAddSupportReportCommentResponse)(nil),    // 521: relay.server.v1.AdminAddSupportReportCommentResponse
+	(*AdminGetSupportAttachmentRequest)(nil),        // 522: relay.server.v1.AdminGetSupportAttachmentRequest
+	(*AdminGetSupportAttachmentResponse)(nil),       // 523: relay.server.v1.AdminGetSupportAttachmentResponse
+	(*AdminUpdateSupportReportStatusRequest)(nil),   // 524: relay.server.v1.AdminUpdateSupportReportStatusRequest
+	(*AdminUpdateSupportReportStatusResponse)(nil),  // 525: relay.server.v1.AdminUpdateSupportReportStatusResponse
+	(*OrgSSOConnection)(nil),                        // 526: relay.server.v1.OrgSSOConnection
+	(*GetOrgSSOConnectionRequest)(nil),              // 527: relay.server.v1.GetOrgSSOConnectionRequest
+	(*GetOrgSSOConnectionResponse)(nil),             // 528: relay.server.v1.GetOrgSSOConnectionResponse
+	(*UpsertOrgSSOConnectionRequest)(nil),           // 529: relay.server.v1.UpsertOrgSSOConnectionRequest
+	(*UpsertOrgSSOConnectionResponse)(nil),          // 530: relay.server.v1.UpsertOrgSSOConnectionResponse
+	(*DeleteOrgSSOConnectionRequest)(nil),           // 531: relay.server.v1.DeleteOrgSSOConnectionRequest
+	(*DeleteOrgSSOConnectionResponse)(nil),          // 532: relay.server.v1.DeleteOrgSSOConnectionResponse
+	(*TestOrgSSOConnectionRequest)(nil),             // 533: relay.server.v1.TestOrgSSOConnectionRequest
+	(*TestOrgSSOConnectionResponse)(nil),            // 534: relay.server.v1.TestOrgSSOConnectionResponse
+	(*PostgreSQLExtensionInfo)(nil),                 // 535: relay.server.v1.PostgreSQLExtensionInfo
+	(*ListPostgreSQLExtensionsRequest)(nil),         // 536: relay.server.v1.ListPostgreSQLExtensionsRequest
+	(*ListPostgreSQLExtensionsResponse)(nil),        // 537: relay.server.v1.ListPostgreSQLExtensionsResponse
+	nil,                                             // 538: relay.server.v1.DatabaseSpec.ParamsEntry
+	nil,                                             // 539: relay.server.v1.PostgreSQLConfig.ParametersEntry
+	nil,                                             // 540: relay.server.v1.Distribution.CloudsEntry
+	nil,                                             // 541: relay.server.v1.CloudRegions.RegionsEntry
+	nil,                                             // 542: relay.server.v1.AdminGetPlatformOverviewResponse.ClustersByPhaseEntry
+	nil,                                             // 543: relay.server.v1.AdminListClustersResponse.ByPhaseEntry
+	nil,                                             // 544: relay.server.v1.EmitActivityRequest.MetadataEntry
+	(*timestamppb.Timestamp)(nil),                   // 545: google.protobuf.Timestamp
+	(*fieldmaskpb.FieldMask)(nil),                   // 546: google.protobuf.FieldMask
 }
 var file_relay_server_v1_server_proto_depIdxs = []int32{
 	0,   // 0: relay.server.v1.NodeSpec.resources:type_name -> relay.server.v1.ResourceRequirements
 	1,   // 1: relay.server.v1.DatabaseSpec.nodes:type_name -> relay.server.v1.NodeSpec
-	532, // 2: relay.server.v1.DatabaseSpec.params:type_name -> relay.server.v1.DatabaseSpec.ParamsEntry
+	538, // 2: relay.server.v1.DatabaseSpec.params:type_name -> relay.server.v1.DatabaseSpec.ParamsEntry
 	11,  // 3: relay.server.v1.DatabaseSpec.replication:type_name -> relay.server.v1.Replication
 	5,   // 4: relay.server.v1.DatabaseSpec.distribution:type_name -> relay.server.v1.Distribution
 	9,   // 5: relay.server.v1.DatabaseSpec.dcs:type_name -> relay.server.v1.DCS
 	4,   // 6: relay.server.v1.DatabaseSpec.postgresql:type_name -> relay.server.v1.PostgreSQLConfig
-	533, // 7: relay.server.v1.PostgreSQLConfig.parameters:type_name -> relay.server.v1.PostgreSQLConfig.ParametersEntry
-	534, // 8: relay.server.v1.Distribution.clouds:type_name -> relay.server.v1.Distribution.CloudsEntry
-	535, // 9: relay.server.v1.CloudRegions.regions:type_name -> relay.server.v1.CloudRegions.RegionsEntry
+	539, // 7: relay.server.v1.PostgreSQLConfig.parameters:type_name -> relay.server.v1.PostgreSQLConfig.ParametersEntry
+	540, // 8: relay.server.v1.Distribution.clouds:type_name -> relay.server.v1.Distribution.CloudsEntry
+	541, // 9: relay.server.v1.CloudRegions.regions:type_name -> relay.server.v1.CloudRegions.RegionsEntry
 	8,   // 10: relay.server.v1.RegionPlacement.clusters:type_name -> relay.server.v1.ClusterRef
 	10,  // 11: relay.server.v1.DCS.etcd:type_name -> relay.server.v1.EtcdDCS
 	2,   // 12: relay.server.v1.DatabaseStatus.endpoint:type_name -> relay.server.v1.Endpoint
-	539, // 13: relay.server.v1.DatabaseStatus.created_at:type_name -> google.protobuf.Timestamp
-	539, // 14: relay.server.v1.DatabaseStatus.updated_at:type_name -> google.protobuf.Timestamp
+	545, // 13: relay.server.v1.DatabaseStatus.created_at:type_name -> google.protobuf.Timestamp
+	545, // 14: relay.server.v1.DatabaseStatus.updated_at:type_name -> google.protobuf.Timestamp
 	46,  // 15: relay.server.v1.DatabaseStatus.active_ops:type_name -> relay.server.v1.ActiveOp
 	13,  // 16: relay.server.v1.DatabaseStatus.public_endpoints:type_name -> relay.server.v1.PublicEndpoint
 	13,  // 17: relay.server.v1.DatabaseStatus.private_endpoints:type_name -> relay.server.v1.PublicEndpoint
 	15,  // 18: relay.server.v1.GetDatabaseConnectionResponse.endpoints:type_name -> relay.server.v1.DatabaseConnectionEndpoint
 	15,  // 19: relay.server.v1.GetDatabaseConnectionResponse.private_endpoints:type_name -> relay.server.v1.DatabaseConnectionEndpoint
-	539, // 20: relay.server.v1.IPAllowlistEntry.expires_at:type_name -> google.protobuf.Timestamp
-	539, // 21: relay.server.v1.IPAllowlistEntry.created_at:type_name -> google.protobuf.Timestamp
+	545, // 20: relay.server.v1.IPAllowlistEntry.expires_at:type_name -> google.protobuf.Timestamp
+	545, // 21: relay.server.v1.IPAllowlistEntry.created_at:type_name -> google.protobuf.Timestamp
 	17,  // 22: relay.server.v1.ListIPAllowlistResponse.entries:type_name -> relay.server.v1.IPAllowlistEntry
 	17,  // 23: relay.server.v1.AddIPAllowlistEntryResponse.entry:type_name -> relay.server.v1.IPAllowlistEntry
 	17,  // 24: relay.server.v1.UpdateIPAllowlistEntryResponse.entry:type_name -> relay.server.v1.IPAllowlistEntry
 	26,  // 25: relay.server.v1.ListPrivateEndpointRegionsResponse.regions:type_name -> relay.server.v1.PrivateEndpointRegion
 	30,  // 26: relay.server.v1.PrivateEndpointService.endpoints:type_name -> relay.server.v1.PrivateEndpoint
-	539, // 27: relay.server.v1.PrivateEndpointService.created_at:type_name -> google.protobuf.Timestamp
-	539, // 28: relay.server.v1.PrivateEndpointService.updated_at:type_name -> google.protobuf.Timestamp
-	539, // 29: relay.server.v1.PrivateEndpoint.created_at:type_name -> google.protobuf.Timestamp
-	539, // 30: relay.server.v1.PrivateEndpoint.updated_at:type_name -> google.protobuf.Timestamp
+	545, // 27: relay.server.v1.PrivateEndpointService.created_at:type_name -> google.protobuf.Timestamp
+	545, // 28: relay.server.v1.PrivateEndpointService.updated_at:type_name -> google.protobuf.Timestamp
+	545, // 29: relay.server.v1.PrivateEndpoint.created_at:type_name -> google.protobuf.Timestamp
+	545, // 30: relay.server.v1.PrivateEndpoint.updated_at:type_name -> google.protobuf.Timestamp
 	31,  // 31: relay.server.v1.PrivateEndpoint.gcp_endpoints:type_name -> relay.server.v1.GCPPrivateEndpoint
 	29,  // 32: relay.server.v1.CreatePrivateEndpointServiceResponse.service:type_name -> relay.server.v1.PrivateEndpointService
 	29,  // 33: relay.server.v1.ListPrivateEndpointServicesResponse.services:type_name -> relay.server.v1.PrivateEndpointService
@@ -35318,22 +35680,22 @@ var file_relay_server_v1_server_proto_depIdxs = []int32{
 	31,  // 35: relay.server.v1.CreatePrivateEndpointRequest.gcp_endpoints:type_name -> relay.server.v1.GCPPrivateEndpoint
 	30,  // 36: relay.server.v1.CreatePrivateEndpointResponse.endpoint:type_name -> relay.server.v1.PrivateEndpoint
 	30,  // 37: relay.server.v1.GetPrivateEndpointResponse.endpoint:type_name -> relay.server.v1.PrivateEndpoint
-	539, // 38: relay.server.v1.ActiveOp.started_at:type_name -> google.protobuf.Timestamp
+	545, // 38: relay.server.v1.ActiveOp.started_at:type_name -> google.protobuf.Timestamp
 	3,   // 39: relay.server.v1.Database.spec:type_name -> relay.server.v1.DatabaseSpec
 	12,  // 40: relay.server.v1.Database.status:type_name -> relay.server.v1.DatabaseStatus
 	47,  // 41: relay.server.v1.ListDatabasesResponse.databases:type_name -> relay.server.v1.Database
 	3,   // 42: relay.server.v1.CreateDatabaseRequest.spec:type_name -> relay.server.v1.DatabaseSpec
 	48,  // 43: relay.server.v1.CreateDatabaseRequest.default_connections:type_name -> relay.server.v1.DefaultConnectionsIntent
 	47,  // 44: relay.server.v1.CreateDatabaseResponse.database:type_name -> relay.server.v1.Database
-	539, // 45: relay.server.v1.RestoreDatabaseRequest.target_time:type_name -> google.protobuf.Timestamp
+	545, // 45: relay.server.v1.RestoreDatabaseRequest.target_time:type_name -> google.protobuf.Timestamp
 	47,  // 46: relay.server.v1.RestoreDatabaseResponse.database:type_name -> relay.server.v1.Database
 	47,  // 47: relay.server.v1.GetDatabaseResponse.database:type_name -> relay.server.v1.Database
 	3,   // 48: relay.server.v1.UpdateDatabaseRequest.spec:type_name -> relay.server.v1.DatabaseSpec
-	540, // 49: relay.server.v1.UpdateDatabaseRequest.update_mask:type_name -> google.protobuf.FieldMask
+	546, // 49: relay.server.v1.UpdateDatabaseRequest.update_mask:type_name -> google.protobuf.FieldMask
 	47,  // 50: relay.server.v1.UpdateDatabaseResponse.database:type_name -> relay.server.v1.Database
 	60,  // 51: relay.server.v1.ListPostgreSQLParametersResponse.parameters:type_name -> relay.server.v1.PostgreSQLParameterInfo
-	539, // 52: relay.server.v1.PendingOperation.created_at:type_name -> google.protobuf.Timestamp
-	539, // 53: relay.server.v1.PendingOperation.updated_at:type_name -> google.protobuf.Timestamp
+	545, // 52: relay.server.v1.PendingOperation.created_at:type_name -> google.protobuf.Timestamp
+	545, // 53: relay.server.v1.PendingOperation.updated_at:type_name -> google.protobuf.Timestamp
 	65,  // 54: relay.server.v1.ListPendingOperationsResponse.operations:type_name -> relay.server.v1.PendingOperation
 	12,  // 55: relay.server.v1.GetDatabaseStatusResponse.status:type_name -> relay.server.v1.DatabaseStatus
 	49,  // 56: relay.server.v1.ListDatabaseNodesResponse.nodes:type_name -> relay.server.v1.DatabaseNode
@@ -35341,130 +35703,130 @@ var file_relay_server_v1_server_proto_depIdxs = []int32{
 	83,  // 58: relay.server.v1.BackupScheduleSpec.retention:type_name -> relay.server.v1.RetentionPolicy
 	84,  // 59: relay.server.v1.BackupScheduleSpec.snapshot_time:type_name -> relay.server.v1.SnapshotTime
 	85,  // 60: relay.server.v1.BackupScheduleSpec.policy_tiers:type_name -> relay.server.v1.PolicyTier
-	539, // 61: relay.server.v1.BackupScheduleStatus.last_backup_time:type_name -> google.protobuf.Timestamp
-	539, // 62: relay.server.v1.BackupScheduleStatus.next_backup_time:type_name -> google.protobuf.Timestamp
-	539, // 63: relay.server.v1.BackupScheduleStatus.created_at:type_name -> google.protobuf.Timestamp
-	539, // 64: relay.server.v1.BackupScheduleStatus.updated_at:type_name -> google.protobuf.Timestamp
+	545, // 61: relay.server.v1.BackupScheduleStatus.last_backup_time:type_name -> google.protobuf.Timestamp
+	545, // 62: relay.server.v1.BackupScheduleStatus.next_backup_time:type_name -> google.protobuf.Timestamp
+	545, // 63: relay.server.v1.BackupScheduleStatus.created_at:type_name -> google.protobuf.Timestamp
+	545, // 64: relay.server.v1.BackupScheduleStatus.updated_at:type_name -> google.protobuf.Timestamp
 	86,  // 65: relay.server.v1.BackupSchedule.spec:type_name -> relay.server.v1.BackupScheduleSpec
 	87,  // 66: relay.server.v1.BackupSchedule.status:type_name -> relay.server.v1.BackupScheduleStatus
-	539, // 67: relay.server.v1.BackupStatus.start_time:type_name -> google.protobuf.Timestamp
-	539, // 68: relay.server.v1.BackupStatus.completion_time:type_name -> google.protobuf.Timestamp
-	539, // 69: relay.server.v1.BackupStatus.created_at:type_name -> google.protobuf.Timestamp
-	539, // 70: relay.server.v1.BackupStatus.updated_at:type_name -> google.protobuf.Timestamp
+	545, // 67: relay.server.v1.BackupStatus.start_time:type_name -> google.protobuf.Timestamp
+	545, // 68: relay.server.v1.BackupStatus.completion_time:type_name -> google.protobuf.Timestamp
+	545, // 69: relay.server.v1.BackupStatus.created_at:type_name -> google.protobuf.Timestamp
+	545, // 70: relay.server.v1.BackupStatus.updated_at:type_name -> google.protobuf.Timestamp
 	89,  // 71: relay.server.v1.Backup.spec:type_name -> relay.server.v1.BackupSpec
 	90,  // 72: relay.server.v1.Backup.status:type_name -> relay.server.v1.BackupStatus
-	539, // 73: relay.server.v1.Backup.cluster_deleted_at:type_name -> google.protobuf.Timestamp
+	545, // 73: relay.server.v1.Backup.cluster_deleted_at:type_name -> google.protobuf.Timestamp
 	88,  // 74: relay.server.v1.ListBackupSchedulesResponse.backup_schedules:type_name -> relay.server.v1.BackupSchedule
 	91,  // 75: relay.server.v1.ListBackupsResponse.backups:type_name -> relay.server.v1.Backup
 	86,  // 76: relay.server.v1.UpdateBackupScheduleRequest.spec:type_name -> relay.server.v1.BackupScheduleSpec
 	88,  // 77: relay.server.v1.UpdateBackupScheduleResponse.backup_schedule:type_name -> relay.server.v1.BackupSchedule
 	91,  // 78: relay.server.v1.CreateBackupResponse.backup:type_name -> relay.server.v1.Backup
 	102, // 79: relay.server.v1.DatabaseUser.roles:type_name -> relay.server.v1.DatabaseUserRole
-	539, // 80: relay.server.v1.DatabaseUser.expires_at:type_name -> google.protobuf.Timestamp
-	539, // 81: relay.server.v1.DatabaseUser.created_at:type_name -> google.protobuf.Timestamp
+	545, // 80: relay.server.v1.DatabaseUser.expires_at:type_name -> google.protobuf.Timestamp
+	545, // 81: relay.server.v1.DatabaseUser.created_at:type_name -> google.protobuf.Timestamp
 	103, // 82: relay.server.v1.ListDatabaseUsersResponse.users:type_name -> relay.server.v1.DatabaseUser
 	103, // 83: relay.server.v1.GetDatabaseUserResponse.user:type_name -> relay.server.v1.DatabaseUser
 	102, // 84: relay.server.v1.CreateDatabaseUserRequest.roles:type_name -> relay.server.v1.DatabaseUserRole
-	539, // 85: relay.server.v1.CreateDatabaseUserRequest.expires_at:type_name -> google.protobuf.Timestamp
+	545, // 85: relay.server.v1.CreateDatabaseUserRequest.expires_at:type_name -> google.protobuf.Timestamp
 	103, // 86: relay.server.v1.CreateDatabaseUserResponse.user:type_name -> relay.server.v1.DatabaseUser
 	102, // 87: relay.server.v1.UpdateDatabaseUserRequest.roles:type_name -> relay.server.v1.DatabaseUserRole
-	539, // 88: relay.server.v1.UpdateDatabaseUserRequest.expires_at:type_name -> google.protobuf.Timestamp
-	540, // 89: relay.server.v1.UpdateDatabaseUserRequest.update_mask:type_name -> google.protobuf.FieldMask
+	545, // 88: relay.server.v1.UpdateDatabaseUserRequest.expires_at:type_name -> google.protobuf.Timestamp
+	546, // 89: relay.server.v1.UpdateDatabaseUserRequest.update_mask:type_name -> google.protobuf.FieldMask
 	103, // 90: relay.server.v1.UpdateDatabaseUserResponse.user:type_name -> relay.server.v1.DatabaseUser
-	539, // 91: relay.server.v1.LogicalDatabase.created_at:type_name -> google.protobuf.Timestamp
+	545, // 91: relay.server.v1.LogicalDatabase.created_at:type_name -> google.protobuf.Timestamp
 	114, // 92: relay.server.v1.ListLogicalDatabasesResponse.databases:type_name -> relay.server.v1.LogicalDatabase
 	114, // 93: relay.server.v1.CreateLogicalDatabaseResponse.database:type_name -> relay.server.v1.LogicalDatabase
 	114, // 94: relay.server.v1.UpdateLogicalDatabaseResponse.database:type_name -> relay.server.v1.LogicalDatabase
 	123, // 95: relay.server.v1.ListDatabaseProvidersResponse.providers:type_name -> relay.server.v1.DatabaseProvider
 	128, // 96: relay.server.v1.WhoAmIResponse.organization:type_name -> relay.server.v1.Organization
-	539, // 97: relay.server.v1.WhoAmIResponse.token_expires_at:type_name -> google.protobuf.Timestamp
+	545, // 97: relay.server.v1.WhoAmIResponse.token_expires_at:type_name -> google.protobuf.Timestamp
 	384, // 98: relay.server.v1.WhoAmIResponse.organizations:type_name -> relay.server.v1.OrganizationMembership
 	399, // 99: relay.server.v1.WhoAmIResponse.workspace:type_name -> relay.server.v1.Workspace
 	399, // 100: relay.server.v1.WhoAmIResponse.workspaces:type_name -> relay.server.v1.Workspace
-	539, // 101: relay.server.v1.MaintenanceBanner.starts_at:type_name -> google.protobuf.Timestamp
-	539, // 102: relay.server.v1.MaintenanceBanner.ends_at:type_name -> google.protobuf.Timestamp
+	545, // 101: relay.server.v1.MaintenanceBanner.starts_at:type_name -> google.protobuf.Timestamp
+	545, // 102: relay.server.v1.MaintenanceBanner.ends_at:type_name -> google.protobuf.Timestamp
 	129, // 103: relay.server.v1.GetMaintenanceBannerResponse.banner:type_name -> relay.server.v1.MaintenanceBanner
 	128, // 104: relay.server.v1.AdminOrganization.organization:type_name -> relay.server.v1.Organization
-	539, // 105: relay.server.v1.AdminOrganization.created_at:type_name -> google.protobuf.Timestamp
-	539, // 106: relay.server.v1.AdminOrganization.updated_at:type_name -> google.protobuf.Timestamp
-	539, // 107: relay.server.v1.AdminOrganization.suspended_at:type_name -> google.protobuf.Timestamp
+	545, // 105: relay.server.v1.AdminOrganization.created_at:type_name -> google.protobuf.Timestamp
+	545, // 106: relay.server.v1.AdminOrganization.updated_at:type_name -> google.protobuf.Timestamp
+	545, // 107: relay.server.v1.AdminOrganization.suspended_at:type_name -> google.protobuf.Timestamp
 	132, // 108: relay.server.v1.AdminListOrganizationsResponse.organizations:type_name -> relay.server.v1.AdminOrganization
 	132, // 109: relay.server.v1.AdminGetOrganizationResponse.organization:type_name -> relay.server.v1.AdminOrganization
-	539, // 110: relay.server.v1.AdminCluster.created_at:type_name -> google.protobuf.Timestamp
-	539, // 111: relay.server.v1.AdminAgent.last_heartbeat_at:type_name -> google.protobuf.Timestamp
-	539, // 112: relay.server.v1.AdminAgent.created_at:type_name -> google.protobuf.Timestamp
+	545, // 110: relay.server.v1.AdminCluster.created_at:type_name -> google.protobuf.Timestamp
+	545, // 111: relay.server.v1.AdminAgent.last_heartbeat_at:type_name -> google.protobuf.Timestamp
+	545, // 112: relay.server.v1.AdminAgent.created_at:type_name -> google.protobuf.Timestamp
 	137, // 113: relay.server.v1.AdminGetOrganizationResourcesResponse.clusters:type_name -> relay.server.v1.AdminCluster
 	138, // 114: relay.server.v1.AdminGetOrganizationResourcesResponse.connections:type_name -> relay.server.v1.AdminConnection
 	139, // 115: relay.server.v1.AdminGetOrganizationResourcesResponse.agent_pools:type_name -> relay.server.v1.AdminAgentPool
 	140, // 116: relay.server.v1.AdminGetOrganizationResourcesResponse.agents:type_name -> relay.server.v1.AdminAgent
 	141, // 117: relay.server.v1.AdminGetOrganizationResourcesResponse.workspaces:type_name -> relay.server.v1.AdminWorkspace
-	536, // 118: relay.server.v1.AdminGetPlatformOverviewResponse.clusters_by_phase:type_name -> relay.server.v1.AdminGetPlatformOverviewResponse.ClustersByPhaseEntry
-	539, // 119: relay.server.v1.AdminGetPlatformOverviewResponse.generated_at:type_name -> google.protobuf.Timestamp
-	539, // 120: relay.server.v1.AdminOrgActivation.created_at:type_name -> google.protobuf.Timestamp
-	539, // 121: relay.server.v1.AdminOrgActivation.last_sign_in_at:type_name -> google.protobuf.Timestamp
-	539, // 122: relay.server.v1.AdminOrgActivation.last_tunnel_at:type_name -> google.protobuf.Timestamp
+	542, // 118: relay.server.v1.AdminGetPlatformOverviewResponse.clusters_by_phase:type_name -> relay.server.v1.AdminGetPlatformOverviewResponse.ClustersByPhaseEntry
+	545, // 119: relay.server.v1.AdminGetPlatformOverviewResponse.generated_at:type_name -> google.protobuf.Timestamp
+	545, // 120: relay.server.v1.AdminOrgActivation.created_at:type_name -> google.protobuf.Timestamp
+	545, // 121: relay.server.v1.AdminOrgActivation.last_sign_in_at:type_name -> google.protobuf.Timestamp
+	545, // 122: relay.server.v1.AdminOrgActivation.last_tunnel_at:type_name -> google.protobuf.Timestamp
 	146, // 123: relay.server.v1.AdminListOrgActivationResponse.orgs:type_name -> relay.server.v1.AdminOrgActivation
-	539, // 124: relay.server.v1.AdminListOrgActivationResponse.generated_at:type_name -> google.protobuf.Timestamp
-	539, // 125: relay.server.v1.AdminActivityEntry.created_at:type_name -> google.protobuf.Timestamp
+	545, // 124: relay.server.v1.AdminListOrgActivationResponse.generated_at:type_name -> google.protobuf.Timestamp
+	545, // 125: relay.server.v1.AdminActivityEntry.created_at:type_name -> google.protobuf.Timestamp
 	150, // 126: relay.server.v1.AdminGetOrganizationActivityResponse.entries:type_name -> relay.server.v1.AdminActivityEntry
-	539, // 127: relay.server.v1.AdminOrgAPIKey.created_at:type_name -> google.protobuf.Timestamp
-	539, // 128: relay.server.v1.AdminOrgAPIKey.expires_at:type_name -> google.protobuf.Timestamp
-	539, // 129: relay.server.v1.AdminOrgAPIKey.last_used_at:type_name -> google.protobuf.Timestamp
-	539, // 130: relay.server.v1.AdminOrgCloudIntegration.created_at:type_name -> google.protobuf.Timestamp
+	545, // 127: relay.server.v1.AdminOrgAPIKey.created_at:type_name -> google.protobuf.Timestamp
+	545, // 128: relay.server.v1.AdminOrgAPIKey.expires_at:type_name -> google.protobuf.Timestamp
+	545, // 129: relay.server.v1.AdminOrgAPIKey.last_used_at:type_name -> google.protobuf.Timestamp
+	545, // 130: relay.server.v1.AdminOrgCloudIntegration.created_at:type_name -> google.protobuf.Timestamp
 	153, // 131: relay.server.v1.AdminGetOrganizationSecurityResponse.api_keys:type_name -> relay.server.v1.AdminOrgAPIKey
 	154, // 132: relay.server.v1.AdminGetOrganizationSecurityResponse.sso:type_name -> relay.server.v1.AdminOrgSSO
 	155, // 133: relay.server.v1.AdminGetOrganizationSecurityResponse.cloud_integrations:type_name -> relay.server.v1.AdminOrgCloudIntegration
-	539, // 134: relay.server.v1.AdminUserMembership.created_at:type_name -> google.protobuf.Timestamp
-	539, // 135: relay.server.v1.AdminUserMembership.last_seen_at:type_name -> google.protobuf.Timestamp
-	539, // 136: relay.server.v1.AdminUserSummary.last_seen_at:type_name -> google.protobuf.Timestamp
+	545, // 134: relay.server.v1.AdminUserMembership.created_at:type_name -> google.protobuf.Timestamp
+	545, // 135: relay.server.v1.AdminUserMembership.last_seen_at:type_name -> google.protobuf.Timestamp
+	545, // 136: relay.server.v1.AdminUserSummary.last_seen_at:type_name -> google.protobuf.Timestamp
 	157, // 137: relay.server.v1.AdminUserSummary.memberships:type_name -> relay.server.v1.AdminUserMembership
 	158, // 138: relay.server.v1.AdminSearchUsersResponse.users:type_name -> relay.server.v1.AdminUserSummary
-	539, // 139: relay.server.v1.AdminUserSession.created_at:type_name -> google.protobuf.Timestamp
-	539, // 140: relay.server.v1.AdminUserSession.expires_at:type_name -> google.protobuf.Timestamp
-	539, // 141: relay.server.v1.AdminUserSession.last_used_at:type_name -> google.protobuf.Timestamp
-	539, // 142: relay.server.v1.AdminUserInvitation.expires_at:type_name -> google.protobuf.Timestamp
-	539, // 143: relay.server.v1.AdminUserInvitation.created_at:type_name -> google.protobuf.Timestamp
+	545, // 139: relay.server.v1.AdminUserSession.created_at:type_name -> google.protobuf.Timestamp
+	545, // 140: relay.server.v1.AdminUserSession.expires_at:type_name -> google.protobuf.Timestamp
+	545, // 141: relay.server.v1.AdminUserSession.last_used_at:type_name -> google.protobuf.Timestamp
+	545, // 142: relay.server.v1.AdminUserInvitation.expires_at:type_name -> google.protobuf.Timestamp
+	545, // 143: relay.server.v1.AdminUserInvitation.created_at:type_name -> google.protobuf.Timestamp
 	158, // 144: relay.server.v1.AdminGetUserResponse.user:type_name -> relay.server.v1.AdminUserSummary
 	162, // 145: relay.server.v1.AdminGetUserResponse.sessions:type_name -> relay.server.v1.AdminUserSession
 	163, // 146: relay.server.v1.AdminGetUserResponse.pending_invitations:type_name -> relay.server.v1.AdminUserInvitation
 	132, // 147: relay.server.v1.AdminSuspendOrganizationResponse.organization:type_name -> relay.server.v1.AdminOrganization
 	132, // 148: relay.server.v1.AdminUnsuspendOrganizationResponse.organization:type_name -> relay.server.v1.AdminOrganization
 	137, // 149: relay.server.v1.AdminListClustersResponse.clusters:type_name -> relay.server.v1.AdminCluster
-	537, // 150: relay.server.v1.AdminListClustersResponse.by_phase:type_name -> relay.server.v1.AdminListClustersResponse.ByPhaseEntry
-	539, // 151: relay.server.v1.AdminPendingOperation.created_at:type_name -> google.protobuf.Timestamp
-	539, // 152: relay.server.v1.AdminPendingOperation.updated_at:type_name -> google.protobuf.Timestamp
+	543, // 150: relay.server.v1.AdminListClustersResponse.by_phase:type_name -> relay.server.v1.AdminListClustersResponse.ByPhaseEntry
+	545, // 151: relay.server.v1.AdminPendingOperation.created_at:type_name -> google.protobuf.Timestamp
+	545, // 152: relay.server.v1.AdminPendingOperation.updated_at:type_name -> google.protobuf.Timestamp
 	173, // 153: relay.server.v1.AdminListPendingOperationsResponse.operations:type_name -> relay.server.v1.AdminPendingOperation
 	140, // 154: relay.server.v1.AdminListAgentsResponse.agents:type_name -> relay.server.v1.AdminAgent
-	539, // 155: relay.server.v1.AdminTunnelSession.started_at:type_name -> google.protobuf.Timestamp
-	539, // 156: relay.server.v1.AdminTunnelSession.last_seen_at:type_name -> google.protobuf.Timestamp
-	539, // 157: relay.server.v1.AdminTunnelSession.ended_at:type_name -> google.protobuf.Timestamp
+	545, // 155: relay.server.v1.AdminTunnelSession.started_at:type_name -> google.protobuf.Timestamp
+	545, // 156: relay.server.v1.AdminTunnelSession.last_seen_at:type_name -> google.protobuf.Timestamp
+	545, // 157: relay.server.v1.AdminTunnelSession.ended_at:type_name -> google.protobuf.Timestamp
 	178, // 158: relay.server.v1.AdminListTunnelSessionsResponse.sessions:type_name -> relay.server.v1.AdminTunnelSession
-	539, // 159: relay.server.v1.SignupAllowlistEntry.created_at:type_name -> google.protobuf.Timestamp
+	545, // 159: relay.server.v1.SignupAllowlistEntry.created_at:type_name -> google.protobuf.Timestamp
 	194, // 160: relay.server.v1.AdminListSignupAllowlistResponse.entries:type_name -> relay.server.v1.SignupAllowlistEntry
 	194, // 161: relay.server.v1.AdminAddSignupAllowlistEntryResponse.entry:type_name -> relay.server.v1.SignupAllowlistEntry
-	539, // 162: relay.server.v1.SignupAttempt.first_seen_at:type_name -> google.protobuf.Timestamp
-	539, // 163: relay.server.v1.SignupAttempt.last_seen_at:type_name -> google.protobuf.Timestamp
-	539, // 164: relay.server.v1.SignupAttempt.dismissed_at:type_name -> google.protobuf.Timestamp
+	545, // 162: relay.server.v1.SignupAttempt.first_seen_at:type_name -> google.protobuf.Timestamp
+	545, // 163: relay.server.v1.SignupAttempt.last_seen_at:type_name -> google.protobuf.Timestamp
+	545, // 164: relay.server.v1.SignupAttempt.dismissed_at:type_name -> google.protobuf.Timestamp
 	201, // 165: relay.server.v1.AdminListSignupAttemptsResponse.attempts:type_name -> relay.server.v1.SignupAttempt
-	539, // 166: relay.server.v1.AdminAuditEntry.created_at:type_name -> google.protobuf.Timestamp
+	545, // 166: relay.server.v1.AdminAuditEntry.created_at:type_name -> google.protobuf.Timestamp
 	206, // 167: relay.server.v1.AdminListAuditLogResponse.entries:type_name -> relay.server.v1.AdminAuditEntry
 	212, // 168: relay.server.v1.CloudCreditBalance.credits:type_name -> relay.server.v1.CloudCredit
-	539, // 169: relay.server.v1.CloudCreditBalance.fetched_at:type_name -> google.protobuf.Timestamp
+	545, // 169: relay.server.v1.CloudCreditBalance.fetched_at:type_name -> google.protobuf.Timestamp
 	210, // 170: relay.server.v1.AdminGetCloudCostsResponse.series:type_name -> relay.server.v1.CloudCostPoint
 	211, // 171: relay.server.v1.AdminGetCloudCostsResponse.by_service:type_name -> relay.server.v1.CloudCostBucket
 	211, // 172: relay.server.v1.AdminGetCloudCostsResponse.by_account:type_name -> relay.server.v1.CloudCostBucket
-	539, // 173: relay.server.v1.AdminGetCloudCostsResponse.fetched_at:type_name -> google.protobuf.Timestamp
+	545, // 173: relay.server.v1.AdminGetCloudCostsResponse.fetched_at:type_name -> google.protobuf.Timestamp
 	213, // 174: relay.server.v1.AdminGetCloudCostsResponse.credit_balance:type_name -> relay.server.v1.CloudCreditBalance
-	539, // 175: relay.server.v1.AdminRevenueOrg.current_period_end:type_name -> google.protobuf.Timestamp
-	539, // 176: relay.server.v1.AdminGetRevenueOverviewResponse.generated_at:type_name -> google.protobuf.Timestamp
+	545, // 175: relay.server.v1.AdminRevenueOrg.current_period_end:type_name -> google.protobuf.Timestamp
+	545, // 176: relay.server.v1.AdminGetRevenueOverviewResponse.generated_at:type_name -> google.protobuf.Timestamp
 	216, // 177: relay.server.v1.AdminGetRevenueOverviewResponse.orgs:type_name -> relay.server.v1.AdminRevenueOrg
 	129, // 178: relay.server.v1.AdminMaintenanceBanner.banner:type_name -> relay.server.v1.MaintenanceBanner
-	539, // 179: relay.server.v1.AdminMaintenanceBanner.created_at:type_name -> google.protobuf.Timestamp
-	539, // 180: relay.server.v1.AdminMaintenanceBanner.cleared_at:type_name -> google.protobuf.Timestamp
+	545, // 179: relay.server.v1.AdminMaintenanceBanner.created_at:type_name -> google.protobuf.Timestamp
+	545, // 180: relay.server.v1.AdminMaintenanceBanner.cleared_at:type_name -> google.protobuf.Timestamp
 	218, // 181: relay.server.v1.AdminGetMaintenanceBannerResponse.current:type_name -> relay.server.v1.AdminMaintenanceBanner
 	218, // 182: relay.server.v1.AdminGetMaintenanceBannerResponse.recent:type_name -> relay.server.v1.AdminMaintenanceBanner
-	539, // 183: relay.server.v1.AdminSetMaintenanceBannerRequest.starts_at:type_name -> google.protobuf.Timestamp
-	539, // 184: relay.server.v1.AdminSetMaintenanceBannerRequest.ends_at:type_name -> google.protobuf.Timestamp
+	545, // 183: relay.server.v1.AdminSetMaintenanceBannerRequest.starts_at:type_name -> google.protobuf.Timestamp
+	545, // 184: relay.server.v1.AdminSetMaintenanceBannerRequest.ends_at:type_name -> google.protobuf.Timestamp
 	218, // 185: relay.server.v1.AdminSetMaintenanceBannerResponse.banner:type_name -> relay.server.v1.AdminMaintenanceBanner
 	218, // 186: relay.server.v1.AdminClearMaintenanceBannerResponse.banner:type_name -> relay.server.v1.AdminMaintenanceBanner
 	230, // 187: relay.server.v1.ConnectionConfig.redact_rules:type_name -> relay.server.v1.RedactRule
@@ -35480,13 +35842,13 @@ var file_relay_server_v1_server_proto_depIdxs = []int32{
 	227, // 197: relay.server.v1.UpdateConnectionRequest.tls:type_name -> relay.server.v1.TLSConfig
 	228, // 198: relay.server.v1.UpdateConnectionRequest.host_tls:type_name -> relay.server.v1.HostTLSConfig
 	229, // 199: relay.server.v1.UpdateConnectionResponse.connection:type_name -> relay.server.v1.Connection
-	539, // 200: relay.server.v1.IssueTunnelTokenResponse.expires_at:type_name -> google.protobuf.Timestamp
-	539, // 201: relay.server.v1.TunnelSessionReport.started_at:type_name -> google.protobuf.Timestamp
-	539, // 202: relay.server.v1.TunnelSessionReport.ended_at:type_name -> google.protobuf.Timestamp
+	545, // 200: relay.server.v1.IssueTunnelTokenResponse.expires_at:type_name -> google.protobuf.Timestamp
+	545, // 201: relay.server.v1.TunnelSessionReport.started_at:type_name -> google.protobuf.Timestamp
+	545, // 202: relay.server.v1.TunnelSessionReport.ended_at:type_name -> google.protobuf.Timestamp
 	245, // 203: relay.server.v1.ReportTunnelSessionsRequest.sessions:type_name -> relay.server.v1.TunnelSessionReport
-	539, // 204: relay.server.v1.TunnelSession.started_at:type_name -> google.protobuf.Timestamp
-	539, // 205: relay.server.v1.TunnelSession.last_seen_at:type_name -> google.protobuf.Timestamp
-	539, // 206: relay.server.v1.TunnelSession.ended_at:type_name -> google.protobuf.Timestamp
+	545, // 204: relay.server.v1.TunnelSession.started_at:type_name -> google.protobuf.Timestamp
+	545, // 205: relay.server.v1.TunnelSession.last_seen_at:type_name -> google.protobuf.Timestamp
+	545, // 206: relay.server.v1.TunnelSession.ended_at:type_name -> google.protobuf.Timestamp
 	248, // 207: relay.server.v1.ListTunnelSessionsResponse.sessions:type_name -> relay.server.v1.TunnelSession
 	226, // 208: relay.server.v1.Policy.rules:type_name -> relay.server.v1.PolicyRule
 	252, // 209: relay.server.v1.ListPoliciesResponse.policies:type_name -> relay.server.v1.Policy
@@ -35498,58 +35860,58 @@ var file_relay_server_v1_server_proto_depIdxs = []int32{
 	251, // 215: relay.server.v1.ListConnectionGroupsResponse.groups:type_name -> relay.server.v1.ConnectionGroup
 	251, // 216: relay.server.v1.CreateConnectionGroupResponse.group:type_name -> relay.server.v1.ConnectionGroup
 	251, // 217: relay.server.v1.UpdateConnectionGroupResponse.group:type_name -> relay.server.v1.ConnectionGroup
-	539, // 218: relay.server.v1.AccessGrant.created_at:type_name -> google.protobuf.Timestamp
-	539, // 219: relay.server.v1.AccessGrant.expires_at:type_name -> google.protobuf.Timestamp
+	545, // 218: relay.server.v1.AccessGrant.created_at:type_name -> google.protobuf.Timestamp
+	545, // 219: relay.server.v1.AccessGrant.expires_at:type_name -> google.protobuf.Timestamp
 	279, // 220: relay.server.v1.ListAccessGrantsResponse.grants:type_name -> relay.server.v1.AccessGrant
-	539, // 221: relay.server.v1.CreateAccessGrantRequest.expires_at:type_name -> google.protobuf.Timestamp
+	545, // 221: relay.server.v1.CreateAccessGrantRequest.expires_at:type_name -> google.protobuf.Timestamp
 	279, // 222: relay.server.v1.CreateAccessGrantResponse.grant:type_name -> relay.server.v1.AccessGrant
 	286, // 223: relay.server.v1.ListTeamsResponse.teams:type_name -> relay.server.v1.Team
 	286, // 224: relay.server.v1.CreateTeamResponse.team:type_name -> relay.server.v1.Team
 	297, // 225: relay.server.v1.ListMembersResponse.members:type_name -> relay.server.v1.OrgMember
 	297, // 226: relay.server.v1.UpdateMemberResponse.member:type_name -> relay.server.v1.OrgMember
-	539, // 227: relay.server.v1.Session.created_at:type_name -> google.protobuf.Timestamp
-	539, // 228: relay.server.v1.Session.expires_at:type_name -> google.protobuf.Timestamp
-	539, // 229: relay.server.v1.Session.last_used_at:type_name -> google.protobuf.Timestamp
+	545, // 227: relay.server.v1.Session.created_at:type_name -> google.protobuf.Timestamp
+	545, // 228: relay.server.v1.Session.expires_at:type_name -> google.protobuf.Timestamp
+	545, // 229: relay.server.v1.Session.last_used_at:type_name -> google.protobuf.Timestamp
 	310, // 230: relay.server.v1.ListSessionsResponse.sessions:type_name -> relay.server.v1.Session
-	539, // 231: relay.server.v1.APIKey.created_at:type_name -> google.protobuf.Timestamp
-	539, // 232: relay.server.v1.APIKey.expires_at:type_name -> google.protobuf.Timestamp
-	539, // 233: relay.server.v1.APIKey.last_used_at:type_name -> google.protobuf.Timestamp
+	545, // 231: relay.server.v1.APIKey.created_at:type_name -> google.protobuf.Timestamp
+	545, // 232: relay.server.v1.APIKey.expires_at:type_name -> google.protobuf.Timestamp
+	545, // 233: relay.server.v1.APIKey.last_used_at:type_name -> google.protobuf.Timestamp
 	315, // 234: relay.server.v1.CreateAPIKeyResponse.key:type_name -> relay.server.v1.APIKey
 	315, // 235: relay.server.v1.ListAPIKeysResponse.keys:type_name -> relay.server.v1.APIKey
 	315, // 236: relay.server.v1.UpdateAPIKeyResponse.key:type_name -> relay.server.v1.APIKey
-	539, // 237: relay.server.v1.Invitation.created_at:type_name -> google.protobuf.Timestamp
-	539, // 238: relay.server.v1.Invitation.expires_at:type_name -> google.protobuf.Timestamp
+	545, // 237: relay.server.v1.Invitation.created_at:type_name -> google.protobuf.Timestamp
+	545, // 238: relay.server.v1.Invitation.expires_at:type_name -> google.protobuf.Timestamp
 	324, // 239: relay.server.v1.Invitation.workspace_roles:type_name -> relay.server.v1.WorkspaceRoleAssignment
 	324, // 240: relay.server.v1.InviteMemberRequest.workspace_roles:type_name -> relay.server.v1.WorkspaceRoleAssignment
 	325, // 241: relay.server.v1.InviteMemberResponse.invitation:type_name -> relay.server.v1.Invitation
 	325, // 242: relay.server.v1.ListInvitationsResponse.invitations:type_name -> relay.server.v1.Invitation
-	539, // 243: relay.server.v1.GetInvitationResponse.expires_at:type_name -> google.protobuf.Timestamp
+	545, // 243: relay.server.v1.GetInvitationResponse.expires_at:type_name -> google.protobuf.Timestamp
 	324, // 244: relay.server.v1.GetInvitationResponse.workspace_roles:type_name -> relay.server.v1.WorkspaceRoleAssignment
 	128, // 245: relay.server.v1.AcceptInvitationResponse.organization:type_name -> relay.server.v1.Organization
-	539, // 246: relay.server.v1.AgentInfo.created_at:type_name -> google.protobuf.Timestamp
-	539, // 247: relay.server.v1.AgentInfo.last_heartbeat_at:type_name -> google.protobuf.Timestamp
+	545, // 246: relay.server.v1.AgentInfo.created_at:type_name -> google.protobuf.Timestamp
+	545, // 247: relay.server.v1.AgentInfo.last_heartbeat_at:type_name -> google.protobuf.Timestamp
 	336, // 248: relay.server.v1.ListAgentsResponse.agents:type_name -> relay.server.v1.AgentInfo
-	539, // 249: relay.server.v1.EnrollmentTokenInfo.created_at:type_name -> google.protobuf.Timestamp
+	545, // 249: relay.server.v1.EnrollmentTokenInfo.created_at:type_name -> google.protobuf.Timestamp
 	343, // 250: relay.server.v1.ListEnrollmentTokensResponse.tokens:type_name -> relay.server.v1.EnrollmentTokenInfo
 	350, // 251: relay.server.v1.HeartbeatRequest.connection_statuses:type_name -> relay.server.v1.ConnectionHealthStatus
 	352, // 252: relay.server.v1.HeartbeatResponse.connections:type_name -> relay.server.v1.HeartbeatConnection
-	539, // 253: relay.server.v1.AuditEvent.occurred_at:type_name -> google.protobuf.Timestamp
+	545, // 253: relay.server.v1.AuditEvent.occurred_at:type_name -> google.protobuf.Timestamp
 	356, // 254: relay.server.v1.IngestAuditEventsRequest.events:type_name -> relay.server.v1.AuditEvent
 	356, // 255: relay.server.v1.ListAuditLogsResponse.events:type_name -> relay.server.v1.AuditEvent
-	539, // 256: relay.server.v1.AuditMetricsBucket.bucket:type_name -> google.protobuf.Timestamp
+	545, // 256: relay.server.v1.AuditMetricsBucket.bucket:type_name -> google.protobuf.Timestamp
 	362, // 257: relay.server.v1.GetAuditMetricsResponse.buckets:type_name -> relay.server.v1.AuditMetricsBucket
-	539, // 258: relay.server.v1.GetDatabaseAnalyticsRequest.start:type_name -> google.protobuf.Timestamp
-	539, // 259: relay.server.v1.GetDatabaseAnalyticsRequest.end:type_name -> google.protobuf.Timestamp
-	539, // 260: relay.server.v1.DatabaseMetricPoint.ts:type_name -> google.protobuf.Timestamp
+	545, // 258: relay.server.v1.GetDatabaseAnalyticsRequest.start:type_name -> google.protobuf.Timestamp
+	545, // 259: relay.server.v1.GetDatabaseAnalyticsRequest.end:type_name -> google.protobuf.Timestamp
+	545, // 260: relay.server.v1.DatabaseMetricPoint.ts:type_name -> google.protobuf.Timestamp
 	365, // 261: relay.server.v1.DatabaseMetricSeries.points:type_name -> relay.server.v1.DatabaseMetricPoint
 	366, // 262: relay.server.v1.GetDatabaseAnalyticsResponse.series:type_name -> relay.server.v1.DatabaseMetricSeries
-	539, // 263: relay.server.v1.AgentPoolInfo.created_at:type_name -> google.protobuf.Timestamp
+	545, // 263: relay.server.v1.AgentPoolInfo.created_at:type_name -> google.protobuf.Timestamp
 	368, // 264: relay.server.v1.ListAgentPoolsResponse.pools:type_name -> relay.server.v1.AgentPoolInfo
 	368, // 265: relay.server.v1.CreateAgentPoolResponse.pool:type_name -> relay.server.v1.AgentPoolInfo
 	368, // 266: relay.server.v1.UpdateAgentPoolResponse.pool:type_name -> relay.server.v1.AgentPoolInfo
-	539, // 267: relay.server.v1.ActivityLogEntry.created_at:type_name -> google.protobuf.Timestamp
+	545, // 267: relay.server.v1.ActivityLogEntry.created_at:type_name -> google.protobuf.Timestamp
 	377, // 268: relay.server.v1.ListActivityLogsResponse.entries:type_name -> relay.server.v1.ActivityLogEntry
-	538, // 269: relay.server.v1.EmitActivityRequest.metadata:type_name -> relay.server.v1.EmitActivityRequest.MetadataEntry
+	544, // 269: relay.server.v1.EmitActivityRequest.metadata:type_name -> relay.server.v1.EmitActivityRequest.MetadataEntry
 	377, // 270: relay.server.v1.ListOrgActivityLogsResponse.entries:type_name -> relay.server.v1.ActivityLogEntry
 	128, // 271: relay.server.v1.OrganizationMembership.organization:type_name -> relay.server.v1.Organization
 	384, // 272: relay.server.v1.ListUserOrganizationsResponse.memberships:type_name -> relay.server.v1.OrganizationMembership
@@ -35572,485 +35934,494 @@ var file_relay_server_v1_server_proto_depIdxs = []int32{
 	432, // 289: relay.server.v1.UpdateRoleResponse.role:type_name -> relay.server.v1.RoleInfo
 	441, // 290: relay.server.v1.ListRoleBindingsResponse.bindings:type_name -> relay.server.v1.RoleBinding
 	441, // 291: relay.server.v1.CreateRoleBindingResponse.binding:type_name -> relay.server.v1.RoleBinding
-	539, // 292: relay.server.v1.GetBillingStateResponse.current_period_end:type_name -> google.protobuf.Timestamp
+	545, // 292: relay.server.v1.GetBillingStateResponse.current_period_end:type_name -> google.protobuf.Timestamp
 	449, // 293: relay.server.v1.GetBillingStateResponse.projection:type_name -> relay.server.v1.BillingProjectionLine
 	448, // 294: relay.server.v1.GetBillingStateResponse.catalog:type_name -> relay.server.v1.BillingMachineTier
-	539, // 295: relay.server.v1.GetBillingStateResponse.current_cycle_start:type_name -> google.protobuf.Timestamp
-	539, // 296: relay.server.v1.GetBillingStateResponse.current_cycle_end:type_name -> google.protobuf.Timestamp
+	545, // 295: relay.server.v1.GetBillingStateResponse.current_cycle_start:type_name -> google.protobuf.Timestamp
+	545, // 296: relay.server.v1.GetBillingStateResponse.current_cycle_end:type_name -> google.protobuf.Timestamp
 	450, // 297: relay.server.v1.GetBillingStateResponse.current_cycle_usage:type_name -> relay.server.v1.BillingCycleUsageLine
-	539, // 298: relay.server.v1.ExternalSecretSource.created_at:type_name -> google.protobuf.Timestamp
-	539, // 299: relay.server.v1.ExternalSecretSource.updated_at:type_name -> google.protobuf.Timestamp
+	545, // 298: relay.server.v1.ExternalSecretSource.created_at:type_name -> google.protobuf.Timestamp
+	545, // 299: relay.server.v1.ExternalSecretSource.updated_at:type_name -> google.protobuf.Timestamp
 	459, // 300: relay.server.v1.ListExternalSecretSourcesResponse.sources:type_name -> relay.server.v1.ExternalSecretSource
 	459, // 301: relay.server.v1.GetExternalSecretSourceResponse.source:type_name -> relay.server.v1.ExternalSecretSource
 	459, // 302: relay.server.v1.UpsertExternalSecretSourceResponse.source:type_name -> relay.server.v1.ExternalSecretSource
-	539, // 303: relay.server.v1.CloudIntegration.last_verified_at:type_name -> google.protobuf.Timestamp
-	539, // 304: relay.server.v1.CloudIntegration.created_at:type_name -> google.protobuf.Timestamp
-	539, // 305: relay.server.v1.CloudIntegration.updated_at:type_name -> google.protobuf.Timestamp
+	545, // 303: relay.server.v1.CloudIntegration.last_verified_at:type_name -> google.protobuf.Timestamp
+	545, // 304: relay.server.v1.CloudIntegration.created_at:type_name -> google.protobuf.Timestamp
+	545, // 305: relay.server.v1.CloudIntegration.updated_at:type_name -> google.protobuf.Timestamp
 	472, // 306: relay.server.v1.ListCloudIntegrationsResponse.integrations:type_name -> relay.server.v1.CloudIntegration
 	472, // 307: relay.server.v1.GetCloudIntegrationResponse.integration:type_name -> relay.server.v1.CloudIntegration
 	472, // 308: relay.server.v1.CreateCloudIntegrationResponse.integration:type_name -> relay.server.v1.CloudIntegration
 	472, // 309: relay.server.v1.UpdateCloudIntegrationResponse.integration:type_name -> relay.server.v1.CloudIntegration
 	472, // 310: relay.server.v1.TestCloudIntegrationResponse.integration:type_name -> relay.server.v1.CloudIntegration
 	487, // 311: relay.server.v1.LogStream.scope:type_name -> relay.server.v1.ClusterScope
-	539, // 312: relay.server.v1.LogStream.last_shipped_at:type_name -> google.protobuf.Timestamp
+	545, // 312: relay.server.v1.LogStream.last_shipped_at:type_name -> google.protobuf.Timestamp
 	488, // 313: relay.server.v1.GetLogStreamResponse.stream:type_name -> relay.server.v1.LogStream
 	488, // 314: relay.server.v1.UpsertLogStreamRequest.stream:type_name -> relay.server.v1.LogStream
 	488, // 315: relay.server.v1.UpsertLogStreamResponse.stream:type_name -> relay.server.v1.LogStream
 	487, // 316: relay.server.v1.BackupAutoExport.scope:type_name -> relay.server.v1.ClusterScope
-	539, // 317: relay.server.v1.BackupAutoExport.last_exported_at:type_name -> google.protobuf.Timestamp
+	545, // 317: relay.server.v1.BackupAutoExport.last_exported_at:type_name -> google.protobuf.Timestamp
 	493, // 318: relay.server.v1.GetBackupAutoExportResponse.auto_export:type_name -> relay.server.v1.BackupAutoExport
 	493, // 319: relay.server.v1.UpsertBackupAutoExportRequest.auto_export:type_name -> relay.server.v1.BackupAutoExport
 	493, // 320: relay.server.v1.UpsertBackupAutoExportResponse.auto_export:type_name -> relay.server.v1.BackupAutoExport
-	539, // 321: relay.server.v1.SupportReport.created_at:type_name -> google.protobuf.Timestamp
-	539, // 322: relay.server.v1.SupportReport.updated_at:type_name -> google.protobuf.Timestamp
-	539, // 323: relay.server.v1.SupportReportComment.created_at:type_name -> google.protobuf.Timestamp
-	500, // 324: relay.server.v1.CreateSupportReportResponse.report:type_name -> relay.server.v1.SupportReport
-	500, // 325: relay.server.v1.ListSupportReportsResponse.reports:type_name -> relay.server.v1.SupportReport
-	500, // 326: relay.server.v1.GetSupportReportResponse.report:type_name -> relay.server.v1.SupportReport
-	501, // 327: relay.server.v1.GetSupportReportResponse.comments:type_name -> relay.server.v1.SupportReportComment
-	501, // 328: relay.server.v1.AddSupportReportCommentResponse.comment:type_name -> relay.server.v1.SupportReportComment
-	500, // 329: relay.server.v1.UpdateSupportReportStatusResponse.report:type_name -> relay.server.v1.SupportReport
-	500, // 330: relay.server.v1.AdminListSupportReportsResponse.reports:type_name -> relay.server.v1.SupportReport
-	500, // 331: relay.server.v1.AdminGetSupportReportResponse.report:type_name -> relay.server.v1.SupportReport
-	501, // 332: relay.server.v1.AdminGetSupportReportResponse.comments:type_name -> relay.server.v1.SupportReportComment
-	501, // 333: relay.server.v1.AdminAddSupportReportCommentResponse.comment:type_name -> relay.server.v1.SupportReportComment
-	500, // 334: relay.server.v1.AdminUpdateSupportReportStatusResponse.report:type_name -> relay.server.v1.SupportReport
-	539, // 335: relay.server.v1.OrgSSOConnection.created_at:type_name -> google.protobuf.Timestamp
-	539, // 336: relay.server.v1.OrgSSOConnection.updated_at:type_name -> google.protobuf.Timestamp
-	520, // 337: relay.server.v1.GetOrgSSOConnectionResponse.connection:type_name -> relay.server.v1.OrgSSOConnection
-	520, // 338: relay.server.v1.UpsertOrgSSOConnectionResponse.connection:type_name -> relay.server.v1.OrgSSOConnection
-	529, // 339: relay.server.v1.ListPostgreSQLExtensionsResponse.extensions:type_name -> relay.server.v1.PostgreSQLExtensionInfo
-	6,   // 340: relay.server.v1.Distribution.CloudsEntry.value:type_name -> relay.server.v1.CloudRegions
-	7,   // 341: relay.server.v1.CloudRegions.RegionsEntry.value:type_name -> relay.server.v1.RegionPlacement
-	126, // 342: relay.server.v1.ServerService.WhoAmI:input_type -> relay.server.v1.WhoAmIRequest
-	308, // 343: relay.server.v1.ServerService.Logout:input_type -> relay.server.v1.LogoutRequest
-	311, // 344: relay.server.v1.ServerService.ListSessions:input_type -> relay.server.v1.ListSessionsRequest
-	313, // 345: relay.server.v1.ServerService.RevokeSession:input_type -> relay.server.v1.RevokeSessionRequest
-	130, // 346: relay.server.v1.ServerService.GetMaintenanceBanner:input_type -> relay.server.v1.GetMaintenanceBannerRequest
-	316, // 347: relay.server.v1.ServerService.CreateAPIKey:input_type -> relay.server.v1.CreateAPIKeyRequest
-	318, // 348: relay.server.v1.ServerService.ListAPIKeys:input_type -> relay.server.v1.ListAPIKeysRequest
-	320, // 349: relay.server.v1.ServerService.UpdateAPIKey:input_type -> relay.server.v1.UpdateAPIKeyRequest
-	322, // 350: relay.server.v1.ServerService.RevokeAPIKey:input_type -> relay.server.v1.RevokeAPIKeyRequest
-	231, // 351: relay.server.v1.ServerService.ListConnections:input_type -> relay.server.v1.ListConnectionsRequest
-	233, // 352: relay.server.v1.ServerService.GetConnections:input_type -> relay.server.v1.GetConnectionsRequest
-	235, // 353: relay.server.v1.ServerService.CreateConnection:input_type -> relay.server.v1.CreateConnectionRequest
-	237, // 354: relay.server.v1.ServerService.DeleteConnection:input_type -> relay.server.v1.DeleteConnectionRequest
-	239, // 355: relay.server.v1.ServerService.UpdateConnection:input_type -> relay.server.v1.UpdateConnectionRequest
-	241, // 356: relay.server.v1.ServerService.IssueTunnelToken:input_type -> relay.server.v1.IssueTunnelTokenRequest
-	243, // 357: relay.server.v1.ServerService.ResolveTunnelToken:input_type -> relay.server.v1.ResolveTunnelTokenRequest
-	246, // 358: relay.server.v1.ServerService.ReportTunnelSessions:input_type -> relay.server.v1.ReportTunnelSessionsRequest
-	249, // 359: relay.server.v1.ServerService.ListTunnelSessions:input_type -> relay.server.v1.ListTunnelSessionsRequest
-	267, // 360: relay.server.v1.ServerService.ListConnectionGroups:input_type -> relay.server.v1.ListConnectionGroupsRequest
-	269, // 361: relay.server.v1.ServerService.CreateConnectionGroup:input_type -> relay.server.v1.CreateConnectionGroupRequest
-	271, // 362: relay.server.v1.ServerService.DeleteConnectionGroup:input_type -> relay.server.v1.DeleteConnectionGroupRequest
-	273, // 363: relay.server.v1.ServerService.UpdateConnectionGroup:input_type -> relay.server.v1.UpdateConnectionGroupRequest
-	275, // 364: relay.server.v1.ServerService.AddConnectionToGroup:input_type -> relay.server.v1.AddConnectionToGroupRequest
-	277, // 365: relay.server.v1.ServerService.RemoveConnectionFromGroup:input_type -> relay.server.v1.RemoveConnectionFromGroupRequest
-	253, // 366: relay.server.v1.ServerService.ListPolicies:input_type -> relay.server.v1.ListPoliciesRequest
-	255, // 367: relay.server.v1.ServerService.GetPolicy:input_type -> relay.server.v1.GetPolicyRequest
-	257, // 368: relay.server.v1.ServerService.CreatePolicy:input_type -> relay.server.v1.CreatePolicyRequest
-	259, // 369: relay.server.v1.ServerService.UpdatePolicy:input_type -> relay.server.v1.UpdatePolicyRequest
-	261, // 370: relay.server.v1.ServerService.DeletePolicy:input_type -> relay.server.v1.DeletePolicyRequest
-	263, // 371: relay.server.v1.ServerService.SetConnectionPolicies:input_type -> relay.server.v1.SetConnectionPoliciesRequest
-	265, // 372: relay.server.v1.ServerService.ListConnectionPolicies:input_type -> relay.server.v1.ListConnectionPoliciesRequest
-	280, // 373: relay.server.v1.ServerService.ListAccessGrants:input_type -> relay.server.v1.ListAccessGrantsRequest
-	282, // 374: relay.server.v1.ServerService.CreateAccessGrant:input_type -> relay.server.v1.CreateAccessGrantRequest
-	284, // 375: relay.server.v1.ServerService.DeleteAccessGrant:input_type -> relay.server.v1.DeleteAccessGrantRequest
-	287, // 376: relay.server.v1.ServerService.ListTeams:input_type -> relay.server.v1.ListTeamsRequest
-	289, // 377: relay.server.v1.ServerService.CreateTeam:input_type -> relay.server.v1.CreateTeamRequest
-	291, // 378: relay.server.v1.ServerService.DeleteTeam:input_type -> relay.server.v1.DeleteTeamRequest
-	293, // 379: relay.server.v1.ServerService.AddTeamMember:input_type -> relay.server.v1.AddTeamMemberRequest
-	295, // 380: relay.server.v1.ServerService.RemoveTeamMember:input_type -> relay.server.v1.RemoveTeamMemberRequest
-	298, // 381: relay.server.v1.ServerService.ListMembers:input_type -> relay.server.v1.ListMembersRequest
-	300, // 382: relay.server.v1.ServerService.SetMemberRole:input_type -> relay.server.v1.SetMemberRoleRequest
-	302, // 383: relay.server.v1.ServerService.RemoveMember:input_type -> relay.server.v1.RemoveMemberRequest
-	304, // 384: relay.server.v1.ServerService.UpdateMember:input_type -> relay.server.v1.UpdateMemberRequest
-	306, // 385: relay.server.v1.ServerService.RevokeUserSessions:input_type -> relay.server.v1.RevokeUserSessionsRequest
-	326, // 386: relay.server.v1.ServerService.InviteMember:input_type -> relay.server.v1.InviteMemberRequest
-	328, // 387: relay.server.v1.ServerService.ListInvitations:input_type -> relay.server.v1.ListInvitationsRequest
-	330, // 388: relay.server.v1.ServerService.RevokeInvitation:input_type -> relay.server.v1.RevokeInvitationRequest
-	332, // 389: relay.server.v1.ServerService.GetInvitation:input_type -> relay.server.v1.GetInvitationRequest
-	334, // 390: relay.server.v1.ServerService.AcceptInvitation:input_type -> relay.server.v1.AcceptInvitationRequest
-	337, // 391: relay.server.v1.ServerService.ListAgents:input_type -> relay.server.v1.ListAgentsRequest
-	339, // 392: relay.server.v1.ServerService.DeleteAgent:input_type -> relay.server.v1.DeleteAgentRequest
-	341, // 393: relay.server.v1.ServerService.CreateEnrollmentToken:input_type -> relay.server.v1.CreateEnrollmentTokenRequest
-	344, // 394: relay.server.v1.ServerService.ListEnrollmentTokens:input_type -> relay.server.v1.ListEnrollmentTokensRequest
-	346, // 395: relay.server.v1.ServerService.DeleteEnrollmentToken:input_type -> relay.server.v1.DeleteEnrollmentTokenRequest
-	348, // 396: relay.server.v1.ServerService.EnrollAgent:input_type -> relay.server.v1.EnrollAgentRequest
-	351, // 397: relay.server.v1.ServerService.Heartbeat:input_type -> relay.server.v1.HeartbeatRequest
-	354, // 398: relay.server.v1.ServerService.Deregister:input_type -> relay.server.v1.DeregisterRequest
-	369, // 399: relay.server.v1.ServerService.ListAgentPools:input_type -> relay.server.v1.ListAgentPoolsRequest
-	371, // 400: relay.server.v1.ServerService.CreateAgentPool:input_type -> relay.server.v1.CreateAgentPoolRequest
-	373, // 401: relay.server.v1.ServerService.DeleteAgentPool:input_type -> relay.server.v1.DeleteAgentPoolRequest
-	375, // 402: relay.server.v1.ServerService.UpdateAgentPool:input_type -> relay.server.v1.UpdateAgentPoolRequest
-	468, // 403: relay.server.v1.ServerService.ResolveConnectionCredential:input_type -> relay.server.v1.ResolveConnectionCredentialRequest
-	470, // 404: relay.server.v1.ServerService.ResolveExternalSecretSource:input_type -> relay.server.v1.ResolveExternalSecretSourceRequest
-	460, // 405: relay.server.v1.ServerService.ListExternalSecretSources:input_type -> relay.server.v1.ListExternalSecretSourcesRequest
-	462, // 406: relay.server.v1.ServerService.GetExternalSecretSource:input_type -> relay.server.v1.GetExternalSecretSourceRequest
-	464, // 407: relay.server.v1.ServerService.UpsertExternalSecretSource:input_type -> relay.server.v1.UpsertExternalSecretSourceRequest
-	466, // 408: relay.server.v1.ServerService.DeleteExternalSecretSource:input_type -> relay.server.v1.DeleteExternalSecretSourceRequest
-	473, // 409: relay.server.v1.ServerService.GetCloudIntegrationSetup:input_type -> relay.server.v1.GetCloudIntegrationSetupRequest
-	475, // 410: relay.server.v1.ServerService.ListCloudIntegrations:input_type -> relay.server.v1.ListCloudIntegrationsRequest
-	477, // 411: relay.server.v1.ServerService.GetCloudIntegration:input_type -> relay.server.v1.GetCloudIntegrationRequest
-	479, // 412: relay.server.v1.ServerService.CreateCloudIntegration:input_type -> relay.server.v1.CreateCloudIntegrationRequest
-	481, // 413: relay.server.v1.ServerService.UpdateCloudIntegration:input_type -> relay.server.v1.UpdateCloudIntegrationRequest
-	483, // 414: relay.server.v1.ServerService.DeleteCloudIntegration:input_type -> relay.server.v1.DeleteCloudIntegrationRequest
-	485, // 415: relay.server.v1.ServerService.TestCloudIntegration:input_type -> relay.server.v1.TestCloudIntegrationRequest
-	489, // 416: relay.server.v1.ServerService.GetLogStream:input_type -> relay.server.v1.GetLogStreamRequest
-	491, // 417: relay.server.v1.ServerService.UpsertLogStream:input_type -> relay.server.v1.UpsertLogStreamRequest
-	494, // 418: relay.server.v1.ServerService.GetBackupAutoExport:input_type -> relay.server.v1.GetBackupAutoExportRequest
-	496, // 419: relay.server.v1.ServerService.UpsertBackupAutoExport:input_type -> relay.server.v1.UpsertBackupAutoExportRequest
-	498, // 420: relay.server.v1.ServerService.ExportToCloud:input_type -> relay.server.v1.ExportToCloudRequest
-	357, // 421: relay.server.v1.ServerService.IngestAuditEvents:input_type -> relay.server.v1.IngestAuditEventsRequest
-	359, // 422: relay.server.v1.ServerService.ListAuditLogs:input_type -> relay.server.v1.ListAuditLogsRequest
-	361, // 423: relay.server.v1.ServerService.GetAuditMetrics:input_type -> relay.server.v1.GetAuditMetricsRequest
-	378, // 424: relay.server.v1.ServerService.ListActivityLogs:input_type -> relay.server.v1.ListActivityLogsRequest
-	382, // 425: relay.server.v1.ServerService.ListOrgActivityLogs:input_type -> relay.server.v1.ListOrgActivityLogsRequest
-	380, // 426: relay.server.v1.ServerService.EmitActivity:input_type -> relay.server.v1.EmitActivityRequest
-	385, // 427: relay.server.v1.ServerService.ListUserOrganizations:input_type -> relay.server.v1.ListUserOrganizationsRequest
-	387, // 428: relay.server.v1.ServerService.GetOrganization:input_type -> relay.server.v1.GetOrganizationRequest
-	389, // 429: relay.server.v1.ServerService.CreateOrganization:input_type -> relay.server.v1.CreateOrganizationRequest
-	391, // 430: relay.server.v1.ServerService.UpdateOrganization:input_type -> relay.server.v1.UpdateOrganizationRequest
-	395, // 431: relay.server.v1.ServerService.UpdateOrganizationSettings:input_type -> relay.server.v1.UpdateOrganizationSettingsRequest
-	397, // 432: relay.server.v1.ServerService.DeleteOrganization:input_type -> relay.server.v1.DeleteOrganizationRequest
-	393, // 433: relay.server.v1.ServerService.SwitchOrganization:input_type -> relay.server.v1.SwitchOrganizationRequest
-	410, // 434: relay.server.v1.ServerService.GetOrgOverview:input_type -> relay.server.v1.GetOrgOverviewRequest
-	400, // 435: relay.server.v1.ServerService.ListWorkspaces:input_type -> relay.server.v1.ListWorkspacesRequest
-	402, // 436: relay.server.v1.ServerService.GetWorkspace:input_type -> relay.server.v1.GetWorkspaceRequest
-	404, // 437: relay.server.v1.ServerService.CreateWorkspace:input_type -> relay.server.v1.CreateWorkspaceRequest
-	406, // 438: relay.server.v1.ServerService.UpdateWorkspace:input_type -> relay.server.v1.UpdateWorkspaceRequest
-	408, // 439: relay.server.v1.ServerService.DeleteWorkspace:input_type -> relay.server.v1.DeleteWorkspaceRequest
-	415, // 440: relay.server.v1.ServerService.AddWorkspaceMember:input_type -> relay.server.v1.AddWorkspaceMemberRequest
-	417, // 441: relay.server.v1.ServerService.RemoveWorkspaceMember:input_type -> relay.server.v1.RemoveWorkspaceMemberRequest
-	419, // 442: relay.server.v1.ServerService.ListWorkspaceMembers:input_type -> relay.server.v1.ListWorkspaceMembersRequest
-	421, // 443: relay.server.v1.ServerService.AddWorkspaceTeam:input_type -> relay.server.v1.AddWorkspaceTeamRequest
-	423, // 444: relay.server.v1.ServerService.RemoveWorkspaceTeam:input_type -> relay.server.v1.RemoveWorkspaceTeamRequest
-	425, // 445: relay.server.v1.ServerService.ListWorkspaceTeams:input_type -> relay.server.v1.ListWorkspaceTeamsRequest
-	427, // 446: relay.server.v1.ServerService.SetWorkspaceMemberRole:input_type -> relay.server.v1.SetWorkspaceMemberRoleRequest
-	429, // 447: relay.server.v1.ServerService.SetWorkspaceTeamRole:input_type -> relay.server.v1.SetWorkspaceTeamRoleRequest
-	433, // 448: relay.server.v1.ServerService.ListRoles:input_type -> relay.server.v1.ListRolesRequest
-	435, // 449: relay.server.v1.ServerService.CreateRole:input_type -> relay.server.v1.CreateRoleRequest
-	437, // 450: relay.server.v1.ServerService.UpdateRole:input_type -> relay.server.v1.UpdateRoleRequest
-	439, // 451: relay.server.v1.ServerService.DeleteRole:input_type -> relay.server.v1.DeleteRoleRequest
-	442, // 452: relay.server.v1.ServerService.ListRoleBindings:input_type -> relay.server.v1.ListRoleBindingsRequest
-	444, // 453: relay.server.v1.ServerService.CreateRoleBinding:input_type -> relay.server.v1.CreateRoleBindingRequest
-	446, // 454: relay.server.v1.ServerService.DeleteRoleBinding:input_type -> relay.server.v1.DeleteRoleBindingRequest
-	50,  // 455: relay.server.v1.ServerService.ListDatabases:input_type -> relay.server.v1.ListDatabasesRequest
-	52,  // 456: relay.server.v1.ServerService.CreateDatabase:input_type -> relay.server.v1.CreateDatabaseRequest
-	54,  // 457: relay.server.v1.ServerService.RestoreDatabase:input_type -> relay.server.v1.RestoreDatabaseRequest
-	56,  // 458: relay.server.v1.ServerService.GetDatabase:input_type -> relay.server.v1.GetDatabaseRequest
-	58,  // 459: relay.server.v1.ServerService.UpdateDatabase:input_type -> relay.server.v1.UpdateDatabaseRequest
-	61,  // 460: relay.server.v1.ServerService.ListPostgreSQLParameters:input_type -> relay.server.v1.ListPostgreSQLParametersRequest
-	63,  // 461: relay.server.v1.ServerService.WatchDatabase:input_type -> relay.server.v1.WatchDatabaseRequest
-	66,  // 462: relay.server.v1.ServerService.ListPendingOperations:input_type -> relay.server.v1.ListPendingOperationsRequest
-	68,  // 463: relay.server.v1.ServerService.DeleteDatabase:input_type -> relay.server.v1.DeleteDatabaseRequest
-	70,  // 464: relay.server.v1.ServerService.RetryDeleteDatabase:input_type -> relay.server.v1.RetryDeleteDatabaseRequest
-	72,  // 465: relay.server.v1.ServerService.PauseDatabase:input_type -> relay.server.v1.PauseDatabaseRequest
-	74,  // 466: relay.server.v1.ServerService.ResumeDatabase:input_type -> relay.server.v1.ResumeDatabaseRequest
-	76,  // 467: relay.server.v1.ServerService.GetDatabaseStatus:input_type -> relay.server.v1.GetDatabaseStatusRequest
-	78,  // 468: relay.server.v1.ServerService.ListDatabaseNodes:input_type -> relay.server.v1.ListDatabaseNodesRequest
-	80,  // 469: relay.server.v1.ServerService.GetDatabaseLogs:input_type -> relay.server.v1.GetDatabaseLogsRequest
-	364, // 470: relay.server.v1.ServerService.GetDatabaseAnalytics:input_type -> relay.server.v1.GetDatabaseAnalyticsRequest
-	14,  // 471: relay.server.v1.ServerService.GetDatabaseConnection:input_type -> relay.server.v1.GetDatabaseConnectionRequest
-	18,  // 472: relay.server.v1.ServerService.ListIPAllowlist:input_type -> relay.server.v1.ListIPAllowlistRequest
-	20,  // 473: relay.server.v1.ServerService.AddIPAllowlistEntry:input_type -> relay.server.v1.AddIPAllowlistEntryRequest
-	22,  // 474: relay.server.v1.ServerService.UpdateIPAllowlistEntry:input_type -> relay.server.v1.UpdateIPAllowlistEntryRequest
-	24,  // 475: relay.server.v1.ServerService.RemoveIPAllowlistEntry:input_type -> relay.server.v1.RemoveIPAllowlistEntryRequest
-	27,  // 476: relay.server.v1.ServerService.ListPrivateEndpointRegions:input_type -> relay.server.v1.ListPrivateEndpointRegionsRequest
-	32,  // 477: relay.server.v1.ServerService.CreatePrivateEndpointService:input_type -> relay.server.v1.CreatePrivateEndpointServiceRequest
-	34,  // 478: relay.server.v1.ServerService.ListPrivateEndpointServices:input_type -> relay.server.v1.ListPrivateEndpointServicesRequest
-	36,  // 479: relay.server.v1.ServerService.GetPrivateEndpointService:input_type -> relay.server.v1.GetPrivateEndpointServiceRequest
-	38,  // 480: relay.server.v1.ServerService.DeletePrivateEndpointService:input_type -> relay.server.v1.DeletePrivateEndpointServiceRequest
-	40,  // 481: relay.server.v1.ServerService.CreatePrivateEndpoint:input_type -> relay.server.v1.CreatePrivateEndpointRequest
-	42,  // 482: relay.server.v1.ServerService.GetPrivateEndpoint:input_type -> relay.server.v1.GetPrivateEndpointRequest
-	44,  // 483: relay.server.v1.ServerService.DeletePrivateEndpoint:input_type -> relay.server.v1.DeletePrivateEndpointRequest
-	92,  // 484: relay.server.v1.ServerService.ListBackupSchedules:input_type -> relay.server.v1.ListBackupSchedulesRequest
-	94,  // 485: relay.server.v1.ServerService.ListBackups:input_type -> relay.server.v1.ListBackupsRequest
-	96,  // 486: relay.server.v1.ServerService.UpdateBackupSchedule:input_type -> relay.server.v1.UpdateBackupScheduleRequest
-	98,  // 487: relay.server.v1.ServerService.CreateBackup:input_type -> relay.server.v1.CreateBackupRequest
-	100, // 488: relay.server.v1.ServerService.DeleteBackup:input_type -> relay.server.v1.DeleteBackupRequest
-	104, // 489: relay.server.v1.ServerService.ListDatabaseUsers:input_type -> relay.server.v1.ListDatabaseUsersRequest
-	106, // 490: relay.server.v1.ServerService.GetDatabaseUser:input_type -> relay.server.v1.GetDatabaseUserRequest
-	108, // 491: relay.server.v1.ServerService.CreateDatabaseUser:input_type -> relay.server.v1.CreateDatabaseUserRequest
-	110, // 492: relay.server.v1.ServerService.UpdateDatabaseUser:input_type -> relay.server.v1.UpdateDatabaseUserRequest
-	112, // 493: relay.server.v1.ServerService.DeleteDatabaseUser:input_type -> relay.server.v1.DeleteDatabaseUserRequest
-	115, // 494: relay.server.v1.ServerService.ListLogicalDatabases:input_type -> relay.server.v1.ListLogicalDatabasesRequest
-	117, // 495: relay.server.v1.ServerService.CreateLogicalDatabase:input_type -> relay.server.v1.CreateLogicalDatabaseRequest
-	119, // 496: relay.server.v1.ServerService.UpdateLogicalDatabase:input_type -> relay.server.v1.UpdateLogicalDatabaseRequest
-	121, // 497: relay.server.v1.ServerService.DeleteLogicalDatabase:input_type -> relay.server.v1.DeleteLogicalDatabaseRequest
-	124, // 498: relay.server.v1.ServerService.ListDatabaseProviders:input_type -> relay.server.v1.ListDatabaseProvidersRequest
-	451, // 499: relay.server.v1.ServerService.GetBillingState:input_type -> relay.server.v1.GetBillingStateRequest
-	453, // 500: relay.server.v1.ServerService.CreateCheckoutSession:input_type -> relay.server.v1.CreateCheckoutSessionRequest
-	457, // 501: relay.server.v1.ServerService.CreateBillingPortalSession:input_type -> relay.server.v1.CreateBillingPortalSessionRequest
-	455, // 502: relay.server.v1.ServerService.ChangePlan:input_type -> relay.server.v1.ChangePlanRequest
-	502, // 503: relay.server.v1.ServerService.CreateSupportReport:input_type -> relay.server.v1.CreateSupportReportRequest
-	504, // 504: relay.server.v1.ServerService.ListSupportReports:input_type -> relay.server.v1.ListSupportReportsRequest
-	506, // 505: relay.server.v1.ServerService.GetSupportReport:input_type -> relay.server.v1.GetSupportReportRequest
-	508, // 506: relay.server.v1.ServerService.AddSupportReportComment:input_type -> relay.server.v1.AddSupportReportCommentRequest
-	510, // 507: relay.server.v1.ServerService.UpdateSupportReportStatus:input_type -> relay.server.v1.UpdateSupportReportStatusRequest
-	521, // 508: relay.server.v1.ServerService.GetOrgSSOConnection:input_type -> relay.server.v1.GetOrgSSOConnectionRequest
-	523, // 509: relay.server.v1.ServerService.UpsertOrgSSOConnection:input_type -> relay.server.v1.UpsertOrgSSOConnectionRequest
-	525, // 510: relay.server.v1.ServerService.DeleteOrgSSOConnection:input_type -> relay.server.v1.DeleteOrgSSOConnectionRequest
-	527, // 511: relay.server.v1.ServerService.TestOrgSSOConnection:input_type -> relay.server.v1.TestOrgSSOConnectionRequest
-	530, // 512: relay.server.v1.ServerService.ListPostgreSQLExtensions:input_type -> relay.server.v1.ListPostgreSQLExtensionsRequest
-	133, // 513: relay.server.v1.AdminService.AdminListOrganizations:input_type -> relay.server.v1.AdminListOrganizationsRequest
-	135, // 514: relay.server.v1.AdminService.AdminGetOrganization:input_type -> relay.server.v1.AdminGetOrganizationRequest
-	142, // 515: relay.server.v1.AdminService.AdminGetOrganizationResources:input_type -> relay.server.v1.AdminGetOrganizationResourcesRequest
-	189, // 516: relay.server.v1.AdminService.AdminGetOrganizationBilling:input_type -> relay.server.v1.AdminGetOrganizationBillingRequest
-	190, // 517: relay.server.v1.AdminService.AdminSetOrganizationPlan:input_type -> relay.server.v1.AdminSetOrganizationPlanRequest
-	192, // 518: relay.server.v1.AdminService.AdminGetOrganizationCost:input_type -> relay.server.v1.AdminGetOrganizationCostRequest
-	195, // 519: relay.server.v1.AdminService.AdminListSignupAllowlist:input_type -> relay.server.v1.AdminListSignupAllowlistRequest
-	197, // 520: relay.server.v1.AdminService.AdminAddSignupAllowlistEntry:input_type -> relay.server.v1.AdminAddSignupAllowlistEntryRequest
-	199, // 521: relay.server.v1.AdminService.AdminRemoveSignupAllowlistEntry:input_type -> relay.server.v1.AdminRemoveSignupAllowlistEntryRequest
-	202, // 522: relay.server.v1.AdminService.AdminListSignupAttempts:input_type -> relay.server.v1.AdminListSignupAttemptsRequest
-	204, // 523: relay.server.v1.AdminService.AdminDismissSignupAttempt:input_type -> relay.server.v1.AdminDismissSignupAttemptRequest
-	207, // 524: relay.server.v1.AdminService.AdminListAuditLog:input_type -> relay.server.v1.AdminListAuditLogRequest
-	209, // 525: relay.server.v1.AdminService.AdminGetCloudCosts:input_type -> relay.server.v1.AdminGetCloudCostsRequest
-	215, // 526: relay.server.v1.AdminService.AdminGetRevenueOverview:input_type -> relay.server.v1.AdminGetRevenueOverviewRequest
-	512, // 527: relay.server.v1.AdminService.AdminListSupportReports:input_type -> relay.server.v1.AdminListSupportReportsRequest
-	514, // 528: relay.server.v1.AdminService.AdminGetSupportReport:input_type -> relay.server.v1.AdminGetSupportReportRequest
-	516, // 529: relay.server.v1.AdminService.AdminAddSupportReportComment:input_type -> relay.server.v1.AdminAddSupportReportCommentRequest
-	518, // 530: relay.server.v1.AdminService.AdminUpdateSupportReportStatus:input_type -> relay.server.v1.AdminUpdateSupportReportStatusRequest
-	183, // 531: relay.server.v1.AdminService.AdminListMembers:input_type -> relay.server.v1.AdminListMembersRequest
-	184, // 532: relay.server.v1.AdminService.AdminSetMemberRole:input_type -> relay.server.v1.AdminSetMemberRoleRequest
-	185, // 533: relay.server.v1.AdminService.AdminRemoveMember:input_type -> relay.server.v1.AdminRemoveMemberRequest
-	186, // 534: relay.server.v1.AdminService.AdminInviteMember:input_type -> relay.server.v1.AdminInviteMemberRequest
-	187, // 535: relay.server.v1.AdminService.AdminListInvitations:input_type -> relay.server.v1.AdminListInvitationsRequest
-	188, // 536: relay.server.v1.AdminService.AdminRevokeInvitation:input_type -> relay.server.v1.AdminRevokeInvitationRequest
-	171, // 537: relay.server.v1.AdminService.AdminListClusters:input_type -> relay.server.v1.AdminListClustersRequest
-	174, // 538: relay.server.v1.AdminService.AdminListPendingOperations:input_type -> relay.server.v1.AdminListPendingOperationsRequest
-	176, // 539: relay.server.v1.AdminService.AdminListAgents:input_type -> relay.server.v1.AdminListAgentsRequest
-	179, // 540: relay.server.v1.AdminService.AdminListTunnelSessions:input_type -> relay.server.v1.AdminListTunnelSessionsRequest
-	181, // 541: relay.server.v1.AdminService.AdminRetryDeleteDatabase:input_type -> relay.server.v1.AdminRetryDeleteDatabaseRequest
-	159, // 542: relay.server.v1.AdminService.AdminSearchUsers:input_type -> relay.server.v1.AdminSearchUsersRequest
-	161, // 543: relay.server.v1.AdminService.AdminGetUser:input_type -> relay.server.v1.AdminGetUserRequest
-	165, // 544: relay.server.v1.AdminService.AdminRevokeUserSessions:input_type -> relay.server.v1.AdminRevokeUserSessionsRequest
-	149, // 545: relay.server.v1.AdminService.AdminGetOrganizationActivity:input_type -> relay.server.v1.AdminGetOrganizationActivityRequest
-	152, // 546: relay.server.v1.AdminService.AdminGetOrganizationSecurity:input_type -> relay.server.v1.AdminGetOrganizationSecurityRequest
-	144, // 547: relay.server.v1.AdminService.AdminGetPlatformOverview:input_type -> relay.server.v1.AdminGetPlatformOverviewRequest
-	147, // 548: relay.server.v1.AdminService.AdminListOrgActivation:input_type -> relay.server.v1.AdminListOrgActivationRequest
-	167, // 549: relay.server.v1.AdminService.AdminSuspendOrganization:input_type -> relay.server.v1.AdminSuspendOrganizationRequest
-	169, // 550: relay.server.v1.AdminService.AdminUnsuspendOrganization:input_type -> relay.server.v1.AdminUnsuspendOrganizationRequest
-	219, // 551: relay.server.v1.AdminService.AdminGetMaintenanceBanner:input_type -> relay.server.v1.AdminGetMaintenanceBannerRequest
-	221, // 552: relay.server.v1.AdminService.AdminSetMaintenanceBanner:input_type -> relay.server.v1.AdminSetMaintenanceBannerRequest
-	223, // 553: relay.server.v1.AdminService.AdminClearMaintenanceBanner:input_type -> relay.server.v1.AdminClearMaintenanceBannerRequest
-	127, // 554: relay.server.v1.ServerService.WhoAmI:output_type -> relay.server.v1.WhoAmIResponse
-	309, // 555: relay.server.v1.ServerService.Logout:output_type -> relay.server.v1.LogoutResponse
-	312, // 556: relay.server.v1.ServerService.ListSessions:output_type -> relay.server.v1.ListSessionsResponse
-	314, // 557: relay.server.v1.ServerService.RevokeSession:output_type -> relay.server.v1.RevokeSessionResponse
-	131, // 558: relay.server.v1.ServerService.GetMaintenanceBanner:output_type -> relay.server.v1.GetMaintenanceBannerResponse
-	317, // 559: relay.server.v1.ServerService.CreateAPIKey:output_type -> relay.server.v1.CreateAPIKeyResponse
-	319, // 560: relay.server.v1.ServerService.ListAPIKeys:output_type -> relay.server.v1.ListAPIKeysResponse
-	321, // 561: relay.server.v1.ServerService.UpdateAPIKey:output_type -> relay.server.v1.UpdateAPIKeyResponse
-	323, // 562: relay.server.v1.ServerService.RevokeAPIKey:output_type -> relay.server.v1.RevokeAPIKeyResponse
-	232, // 563: relay.server.v1.ServerService.ListConnections:output_type -> relay.server.v1.ListConnectionsResponse
-	234, // 564: relay.server.v1.ServerService.GetConnections:output_type -> relay.server.v1.GetConnectionsResponse
-	236, // 565: relay.server.v1.ServerService.CreateConnection:output_type -> relay.server.v1.CreateConnectionResponse
-	238, // 566: relay.server.v1.ServerService.DeleteConnection:output_type -> relay.server.v1.DeleteConnectionResponse
-	240, // 567: relay.server.v1.ServerService.UpdateConnection:output_type -> relay.server.v1.UpdateConnectionResponse
-	242, // 568: relay.server.v1.ServerService.IssueTunnelToken:output_type -> relay.server.v1.IssueTunnelTokenResponse
-	244, // 569: relay.server.v1.ServerService.ResolveTunnelToken:output_type -> relay.server.v1.ResolveTunnelTokenResponse
-	247, // 570: relay.server.v1.ServerService.ReportTunnelSessions:output_type -> relay.server.v1.ReportTunnelSessionsResponse
-	250, // 571: relay.server.v1.ServerService.ListTunnelSessions:output_type -> relay.server.v1.ListTunnelSessionsResponse
-	268, // 572: relay.server.v1.ServerService.ListConnectionGroups:output_type -> relay.server.v1.ListConnectionGroupsResponse
-	270, // 573: relay.server.v1.ServerService.CreateConnectionGroup:output_type -> relay.server.v1.CreateConnectionGroupResponse
-	272, // 574: relay.server.v1.ServerService.DeleteConnectionGroup:output_type -> relay.server.v1.DeleteConnectionGroupResponse
-	274, // 575: relay.server.v1.ServerService.UpdateConnectionGroup:output_type -> relay.server.v1.UpdateConnectionGroupResponse
-	276, // 576: relay.server.v1.ServerService.AddConnectionToGroup:output_type -> relay.server.v1.AddConnectionToGroupResponse
-	278, // 577: relay.server.v1.ServerService.RemoveConnectionFromGroup:output_type -> relay.server.v1.RemoveConnectionFromGroupResponse
-	254, // 578: relay.server.v1.ServerService.ListPolicies:output_type -> relay.server.v1.ListPoliciesResponse
-	256, // 579: relay.server.v1.ServerService.GetPolicy:output_type -> relay.server.v1.GetPolicyResponse
-	258, // 580: relay.server.v1.ServerService.CreatePolicy:output_type -> relay.server.v1.CreatePolicyResponse
-	260, // 581: relay.server.v1.ServerService.UpdatePolicy:output_type -> relay.server.v1.UpdatePolicyResponse
-	262, // 582: relay.server.v1.ServerService.DeletePolicy:output_type -> relay.server.v1.DeletePolicyResponse
-	264, // 583: relay.server.v1.ServerService.SetConnectionPolicies:output_type -> relay.server.v1.SetConnectionPoliciesResponse
-	266, // 584: relay.server.v1.ServerService.ListConnectionPolicies:output_type -> relay.server.v1.ListConnectionPoliciesResponse
-	281, // 585: relay.server.v1.ServerService.ListAccessGrants:output_type -> relay.server.v1.ListAccessGrantsResponse
-	283, // 586: relay.server.v1.ServerService.CreateAccessGrant:output_type -> relay.server.v1.CreateAccessGrantResponse
-	285, // 587: relay.server.v1.ServerService.DeleteAccessGrant:output_type -> relay.server.v1.DeleteAccessGrantResponse
-	288, // 588: relay.server.v1.ServerService.ListTeams:output_type -> relay.server.v1.ListTeamsResponse
-	290, // 589: relay.server.v1.ServerService.CreateTeam:output_type -> relay.server.v1.CreateTeamResponse
-	292, // 590: relay.server.v1.ServerService.DeleteTeam:output_type -> relay.server.v1.DeleteTeamResponse
-	294, // 591: relay.server.v1.ServerService.AddTeamMember:output_type -> relay.server.v1.AddTeamMemberResponse
-	296, // 592: relay.server.v1.ServerService.RemoveTeamMember:output_type -> relay.server.v1.RemoveTeamMemberResponse
-	299, // 593: relay.server.v1.ServerService.ListMembers:output_type -> relay.server.v1.ListMembersResponse
-	301, // 594: relay.server.v1.ServerService.SetMemberRole:output_type -> relay.server.v1.SetMemberRoleResponse
-	303, // 595: relay.server.v1.ServerService.RemoveMember:output_type -> relay.server.v1.RemoveMemberResponse
-	305, // 596: relay.server.v1.ServerService.UpdateMember:output_type -> relay.server.v1.UpdateMemberResponse
-	307, // 597: relay.server.v1.ServerService.RevokeUserSessions:output_type -> relay.server.v1.RevokeUserSessionsResponse
-	327, // 598: relay.server.v1.ServerService.InviteMember:output_type -> relay.server.v1.InviteMemberResponse
-	329, // 599: relay.server.v1.ServerService.ListInvitations:output_type -> relay.server.v1.ListInvitationsResponse
-	331, // 600: relay.server.v1.ServerService.RevokeInvitation:output_type -> relay.server.v1.RevokeInvitationResponse
-	333, // 601: relay.server.v1.ServerService.GetInvitation:output_type -> relay.server.v1.GetInvitationResponse
-	335, // 602: relay.server.v1.ServerService.AcceptInvitation:output_type -> relay.server.v1.AcceptInvitationResponse
-	338, // 603: relay.server.v1.ServerService.ListAgents:output_type -> relay.server.v1.ListAgentsResponse
-	340, // 604: relay.server.v1.ServerService.DeleteAgent:output_type -> relay.server.v1.DeleteAgentResponse
-	342, // 605: relay.server.v1.ServerService.CreateEnrollmentToken:output_type -> relay.server.v1.CreateEnrollmentTokenResponse
-	345, // 606: relay.server.v1.ServerService.ListEnrollmentTokens:output_type -> relay.server.v1.ListEnrollmentTokensResponse
-	347, // 607: relay.server.v1.ServerService.DeleteEnrollmentToken:output_type -> relay.server.v1.DeleteEnrollmentTokenResponse
-	349, // 608: relay.server.v1.ServerService.EnrollAgent:output_type -> relay.server.v1.EnrollAgentResponse
-	353, // 609: relay.server.v1.ServerService.Heartbeat:output_type -> relay.server.v1.HeartbeatResponse
-	355, // 610: relay.server.v1.ServerService.Deregister:output_type -> relay.server.v1.DeregisterResponse
-	370, // 611: relay.server.v1.ServerService.ListAgentPools:output_type -> relay.server.v1.ListAgentPoolsResponse
-	372, // 612: relay.server.v1.ServerService.CreateAgentPool:output_type -> relay.server.v1.CreateAgentPoolResponse
-	374, // 613: relay.server.v1.ServerService.DeleteAgentPool:output_type -> relay.server.v1.DeleteAgentPoolResponse
-	376, // 614: relay.server.v1.ServerService.UpdateAgentPool:output_type -> relay.server.v1.UpdateAgentPoolResponse
-	469, // 615: relay.server.v1.ServerService.ResolveConnectionCredential:output_type -> relay.server.v1.ResolveConnectionCredentialResponse
-	471, // 616: relay.server.v1.ServerService.ResolveExternalSecretSource:output_type -> relay.server.v1.ResolveExternalSecretSourceResponse
-	461, // 617: relay.server.v1.ServerService.ListExternalSecretSources:output_type -> relay.server.v1.ListExternalSecretSourcesResponse
-	463, // 618: relay.server.v1.ServerService.GetExternalSecretSource:output_type -> relay.server.v1.GetExternalSecretSourceResponse
-	465, // 619: relay.server.v1.ServerService.UpsertExternalSecretSource:output_type -> relay.server.v1.UpsertExternalSecretSourceResponse
-	467, // 620: relay.server.v1.ServerService.DeleteExternalSecretSource:output_type -> relay.server.v1.DeleteExternalSecretSourceResponse
-	474, // 621: relay.server.v1.ServerService.GetCloudIntegrationSetup:output_type -> relay.server.v1.GetCloudIntegrationSetupResponse
-	476, // 622: relay.server.v1.ServerService.ListCloudIntegrations:output_type -> relay.server.v1.ListCloudIntegrationsResponse
-	478, // 623: relay.server.v1.ServerService.GetCloudIntegration:output_type -> relay.server.v1.GetCloudIntegrationResponse
-	480, // 624: relay.server.v1.ServerService.CreateCloudIntegration:output_type -> relay.server.v1.CreateCloudIntegrationResponse
-	482, // 625: relay.server.v1.ServerService.UpdateCloudIntegration:output_type -> relay.server.v1.UpdateCloudIntegrationResponse
-	484, // 626: relay.server.v1.ServerService.DeleteCloudIntegration:output_type -> relay.server.v1.DeleteCloudIntegrationResponse
-	486, // 627: relay.server.v1.ServerService.TestCloudIntegration:output_type -> relay.server.v1.TestCloudIntegrationResponse
-	490, // 628: relay.server.v1.ServerService.GetLogStream:output_type -> relay.server.v1.GetLogStreamResponse
-	492, // 629: relay.server.v1.ServerService.UpsertLogStream:output_type -> relay.server.v1.UpsertLogStreamResponse
-	495, // 630: relay.server.v1.ServerService.GetBackupAutoExport:output_type -> relay.server.v1.GetBackupAutoExportResponse
-	497, // 631: relay.server.v1.ServerService.UpsertBackupAutoExport:output_type -> relay.server.v1.UpsertBackupAutoExportResponse
-	499, // 632: relay.server.v1.ServerService.ExportToCloud:output_type -> relay.server.v1.ExportToCloudResponse
-	358, // 633: relay.server.v1.ServerService.IngestAuditEvents:output_type -> relay.server.v1.IngestAuditEventsResponse
-	360, // 634: relay.server.v1.ServerService.ListAuditLogs:output_type -> relay.server.v1.ListAuditLogsResponse
-	363, // 635: relay.server.v1.ServerService.GetAuditMetrics:output_type -> relay.server.v1.GetAuditMetricsResponse
-	379, // 636: relay.server.v1.ServerService.ListActivityLogs:output_type -> relay.server.v1.ListActivityLogsResponse
-	383, // 637: relay.server.v1.ServerService.ListOrgActivityLogs:output_type -> relay.server.v1.ListOrgActivityLogsResponse
-	381, // 638: relay.server.v1.ServerService.EmitActivity:output_type -> relay.server.v1.EmitActivityResponse
-	386, // 639: relay.server.v1.ServerService.ListUserOrganizations:output_type -> relay.server.v1.ListUserOrganizationsResponse
-	388, // 640: relay.server.v1.ServerService.GetOrganization:output_type -> relay.server.v1.GetOrganizationResponse
-	390, // 641: relay.server.v1.ServerService.CreateOrganization:output_type -> relay.server.v1.CreateOrganizationResponse
-	392, // 642: relay.server.v1.ServerService.UpdateOrganization:output_type -> relay.server.v1.UpdateOrganizationResponse
-	396, // 643: relay.server.v1.ServerService.UpdateOrganizationSettings:output_type -> relay.server.v1.UpdateOrganizationSettingsResponse
-	398, // 644: relay.server.v1.ServerService.DeleteOrganization:output_type -> relay.server.v1.DeleteOrganizationResponse
-	394, // 645: relay.server.v1.ServerService.SwitchOrganization:output_type -> relay.server.v1.SwitchOrganizationResponse
-	411, // 646: relay.server.v1.ServerService.GetOrgOverview:output_type -> relay.server.v1.GetOrgOverviewResponse
-	401, // 647: relay.server.v1.ServerService.ListWorkspaces:output_type -> relay.server.v1.ListWorkspacesResponse
-	403, // 648: relay.server.v1.ServerService.GetWorkspace:output_type -> relay.server.v1.GetWorkspaceResponse
-	405, // 649: relay.server.v1.ServerService.CreateWorkspace:output_type -> relay.server.v1.CreateWorkspaceResponse
-	407, // 650: relay.server.v1.ServerService.UpdateWorkspace:output_type -> relay.server.v1.UpdateWorkspaceResponse
-	409, // 651: relay.server.v1.ServerService.DeleteWorkspace:output_type -> relay.server.v1.DeleteWorkspaceResponse
-	416, // 652: relay.server.v1.ServerService.AddWorkspaceMember:output_type -> relay.server.v1.AddWorkspaceMemberResponse
-	418, // 653: relay.server.v1.ServerService.RemoveWorkspaceMember:output_type -> relay.server.v1.RemoveWorkspaceMemberResponse
-	420, // 654: relay.server.v1.ServerService.ListWorkspaceMembers:output_type -> relay.server.v1.ListWorkspaceMembersResponse
-	422, // 655: relay.server.v1.ServerService.AddWorkspaceTeam:output_type -> relay.server.v1.AddWorkspaceTeamResponse
-	424, // 656: relay.server.v1.ServerService.RemoveWorkspaceTeam:output_type -> relay.server.v1.RemoveWorkspaceTeamResponse
-	426, // 657: relay.server.v1.ServerService.ListWorkspaceTeams:output_type -> relay.server.v1.ListWorkspaceTeamsResponse
-	428, // 658: relay.server.v1.ServerService.SetWorkspaceMemberRole:output_type -> relay.server.v1.SetWorkspaceMemberRoleResponse
-	430, // 659: relay.server.v1.ServerService.SetWorkspaceTeamRole:output_type -> relay.server.v1.SetWorkspaceTeamRoleResponse
-	434, // 660: relay.server.v1.ServerService.ListRoles:output_type -> relay.server.v1.ListRolesResponse
-	436, // 661: relay.server.v1.ServerService.CreateRole:output_type -> relay.server.v1.CreateRoleResponse
-	438, // 662: relay.server.v1.ServerService.UpdateRole:output_type -> relay.server.v1.UpdateRoleResponse
-	440, // 663: relay.server.v1.ServerService.DeleteRole:output_type -> relay.server.v1.DeleteRoleResponse
-	443, // 664: relay.server.v1.ServerService.ListRoleBindings:output_type -> relay.server.v1.ListRoleBindingsResponse
-	445, // 665: relay.server.v1.ServerService.CreateRoleBinding:output_type -> relay.server.v1.CreateRoleBindingResponse
-	447, // 666: relay.server.v1.ServerService.DeleteRoleBinding:output_type -> relay.server.v1.DeleteRoleBindingResponse
-	51,  // 667: relay.server.v1.ServerService.ListDatabases:output_type -> relay.server.v1.ListDatabasesResponse
-	53,  // 668: relay.server.v1.ServerService.CreateDatabase:output_type -> relay.server.v1.CreateDatabaseResponse
-	55,  // 669: relay.server.v1.ServerService.RestoreDatabase:output_type -> relay.server.v1.RestoreDatabaseResponse
-	57,  // 670: relay.server.v1.ServerService.GetDatabase:output_type -> relay.server.v1.GetDatabaseResponse
-	59,  // 671: relay.server.v1.ServerService.UpdateDatabase:output_type -> relay.server.v1.UpdateDatabaseResponse
-	62,  // 672: relay.server.v1.ServerService.ListPostgreSQLParameters:output_type -> relay.server.v1.ListPostgreSQLParametersResponse
-	64,  // 673: relay.server.v1.ServerService.WatchDatabase:output_type -> relay.server.v1.WatchDatabaseEvent
-	67,  // 674: relay.server.v1.ServerService.ListPendingOperations:output_type -> relay.server.v1.ListPendingOperationsResponse
-	69,  // 675: relay.server.v1.ServerService.DeleteDatabase:output_type -> relay.server.v1.DeleteDatabaseResponse
-	71,  // 676: relay.server.v1.ServerService.RetryDeleteDatabase:output_type -> relay.server.v1.RetryDeleteDatabaseResponse
-	73,  // 677: relay.server.v1.ServerService.PauseDatabase:output_type -> relay.server.v1.PauseDatabaseResponse
-	75,  // 678: relay.server.v1.ServerService.ResumeDatabase:output_type -> relay.server.v1.ResumeDatabaseResponse
-	77,  // 679: relay.server.v1.ServerService.GetDatabaseStatus:output_type -> relay.server.v1.GetDatabaseStatusResponse
-	79,  // 680: relay.server.v1.ServerService.ListDatabaseNodes:output_type -> relay.server.v1.ListDatabaseNodesResponse
-	82,  // 681: relay.server.v1.ServerService.GetDatabaseLogs:output_type -> relay.server.v1.GetDatabaseLogsResponse
-	367, // 682: relay.server.v1.ServerService.GetDatabaseAnalytics:output_type -> relay.server.v1.GetDatabaseAnalyticsResponse
-	16,  // 683: relay.server.v1.ServerService.GetDatabaseConnection:output_type -> relay.server.v1.GetDatabaseConnectionResponse
-	19,  // 684: relay.server.v1.ServerService.ListIPAllowlist:output_type -> relay.server.v1.ListIPAllowlistResponse
-	21,  // 685: relay.server.v1.ServerService.AddIPAllowlistEntry:output_type -> relay.server.v1.AddIPAllowlistEntryResponse
-	23,  // 686: relay.server.v1.ServerService.UpdateIPAllowlistEntry:output_type -> relay.server.v1.UpdateIPAllowlistEntryResponse
-	25,  // 687: relay.server.v1.ServerService.RemoveIPAllowlistEntry:output_type -> relay.server.v1.RemoveIPAllowlistEntryResponse
-	28,  // 688: relay.server.v1.ServerService.ListPrivateEndpointRegions:output_type -> relay.server.v1.ListPrivateEndpointRegionsResponse
-	33,  // 689: relay.server.v1.ServerService.CreatePrivateEndpointService:output_type -> relay.server.v1.CreatePrivateEndpointServiceResponse
-	35,  // 690: relay.server.v1.ServerService.ListPrivateEndpointServices:output_type -> relay.server.v1.ListPrivateEndpointServicesResponse
-	37,  // 691: relay.server.v1.ServerService.GetPrivateEndpointService:output_type -> relay.server.v1.GetPrivateEndpointServiceResponse
-	39,  // 692: relay.server.v1.ServerService.DeletePrivateEndpointService:output_type -> relay.server.v1.DeletePrivateEndpointServiceResponse
-	41,  // 693: relay.server.v1.ServerService.CreatePrivateEndpoint:output_type -> relay.server.v1.CreatePrivateEndpointResponse
-	43,  // 694: relay.server.v1.ServerService.GetPrivateEndpoint:output_type -> relay.server.v1.GetPrivateEndpointResponse
-	45,  // 695: relay.server.v1.ServerService.DeletePrivateEndpoint:output_type -> relay.server.v1.DeletePrivateEndpointResponse
-	93,  // 696: relay.server.v1.ServerService.ListBackupSchedules:output_type -> relay.server.v1.ListBackupSchedulesResponse
-	95,  // 697: relay.server.v1.ServerService.ListBackups:output_type -> relay.server.v1.ListBackupsResponse
-	97,  // 698: relay.server.v1.ServerService.UpdateBackupSchedule:output_type -> relay.server.v1.UpdateBackupScheduleResponse
-	99,  // 699: relay.server.v1.ServerService.CreateBackup:output_type -> relay.server.v1.CreateBackupResponse
-	101, // 700: relay.server.v1.ServerService.DeleteBackup:output_type -> relay.server.v1.DeleteBackupResponse
-	105, // 701: relay.server.v1.ServerService.ListDatabaseUsers:output_type -> relay.server.v1.ListDatabaseUsersResponse
-	107, // 702: relay.server.v1.ServerService.GetDatabaseUser:output_type -> relay.server.v1.GetDatabaseUserResponse
-	109, // 703: relay.server.v1.ServerService.CreateDatabaseUser:output_type -> relay.server.v1.CreateDatabaseUserResponse
-	111, // 704: relay.server.v1.ServerService.UpdateDatabaseUser:output_type -> relay.server.v1.UpdateDatabaseUserResponse
-	113, // 705: relay.server.v1.ServerService.DeleteDatabaseUser:output_type -> relay.server.v1.DeleteDatabaseUserResponse
-	116, // 706: relay.server.v1.ServerService.ListLogicalDatabases:output_type -> relay.server.v1.ListLogicalDatabasesResponse
-	118, // 707: relay.server.v1.ServerService.CreateLogicalDatabase:output_type -> relay.server.v1.CreateLogicalDatabaseResponse
-	120, // 708: relay.server.v1.ServerService.UpdateLogicalDatabase:output_type -> relay.server.v1.UpdateLogicalDatabaseResponse
-	122, // 709: relay.server.v1.ServerService.DeleteLogicalDatabase:output_type -> relay.server.v1.DeleteLogicalDatabaseResponse
-	125, // 710: relay.server.v1.ServerService.ListDatabaseProviders:output_type -> relay.server.v1.ListDatabaseProvidersResponse
-	452, // 711: relay.server.v1.ServerService.GetBillingState:output_type -> relay.server.v1.GetBillingStateResponse
-	454, // 712: relay.server.v1.ServerService.CreateCheckoutSession:output_type -> relay.server.v1.CreateCheckoutSessionResponse
-	458, // 713: relay.server.v1.ServerService.CreateBillingPortalSession:output_type -> relay.server.v1.CreateBillingPortalSessionResponse
-	456, // 714: relay.server.v1.ServerService.ChangePlan:output_type -> relay.server.v1.ChangePlanResponse
-	503, // 715: relay.server.v1.ServerService.CreateSupportReport:output_type -> relay.server.v1.CreateSupportReportResponse
-	505, // 716: relay.server.v1.ServerService.ListSupportReports:output_type -> relay.server.v1.ListSupportReportsResponse
-	507, // 717: relay.server.v1.ServerService.GetSupportReport:output_type -> relay.server.v1.GetSupportReportResponse
-	509, // 718: relay.server.v1.ServerService.AddSupportReportComment:output_type -> relay.server.v1.AddSupportReportCommentResponse
-	511, // 719: relay.server.v1.ServerService.UpdateSupportReportStatus:output_type -> relay.server.v1.UpdateSupportReportStatusResponse
-	522, // 720: relay.server.v1.ServerService.GetOrgSSOConnection:output_type -> relay.server.v1.GetOrgSSOConnectionResponse
-	524, // 721: relay.server.v1.ServerService.UpsertOrgSSOConnection:output_type -> relay.server.v1.UpsertOrgSSOConnectionResponse
-	526, // 722: relay.server.v1.ServerService.DeleteOrgSSOConnection:output_type -> relay.server.v1.DeleteOrgSSOConnectionResponse
-	528, // 723: relay.server.v1.ServerService.TestOrgSSOConnection:output_type -> relay.server.v1.TestOrgSSOConnectionResponse
-	531, // 724: relay.server.v1.ServerService.ListPostgreSQLExtensions:output_type -> relay.server.v1.ListPostgreSQLExtensionsResponse
-	134, // 725: relay.server.v1.AdminService.AdminListOrganizations:output_type -> relay.server.v1.AdminListOrganizationsResponse
-	136, // 726: relay.server.v1.AdminService.AdminGetOrganization:output_type -> relay.server.v1.AdminGetOrganizationResponse
-	143, // 727: relay.server.v1.AdminService.AdminGetOrganizationResources:output_type -> relay.server.v1.AdminGetOrganizationResourcesResponse
-	452, // 728: relay.server.v1.AdminService.AdminGetOrganizationBilling:output_type -> relay.server.v1.GetBillingStateResponse
-	191, // 729: relay.server.v1.AdminService.AdminSetOrganizationPlan:output_type -> relay.server.v1.AdminSetOrganizationPlanResponse
-	193, // 730: relay.server.v1.AdminService.AdminGetOrganizationCost:output_type -> relay.server.v1.AdminGetOrganizationCostResponse
-	196, // 731: relay.server.v1.AdminService.AdminListSignupAllowlist:output_type -> relay.server.v1.AdminListSignupAllowlistResponse
-	198, // 732: relay.server.v1.AdminService.AdminAddSignupAllowlistEntry:output_type -> relay.server.v1.AdminAddSignupAllowlistEntryResponse
-	200, // 733: relay.server.v1.AdminService.AdminRemoveSignupAllowlistEntry:output_type -> relay.server.v1.AdminRemoveSignupAllowlistEntryResponse
-	203, // 734: relay.server.v1.AdminService.AdminListSignupAttempts:output_type -> relay.server.v1.AdminListSignupAttemptsResponse
-	205, // 735: relay.server.v1.AdminService.AdminDismissSignupAttempt:output_type -> relay.server.v1.AdminDismissSignupAttemptResponse
-	208, // 736: relay.server.v1.AdminService.AdminListAuditLog:output_type -> relay.server.v1.AdminListAuditLogResponse
-	214, // 737: relay.server.v1.AdminService.AdminGetCloudCosts:output_type -> relay.server.v1.AdminGetCloudCostsResponse
-	217, // 738: relay.server.v1.AdminService.AdminGetRevenueOverview:output_type -> relay.server.v1.AdminGetRevenueOverviewResponse
-	513, // 739: relay.server.v1.AdminService.AdminListSupportReports:output_type -> relay.server.v1.AdminListSupportReportsResponse
-	515, // 740: relay.server.v1.AdminService.AdminGetSupportReport:output_type -> relay.server.v1.AdminGetSupportReportResponse
-	517, // 741: relay.server.v1.AdminService.AdminAddSupportReportComment:output_type -> relay.server.v1.AdminAddSupportReportCommentResponse
-	519, // 742: relay.server.v1.AdminService.AdminUpdateSupportReportStatus:output_type -> relay.server.v1.AdminUpdateSupportReportStatusResponse
-	299, // 743: relay.server.v1.AdminService.AdminListMembers:output_type -> relay.server.v1.ListMembersResponse
-	301, // 744: relay.server.v1.AdminService.AdminSetMemberRole:output_type -> relay.server.v1.SetMemberRoleResponse
-	303, // 745: relay.server.v1.AdminService.AdminRemoveMember:output_type -> relay.server.v1.RemoveMemberResponse
-	327, // 746: relay.server.v1.AdminService.AdminInviteMember:output_type -> relay.server.v1.InviteMemberResponse
-	329, // 747: relay.server.v1.AdminService.AdminListInvitations:output_type -> relay.server.v1.ListInvitationsResponse
-	331, // 748: relay.server.v1.AdminService.AdminRevokeInvitation:output_type -> relay.server.v1.RevokeInvitationResponse
-	172, // 749: relay.server.v1.AdminService.AdminListClusters:output_type -> relay.server.v1.AdminListClustersResponse
-	175, // 750: relay.server.v1.AdminService.AdminListPendingOperations:output_type -> relay.server.v1.AdminListPendingOperationsResponse
-	177, // 751: relay.server.v1.AdminService.AdminListAgents:output_type -> relay.server.v1.AdminListAgentsResponse
-	180, // 752: relay.server.v1.AdminService.AdminListTunnelSessions:output_type -> relay.server.v1.AdminListTunnelSessionsResponse
-	182, // 753: relay.server.v1.AdminService.AdminRetryDeleteDatabase:output_type -> relay.server.v1.AdminRetryDeleteDatabaseResponse
-	160, // 754: relay.server.v1.AdminService.AdminSearchUsers:output_type -> relay.server.v1.AdminSearchUsersResponse
-	164, // 755: relay.server.v1.AdminService.AdminGetUser:output_type -> relay.server.v1.AdminGetUserResponse
-	166, // 756: relay.server.v1.AdminService.AdminRevokeUserSessions:output_type -> relay.server.v1.AdminRevokeUserSessionsResponse
-	151, // 757: relay.server.v1.AdminService.AdminGetOrganizationActivity:output_type -> relay.server.v1.AdminGetOrganizationActivityResponse
-	156, // 758: relay.server.v1.AdminService.AdminGetOrganizationSecurity:output_type -> relay.server.v1.AdminGetOrganizationSecurityResponse
-	145, // 759: relay.server.v1.AdminService.AdminGetPlatformOverview:output_type -> relay.server.v1.AdminGetPlatformOverviewResponse
-	148, // 760: relay.server.v1.AdminService.AdminListOrgActivation:output_type -> relay.server.v1.AdminListOrgActivationResponse
-	168, // 761: relay.server.v1.AdminService.AdminSuspendOrganization:output_type -> relay.server.v1.AdminSuspendOrganizationResponse
-	170, // 762: relay.server.v1.AdminService.AdminUnsuspendOrganization:output_type -> relay.server.v1.AdminUnsuspendOrganizationResponse
-	220, // 763: relay.server.v1.AdminService.AdminGetMaintenanceBanner:output_type -> relay.server.v1.AdminGetMaintenanceBannerResponse
-	222, // 764: relay.server.v1.AdminService.AdminSetMaintenanceBanner:output_type -> relay.server.v1.AdminSetMaintenanceBannerResponse
-	224, // 765: relay.server.v1.AdminService.AdminClearMaintenanceBanner:output_type -> relay.server.v1.AdminClearMaintenanceBannerResponse
-	554, // [554:766] is the sub-list for method output_type
-	342, // [342:554] is the sub-list for method input_type
-	342, // [342:342] is the sub-list for extension type_name
-	342, // [342:342] is the sub-list for extension extendee
-	0,   // [0:342] is the sub-list for field type_name
+	545, // 321: relay.server.v1.SupportReport.created_at:type_name -> google.protobuf.Timestamp
+	545, // 322: relay.server.v1.SupportReport.updated_at:type_name -> google.protobuf.Timestamp
+	545, // 323: relay.server.v1.SupportReportComment.created_at:type_name -> google.protobuf.Timestamp
+	502, // 324: relay.server.v1.SupportReportComment.attachments:type_name -> relay.server.v1.SupportAttachment
+	545, // 325: relay.server.v1.SupportAttachment.created_at:type_name -> google.protobuf.Timestamp
+	500, // 326: relay.server.v1.CreateSupportReportResponse.report:type_name -> relay.server.v1.SupportReport
+	500, // 327: relay.server.v1.ListSupportReportsResponse.reports:type_name -> relay.server.v1.SupportReport
+	500, // 328: relay.server.v1.GetSupportReportResponse.report:type_name -> relay.server.v1.SupportReport
+	501, // 329: relay.server.v1.GetSupportReportResponse.comments:type_name -> relay.server.v1.SupportReportComment
+	501, // 330: relay.server.v1.AddSupportReportCommentResponse.comment:type_name -> relay.server.v1.SupportReportComment
+	502, // 331: relay.server.v1.GetSupportAttachmentResponse.attachment:type_name -> relay.server.v1.SupportAttachment
+	500, // 332: relay.server.v1.UpdateSupportReportStatusResponse.report:type_name -> relay.server.v1.SupportReport
+	500, // 333: relay.server.v1.AdminListSupportReportsResponse.reports:type_name -> relay.server.v1.SupportReport
+	500, // 334: relay.server.v1.AdminGetSupportReportResponse.report:type_name -> relay.server.v1.SupportReport
+	501, // 335: relay.server.v1.AdminGetSupportReportResponse.comments:type_name -> relay.server.v1.SupportReportComment
+	503, // 336: relay.server.v1.AdminAddSupportReportCommentRequest.attachments:type_name -> relay.server.v1.SupportAttachmentUpload
+	501, // 337: relay.server.v1.AdminAddSupportReportCommentResponse.comment:type_name -> relay.server.v1.SupportReportComment
+	502, // 338: relay.server.v1.AdminGetSupportAttachmentResponse.attachment:type_name -> relay.server.v1.SupportAttachment
+	500, // 339: relay.server.v1.AdminUpdateSupportReportStatusResponse.report:type_name -> relay.server.v1.SupportReport
+	545, // 340: relay.server.v1.OrgSSOConnection.created_at:type_name -> google.protobuf.Timestamp
+	545, // 341: relay.server.v1.OrgSSOConnection.updated_at:type_name -> google.protobuf.Timestamp
+	526, // 342: relay.server.v1.GetOrgSSOConnectionResponse.connection:type_name -> relay.server.v1.OrgSSOConnection
+	526, // 343: relay.server.v1.UpsertOrgSSOConnectionResponse.connection:type_name -> relay.server.v1.OrgSSOConnection
+	535, // 344: relay.server.v1.ListPostgreSQLExtensionsResponse.extensions:type_name -> relay.server.v1.PostgreSQLExtensionInfo
+	6,   // 345: relay.server.v1.Distribution.CloudsEntry.value:type_name -> relay.server.v1.CloudRegions
+	7,   // 346: relay.server.v1.CloudRegions.RegionsEntry.value:type_name -> relay.server.v1.RegionPlacement
+	126, // 347: relay.server.v1.ServerService.WhoAmI:input_type -> relay.server.v1.WhoAmIRequest
+	308, // 348: relay.server.v1.ServerService.Logout:input_type -> relay.server.v1.LogoutRequest
+	311, // 349: relay.server.v1.ServerService.ListSessions:input_type -> relay.server.v1.ListSessionsRequest
+	313, // 350: relay.server.v1.ServerService.RevokeSession:input_type -> relay.server.v1.RevokeSessionRequest
+	130, // 351: relay.server.v1.ServerService.GetMaintenanceBanner:input_type -> relay.server.v1.GetMaintenanceBannerRequest
+	316, // 352: relay.server.v1.ServerService.CreateAPIKey:input_type -> relay.server.v1.CreateAPIKeyRequest
+	318, // 353: relay.server.v1.ServerService.ListAPIKeys:input_type -> relay.server.v1.ListAPIKeysRequest
+	320, // 354: relay.server.v1.ServerService.UpdateAPIKey:input_type -> relay.server.v1.UpdateAPIKeyRequest
+	322, // 355: relay.server.v1.ServerService.RevokeAPIKey:input_type -> relay.server.v1.RevokeAPIKeyRequest
+	231, // 356: relay.server.v1.ServerService.ListConnections:input_type -> relay.server.v1.ListConnectionsRequest
+	233, // 357: relay.server.v1.ServerService.GetConnections:input_type -> relay.server.v1.GetConnectionsRequest
+	235, // 358: relay.server.v1.ServerService.CreateConnection:input_type -> relay.server.v1.CreateConnectionRequest
+	237, // 359: relay.server.v1.ServerService.DeleteConnection:input_type -> relay.server.v1.DeleteConnectionRequest
+	239, // 360: relay.server.v1.ServerService.UpdateConnection:input_type -> relay.server.v1.UpdateConnectionRequest
+	241, // 361: relay.server.v1.ServerService.IssueTunnelToken:input_type -> relay.server.v1.IssueTunnelTokenRequest
+	243, // 362: relay.server.v1.ServerService.ResolveTunnelToken:input_type -> relay.server.v1.ResolveTunnelTokenRequest
+	246, // 363: relay.server.v1.ServerService.ReportTunnelSessions:input_type -> relay.server.v1.ReportTunnelSessionsRequest
+	249, // 364: relay.server.v1.ServerService.ListTunnelSessions:input_type -> relay.server.v1.ListTunnelSessionsRequest
+	267, // 365: relay.server.v1.ServerService.ListConnectionGroups:input_type -> relay.server.v1.ListConnectionGroupsRequest
+	269, // 366: relay.server.v1.ServerService.CreateConnectionGroup:input_type -> relay.server.v1.CreateConnectionGroupRequest
+	271, // 367: relay.server.v1.ServerService.DeleteConnectionGroup:input_type -> relay.server.v1.DeleteConnectionGroupRequest
+	273, // 368: relay.server.v1.ServerService.UpdateConnectionGroup:input_type -> relay.server.v1.UpdateConnectionGroupRequest
+	275, // 369: relay.server.v1.ServerService.AddConnectionToGroup:input_type -> relay.server.v1.AddConnectionToGroupRequest
+	277, // 370: relay.server.v1.ServerService.RemoveConnectionFromGroup:input_type -> relay.server.v1.RemoveConnectionFromGroupRequest
+	253, // 371: relay.server.v1.ServerService.ListPolicies:input_type -> relay.server.v1.ListPoliciesRequest
+	255, // 372: relay.server.v1.ServerService.GetPolicy:input_type -> relay.server.v1.GetPolicyRequest
+	257, // 373: relay.server.v1.ServerService.CreatePolicy:input_type -> relay.server.v1.CreatePolicyRequest
+	259, // 374: relay.server.v1.ServerService.UpdatePolicy:input_type -> relay.server.v1.UpdatePolicyRequest
+	261, // 375: relay.server.v1.ServerService.DeletePolicy:input_type -> relay.server.v1.DeletePolicyRequest
+	263, // 376: relay.server.v1.ServerService.SetConnectionPolicies:input_type -> relay.server.v1.SetConnectionPoliciesRequest
+	265, // 377: relay.server.v1.ServerService.ListConnectionPolicies:input_type -> relay.server.v1.ListConnectionPoliciesRequest
+	280, // 378: relay.server.v1.ServerService.ListAccessGrants:input_type -> relay.server.v1.ListAccessGrantsRequest
+	282, // 379: relay.server.v1.ServerService.CreateAccessGrant:input_type -> relay.server.v1.CreateAccessGrantRequest
+	284, // 380: relay.server.v1.ServerService.DeleteAccessGrant:input_type -> relay.server.v1.DeleteAccessGrantRequest
+	287, // 381: relay.server.v1.ServerService.ListTeams:input_type -> relay.server.v1.ListTeamsRequest
+	289, // 382: relay.server.v1.ServerService.CreateTeam:input_type -> relay.server.v1.CreateTeamRequest
+	291, // 383: relay.server.v1.ServerService.DeleteTeam:input_type -> relay.server.v1.DeleteTeamRequest
+	293, // 384: relay.server.v1.ServerService.AddTeamMember:input_type -> relay.server.v1.AddTeamMemberRequest
+	295, // 385: relay.server.v1.ServerService.RemoveTeamMember:input_type -> relay.server.v1.RemoveTeamMemberRequest
+	298, // 386: relay.server.v1.ServerService.ListMembers:input_type -> relay.server.v1.ListMembersRequest
+	300, // 387: relay.server.v1.ServerService.SetMemberRole:input_type -> relay.server.v1.SetMemberRoleRequest
+	302, // 388: relay.server.v1.ServerService.RemoveMember:input_type -> relay.server.v1.RemoveMemberRequest
+	304, // 389: relay.server.v1.ServerService.UpdateMember:input_type -> relay.server.v1.UpdateMemberRequest
+	306, // 390: relay.server.v1.ServerService.RevokeUserSessions:input_type -> relay.server.v1.RevokeUserSessionsRequest
+	326, // 391: relay.server.v1.ServerService.InviteMember:input_type -> relay.server.v1.InviteMemberRequest
+	328, // 392: relay.server.v1.ServerService.ListInvitations:input_type -> relay.server.v1.ListInvitationsRequest
+	330, // 393: relay.server.v1.ServerService.RevokeInvitation:input_type -> relay.server.v1.RevokeInvitationRequest
+	332, // 394: relay.server.v1.ServerService.GetInvitation:input_type -> relay.server.v1.GetInvitationRequest
+	334, // 395: relay.server.v1.ServerService.AcceptInvitation:input_type -> relay.server.v1.AcceptInvitationRequest
+	337, // 396: relay.server.v1.ServerService.ListAgents:input_type -> relay.server.v1.ListAgentsRequest
+	339, // 397: relay.server.v1.ServerService.DeleteAgent:input_type -> relay.server.v1.DeleteAgentRequest
+	341, // 398: relay.server.v1.ServerService.CreateEnrollmentToken:input_type -> relay.server.v1.CreateEnrollmentTokenRequest
+	344, // 399: relay.server.v1.ServerService.ListEnrollmentTokens:input_type -> relay.server.v1.ListEnrollmentTokensRequest
+	346, // 400: relay.server.v1.ServerService.DeleteEnrollmentToken:input_type -> relay.server.v1.DeleteEnrollmentTokenRequest
+	348, // 401: relay.server.v1.ServerService.EnrollAgent:input_type -> relay.server.v1.EnrollAgentRequest
+	351, // 402: relay.server.v1.ServerService.Heartbeat:input_type -> relay.server.v1.HeartbeatRequest
+	354, // 403: relay.server.v1.ServerService.Deregister:input_type -> relay.server.v1.DeregisterRequest
+	369, // 404: relay.server.v1.ServerService.ListAgentPools:input_type -> relay.server.v1.ListAgentPoolsRequest
+	371, // 405: relay.server.v1.ServerService.CreateAgentPool:input_type -> relay.server.v1.CreateAgentPoolRequest
+	373, // 406: relay.server.v1.ServerService.DeleteAgentPool:input_type -> relay.server.v1.DeleteAgentPoolRequest
+	375, // 407: relay.server.v1.ServerService.UpdateAgentPool:input_type -> relay.server.v1.UpdateAgentPoolRequest
+	468, // 408: relay.server.v1.ServerService.ResolveConnectionCredential:input_type -> relay.server.v1.ResolveConnectionCredentialRequest
+	470, // 409: relay.server.v1.ServerService.ResolveExternalSecretSource:input_type -> relay.server.v1.ResolveExternalSecretSourceRequest
+	460, // 410: relay.server.v1.ServerService.ListExternalSecretSources:input_type -> relay.server.v1.ListExternalSecretSourcesRequest
+	462, // 411: relay.server.v1.ServerService.GetExternalSecretSource:input_type -> relay.server.v1.GetExternalSecretSourceRequest
+	464, // 412: relay.server.v1.ServerService.UpsertExternalSecretSource:input_type -> relay.server.v1.UpsertExternalSecretSourceRequest
+	466, // 413: relay.server.v1.ServerService.DeleteExternalSecretSource:input_type -> relay.server.v1.DeleteExternalSecretSourceRequest
+	473, // 414: relay.server.v1.ServerService.GetCloudIntegrationSetup:input_type -> relay.server.v1.GetCloudIntegrationSetupRequest
+	475, // 415: relay.server.v1.ServerService.ListCloudIntegrations:input_type -> relay.server.v1.ListCloudIntegrationsRequest
+	477, // 416: relay.server.v1.ServerService.GetCloudIntegration:input_type -> relay.server.v1.GetCloudIntegrationRequest
+	479, // 417: relay.server.v1.ServerService.CreateCloudIntegration:input_type -> relay.server.v1.CreateCloudIntegrationRequest
+	481, // 418: relay.server.v1.ServerService.UpdateCloudIntegration:input_type -> relay.server.v1.UpdateCloudIntegrationRequest
+	483, // 419: relay.server.v1.ServerService.DeleteCloudIntegration:input_type -> relay.server.v1.DeleteCloudIntegrationRequest
+	485, // 420: relay.server.v1.ServerService.TestCloudIntegration:input_type -> relay.server.v1.TestCloudIntegrationRequest
+	489, // 421: relay.server.v1.ServerService.GetLogStream:input_type -> relay.server.v1.GetLogStreamRequest
+	491, // 422: relay.server.v1.ServerService.UpsertLogStream:input_type -> relay.server.v1.UpsertLogStreamRequest
+	494, // 423: relay.server.v1.ServerService.GetBackupAutoExport:input_type -> relay.server.v1.GetBackupAutoExportRequest
+	496, // 424: relay.server.v1.ServerService.UpsertBackupAutoExport:input_type -> relay.server.v1.UpsertBackupAutoExportRequest
+	498, // 425: relay.server.v1.ServerService.ExportToCloud:input_type -> relay.server.v1.ExportToCloudRequest
+	357, // 426: relay.server.v1.ServerService.IngestAuditEvents:input_type -> relay.server.v1.IngestAuditEventsRequest
+	359, // 427: relay.server.v1.ServerService.ListAuditLogs:input_type -> relay.server.v1.ListAuditLogsRequest
+	361, // 428: relay.server.v1.ServerService.GetAuditMetrics:input_type -> relay.server.v1.GetAuditMetricsRequest
+	378, // 429: relay.server.v1.ServerService.ListActivityLogs:input_type -> relay.server.v1.ListActivityLogsRequest
+	382, // 430: relay.server.v1.ServerService.ListOrgActivityLogs:input_type -> relay.server.v1.ListOrgActivityLogsRequest
+	380, // 431: relay.server.v1.ServerService.EmitActivity:input_type -> relay.server.v1.EmitActivityRequest
+	385, // 432: relay.server.v1.ServerService.ListUserOrganizations:input_type -> relay.server.v1.ListUserOrganizationsRequest
+	387, // 433: relay.server.v1.ServerService.GetOrganization:input_type -> relay.server.v1.GetOrganizationRequest
+	389, // 434: relay.server.v1.ServerService.CreateOrganization:input_type -> relay.server.v1.CreateOrganizationRequest
+	391, // 435: relay.server.v1.ServerService.UpdateOrganization:input_type -> relay.server.v1.UpdateOrganizationRequest
+	395, // 436: relay.server.v1.ServerService.UpdateOrganizationSettings:input_type -> relay.server.v1.UpdateOrganizationSettingsRequest
+	397, // 437: relay.server.v1.ServerService.DeleteOrganization:input_type -> relay.server.v1.DeleteOrganizationRequest
+	393, // 438: relay.server.v1.ServerService.SwitchOrganization:input_type -> relay.server.v1.SwitchOrganizationRequest
+	410, // 439: relay.server.v1.ServerService.GetOrgOverview:input_type -> relay.server.v1.GetOrgOverviewRequest
+	400, // 440: relay.server.v1.ServerService.ListWorkspaces:input_type -> relay.server.v1.ListWorkspacesRequest
+	402, // 441: relay.server.v1.ServerService.GetWorkspace:input_type -> relay.server.v1.GetWorkspaceRequest
+	404, // 442: relay.server.v1.ServerService.CreateWorkspace:input_type -> relay.server.v1.CreateWorkspaceRequest
+	406, // 443: relay.server.v1.ServerService.UpdateWorkspace:input_type -> relay.server.v1.UpdateWorkspaceRequest
+	408, // 444: relay.server.v1.ServerService.DeleteWorkspace:input_type -> relay.server.v1.DeleteWorkspaceRequest
+	415, // 445: relay.server.v1.ServerService.AddWorkspaceMember:input_type -> relay.server.v1.AddWorkspaceMemberRequest
+	417, // 446: relay.server.v1.ServerService.RemoveWorkspaceMember:input_type -> relay.server.v1.RemoveWorkspaceMemberRequest
+	419, // 447: relay.server.v1.ServerService.ListWorkspaceMembers:input_type -> relay.server.v1.ListWorkspaceMembersRequest
+	421, // 448: relay.server.v1.ServerService.AddWorkspaceTeam:input_type -> relay.server.v1.AddWorkspaceTeamRequest
+	423, // 449: relay.server.v1.ServerService.RemoveWorkspaceTeam:input_type -> relay.server.v1.RemoveWorkspaceTeamRequest
+	425, // 450: relay.server.v1.ServerService.ListWorkspaceTeams:input_type -> relay.server.v1.ListWorkspaceTeamsRequest
+	427, // 451: relay.server.v1.ServerService.SetWorkspaceMemberRole:input_type -> relay.server.v1.SetWorkspaceMemberRoleRequest
+	429, // 452: relay.server.v1.ServerService.SetWorkspaceTeamRole:input_type -> relay.server.v1.SetWorkspaceTeamRoleRequest
+	433, // 453: relay.server.v1.ServerService.ListRoles:input_type -> relay.server.v1.ListRolesRequest
+	435, // 454: relay.server.v1.ServerService.CreateRole:input_type -> relay.server.v1.CreateRoleRequest
+	437, // 455: relay.server.v1.ServerService.UpdateRole:input_type -> relay.server.v1.UpdateRoleRequest
+	439, // 456: relay.server.v1.ServerService.DeleteRole:input_type -> relay.server.v1.DeleteRoleRequest
+	442, // 457: relay.server.v1.ServerService.ListRoleBindings:input_type -> relay.server.v1.ListRoleBindingsRequest
+	444, // 458: relay.server.v1.ServerService.CreateRoleBinding:input_type -> relay.server.v1.CreateRoleBindingRequest
+	446, // 459: relay.server.v1.ServerService.DeleteRoleBinding:input_type -> relay.server.v1.DeleteRoleBindingRequest
+	50,  // 460: relay.server.v1.ServerService.ListDatabases:input_type -> relay.server.v1.ListDatabasesRequest
+	52,  // 461: relay.server.v1.ServerService.CreateDatabase:input_type -> relay.server.v1.CreateDatabaseRequest
+	54,  // 462: relay.server.v1.ServerService.RestoreDatabase:input_type -> relay.server.v1.RestoreDatabaseRequest
+	56,  // 463: relay.server.v1.ServerService.GetDatabase:input_type -> relay.server.v1.GetDatabaseRequest
+	58,  // 464: relay.server.v1.ServerService.UpdateDatabase:input_type -> relay.server.v1.UpdateDatabaseRequest
+	61,  // 465: relay.server.v1.ServerService.ListPostgreSQLParameters:input_type -> relay.server.v1.ListPostgreSQLParametersRequest
+	63,  // 466: relay.server.v1.ServerService.WatchDatabase:input_type -> relay.server.v1.WatchDatabaseRequest
+	66,  // 467: relay.server.v1.ServerService.ListPendingOperations:input_type -> relay.server.v1.ListPendingOperationsRequest
+	68,  // 468: relay.server.v1.ServerService.DeleteDatabase:input_type -> relay.server.v1.DeleteDatabaseRequest
+	70,  // 469: relay.server.v1.ServerService.RetryDeleteDatabase:input_type -> relay.server.v1.RetryDeleteDatabaseRequest
+	72,  // 470: relay.server.v1.ServerService.PauseDatabase:input_type -> relay.server.v1.PauseDatabaseRequest
+	74,  // 471: relay.server.v1.ServerService.ResumeDatabase:input_type -> relay.server.v1.ResumeDatabaseRequest
+	76,  // 472: relay.server.v1.ServerService.GetDatabaseStatus:input_type -> relay.server.v1.GetDatabaseStatusRequest
+	78,  // 473: relay.server.v1.ServerService.ListDatabaseNodes:input_type -> relay.server.v1.ListDatabaseNodesRequest
+	80,  // 474: relay.server.v1.ServerService.GetDatabaseLogs:input_type -> relay.server.v1.GetDatabaseLogsRequest
+	364, // 475: relay.server.v1.ServerService.GetDatabaseAnalytics:input_type -> relay.server.v1.GetDatabaseAnalyticsRequest
+	14,  // 476: relay.server.v1.ServerService.GetDatabaseConnection:input_type -> relay.server.v1.GetDatabaseConnectionRequest
+	18,  // 477: relay.server.v1.ServerService.ListIPAllowlist:input_type -> relay.server.v1.ListIPAllowlistRequest
+	20,  // 478: relay.server.v1.ServerService.AddIPAllowlistEntry:input_type -> relay.server.v1.AddIPAllowlistEntryRequest
+	22,  // 479: relay.server.v1.ServerService.UpdateIPAllowlistEntry:input_type -> relay.server.v1.UpdateIPAllowlistEntryRequest
+	24,  // 480: relay.server.v1.ServerService.RemoveIPAllowlistEntry:input_type -> relay.server.v1.RemoveIPAllowlistEntryRequest
+	27,  // 481: relay.server.v1.ServerService.ListPrivateEndpointRegions:input_type -> relay.server.v1.ListPrivateEndpointRegionsRequest
+	32,  // 482: relay.server.v1.ServerService.CreatePrivateEndpointService:input_type -> relay.server.v1.CreatePrivateEndpointServiceRequest
+	34,  // 483: relay.server.v1.ServerService.ListPrivateEndpointServices:input_type -> relay.server.v1.ListPrivateEndpointServicesRequest
+	36,  // 484: relay.server.v1.ServerService.GetPrivateEndpointService:input_type -> relay.server.v1.GetPrivateEndpointServiceRequest
+	38,  // 485: relay.server.v1.ServerService.DeletePrivateEndpointService:input_type -> relay.server.v1.DeletePrivateEndpointServiceRequest
+	40,  // 486: relay.server.v1.ServerService.CreatePrivateEndpoint:input_type -> relay.server.v1.CreatePrivateEndpointRequest
+	42,  // 487: relay.server.v1.ServerService.GetPrivateEndpoint:input_type -> relay.server.v1.GetPrivateEndpointRequest
+	44,  // 488: relay.server.v1.ServerService.DeletePrivateEndpoint:input_type -> relay.server.v1.DeletePrivateEndpointRequest
+	92,  // 489: relay.server.v1.ServerService.ListBackupSchedules:input_type -> relay.server.v1.ListBackupSchedulesRequest
+	94,  // 490: relay.server.v1.ServerService.ListBackups:input_type -> relay.server.v1.ListBackupsRequest
+	96,  // 491: relay.server.v1.ServerService.UpdateBackupSchedule:input_type -> relay.server.v1.UpdateBackupScheduleRequest
+	98,  // 492: relay.server.v1.ServerService.CreateBackup:input_type -> relay.server.v1.CreateBackupRequest
+	100, // 493: relay.server.v1.ServerService.DeleteBackup:input_type -> relay.server.v1.DeleteBackupRequest
+	104, // 494: relay.server.v1.ServerService.ListDatabaseUsers:input_type -> relay.server.v1.ListDatabaseUsersRequest
+	106, // 495: relay.server.v1.ServerService.GetDatabaseUser:input_type -> relay.server.v1.GetDatabaseUserRequest
+	108, // 496: relay.server.v1.ServerService.CreateDatabaseUser:input_type -> relay.server.v1.CreateDatabaseUserRequest
+	110, // 497: relay.server.v1.ServerService.UpdateDatabaseUser:input_type -> relay.server.v1.UpdateDatabaseUserRequest
+	112, // 498: relay.server.v1.ServerService.DeleteDatabaseUser:input_type -> relay.server.v1.DeleteDatabaseUserRequest
+	115, // 499: relay.server.v1.ServerService.ListLogicalDatabases:input_type -> relay.server.v1.ListLogicalDatabasesRequest
+	117, // 500: relay.server.v1.ServerService.CreateLogicalDatabase:input_type -> relay.server.v1.CreateLogicalDatabaseRequest
+	119, // 501: relay.server.v1.ServerService.UpdateLogicalDatabase:input_type -> relay.server.v1.UpdateLogicalDatabaseRequest
+	121, // 502: relay.server.v1.ServerService.DeleteLogicalDatabase:input_type -> relay.server.v1.DeleteLogicalDatabaseRequest
+	124, // 503: relay.server.v1.ServerService.ListDatabaseProviders:input_type -> relay.server.v1.ListDatabaseProvidersRequest
+	451, // 504: relay.server.v1.ServerService.GetBillingState:input_type -> relay.server.v1.GetBillingStateRequest
+	453, // 505: relay.server.v1.ServerService.CreateCheckoutSession:input_type -> relay.server.v1.CreateCheckoutSessionRequest
+	457, // 506: relay.server.v1.ServerService.CreateBillingPortalSession:input_type -> relay.server.v1.CreateBillingPortalSessionRequest
+	455, // 507: relay.server.v1.ServerService.ChangePlan:input_type -> relay.server.v1.ChangePlanRequest
+	504, // 508: relay.server.v1.ServerService.CreateSupportReport:input_type -> relay.server.v1.CreateSupportReportRequest
+	506, // 509: relay.server.v1.ServerService.ListSupportReports:input_type -> relay.server.v1.ListSupportReportsRequest
+	508, // 510: relay.server.v1.ServerService.GetSupportReport:input_type -> relay.server.v1.GetSupportReportRequest
+	510, // 511: relay.server.v1.ServerService.AddSupportReportComment:input_type -> relay.server.v1.AddSupportReportCommentRequest
+	512, // 512: relay.server.v1.ServerService.GetSupportAttachment:input_type -> relay.server.v1.GetSupportAttachmentRequest
+	514, // 513: relay.server.v1.ServerService.UpdateSupportReportStatus:input_type -> relay.server.v1.UpdateSupportReportStatusRequest
+	527, // 514: relay.server.v1.ServerService.GetOrgSSOConnection:input_type -> relay.server.v1.GetOrgSSOConnectionRequest
+	529, // 515: relay.server.v1.ServerService.UpsertOrgSSOConnection:input_type -> relay.server.v1.UpsertOrgSSOConnectionRequest
+	531, // 516: relay.server.v1.ServerService.DeleteOrgSSOConnection:input_type -> relay.server.v1.DeleteOrgSSOConnectionRequest
+	533, // 517: relay.server.v1.ServerService.TestOrgSSOConnection:input_type -> relay.server.v1.TestOrgSSOConnectionRequest
+	536, // 518: relay.server.v1.ServerService.ListPostgreSQLExtensions:input_type -> relay.server.v1.ListPostgreSQLExtensionsRequest
+	133, // 519: relay.server.v1.AdminService.AdminListOrganizations:input_type -> relay.server.v1.AdminListOrganizationsRequest
+	135, // 520: relay.server.v1.AdminService.AdminGetOrganization:input_type -> relay.server.v1.AdminGetOrganizationRequest
+	142, // 521: relay.server.v1.AdminService.AdminGetOrganizationResources:input_type -> relay.server.v1.AdminGetOrganizationResourcesRequest
+	189, // 522: relay.server.v1.AdminService.AdminGetOrganizationBilling:input_type -> relay.server.v1.AdminGetOrganizationBillingRequest
+	190, // 523: relay.server.v1.AdminService.AdminSetOrganizationPlan:input_type -> relay.server.v1.AdminSetOrganizationPlanRequest
+	192, // 524: relay.server.v1.AdminService.AdminGetOrganizationCost:input_type -> relay.server.v1.AdminGetOrganizationCostRequest
+	195, // 525: relay.server.v1.AdminService.AdminListSignupAllowlist:input_type -> relay.server.v1.AdminListSignupAllowlistRequest
+	197, // 526: relay.server.v1.AdminService.AdminAddSignupAllowlistEntry:input_type -> relay.server.v1.AdminAddSignupAllowlistEntryRequest
+	199, // 527: relay.server.v1.AdminService.AdminRemoveSignupAllowlistEntry:input_type -> relay.server.v1.AdminRemoveSignupAllowlistEntryRequest
+	202, // 528: relay.server.v1.AdminService.AdminListSignupAttempts:input_type -> relay.server.v1.AdminListSignupAttemptsRequest
+	204, // 529: relay.server.v1.AdminService.AdminDismissSignupAttempt:input_type -> relay.server.v1.AdminDismissSignupAttemptRequest
+	207, // 530: relay.server.v1.AdminService.AdminListAuditLog:input_type -> relay.server.v1.AdminListAuditLogRequest
+	209, // 531: relay.server.v1.AdminService.AdminGetCloudCosts:input_type -> relay.server.v1.AdminGetCloudCostsRequest
+	215, // 532: relay.server.v1.AdminService.AdminGetRevenueOverview:input_type -> relay.server.v1.AdminGetRevenueOverviewRequest
+	516, // 533: relay.server.v1.AdminService.AdminListSupportReports:input_type -> relay.server.v1.AdminListSupportReportsRequest
+	518, // 534: relay.server.v1.AdminService.AdminGetSupportReport:input_type -> relay.server.v1.AdminGetSupportReportRequest
+	520, // 535: relay.server.v1.AdminService.AdminAddSupportReportComment:input_type -> relay.server.v1.AdminAddSupportReportCommentRequest
+	522, // 536: relay.server.v1.AdminService.AdminGetSupportAttachment:input_type -> relay.server.v1.AdminGetSupportAttachmentRequest
+	524, // 537: relay.server.v1.AdminService.AdminUpdateSupportReportStatus:input_type -> relay.server.v1.AdminUpdateSupportReportStatusRequest
+	183, // 538: relay.server.v1.AdminService.AdminListMembers:input_type -> relay.server.v1.AdminListMembersRequest
+	184, // 539: relay.server.v1.AdminService.AdminSetMemberRole:input_type -> relay.server.v1.AdminSetMemberRoleRequest
+	185, // 540: relay.server.v1.AdminService.AdminRemoveMember:input_type -> relay.server.v1.AdminRemoveMemberRequest
+	186, // 541: relay.server.v1.AdminService.AdminInviteMember:input_type -> relay.server.v1.AdminInviteMemberRequest
+	187, // 542: relay.server.v1.AdminService.AdminListInvitations:input_type -> relay.server.v1.AdminListInvitationsRequest
+	188, // 543: relay.server.v1.AdminService.AdminRevokeInvitation:input_type -> relay.server.v1.AdminRevokeInvitationRequest
+	171, // 544: relay.server.v1.AdminService.AdminListClusters:input_type -> relay.server.v1.AdminListClustersRequest
+	174, // 545: relay.server.v1.AdminService.AdminListPendingOperations:input_type -> relay.server.v1.AdminListPendingOperationsRequest
+	176, // 546: relay.server.v1.AdminService.AdminListAgents:input_type -> relay.server.v1.AdminListAgentsRequest
+	179, // 547: relay.server.v1.AdminService.AdminListTunnelSessions:input_type -> relay.server.v1.AdminListTunnelSessionsRequest
+	181, // 548: relay.server.v1.AdminService.AdminRetryDeleteDatabase:input_type -> relay.server.v1.AdminRetryDeleteDatabaseRequest
+	159, // 549: relay.server.v1.AdminService.AdminSearchUsers:input_type -> relay.server.v1.AdminSearchUsersRequest
+	161, // 550: relay.server.v1.AdminService.AdminGetUser:input_type -> relay.server.v1.AdminGetUserRequest
+	165, // 551: relay.server.v1.AdminService.AdminRevokeUserSessions:input_type -> relay.server.v1.AdminRevokeUserSessionsRequest
+	149, // 552: relay.server.v1.AdminService.AdminGetOrganizationActivity:input_type -> relay.server.v1.AdminGetOrganizationActivityRequest
+	152, // 553: relay.server.v1.AdminService.AdminGetOrganizationSecurity:input_type -> relay.server.v1.AdminGetOrganizationSecurityRequest
+	144, // 554: relay.server.v1.AdminService.AdminGetPlatformOverview:input_type -> relay.server.v1.AdminGetPlatformOverviewRequest
+	147, // 555: relay.server.v1.AdminService.AdminListOrgActivation:input_type -> relay.server.v1.AdminListOrgActivationRequest
+	167, // 556: relay.server.v1.AdminService.AdminSuspendOrganization:input_type -> relay.server.v1.AdminSuspendOrganizationRequest
+	169, // 557: relay.server.v1.AdminService.AdminUnsuspendOrganization:input_type -> relay.server.v1.AdminUnsuspendOrganizationRequest
+	219, // 558: relay.server.v1.AdminService.AdminGetMaintenanceBanner:input_type -> relay.server.v1.AdminGetMaintenanceBannerRequest
+	221, // 559: relay.server.v1.AdminService.AdminSetMaintenanceBanner:input_type -> relay.server.v1.AdminSetMaintenanceBannerRequest
+	223, // 560: relay.server.v1.AdminService.AdminClearMaintenanceBanner:input_type -> relay.server.v1.AdminClearMaintenanceBannerRequest
+	127, // 561: relay.server.v1.ServerService.WhoAmI:output_type -> relay.server.v1.WhoAmIResponse
+	309, // 562: relay.server.v1.ServerService.Logout:output_type -> relay.server.v1.LogoutResponse
+	312, // 563: relay.server.v1.ServerService.ListSessions:output_type -> relay.server.v1.ListSessionsResponse
+	314, // 564: relay.server.v1.ServerService.RevokeSession:output_type -> relay.server.v1.RevokeSessionResponse
+	131, // 565: relay.server.v1.ServerService.GetMaintenanceBanner:output_type -> relay.server.v1.GetMaintenanceBannerResponse
+	317, // 566: relay.server.v1.ServerService.CreateAPIKey:output_type -> relay.server.v1.CreateAPIKeyResponse
+	319, // 567: relay.server.v1.ServerService.ListAPIKeys:output_type -> relay.server.v1.ListAPIKeysResponse
+	321, // 568: relay.server.v1.ServerService.UpdateAPIKey:output_type -> relay.server.v1.UpdateAPIKeyResponse
+	323, // 569: relay.server.v1.ServerService.RevokeAPIKey:output_type -> relay.server.v1.RevokeAPIKeyResponse
+	232, // 570: relay.server.v1.ServerService.ListConnections:output_type -> relay.server.v1.ListConnectionsResponse
+	234, // 571: relay.server.v1.ServerService.GetConnections:output_type -> relay.server.v1.GetConnectionsResponse
+	236, // 572: relay.server.v1.ServerService.CreateConnection:output_type -> relay.server.v1.CreateConnectionResponse
+	238, // 573: relay.server.v1.ServerService.DeleteConnection:output_type -> relay.server.v1.DeleteConnectionResponse
+	240, // 574: relay.server.v1.ServerService.UpdateConnection:output_type -> relay.server.v1.UpdateConnectionResponse
+	242, // 575: relay.server.v1.ServerService.IssueTunnelToken:output_type -> relay.server.v1.IssueTunnelTokenResponse
+	244, // 576: relay.server.v1.ServerService.ResolveTunnelToken:output_type -> relay.server.v1.ResolveTunnelTokenResponse
+	247, // 577: relay.server.v1.ServerService.ReportTunnelSessions:output_type -> relay.server.v1.ReportTunnelSessionsResponse
+	250, // 578: relay.server.v1.ServerService.ListTunnelSessions:output_type -> relay.server.v1.ListTunnelSessionsResponse
+	268, // 579: relay.server.v1.ServerService.ListConnectionGroups:output_type -> relay.server.v1.ListConnectionGroupsResponse
+	270, // 580: relay.server.v1.ServerService.CreateConnectionGroup:output_type -> relay.server.v1.CreateConnectionGroupResponse
+	272, // 581: relay.server.v1.ServerService.DeleteConnectionGroup:output_type -> relay.server.v1.DeleteConnectionGroupResponse
+	274, // 582: relay.server.v1.ServerService.UpdateConnectionGroup:output_type -> relay.server.v1.UpdateConnectionGroupResponse
+	276, // 583: relay.server.v1.ServerService.AddConnectionToGroup:output_type -> relay.server.v1.AddConnectionToGroupResponse
+	278, // 584: relay.server.v1.ServerService.RemoveConnectionFromGroup:output_type -> relay.server.v1.RemoveConnectionFromGroupResponse
+	254, // 585: relay.server.v1.ServerService.ListPolicies:output_type -> relay.server.v1.ListPoliciesResponse
+	256, // 586: relay.server.v1.ServerService.GetPolicy:output_type -> relay.server.v1.GetPolicyResponse
+	258, // 587: relay.server.v1.ServerService.CreatePolicy:output_type -> relay.server.v1.CreatePolicyResponse
+	260, // 588: relay.server.v1.ServerService.UpdatePolicy:output_type -> relay.server.v1.UpdatePolicyResponse
+	262, // 589: relay.server.v1.ServerService.DeletePolicy:output_type -> relay.server.v1.DeletePolicyResponse
+	264, // 590: relay.server.v1.ServerService.SetConnectionPolicies:output_type -> relay.server.v1.SetConnectionPoliciesResponse
+	266, // 591: relay.server.v1.ServerService.ListConnectionPolicies:output_type -> relay.server.v1.ListConnectionPoliciesResponse
+	281, // 592: relay.server.v1.ServerService.ListAccessGrants:output_type -> relay.server.v1.ListAccessGrantsResponse
+	283, // 593: relay.server.v1.ServerService.CreateAccessGrant:output_type -> relay.server.v1.CreateAccessGrantResponse
+	285, // 594: relay.server.v1.ServerService.DeleteAccessGrant:output_type -> relay.server.v1.DeleteAccessGrantResponse
+	288, // 595: relay.server.v1.ServerService.ListTeams:output_type -> relay.server.v1.ListTeamsResponse
+	290, // 596: relay.server.v1.ServerService.CreateTeam:output_type -> relay.server.v1.CreateTeamResponse
+	292, // 597: relay.server.v1.ServerService.DeleteTeam:output_type -> relay.server.v1.DeleteTeamResponse
+	294, // 598: relay.server.v1.ServerService.AddTeamMember:output_type -> relay.server.v1.AddTeamMemberResponse
+	296, // 599: relay.server.v1.ServerService.RemoveTeamMember:output_type -> relay.server.v1.RemoveTeamMemberResponse
+	299, // 600: relay.server.v1.ServerService.ListMembers:output_type -> relay.server.v1.ListMembersResponse
+	301, // 601: relay.server.v1.ServerService.SetMemberRole:output_type -> relay.server.v1.SetMemberRoleResponse
+	303, // 602: relay.server.v1.ServerService.RemoveMember:output_type -> relay.server.v1.RemoveMemberResponse
+	305, // 603: relay.server.v1.ServerService.UpdateMember:output_type -> relay.server.v1.UpdateMemberResponse
+	307, // 604: relay.server.v1.ServerService.RevokeUserSessions:output_type -> relay.server.v1.RevokeUserSessionsResponse
+	327, // 605: relay.server.v1.ServerService.InviteMember:output_type -> relay.server.v1.InviteMemberResponse
+	329, // 606: relay.server.v1.ServerService.ListInvitations:output_type -> relay.server.v1.ListInvitationsResponse
+	331, // 607: relay.server.v1.ServerService.RevokeInvitation:output_type -> relay.server.v1.RevokeInvitationResponse
+	333, // 608: relay.server.v1.ServerService.GetInvitation:output_type -> relay.server.v1.GetInvitationResponse
+	335, // 609: relay.server.v1.ServerService.AcceptInvitation:output_type -> relay.server.v1.AcceptInvitationResponse
+	338, // 610: relay.server.v1.ServerService.ListAgents:output_type -> relay.server.v1.ListAgentsResponse
+	340, // 611: relay.server.v1.ServerService.DeleteAgent:output_type -> relay.server.v1.DeleteAgentResponse
+	342, // 612: relay.server.v1.ServerService.CreateEnrollmentToken:output_type -> relay.server.v1.CreateEnrollmentTokenResponse
+	345, // 613: relay.server.v1.ServerService.ListEnrollmentTokens:output_type -> relay.server.v1.ListEnrollmentTokensResponse
+	347, // 614: relay.server.v1.ServerService.DeleteEnrollmentToken:output_type -> relay.server.v1.DeleteEnrollmentTokenResponse
+	349, // 615: relay.server.v1.ServerService.EnrollAgent:output_type -> relay.server.v1.EnrollAgentResponse
+	353, // 616: relay.server.v1.ServerService.Heartbeat:output_type -> relay.server.v1.HeartbeatResponse
+	355, // 617: relay.server.v1.ServerService.Deregister:output_type -> relay.server.v1.DeregisterResponse
+	370, // 618: relay.server.v1.ServerService.ListAgentPools:output_type -> relay.server.v1.ListAgentPoolsResponse
+	372, // 619: relay.server.v1.ServerService.CreateAgentPool:output_type -> relay.server.v1.CreateAgentPoolResponse
+	374, // 620: relay.server.v1.ServerService.DeleteAgentPool:output_type -> relay.server.v1.DeleteAgentPoolResponse
+	376, // 621: relay.server.v1.ServerService.UpdateAgentPool:output_type -> relay.server.v1.UpdateAgentPoolResponse
+	469, // 622: relay.server.v1.ServerService.ResolveConnectionCredential:output_type -> relay.server.v1.ResolveConnectionCredentialResponse
+	471, // 623: relay.server.v1.ServerService.ResolveExternalSecretSource:output_type -> relay.server.v1.ResolveExternalSecretSourceResponse
+	461, // 624: relay.server.v1.ServerService.ListExternalSecretSources:output_type -> relay.server.v1.ListExternalSecretSourcesResponse
+	463, // 625: relay.server.v1.ServerService.GetExternalSecretSource:output_type -> relay.server.v1.GetExternalSecretSourceResponse
+	465, // 626: relay.server.v1.ServerService.UpsertExternalSecretSource:output_type -> relay.server.v1.UpsertExternalSecretSourceResponse
+	467, // 627: relay.server.v1.ServerService.DeleteExternalSecretSource:output_type -> relay.server.v1.DeleteExternalSecretSourceResponse
+	474, // 628: relay.server.v1.ServerService.GetCloudIntegrationSetup:output_type -> relay.server.v1.GetCloudIntegrationSetupResponse
+	476, // 629: relay.server.v1.ServerService.ListCloudIntegrations:output_type -> relay.server.v1.ListCloudIntegrationsResponse
+	478, // 630: relay.server.v1.ServerService.GetCloudIntegration:output_type -> relay.server.v1.GetCloudIntegrationResponse
+	480, // 631: relay.server.v1.ServerService.CreateCloudIntegration:output_type -> relay.server.v1.CreateCloudIntegrationResponse
+	482, // 632: relay.server.v1.ServerService.UpdateCloudIntegration:output_type -> relay.server.v1.UpdateCloudIntegrationResponse
+	484, // 633: relay.server.v1.ServerService.DeleteCloudIntegration:output_type -> relay.server.v1.DeleteCloudIntegrationResponse
+	486, // 634: relay.server.v1.ServerService.TestCloudIntegration:output_type -> relay.server.v1.TestCloudIntegrationResponse
+	490, // 635: relay.server.v1.ServerService.GetLogStream:output_type -> relay.server.v1.GetLogStreamResponse
+	492, // 636: relay.server.v1.ServerService.UpsertLogStream:output_type -> relay.server.v1.UpsertLogStreamResponse
+	495, // 637: relay.server.v1.ServerService.GetBackupAutoExport:output_type -> relay.server.v1.GetBackupAutoExportResponse
+	497, // 638: relay.server.v1.ServerService.UpsertBackupAutoExport:output_type -> relay.server.v1.UpsertBackupAutoExportResponse
+	499, // 639: relay.server.v1.ServerService.ExportToCloud:output_type -> relay.server.v1.ExportToCloudResponse
+	358, // 640: relay.server.v1.ServerService.IngestAuditEvents:output_type -> relay.server.v1.IngestAuditEventsResponse
+	360, // 641: relay.server.v1.ServerService.ListAuditLogs:output_type -> relay.server.v1.ListAuditLogsResponse
+	363, // 642: relay.server.v1.ServerService.GetAuditMetrics:output_type -> relay.server.v1.GetAuditMetricsResponse
+	379, // 643: relay.server.v1.ServerService.ListActivityLogs:output_type -> relay.server.v1.ListActivityLogsResponse
+	383, // 644: relay.server.v1.ServerService.ListOrgActivityLogs:output_type -> relay.server.v1.ListOrgActivityLogsResponse
+	381, // 645: relay.server.v1.ServerService.EmitActivity:output_type -> relay.server.v1.EmitActivityResponse
+	386, // 646: relay.server.v1.ServerService.ListUserOrganizations:output_type -> relay.server.v1.ListUserOrganizationsResponse
+	388, // 647: relay.server.v1.ServerService.GetOrganization:output_type -> relay.server.v1.GetOrganizationResponse
+	390, // 648: relay.server.v1.ServerService.CreateOrganization:output_type -> relay.server.v1.CreateOrganizationResponse
+	392, // 649: relay.server.v1.ServerService.UpdateOrganization:output_type -> relay.server.v1.UpdateOrganizationResponse
+	396, // 650: relay.server.v1.ServerService.UpdateOrganizationSettings:output_type -> relay.server.v1.UpdateOrganizationSettingsResponse
+	398, // 651: relay.server.v1.ServerService.DeleteOrganization:output_type -> relay.server.v1.DeleteOrganizationResponse
+	394, // 652: relay.server.v1.ServerService.SwitchOrganization:output_type -> relay.server.v1.SwitchOrganizationResponse
+	411, // 653: relay.server.v1.ServerService.GetOrgOverview:output_type -> relay.server.v1.GetOrgOverviewResponse
+	401, // 654: relay.server.v1.ServerService.ListWorkspaces:output_type -> relay.server.v1.ListWorkspacesResponse
+	403, // 655: relay.server.v1.ServerService.GetWorkspace:output_type -> relay.server.v1.GetWorkspaceResponse
+	405, // 656: relay.server.v1.ServerService.CreateWorkspace:output_type -> relay.server.v1.CreateWorkspaceResponse
+	407, // 657: relay.server.v1.ServerService.UpdateWorkspace:output_type -> relay.server.v1.UpdateWorkspaceResponse
+	409, // 658: relay.server.v1.ServerService.DeleteWorkspace:output_type -> relay.server.v1.DeleteWorkspaceResponse
+	416, // 659: relay.server.v1.ServerService.AddWorkspaceMember:output_type -> relay.server.v1.AddWorkspaceMemberResponse
+	418, // 660: relay.server.v1.ServerService.RemoveWorkspaceMember:output_type -> relay.server.v1.RemoveWorkspaceMemberResponse
+	420, // 661: relay.server.v1.ServerService.ListWorkspaceMembers:output_type -> relay.server.v1.ListWorkspaceMembersResponse
+	422, // 662: relay.server.v1.ServerService.AddWorkspaceTeam:output_type -> relay.server.v1.AddWorkspaceTeamResponse
+	424, // 663: relay.server.v1.ServerService.RemoveWorkspaceTeam:output_type -> relay.server.v1.RemoveWorkspaceTeamResponse
+	426, // 664: relay.server.v1.ServerService.ListWorkspaceTeams:output_type -> relay.server.v1.ListWorkspaceTeamsResponse
+	428, // 665: relay.server.v1.ServerService.SetWorkspaceMemberRole:output_type -> relay.server.v1.SetWorkspaceMemberRoleResponse
+	430, // 666: relay.server.v1.ServerService.SetWorkspaceTeamRole:output_type -> relay.server.v1.SetWorkspaceTeamRoleResponse
+	434, // 667: relay.server.v1.ServerService.ListRoles:output_type -> relay.server.v1.ListRolesResponse
+	436, // 668: relay.server.v1.ServerService.CreateRole:output_type -> relay.server.v1.CreateRoleResponse
+	438, // 669: relay.server.v1.ServerService.UpdateRole:output_type -> relay.server.v1.UpdateRoleResponse
+	440, // 670: relay.server.v1.ServerService.DeleteRole:output_type -> relay.server.v1.DeleteRoleResponse
+	443, // 671: relay.server.v1.ServerService.ListRoleBindings:output_type -> relay.server.v1.ListRoleBindingsResponse
+	445, // 672: relay.server.v1.ServerService.CreateRoleBinding:output_type -> relay.server.v1.CreateRoleBindingResponse
+	447, // 673: relay.server.v1.ServerService.DeleteRoleBinding:output_type -> relay.server.v1.DeleteRoleBindingResponse
+	51,  // 674: relay.server.v1.ServerService.ListDatabases:output_type -> relay.server.v1.ListDatabasesResponse
+	53,  // 675: relay.server.v1.ServerService.CreateDatabase:output_type -> relay.server.v1.CreateDatabaseResponse
+	55,  // 676: relay.server.v1.ServerService.RestoreDatabase:output_type -> relay.server.v1.RestoreDatabaseResponse
+	57,  // 677: relay.server.v1.ServerService.GetDatabase:output_type -> relay.server.v1.GetDatabaseResponse
+	59,  // 678: relay.server.v1.ServerService.UpdateDatabase:output_type -> relay.server.v1.UpdateDatabaseResponse
+	62,  // 679: relay.server.v1.ServerService.ListPostgreSQLParameters:output_type -> relay.server.v1.ListPostgreSQLParametersResponse
+	64,  // 680: relay.server.v1.ServerService.WatchDatabase:output_type -> relay.server.v1.WatchDatabaseEvent
+	67,  // 681: relay.server.v1.ServerService.ListPendingOperations:output_type -> relay.server.v1.ListPendingOperationsResponse
+	69,  // 682: relay.server.v1.ServerService.DeleteDatabase:output_type -> relay.server.v1.DeleteDatabaseResponse
+	71,  // 683: relay.server.v1.ServerService.RetryDeleteDatabase:output_type -> relay.server.v1.RetryDeleteDatabaseResponse
+	73,  // 684: relay.server.v1.ServerService.PauseDatabase:output_type -> relay.server.v1.PauseDatabaseResponse
+	75,  // 685: relay.server.v1.ServerService.ResumeDatabase:output_type -> relay.server.v1.ResumeDatabaseResponse
+	77,  // 686: relay.server.v1.ServerService.GetDatabaseStatus:output_type -> relay.server.v1.GetDatabaseStatusResponse
+	79,  // 687: relay.server.v1.ServerService.ListDatabaseNodes:output_type -> relay.server.v1.ListDatabaseNodesResponse
+	82,  // 688: relay.server.v1.ServerService.GetDatabaseLogs:output_type -> relay.server.v1.GetDatabaseLogsResponse
+	367, // 689: relay.server.v1.ServerService.GetDatabaseAnalytics:output_type -> relay.server.v1.GetDatabaseAnalyticsResponse
+	16,  // 690: relay.server.v1.ServerService.GetDatabaseConnection:output_type -> relay.server.v1.GetDatabaseConnectionResponse
+	19,  // 691: relay.server.v1.ServerService.ListIPAllowlist:output_type -> relay.server.v1.ListIPAllowlistResponse
+	21,  // 692: relay.server.v1.ServerService.AddIPAllowlistEntry:output_type -> relay.server.v1.AddIPAllowlistEntryResponse
+	23,  // 693: relay.server.v1.ServerService.UpdateIPAllowlistEntry:output_type -> relay.server.v1.UpdateIPAllowlistEntryResponse
+	25,  // 694: relay.server.v1.ServerService.RemoveIPAllowlistEntry:output_type -> relay.server.v1.RemoveIPAllowlistEntryResponse
+	28,  // 695: relay.server.v1.ServerService.ListPrivateEndpointRegions:output_type -> relay.server.v1.ListPrivateEndpointRegionsResponse
+	33,  // 696: relay.server.v1.ServerService.CreatePrivateEndpointService:output_type -> relay.server.v1.CreatePrivateEndpointServiceResponse
+	35,  // 697: relay.server.v1.ServerService.ListPrivateEndpointServices:output_type -> relay.server.v1.ListPrivateEndpointServicesResponse
+	37,  // 698: relay.server.v1.ServerService.GetPrivateEndpointService:output_type -> relay.server.v1.GetPrivateEndpointServiceResponse
+	39,  // 699: relay.server.v1.ServerService.DeletePrivateEndpointService:output_type -> relay.server.v1.DeletePrivateEndpointServiceResponse
+	41,  // 700: relay.server.v1.ServerService.CreatePrivateEndpoint:output_type -> relay.server.v1.CreatePrivateEndpointResponse
+	43,  // 701: relay.server.v1.ServerService.GetPrivateEndpoint:output_type -> relay.server.v1.GetPrivateEndpointResponse
+	45,  // 702: relay.server.v1.ServerService.DeletePrivateEndpoint:output_type -> relay.server.v1.DeletePrivateEndpointResponse
+	93,  // 703: relay.server.v1.ServerService.ListBackupSchedules:output_type -> relay.server.v1.ListBackupSchedulesResponse
+	95,  // 704: relay.server.v1.ServerService.ListBackups:output_type -> relay.server.v1.ListBackupsResponse
+	97,  // 705: relay.server.v1.ServerService.UpdateBackupSchedule:output_type -> relay.server.v1.UpdateBackupScheduleResponse
+	99,  // 706: relay.server.v1.ServerService.CreateBackup:output_type -> relay.server.v1.CreateBackupResponse
+	101, // 707: relay.server.v1.ServerService.DeleteBackup:output_type -> relay.server.v1.DeleteBackupResponse
+	105, // 708: relay.server.v1.ServerService.ListDatabaseUsers:output_type -> relay.server.v1.ListDatabaseUsersResponse
+	107, // 709: relay.server.v1.ServerService.GetDatabaseUser:output_type -> relay.server.v1.GetDatabaseUserResponse
+	109, // 710: relay.server.v1.ServerService.CreateDatabaseUser:output_type -> relay.server.v1.CreateDatabaseUserResponse
+	111, // 711: relay.server.v1.ServerService.UpdateDatabaseUser:output_type -> relay.server.v1.UpdateDatabaseUserResponse
+	113, // 712: relay.server.v1.ServerService.DeleteDatabaseUser:output_type -> relay.server.v1.DeleteDatabaseUserResponse
+	116, // 713: relay.server.v1.ServerService.ListLogicalDatabases:output_type -> relay.server.v1.ListLogicalDatabasesResponse
+	118, // 714: relay.server.v1.ServerService.CreateLogicalDatabase:output_type -> relay.server.v1.CreateLogicalDatabaseResponse
+	120, // 715: relay.server.v1.ServerService.UpdateLogicalDatabase:output_type -> relay.server.v1.UpdateLogicalDatabaseResponse
+	122, // 716: relay.server.v1.ServerService.DeleteLogicalDatabase:output_type -> relay.server.v1.DeleteLogicalDatabaseResponse
+	125, // 717: relay.server.v1.ServerService.ListDatabaseProviders:output_type -> relay.server.v1.ListDatabaseProvidersResponse
+	452, // 718: relay.server.v1.ServerService.GetBillingState:output_type -> relay.server.v1.GetBillingStateResponse
+	454, // 719: relay.server.v1.ServerService.CreateCheckoutSession:output_type -> relay.server.v1.CreateCheckoutSessionResponse
+	458, // 720: relay.server.v1.ServerService.CreateBillingPortalSession:output_type -> relay.server.v1.CreateBillingPortalSessionResponse
+	456, // 721: relay.server.v1.ServerService.ChangePlan:output_type -> relay.server.v1.ChangePlanResponse
+	505, // 722: relay.server.v1.ServerService.CreateSupportReport:output_type -> relay.server.v1.CreateSupportReportResponse
+	507, // 723: relay.server.v1.ServerService.ListSupportReports:output_type -> relay.server.v1.ListSupportReportsResponse
+	509, // 724: relay.server.v1.ServerService.GetSupportReport:output_type -> relay.server.v1.GetSupportReportResponse
+	511, // 725: relay.server.v1.ServerService.AddSupportReportComment:output_type -> relay.server.v1.AddSupportReportCommentResponse
+	513, // 726: relay.server.v1.ServerService.GetSupportAttachment:output_type -> relay.server.v1.GetSupportAttachmentResponse
+	515, // 727: relay.server.v1.ServerService.UpdateSupportReportStatus:output_type -> relay.server.v1.UpdateSupportReportStatusResponse
+	528, // 728: relay.server.v1.ServerService.GetOrgSSOConnection:output_type -> relay.server.v1.GetOrgSSOConnectionResponse
+	530, // 729: relay.server.v1.ServerService.UpsertOrgSSOConnection:output_type -> relay.server.v1.UpsertOrgSSOConnectionResponse
+	532, // 730: relay.server.v1.ServerService.DeleteOrgSSOConnection:output_type -> relay.server.v1.DeleteOrgSSOConnectionResponse
+	534, // 731: relay.server.v1.ServerService.TestOrgSSOConnection:output_type -> relay.server.v1.TestOrgSSOConnectionResponse
+	537, // 732: relay.server.v1.ServerService.ListPostgreSQLExtensions:output_type -> relay.server.v1.ListPostgreSQLExtensionsResponse
+	134, // 733: relay.server.v1.AdminService.AdminListOrganizations:output_type -> relay.server.v1.AdminListOrganizationsResponse
+	136, // 734: relay.server.v1.AdminService.AdminGetOrganization:output_type -> relay.server.v1.AdminGetOrganizationResponse
+	143, // 735: relay.server.v1.AdminService.AdminGetOrganizationResources:output_type -> relay.server.v1.AdminGetOrganizationResourcesResponse
+	452, // 736: relay.server.v1.AdminService.AdminGetOrganizationBilling:output_type -> relay.server.v1.GetBillingStateResponse
+	191, // 737: relay.server.v1.AdminService.AdminSetOrganizationPlan:output_type -> relay.server.v1.AdminSetOrganizationPlanResponse
+	193, // 738: relay.server.v1.AdminService.AdminGetOrganizationCost:output_type -> relay.server.v1.AdminGetOrganizationCostResponse
+	196, // 739: relay.server.v1.AdminService.AdminListSignupAllowlist:output_type -> relay.server.v1.AdminListSignupAllowlistResponse
+	198, // 740: relay.server.v1.AdminService.AdminAddSignupAllowlistEntry:output_type -> relay.server.v1.AdminAddSignupAllowlistEntryResponse
+	200, // 741: relay.server.v1.AdminService.AdminRemoveSignupAllowlistEntry:output_type -> relay.server.v1.AdminRemoveSignupAllowlistEntryResponse
+	203, // 742: relay.server.v1.AdminService.AdminListSignupAttempts:output_type -> relay.server.v1.AdminListSignupAttemptsResponse
+	205, // 743: relay.server.v1.AdminService.AdminDismissSignupAttempt:output_type -> relay.server.v1.AdminDismissSignupAttemptResponse
+	208, // 744: relay.server.v1.AdminService.AdminListAuditLog:output_type -> relay.server.v1.AdminListAuditLogResponse
+	214, // 745: relay.server.v1.AdminService.AdminGetCloudCosts:output_type -> relay.server.v1.AdminGetCloudCostsResponse
+	217, // 746: relay.server.v1.AdminService.AdminGetRevenueOverview:output_type -> relay.server.v1.AdminGetRevenueOverviewResponse
+	517, // 747: relay.server.v1.AdminService.AdminListSupportReports:output_type -> relay.server.v1.AdminListSupportReportsResponse
+	519, // 748: relay.server.v1.AdminService.AdminGetSupportReport:output_type -> relay.server.v1.AdminGetSupportReportResponse
+	521, // 749: relay.server.v1.AdminService.AdminAddSupportReportComment:output_type -> relay.server.v1.AdminAddSupportReportCommentResponse
+	523, // 750: relay.server.v1.AdminService.AdminGetSupportAttachment:output_type -> relay.server.v1.AdminGetSupportAttachmentResponse
+	525, // 751: relay.server.v1.AdminService.AdminUpdateSupportReportStatus:output_type -> relay.server.v1.AdminUpdateSupportReportStatusResponse
+	299, // 752: relay.server.v1.AdminService.AdminListMembers:output_type -> relay.server.v1.ListMembersResponse
+	301, // 753: relay.server.v1.AdminService.AdminSetMemberRole:output_type -> relay.server.v1.SetMemberRoleResponse
+	303, // 754: relay.server.v1.AdminService.AdminRemoveMember:output_type -> relay.server.v1.RemoveMemberResponse
+	327, // 755: relay.server.v1.AdminService.AdminInviteMember:output_type -> relay.server.v1.InviteMemberResponse
+	329, // 756: relay.server.v1.AdminService.AdminListInvitations:output_type -> relay.server.v1.ListInvitationsResponse
+	331, // 757: relay.server.v1.AdminService.AdminRevokeInvitation:output_type -> relay.server.v1.RevokeInvitationResponse
+	172, // 758: relay.server.v1.AdminService.AdminListClusters:output_type -> relay.server.v1.AdminListClustersResponse
+	175, // 759: relay.server.v1.AdminService.AdminListPendingOperations:output_type -> relay.server.v1.AdminListPendingOperationsResponse
+	177, // 760: relay.server.v1.AdminService.AdminListAgents:output_type -> relay.server.v1.AdminListAgentsResponse
+	180, // 761: relay.server.v1.AdminService.AdminListTunnelSessions:output_type -> relay.server.v1.AdminListTunnelSessionsResponse
+	182, // 762: relay.server.v1.AdminService.AdminRetryDeleteDatabase:output_type -> relay.server.v1.AdminRetryDeleteDatabaseResponse
+	160, // 763: relay.server.v1.AdminService.AdminSearchUsers:output_type -> relay.server.v1.AdminSearchUsersResponse
+	164, // 764: relay.server.v1.AdminService.AdminGetUser:output_type -> relay.server.v1.AdminGetUserResponse
+	166, // 765: relay.server.v1.AdminService.AdminRevokeUserSessions:output_type -> relay.server.v1.AdminRevokeUserSessionsResponse
+	151, // 766: relay.server.v1.AdminService.AdminGetOrganizationActivity:output_type -> relay.server.v1.AdminGetOrganizationActivityResponse
+	156, // 767: relay.server.v1.AdminService.AdminGetOrganizationSecurity:output_type -> relay.server.v1.AdminGetOrganizationSecurityResponse
+	145, // 768: relay.server.v1.AdminService.AdminGetPlatformOverview:output_type -> relay.server.v1.AdminGetPlatformOverviewResponse
+	148, // 769: relay.server.v1.AdminService.AdminListOrgActivation:output_type -> relay.server.v1.AdminListOrgActivationResponse
+	168, // 770: relay.server.v1.AdminService.AdminSuspendOrganization:output_type -> relay.server.v1.AdminSuspendOrganizationResponse
+	170, // 771: relay.server.v1.AdminService.AdminUnsuspendOrganization:output_type -> relay.server.v1.AdminUnsuspendOrganizationResponse
+	220, // 772: relay.server.v1.AdminService.AdminGetMaintenanceBanner:output_type -> relay.server.v1.AdminGetMaintenanceBannerResponse
+	222, // 773: relay.server.v1.AdminService.AdminSetMaintenanceBanner:output_type -> relay.server.v1.AdminSetMaintenanceBannerResponse
+	224, // 774: relay.server.v1.AdminService.AdminClearMaintenanceBanner:output_type -> relay.server.v1.AdminClearMaintenanceBannerResponse
+	561, // [561:775] is the sub-list for method output_type
+	347, // [347:561] is the sub-list for method input_type
+	347, // [347:347] is the sub-list for extension type_name
+	347, // [347:347] is the sub-list for extension extendee
+	0,   // [0:347] is the sub-list for field type_name
 }
 
 func init() { file_relay_server_v1_server_proto_init() }
@@ -36090,17 +36461,17 @@ func file_relay_server_v1_server_proto_init() {
 	file_relay_server_v1_server_proto_msgTypes[437].OneofWrappers = []any{}
 	file_relay_server_v1_server_proto_msgTypes[464].OneofWrappers = []any{}
 	file_relay_server_v1_server_proto_msgTypes[481].OneofWrappers = []any{}
-	file_relay_server_v1_server_proto_msgTypes[502].OneofWrappers = []any{}
 	file_relay_server_v1_server_proto_msgTypes[504].OneofWrappers = []any{}
-	file_relay_server_v1_server_proto_msgTypes[512].OneofWrappers = []any{}
-	file_relay_server_v1_server_proto_msgTypes[523].OneofWrappers = []any{}
+	file_relay_server_v1_server_proto_msgTypes[506].OneofWrappers = []any{}
+	file_relay_server_v1_server_proto_msgTypes[516].OneofWrappers = []any{}
+	file_relay_server_v1_server_proto_msgTypes[529].OneofWrappers = []any{}
 	type x struct{}
 	out := protoimpl.TypeBuilder{
 		File: protoimpl.DescBuilder{
 			GoPackagePath: reflect.TypeOf(x{}).PkgPath(),
 			RawDescriptor: unsafe.Slice(unsafe.StringData(file_relay_server_v1_server_proto_rawDesc), len(file_relay_server_v1_server_proto_rawDesc)),
 			NumEnums:      0,
-			NumMessages:   539,
+			NumMessages:   545,
 			NumExtensions: 0,
 			NumServices:   2,
 		},

@@ -184,6 +184,7 @@ const (
 	ServerService_ListSupportReports_FullMethodName           = "/relay.server.v1.ServerService/ListSupportReports"
 	ServerService_GetSupportReport_FullMethodName             = "/relay.server.v1.ServerService/GetSupportReport"
 	ServerService_AddSupportReportComment_FullMethodName      = "/relay.server.v1.ServerService/AddSupportReportComment"
+	ServerService_GetSupportAttachment_FullMethodName         = "/relay.server.v1.ServerService/GetSupportAttachment"
 	ServerService_UpdateSupportReportStatus_FullMethodName    = "/relay.server.v1.ServerService/UpdateSupportReportStatus"
 	ServerService_GetOrgSSOConnection_FullMethodName          = "/relay.server.v1.ServerService/GetOrgSSOConnection"
 	ServerService_UpsertOrgSSOConnection_FullMethodName       = "/relay.server.v1.ServerService/UpsertOrgSSOConnection"
@@ -241,15 +242,15 @@ type ServerServiceClient interface {
 	// what this RPC returns.
 	ResolveTunnelToken(ctx context.Context, in *ResolveTunnelTokenRequest, opts ...grpc.CallOption) (*ResolveTunnelTokenResponse, error)
 	// ReportTunnelSessions upserts the lifecycle of the sessions an agent is
-	// proxying — CLI tunnels and listener (service) connections — so the control
-	// plane can meter connection-hours and enforce concurrency caps
-	// (agent-authed). Idempotent per (agent, session_id); the agent re-sends
-	// open sessions on every push and closed ones until acknowledged.
+	// proxying — CLI tunnels and listener connections — so the control plane can
+	// meter egress and enforce concurrency caps (agent-authed). Idempotent per
+	// (agent, session_id); the agent re-sends open sessions on every push and
+	// closed ones until acknowledged.
 	ReportTunnelSessions(ctx context.Context, in *ReportTunnelSessionsRequest, opts ...grpc.CallOption) (*ReportTunnelSessionsResponse, error)
 	// ListTunnelSessions lists the recorded tunnel/listener sessions of the
-	// caller's workspace — open ones by default — for the sessions UI and
-	// connection-hours transparency (user-authed, org.connections.read;
-	// non-admins only see sessions on connections they can reach).
+	// caller's workspace — open ones by default — for the sessions UI
+	// (user-authed, org.connections.read; non-admins only see sessions on
+	// connections they can reach).
 	ListTunnelSessions(ctx context.Context, in *ListTunnelSessionsRequest, opts ...grpc.CallOption) (*ListTunnelSessionsResponse, error)
 	// ListConnectionGroups returns all connection groups in the user's organization.
 	ListConnectionGroups(ctx context.Context, in *ListConnectionGroupsRequest, opts ...grpc.CallOption) (*ListConnectionGroupsResponse, error)
@@ -584,6 +585,9 @@ type ServerServiceClient interface {
 	GetSupportReport(ctx context.Context, in *GetSupportReportRequest, opts ...grpc.CallOption) (*GetSupportReportResponse, error)
 	// AddSupportReportComment appends a comment to a report's thread.
 	AddSupportReportComment(ctx context.Context, in *AddSupportReportCommentRequest, opts ...grpc.CallOption) (*AddSupportReportCommentResponse, error)
+	// GetSupportAttachment returns the bytes of one image attached to a comment
+	// on a report in the caller's org.
+	GetSupportAttachment(ctx context.Context, in *GetSupportAttachmentRequest, opts ...grpc.CallOption) (*GetSupportAttachmentResponse, error)
 	// UpdateSupportReportStatus moves a report between statuses. Staff only.
 	UpdateSupportReportStatus(ctx context.Context, in *UpdateSupportReportStatusRequest, opts ...grpc.CallOption) (*UpdateSupportReportStatusResponse, error)
 	// ─── Enterprise SSO (OpenID Connect) ───
@@ -2272,6 +2276,16 @@ func (c *serverServiceClient) AddSupportReportComment(ctx context.Context, in *A
 	return out, nil
 }
 
+func (c *serverServiceClient) GetSupportAttachment(ctx context.Context, in *GetSupportAttachmentRequest, opts ...grpc.CallOption) (*GetSupportAttachmentResponse, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(GetSupportAttachmentResponse)
+	err := c.cc.Invoke(ctx, ServerService_GetSupportAttachment_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
 func (c *serverServiceClient) UpdateSupportReportStatus(ctx context.Context, in *UpdateSupportReportStatusRequest, opts ...grpc.CallOption) (*UpdateSupportReportStatusResponse, error) {
 	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
 	out := new(UpdateSupportReportStatusResponse)
@@ -2381,15 +2395,15 @@ type ServerServiceServer interface {
 	// what this RPC returns.
 	ResolveTunnelToken(context.Context, *ResolveTunnelTokenRequest) (*ResolveTunnelTokenResponse, error)
 	// ReportTunnelSessions upserts the lifecycle of the sessions an agent is
-	// proxying — CLI tunnels and listener (service) connections — so the control
-	// plane can meter connection-hours and enforce concurrency caps
-	// (agent-authed). Idempotent per (agent, session_id); the agent re-sends
-	// open sessions on every push and closed ones until acknowledged.
+	// proxying — CLI tunnels and listener connections — so the control plane can
+	// meter egress and enforce concurrency caps (agent-authed). Idempotent per
+	// (agent, session_id); the agent re-sends open sessions on every push and
+	// closed ones until acknowledged.
 	ReportTunnelSessions(context.Context, *ReportTunnelSessionsRequest) (*ReportTunnelSessionsResponse, error)
 	// ListTunnelSessions lists the recorded tunnel/listener sessions of the
-	// caller's workspace — open ones by default — for the sessions UI and
-	// connection-hours transparency (user-authed, org.connections.read;
-	// non-admins only see sessions on connections they can reach).
+	// caller's workspace — open ones by default — for the sessions UI
+	// (user-authed, org.connections.read; non-admins only see sessions on
+	// connections they can reach).
 	ListTunnelSessions(context.Context, *ListTunnelSessionsRequest) (*ListTunnelSessionsResponse, error)
 	// ListConnectionGroups returns all connection groups in the user's organization.
 	ListConnectionGroups(context.Context, *ListConnectionGroupsRequest) (*ListConnectionGroupsResponse, error)
@@ -2724,6 +2738,9 @@ type ServerServiceServer interface {
 	GetSupportReport(context.Context, *GetSupportReportRequest) (*GetSupportReportResponse, error)
 	// AddSupportReportComment appends a comment to a report's thread.
 	AddSupportReportComment(context.Context, *AddSupportReportCommentRequest) (*AddSupportReportCommentResponse, error)
+	// GetSupportAttachment returns the bytes of one image attached to a comment
+	// on a report in the caller's org.
+	GetSupportAttachment(context.Context, *GetSupportAttachmentRequest) (*GetSupportAttachmentResponse, error)
 	// UpdateSupportReportStatus moves a report between statuses. Staff only.
 	UpdateSupportReportStatus(context.Context, *UpdateSupportReportStatusRequest) (*UpdateSupportReportStatusResponse, error)
 	// ─── Enterprise SSO (OpenID Connect) ───
@@ -3247,6 +3264,9 @@ func (UnimplementedServerServiceServer) GetSupportReport(context.Context, *GetSu
 }
 func (UnimplementedServerServiceServer) AddSupportReportComment(context.Context, *AddSupportReportCommentRequest) (*AddSupportReportCommentResponse, error) {
 	return nil, status.Error(codes.Unimplemented, "method AddSupportReportComment not implemented")
+}
+func (UnimplementedServerServiceServer) GetSupportAttachment(context.Context, *GetSupportAttachmentRequest) (*GetSupportAttachmentResponse, error) {
+	return nil, status.Error(codes.Unimplemented, "method GetSupportAttachment not implemented")
 }
 func (UnimplementedServerServiceServer) UpdateSupportReportStatus(context.Context, *UpdateSupportReportStatusRequest) (*UpdateSupportReportStatusResponse, error) {
 	return nil, status.Error(codes.Unimplemented, "method UpdateSupportReportStatus not implemented")
@@ -6250,6 +6270,24 @@ func _ServerService_AddSupportReportComment_Handler(srv interface{}, ctx context
 	return interceptor(ctx, in, info, handler)
 }
 
+func _ServerService_GetSupportAttachment_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(GetSupportAttachmentRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(ServerServiceServer).GetSupportAttachment(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: ServerService_GetSupportAttachment_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(ServerServiceServer).GetSupportAttachment(ctx, req.(*GetSupportAttachmentRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
 func _ServerService_UpdateSupportReportStatus_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
 	in := new(UpdateSupportReportStatusRequest)
 	if err := dec(in); err != nil {
@@ -7022,6 +7060,10 @@ var ServerService_ServiceDesc = grpc.ServiceDesc{
 			Handler:    _ServerService_AddSupportReportComment_Handler,
 		},
 		{
+			MethodName: "GetSupportAttachment",
+			Handler:    _ServerService_GetSupportAttachment_Handler,
+		},
+		{
 			MethodName: "UpdateSupportReportStatus",
 			Handler:    _ServerService_UpdateSupportReportStatus_Handler,
 		},
@@ -7074,6 +7116,7 @@ const (
 	AdminService_AdminListSupportReports_FullMethodName         = "/relay.server.v1.AdminService/AdminListSupportReports"
 	AdminService_AdminGetSupportReport_FullMethodName           = "/relay.server.v1.AdminService/AdminGetSupportReport"
 	AdminService_AdminAddSupportReportComment_FullMethodName    = "/relay.server.v1.AdminService/AdminAddSupportReportComment"
+	AdminService_AdminGetSupportAttachment_FullMethodName       = "/relay.server.v1.AdminService/AdminGetSupportAttachment"
 	AdminService_AdminUpdateSupportReportStatus_FullMethodName  = "/relay.server.v1.AdminService/AdminUpdateSupportReportStatus"
 	AdminService_AdminListMembers_FullMethodName                = "/relay.server.v1.AdminService/AdminListMembers"
 	AdminService_AdminSetMemberRole_FullMethodName              = "/relay.server.v1.AdminService/AdminSetMemberRole"
@@ -7175,6 +7218,9 @@ type AdminServiceClient interface {
 	// AdminAddSupportReportComment posts a staff reply on a report, in any
 	// organization. The comment is flagged staff=true and emails the author.
 	AdminAddSupportReportComment(ctx context.Context, in *AdminAddSupportReportCommentRequest, opts ...grpc.CallOption) (*AdminAddSupportReportCommentResponse, error)
+	// AdminGetSupportAttachment returns the bytes of one image attached to a
+	// comment, on a report in any org.
+	AdminGetSupportAttachment(ctx context.Context, in *AdminGetSupportAttachmentRequest, opts ...grpc.CallOption) (*AdminGetSupportAttachmentResponse, error)
 	// AdminUpdateSupportReportStatus changes a report's status (open,
 	// in_progress, resolved), in any organization, and emails the author.
 	AdminUpdateSupportReportStatus(ctx context.Context, in *AdminUpdateSupportReportStatusRequest, opts ...grpc.CallOption) (*AdminUpdateSupportReportStatusResponse, error)
@@ -7426,6 +7472,16 @@ func (c *adminServiceClient) AdminAddSupportReportComment(ctx context.Context, i
 	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
 	out := new(AdminAddSupportReportCommentResponse)
 	err := c.cc.Invoke(ctx, AdminService_AdminAddSupportReportComment_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *adminServiceClient) AdminGetSupportAttachment(ctx context.Context, in *AdminGetSupportAttachmentRequest, opts ...grpc.CallOption) (*AdminGetSupportAttachmentResponse, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(AdminGetSupportAttachmentResponse)
+	err := c.cc.Invoke(ctx, AdminService_AdminGetSupportAttachment_FullMethodName, in, out, cOpts...)
 	if err != nil {
 		return nil, err
 	}
@@ -7747,6 +7803,9 @@ type AdminServiceServer interface {
 	// AdminAddSupportReportComment posts a staff reply on a report, in any
 	// organization. The comment is flagged staff=true and emails the author.
 	AdminAddSupportReportComment(context.Context, *AdminAddSupportReportCommentRequest) (*AdminAddSupportReportCommentResponse, error)
+	// AdminGetSupportAttachment returns the bytes of one image attached to a
+	// comment, on a report in any org.
+	AdminGetSupportAttachment(context.Context, *AdminGetSupportAttachmentRequest) (*AdminGetSupportAttachmentResponse, error)
 	// AdminUpdateSupportReportStatus changes a report's status (open,
 	// in_progress, resolved), in any organization, and emails the author.
 	AdminUpdateSupportReportStatus(context.Context, *AdminUpdateSupportReportStatusRequest) (*AdminUpdateSupportReportStatusResponse, error)
@@ -7884,6 +7943,9 @@ func (UnimplementedAdminServiceServer) AdminGetSupportReport(context.Context, *A
 }
 func (UnimplementedAdminServiceServer) AdminAddSupportReportComment(context.Context, *AdminAddSupportReportCommentRequest) (*AdminAddSupportReportCommentResponse, error) {
 	return nil, status.Error(codes.Unimplemented, "method AdminAddSupportReportComment not implemented")
+}
+func (UnimplementedAdminServiceServer) AdminGetSupportAttachment(context.Context, *AdminGetSupportAttachmentRequest) (*AdminGetSupportAttachmentResponse, error) {
+	return nil, status.Error(codes.Unimplemented, "method AdminGetSupportAttachment not implemented")
 }
 func (UnimplementedAdminServiceServer) AdminUpdateSupportReportStatus(context.Context, *AdminUpdateSupportReportStatusRequest) (*AdminUpdateSupportReportStatusResponse, error) {
 	return nil, status.Error(codes.Unimplemented, "method AdminUpdateSupportReportStatus not implemented")
@@ -8280,6 +8342,24 @@ func _AdminService_AdminAddSupportReportComment_Handler(srv interface{}, ctx con
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
 		return srv.(AdminServiceServer).AdminAddSupportReportComment(ctx, req.(*AdminAddSupportReportCommentRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _AdminService_AdminGetSupportAttachment_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(AdminGetSupportAttachmentRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(AdminServiceServer).AdminGetSupportAttachment(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: AdminService_AdminGetSupportAttachment_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(AdminServiceServer).AdminGetSupportAttachment(ctx, req.(*AdminGetSupportAttachmentRequest))
 	}
 	return interceptor(ctx, in, info, handler)
 }
@@ -8790,6 +8870,10 @@ var AdminService_ServiceDesc = grpc.ServiceDesc{
 		{
 			MethodName: "AdminAddSupportReportComment",
 			Handler:    _AdminService_AdminAddSupportReportComment_Handler,
+		},
+		{
+			MethodName: "AdminGetSupportAttachment",
+			Handler:    _AdminService_AdminGetSupportAttachment_Handler,
 		},
 		{
 			MethodName: "AdminUpdateSupportReportStatus",
