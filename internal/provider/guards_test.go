@@ -91,6 +91,23 @@ func TestClusterModifyPlanStopsOnMalformedInput(t *testing.T) {
 	}
 }
 
+func TestClusterValidateConfigReportsNothingOnMalformedInput(t *testing.T) {
+	ctx := context.Background()
+	r := newPostgreSQLClusterResource().(*postgresqlClusterResource)
+	var schemaResp resource.SchemaResponse
+	r.Schema(ctx, resource.SchemaRequest{}, &schemaResp)
+
+	var resp resource.ValidateConfigResponse
+	r.ValidateConfig(ctx, resource.ValidateConfigRequest{
+		Config: tfsdk.Config{Schema: schemaResp.Schema, Raw: malformed},
+	}, &resp)
+	for _, d := range resp.Diagnostics {
+		if d.Summary() == "No electable group" || d.Summary() == "One cluster, one region" {
+			t.Errorf("a config it could not read must not be judged: %s", d.Summary())
+		}
+	}
+}
+
 func TestResourceGuards(t *testing.T) {
 	assertResourceGuards(t, newWorkspaceResource())
 	assertResourceGuards(t, newConnectionResource())

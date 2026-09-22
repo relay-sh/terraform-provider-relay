@@ -109,18 +109,18 @@ func TestPostgreSQLClusterResource_Lifecycle(t *testing.T) {
 							return fmt.Errorf("engine = %q", spec.GetEngine())
 						case !spec.GetBackupsEnabled():
 							return errors.New("backups must always be requested on")
-						case spec.GetNodes()[1].GetProvider() != "aws-use1":
-							return fmt.Errorf("cloud and region must resolve to a provisioner, got %q", spec.GetNodes()[1].GetProvider())
-						case spec.GetNodes()[0].GetProvider() != "":
-							return fmt.Errorf("an unplaced group must not name a provisioner, got %q", spec.GetNodes()[0].GetProvider())
-						case spec.GetNodes()[0].GetRole() != "read_only" || spec.GetNodes()[1].GetRole() != "electable":
-							return fmt.Errorf("the group's role must be sent, not its label, got %q and %q", spec.GetNodes()[0].GetRole(), spec.GetNodes()[1].GetRole())
-						case spec.GetNodes()[1].GetTier() != "R10":
-							return fmt.Errorf("writers tier = %q, want R10", spec.GetNodes()[1].GetTier())
-						case spec.GetNodes()[0].GetTier() != "R20":
-							return fmt.Errorf("readers tier = %q, want R20", spec.GetNodes()[0].GetTier())
-						case spec.GetNodes()[1].GetResources().GetCpu() != "" || spec.GetNodes()[1].GetResources().GetMemory() != "":
-							return fmt.Errorf("cpu/memory must not be sent, got %q/%q", spec.GetNodes()[1].GetResources().GetCpu(), spec.GetNodes()[1].GetResources().GetMemory())
+						case spec.GetNodes()[0].GetProvider() != "aws-use1":
+							return fmt.Errorf("cloud and region must resolve to a provisioner, got %q", spec.GetNodes()[0].GetProvider())
+						case spec.GetNodes()[1].GetProvider() != "":
+							return fmt.Errorf("an unplaced group must not name a provisioner, got %q", spec.GetNodes()[1].GetProvider())
+						case spec.GetNodes()[0].GetRole() != "electable" || spec.GetNodes()[1].GetRole() != "read_only":
+							return fmt.Errorf("the electable group must lead whatever the labels sort to, got %q and %q", spec.GetNodes()[0].GetRole(), spec.GetNodes()[1].GetRole())
+						case spec.GetNodes()[0].GetTier() != "R10":
+							return fmt.Errorf("writers tier = %q, want R10", spec.GetNodes()[0].GetTier())
+						case spec.GetNodes()[1].GetTier() != "R20":
+							return fmt.Errorf("readers tier = %q, want R20", spec.GetNodes()[1].GetTier())
+						case spec.GetNodes()[0].GetResources().GetCpu() != "" || spec.GetNodes()[0].GetResources().GetMemory() != "":
+							return fmt.Errorf("cpu/memory must not be sent, got %q/%q", spec.GetNodes()[0].GetResources().GetCpu(), spec.GetNodes()[0].GetResources().GetMemory())
 						}
 						return nil
 					},
@@ -334,6 +334,30 @@ resource "relay_postgresql_cluster" "this" {
 	})
 }
 
+func TestPostgreSQLClusterResource_RequiresAnElectableGroup(t *testing.T) {
+	f := startFakeServer(t)
+	resource.UnitTest(t, resource.TestCase{
+		ProtoV6ProviderFactories: factories(relay.Dial),
+		Steps: []resource.TestStep{{
+			Config: providerBlock(f) + fmt.Sprintf(`
+resource "relay_postgresql_cluster" "this" {
+  workspace_id = %q
+  name         = "billing"
+
+  nodes = {
+    readers = {
+      role = "read_only"
+      tier = "R10"
+      resources = { storage = "5Gi" }
+    }
+  }
+}
+`, dbWorkspace),
+			ExpectError: regexp.MustCompile("No electable group"),
+		}},
+	})
+}
+
 func TestPostgreSQLClusterResource_RejectsAnUnknownRole(t *testing.T) {
 	f := startFakeServer(t)
 	resource.UnitTest(t, resource.TestCase{
@@ -419,7 +443,8 @@ resource "relay_postgresql_cluster" "this" {
 }
 `, dbWorkspace, count, region)
 	}
-	withReaders := providerBlock(f) + fmt.Sprintf(`
+	readers := func(cloud, region string) string {
+		return providerBlock(f) + fmt.Sprintf(`
 resource "relay_postgresql_cluster" "this" {
   workspace_id = %q
   name         = "billing"
@@ -436,14 +461,15 @@ resource "relay_postgresql_cluster" "this" {
 
     readers = {
       role   = "read_only"
-      cloud  = "fly"
-      region = "gru"
+      cloud  = %q
+      region = %q
       tier = "R10"
       resources = { storage = "5Gi" }
     }
   }
 }
-`, dbWorkspace)
+`, dbWorkspace, cloud, region)
+	}
 
 	resource.UnitTest(t, resource.TestCase{
 		ProtoV6ProviderFactories: factories(relay.Dial),
@@ -451,8 +477,13 @@ resource "relay_postgresql_cluster" "this" {
 			{Config: writers(3, "us-east-1")},
 			{Config: writers(1, "us-east-1")},
 			{Config: writers(1, "eu-west-1")},
+			{Config: readers("aws", "us-east-1")},
 			{
-				Config:      withReaders,
+				Config:      readers("aws", "eu-west-1"),
+				ExpectError: regexp.MustCompile(`(?s)One cluster, one region.*aws/eu-west-1 \(readers\) and aws/us-east-1 \(writers\)`),
+			},
+			{
+				Config:      writers(1, "gru"),
 				ExpectError: regexp.MustCompile("Cannot place the cluster"),
 			},
 			{

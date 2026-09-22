@@ -35,25 +35,25 @@ type postgresqlUserResource struct {
 }
 
 type postgresqlUserModel struct {
-	ID                  types.String    `tfsdk:"id"`
-	WorkspaceID         types.String    `tfsdk:"workspace_id"`
-	ClusterID           types.String    `tfsdk:"cluster_id"`
-	Username            types.String    `tfsdk:"username"`
-	Password            types.String    `tfsdk:"password"`
-	GeneratePassword    types.Bool      `tfsdk:"generate_password"`
-	GeneratedPassword   types.String    `tfsdk:"generated_password"`
-	Description         types.String    `tfsdk:"description"`
-	AuthMethod          types.String    `tfsdk:"auth_method"`
-	Roles               types.List      `tfsdk:"roles"`
-	RestrictedResources types.List      `tfsdk:"restricted_resources"`
-	ExpiresAt           types.String    `tfsdk:"expires_at"`
-	ConnectionLimit     types.Int64     `tfsdk:"connection_limit"`
-	StatementTimeout    types.String    `tfsdk:"statement_timeout"`
-	Phase               types.String    `tfsdk:"phase"`
-	PhaseMessage        types.String    `tfsdk:"phase_message"`
-	Stale               types.Bool      `tfsdk:"stale"`
-	CreatedAt           types.String    `tfsdk:"created_at"`
-	Timeouts            timeouts.Value  `tfsdk:"timeouts"`
+	ID                  types.String   `tfsdk:"id"`
+	WorkspaceID         types.String   `tfsdk:"workspace_id"`
+	ClusterID           types.String   `tfsdk:"cluster_id"`
+	Username            types.String   `tfsdk:"username"`
+	Password            types.String   `tfsdk:"password"`
+	GeneratePassword    types.Bool     `tfsdk:"generate_password"`
+	GeneratedPassword   types.String   `tfsdk:"generated_password"`
+	Description         types.String   `tfsdk:"description"`
+	AuthMethod          types.String   `tfsdk:"auth_method"`
+	Roles               types.List     `tfsdk:"roles"`
+	RestrictedResources types.List     `tfsdk:"restricted_resources"`
+	ExpiresAt           types.String   `tfsdk:"expires_at"`
+	ConnectionLimit     types.Int64    `tfsdk:"connection_limit"`
+	StatementTimeout    types.String   `tfsdk:"statement_timeout"`
+	Phase               types.String   `tfsdk:"phase"`
+	PhaseMessage        types.String   `tfsdk:"phase_message"`
+	Stale               types.Bool     `tfsdk:"stale"`
+	CreatedAt           types.String   `tfsdk:"created_at"`
+	Timeouts            timeouts.Value `tfsdk:"timeouts"`
 }
 
 type userRoleModel struct {

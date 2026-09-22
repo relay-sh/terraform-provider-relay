@@ -4,6 +4,7 @@ import (
 	"context"
 	"errors"
 	"reflect"
+	"sort"
 	"strings"
 	"time"
 
@@ -93,16 +94,18 @@ func (r *postgresqlClusterResource) Schema(ctx context.Context, _ resource.Schem
 				Required:   true,
 				Validators: []validator.Map{mapvalidator.SizeAtLeast(1)},
 				MarkdownDescription: "Node groups, keyed by a label you choose. The label means nothing to the platform: it gives the group a stable address, so changing a value " +
-					"inside one group is a diff on that group alone and `ignore_changes` can reach `nodes[\"readers\"].tier`. What a group does comes from `role`. " +
+					"inside one group is a diff on that group alone and `ignore_changes` can reach `nodes[\"readers\"].tier`. What a group does comes from `role`, and an " +
+					"electable group holds the primary whatever the labels are. Every group runs in the cluster's own cloud and region; one cluster does not span regions. " +
 					"An imported cluster arrives with its groups labelled by role, because the platform does not store the label.",
 				NestedObject: schema.NestedAttributeObject{Attributes: map[string]schema.Attribute{
 					"role": schema.StringAttribute{
 						Required:   true,
 						Validators: []validator.String{stringvalidator.OneOf(roleElectable, roleStandby, roleReadOnly)},
 						MarkdownDescription: "How much of the cluster's consensus this group takes part in. `electable` acknowledges synchronous commits and can be promoted. " +
-							"`standby` can be promoted but never acknowledges a commit, which is how a remote group stays out of the commit path — and, since the engine has no " +
-							"per-member preference, how you pin the synchronous replica to the groups near the primary. `read_only` does neither. The platform derives the " +
-							"`nosync` and `nofailover` tags from this.",
+							"`standby` never acknowledges a commit, which is how a remote group stays out of the commit path — and, since the engine has no per-member " +
+							"preference, how you pin the synchronous replica to the groups near the primary; under `replication.mode = \"synchronous\"` only a group that " +
+							"was acknowledging commits is promoted, so a standby group is a manual failover, not an automatic one. `read_only` is neither acknowledged nor " +
+							"promoted. The platform derives the `nosync` and `nofailover` tags from this.",
 					},
 					"count": schema.Int64Attribute{
 						Optional: true, Computed: true, Default: int64default.StaticInt64(1),
@@ -196,14 +199,53 @@ func (r *postgresqlClusterResource) Configure(_ context.Context, req resource.Co
 func (r *postgresqlClusterResource) ValidateConfig(ctx context.Context, req resource.ValidateConfigRequest, resp *resource.ValidateConfigResponse) {
 	var replication types.Object
 	resp.Diagnostics.Append(req.Config.GetAttribute(ctx, path.Root("replication"), &replication)...)
-	if resp.Diagnostics.HasError() || replication.IsNull() || replication.IsUnknown() {
+	if !replication.IsNull() && !replication.IsUnknown() {
+		attrs := replication.Attributes()
+		if attrs["mode"].(types.String).ValueString() == "synchronous" && attrs["synchronous_replicas"].(types.Int64).IsNull() {
+			resp.Diagnostics.AddAttributeError(path.Root("replication").AtName("synchronous_replicas"),
+				"Missing synchronous_replicas", "Synchronous replication needs the number of replicas that must acknowledge a commit.")
+		}
+	}
+
+	var nodes types.Map
+	resp.Diagnostics.Append(req.Config.GetAttribute(ctx, path.Root("nodes"), &nodes)...)
+	if nodes.IsNull() || nodes.IsUnknown() {
 		return
 	}
-	attrs := replication.Attributes()
-	if attrs["mode"].(types.String).ValueString() == "synchronous" && attrs["synchronous_replicas"].(types.Int64).IsNull() {
-		resp.Diagnostics.AddAttributeError(path.Root("replication").AtName("synchronous_replicas"),
-			"Missing synchronous_replicas", "Synchronous replication needs the number of replicas that must acknowledge a commit.")
+	electable := false
+	placements := map[string][]string{}
+	for label, element := range nodes.Elements() {
+		group, _ := element.(types.Object)
+		attrs := group.Attributes()
+		if role, ok := attrs["role"].(types.String); ok && role.ValueString() == roleElectable {
+			electable = true
+		}
+		cloud, _ := attrs["cloud"].(types.String)
+		region, _ := attrs["region"].(types.String)
+		if cloud.IsNull() || cloud.IsUnknown() || region.IsNull() || region.IsUnknown() {
+			continue
+		}
+		place := cloud.ValueString() + "/" + region.ValueString()
+		placements[place] = append(placements[place], label)
 	}
+	if !electable {
+		resp.Diagnostics.AddAttributeError(path.Root("nodes"), "No electable group",
+			"A cluster needs at least one group with role \"electable\" to hold the primary.")
+	}
+	if len(placements) > 1 {
+		resp.Diagnostics.AddAttributeError(path.Root("nodes"), "One cluster, one region",
+			"The groups ask for "+describePlacements(placements)+". Every group runs where the cluster runs; spreading one cluster across regions is not available yet.")
+	}
+}
+
+func describePlacements(placements map[string][]string) string {
+	out := make([]string, 0, len(placements))
+	for place, labels := range placements {
+		sort.Strings(labels)
+		out = append(out, place+" ("+strings.Join(labels, ", ")+")")
+	}
+	sort.Strings(out)
+	return strings.Join(out, " and ")
 }
 
 func (r *postgresqlClusterResource) ModifyPlan(ctx context.Context, req resource.ModifyPlanRequest, resp *resource.ModifyPlanResponse) {
@@ -220,9 +262,13 @@ func (r *postgresqlClusterResource) ModifyPlan(ctx context.Context, req resource
 		resp.Diagnostics.AddAttributeError(path.Root("version"), "Version cannot change here",
 			"Upgrading from "+prior.Version.ValueString()+" to "+plan.Version.ValueString()+" goes through Relay's upgrade flow. Run the upgrade, then set version to the new value.")
 	}
+	added := false
 	for name, planned := range plan.Nodes {
 		current, ok := prior.Nodes[name]
 		if !ok {
+			// Terraform proposes a new map element from config alone, leaving its computed attributes null instead of unknown.
+			plan.Nodes[name] = unknownComputed(planned)
+			added = true
 			continue
 		}
 		group := path.Root("nodes").AtMapKey(name)
@@ -235,6 +281,31 @@ func (r *postgresqlClusterResource) ModifyPlan(ctx context.Context, req resource
 				"Group "+name+" goes from "+current.Count.String()+" to "+planned.Count.String()+" nodes. Relay deletes the removed nodes and their volumes without draining them first.")
 		}
 	}
+	if added {
+		resp.Diagnostics.Append(resp.Plan.Set(ctx, &plan)...)
+	}
+}
+
+func unknownComputed(g nodeGroupModel) nodeGroupModel {
+	g.Cloud = unknownIfNull(g.Cloud)
+	g.Region = unknownIfNull(g.Region)
+	g.Resources.CPU = types.StringUnknown()
+	g.Resources.Memory = types.StringUnknown()
+	g.Resources.DiskType = unknownIfNull(g.Resources.DiskType)
+	if g.Resources.IOPS.IsNull() {
+		g.Resources.IOPS = types.Int64Unknown()
+	}
+	if g.Resources.Throughput.IsNull() {
+		g.Resources.Throughput = types.Int64Unknown()
+	}
+	return g
+}
+
+func unknownIfNull(v types.String) types.String {
+	if v.IsNull() {
+		return types.StringUnknown()
+	}
+	return v
 }
 
 func (r *postgresqlClusterResource) Create(ctx context.Context, req resource.CreateRequest, resp *resource.CreateResponse) {
