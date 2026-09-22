@@ -44,6 +44,7 @@ type postgresqlClusterModel struct {
 	Name                 types.String              `tfsdk:"name"`
 	Version              types.String              `tfsdk:"version"`
 	Nodes                map[string]nodeGroupModel `tfsdk:"nodes"`
+	PrimaryNodeGroup     types.String              `tfsdk:"primary_node_group"`
 	Parameters           types.Map                 `tfsdk:"parameters"`
 	Replication          types.Object              `tfsdk:"replication"`
 	KeepBackupsOnDestroy types.Bool                `tfsdk:"keep_backups_on_destroy"`
@@ -90,13 +91,16 @@ func (r *postgresqlClusterResource) Schema(ctx context.Context, _ resource.Schem
 				MarkdownDescription: "Major PostgreSQL version. Omit it and the platform picks one, which the next read reports. " +
 					"It cannot change here: major upgrades go through Relay's upgrade flow, and a plan that changes it fails.",
 			},
+			"primary_node_group": schema.StringAttribute{
+				Computed: true, PlanModifiers: keepString,
+				MarkdownDescription: "Label of the group holding the primary. The platform picks an `electable` group and keeps it, so adding a group never moves the primary.",
+			},
 			"nodes": schema.MapNestedAttribute{
 				Required:   true,
 				Validators: []validator.Map{mapvalidator.SizeAtLeast(1)},
-				MarkdownDescription: "Node groups, keyed by a label you choose. The label means nothing to the platform: it gives the group a stable address, so changing a value " +
-					"inside one group is a diff on that group alone and `ignore_changes` can reach `nodes[\"readers\"].tier`. What a group does comes from `role`, and an " +
-					"electable group holds the primary whatever the labels are. Every group runs in the cluster's own cloud and region; one cluster does not span regions. " +
-					"An imported cluster arrives with its groups labelled by role, because the platform does not store the label.",
+				MarkdownDescription: "Node groups, keyed by a label you choose. The label is the group's identity, in your configuration and in the platform: changing a value " +
+					"inside one group is a diff on that group alone, `ignore_changes` can reach `nodes[\"readers\"].tier`, and renaming a group replaces it. What a group " +
+					"does comes from `role`. Every group runs in the cluster's own cloud and region; one cluster does not span regions.",
 				NestedObject: schema.NestedAttributeObject{Attributes: map[string]schema.Attribute{
 					"role": schema.StringAttribute{
 						Required:   true,
@@ -492,9 +496,10 @@ func clusterSpecToProto(m postgresqlClusterModel, catalog []*serverv1.DatabasePr
 		return nil, err
 	}
 	spec := &serverv1.DatabaseSpec{
-		Engine:  enginePostgreSQL,
-		Version: m.Version.ValueString(),
-		Nodes:   nodes,
+		Engine:           enginePostgreSQL,
+		Version:          m.Version.ValueString(),
+		Nodes:            nodes,
+		PrimaryNodeGroup: primaryNodeGroup(m.Nodes, m.PrimaryNodeGroup),
 		// Turning backups off is accepted and then ignored, so on is the only value that reads back unchanged.
 		BackupsEnabled: true,
 		Replication:    replicationToProto(m.Replication),
@@ -525,7 +530,8 @@ func clusterFromProto(db *serverv1.Database, prior postgresqlClusterModel, catal
 		WorkspaceID:          prior.WorkspaceID,
 		Name:                 types.StringValue(db.GetName()),
 		Version:              types.StringValue(spec.GetVersion()),
-		Nodes:                nodesFromProto(spec.GetNodes(), prior.Nodes),
+		Nodes:                nodesFromProto(spec.GetNodes()),
+		PrimaryNodeGroup:     types.StringValue(spec.GetPrimaryNodeGroup()),
 		Parameters:           stringMapFromGo(spec.GetPostgresql().GetParameters()),
 		Replication:          replicationFromProto(spec.GetReplication()),
 		KeepBackupsOnDestroy: prior.KeepBackupsOnDestroy,

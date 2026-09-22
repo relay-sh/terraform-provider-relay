@@ -69,7 +69,7 @@ resource "relay_postgresql_cluster" "billing" {
 ### Required
 
 - `name` (String) Cluster name, unique in the workspace.
-- `nodes` (Attributes Map) Node groups, keyed by a label you choose. The label means nothing to the platform: it gives the group a stable address, so changing a value inside one group is a diff on that group alone and `ignore_changes` can reach `nodes["readers"].tier`. What a group does comes from `role`, and an electable group holds the primary whatever the labels are. Every group runs in the cluster's own cloud and region; one cluster does not span regions. An imported cluster arrives with its groups labelled by role, because the platform does not store the label. (see [below for nested schema](#nestedatt--nodes))
+- `nodes` (Attributes Map) Node groups, keyed by a label you choose. The label is the group's identity, in your configuration and in the platform: changing a value inside one group is a diff on that group alone, `ignore_changes` can reach `nodes["readers"].tier`, and renaming a group replaces it. What a group does comes from `role`. Every group runs in the cluster's own cloud and region; one cluster does not span regions. (see [below for nested schema](#nestedatt--nodes))
 - `workspace_id` (String) Workspace the cluster belongs to.
 
 ### Optional
@@ -88,6 +88,7 @@ resource "relay_postgresql_cluster" "billing" {
 - `id` (String) Cluster ID.
 - `phase` (String) Lifecycle phase after the last apply.
 - `phase_message` (String) Detail for the phase.
+- `primary_node_group` (String) Label of the group holding the primary. The platform picks an `electable` group and keeps it, so adding a group never moves the primary.
 - `private_endpoints` (Attributes List) Private endpoints by role, when private access is enabled. (see [below for nested schema](#nestedatt--private_endpoints))
 - `public_endpoints` (Attributes List) Public endpoints by role. (see [below for nested schema](#nestedatt--public_endpoints))
 - `ready_nodes` (Number) Nodes ready.
