@@ -386,6 +386,18 @@ func validateNodes(spec *serverv1.DatabaseSpec) error {
 			return status.Errorf(codes.InvalidArgument, "validate spec: invalid role %q", n.GetRole())
 		}
 	}
+	nodes := spec.GetNodes()
+	if len(nodes) == 0 {
+		return nil
+	}
+	if nodes[0].GetRole() != roleElectable {
+		return status.Errorf(codes.InvalidArgument, "validate spec: nodes[0] holds the primary and must have role %q, got %q", roleElectable, nodes[0].GetRole())
+	}
+	for i, n := range nodes[1:] {
+		if n.GetProvider() != "" && nodes[0].GetProvider() != "" && n.GetProvider() != nodes[0].GetProvider() {
+			return status.Errorf(codes.InvalidArgument, "validate spec: nodes[%d]: provider %q does not match nodes[0] %q", i+1, n.GetProvider(), nodes[0].GetProvider())
+		}
+	}
 	return nil
 }
 

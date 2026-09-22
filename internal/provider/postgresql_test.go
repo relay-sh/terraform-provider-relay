@@ -37,6 +37,36 @@ func TestProvisionerFor(t *testing.T) {
 	}
 }
 
+func TestNodesToProtoOrdersElectableFirst(t *testing.T) {
+	group := func(role, tier string) nodeGroupModel {
+		return nodeGroupModel{
+			Role: types.StringValue(role), Count: types.Int64Value(1),
+			Cloud: types.StringNull(), Region: types.StringNull(), Tier: types.StringValue(tier),
+			Resources: resourcesModel{
+				Storage: types.StringValue("1Gi"), IOPS: types.Int64Null(),
+				Throughput: types.Int64Null(), DiskType: types.StringNull(),
+			},
+		}
+	}
+	out, err := nodesToProto(map[string]nodeGroupModel{
+		"analytics": group(roleReadOnly, "R10"),
+		"dr":        group(roleStandby, "R20"),
+		"secondary": group(roleElectable, "R30"),
+		"primary":   group(roleElectable, "R40"),
+	}, testCatalog)
+	if err != nil {
+		t.Fatal(err)
+	}
+	var got []string
+	for _, n := range out {
+		got = append(got, n.GetRole()+"/"+n.GetTier())
+	}
+	want := []string{"electable/R40", "electable/R30", "standby/R20", "read_only/R10"}
+	if !slices.Equal(got, want) {
+		t.Errorf("order = %v, want %v (electable first, then the label)", got, want)
+	}
+}
+
 func TestNodesRoundTrip(t *testing.T) {
 	nodes := map[string]nodeGroupModel{
 		"writers": {
@@ -64,17 +94,17 @@ func TestNodesRoundTrip(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	if out[0].GetRole() != roleReadOnly || out[1].GetRole() != roleElectable {
-		t.Fatalf("the group's role must be sent, not its label, got %q then %q", out[0].GetRole(), out[1].GetRole())
+	if out[0].GetRole() != roleElectable || out[1].GetRole() != roleReadOnly {
+		t.Fatalf("the electable group must lead whatever the labels sort to, got %q then %q", out[0].GetRole(), out[1].GetRole())
 	}
-	if out[1].GetProvider() != "aws-use1" || out[1].GetRegion() != "us-east-1" {
-		t.Errorf("placement = %q/%q", out[1].GetProvider(), out[1].GetRegion())
+	if out[0].GetProvider() != "aws-use1" || out[0].GetRegion() != "us-east-1" {
+		t.Errorf("placement = %q/%q", out[0].GetProvider(), out[0].GetRegion())
 	}
-	res := out[1].GetResources()
+	res := out[0].GetResources()
 	if res.GetCpu() != "" || res.GetMemory() != "" {
 		t.Errorf("cpu/memory must not be sent, got %q/%q", res.GetCpu(), res.GetMemory())
 	}
-	if out[0].GetTier() != "R20" || out[1].GetTier() != "R10" {
+	if out[0].GetTier() != "R10" || out[1].GetTier() != "R20" {
 		t.Errorf("tiers = %q, %q", out[0].GetTier(), out[1].GetTier())
 	}
 	if res.Iops != nil || res.GetThroughput() != 250 {
@@ -83,8 +113,8 @@ func TestNodesRoundTrip(t *testing.T) {
 	if res.GetDiskType() != "" {
 		t.Errorf("unknown disk_type must be omitted, got %q", res.GetDiskType())
 	}
-	if out[0].GetResources().GetDiskType() != "io1" {
-		t.Errorf("readers disk_type = %q, want io1", out[0].GetResources().GetDiskType())
+	if out[1].GetResources().GetDiskType() != "io1" {
+		t.Errorf("readers disk_type = %q, want io1", out[1].GetResources().GetDiskType())
 	}
 
 	// The platform answers cloud+region on a node and never echoes the provisioner.

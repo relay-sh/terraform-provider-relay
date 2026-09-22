@@ -38,12 +38,12 @@ type nodeGroupModel struct {
 }
 
 type resourcesModel struct {
-	CPU          types.String `tfsdk:"cpu"`
-	Memory       types.String `tfsdk:"memory"`
-	Storage      types.String `tfsdk:"storage"`
-	IOPS         types.Int64  `tfsdk:"iops"`
-	Throughput   types.Int64  `tfsdk:"throughput"`
-	DiskType     types.String `tfsdk:"disk_type"`
+	CPU        types.String `tfsdk:"cpu"`
+	Memory     types.String `tfsdk:"memory"`
+	Storage    types.String `tfsdk:"storage"`
+	IOPS       types.Int64  `tfsdk:"iops"`
+	Throughput types.Int64  `tfsdk:"throughput"`
+	DiskType   types.String `tfsdk:"disk_type"`
 }
 
 var (
@@ -87,7 +87,14 @@ func nodesToProto(nodes map[string]nodeGroupModel, catalog []*serverv1.DatabaseP
 	for name := range nodes {
 		names = append(names, name)
 	}
-	sort.Strings(names)
+	// The platform takes the first group as the one holding the primary.
+	sort.Slice(names, func(i, j int) bool {
+		ri, rj := roleOrder(nodes[names[i]]), roleOrder(nodes[names[j]])
+		if ri != rj {
+			return ri < rj
+		}
+		return names[i] < names[j]
+	})
 
 	out := make([]*serverv1.NodeSpec, 0, len(names))
 	for _, name := range names {
@@ -97,7 +104,7 @@ func nodesToProto(nodes map[string]nodeGroupModel, catalog []*serverv1.DatabaseP
 			return nil, err
 		}
 		res := &serverv1.ResourceRequirements{
-			Storage:      n.Resources.Storage.ValueString(),
+			Storage: n.Resources.Storage.ValueString(),
 		}
 		if v := n.Resources.IOPS; !v.IsNull() && !v.IsUnknown() {
 			res.Iops = int32Ptr(v.ValueInt64())
@@ -118,6 +125,16 @@ func nodesToProto(nodes map[string]nodeGroupModel, catalog []*serverv1.DatabaseP
 		})
 	}
 	return out, nil
+}
+
+func roleOrder(n nodeGroupModel) int {
+	switch n.Role.ValueString() {
+	case roleElectable:
+		return 0
+	case roleStandby:
+		return 1
+	}
+	return 2
 }
 
 func nodeLabels(nodes []*serverv1.NodeSpec, prior map[string]nodeGroupModel) []string {
@@ -158,12 +175,12 @@ func nodesFromProto(nodes []*serverv1.NodeSpec, prior map[string]nodeGroupModel)
 			Region: types.StringValue(n.GetRegion()),
 			Tier:   types.StringValue(n.GetTier()),
 			Resources: resourcesModel{
-				CPU:          types.StringValue(res.GetCpu()),
-				Memory:       types.StringValue(res.GetMemory()),
-				Storage:      types.StringValue(res.GetStorage()),
-				IOPS:         optionalInt64(res.Iops),
-				Throughput:   optionalInt64(res.Throughput),
-				DiskType:     types.StringValue(res.GetDiskType()),
+				CPU:        types.StringValue(res.GetCpu()),
+				Memory:     types.StringValue(res.GetMemory()),
+				Storage:    types.StringValue(res.GetStorage()),
+				IOPS:       optionalInt64(res.Iops),
+				Throughput: optionalInt64(res.Throughput),
+				DiskType:   types.StringValue(res.GetDiskType()),
 			},
 		}
 	}

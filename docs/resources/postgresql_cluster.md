@@ -69,7 +69,7 @@ resource "relay_postgresql_cluster" "billing" {
 ### Required
 
 - `name` (String) Cluster name, unique in the workspace.
-- `nodes` (Attributes Map) Node groups, keyed by a label you choose. The label means nothing to the platform: it gives the group a stable address, so changing a value inside one group is a diff on that group alone and `ignore_changes` can reach `nodes["readers"].tier`. What a group does comes from `role`. An imported cluster arrives with its groups labelled by role, because the platform does not store the label. (see [below for nested schema](#nestedatt--nodes))
+- `nodes` (Attributes Map) Node groups, keyed by a label you choose. The label means nothing to the platform: it gives the group a stable address, so changing a value inside one group is a diff on that group alone and `ignore_changes` can reach `nodes["readers"].tier`. What a group does comes from `role`, and an electable group holds the primary whatever the labels are. Every group runs in the cluster's own cloud and region; one cluster does not span regions. An imported cluster arrives with its groups labelled by role, because the platform does not store the label. (see [below for nested schema](#nestedatt--nodes))
 - `workspace_id` (String) Workspace the cluster belongs to.
 
 ### Optional
@@ -100,7 +100,7 @@ resource "relay_postgresql_cluster" "billing" {
 Required:
 
 - `resources` (Attributes) (see [below for nested schema](#nestedatt--nodes--resources))
-- `role` (String) How much of the cluster's consensus this group takes part in. `electable` acknowledges synchronous commits and can be promoted. `standby` can be promoted but never acknowledges a commit, which is how a remote group stays out of the commit path — and, since the engine has no per-member preference, how you pin the synchronous replica to the groups near the primary. `read_only` does neither. The platform derives the `nosync` and `nofailover` tags from this.
+- `role` (String) How much of the cluster's consensus this group takes part in. `electable` acknowledges synchronous commits and can be promoted. `standby` never acknowledges a commit, which is how a remote group stays out of the commit path — and, since the engine has no per-member preference, how you pin the synchronous replica to the groups near the primary; under `replication.mode = "synchronous"` only a group that was acknowledging commits is promoted, so a standby group is a manual failover, not an automatic one. `read_only` is neither acknowledged nor promoted. The platform derives the `nosync` and `nofailover` tags from this.
 - `tier` (String) Machine catalog name, for example `R20`. CPU and memory are derived from it; an unknown name is rejected. Changing it restarts the group's pods.
 
 Optional:
