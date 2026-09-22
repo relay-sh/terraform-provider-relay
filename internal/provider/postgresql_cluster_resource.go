@@ -206,12 +206,6 @@ func (r *postgresqlClusterResource) ValidateConfig(ctx context.Context, req reso
 	}
 }
 
-type createOnlyField struct {
-	path    path.Path
-	planned attr.Value
-	current attr.Value
-}
-
 func (r *postgresqlClusterResource) ModifyPlan(ctx context.Context, req resource.ModifyPlanRequest, resp *resource.ModifyPlanResponse) {
 	if req.State.Raw.IsNull() || req.Plan.Raw.IsNull() {
 		return
