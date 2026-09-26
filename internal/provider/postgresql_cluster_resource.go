@@ -293,6 +293,9 @@ func validateStorageAutoscale(resp *resource.ValidateConfigResponse, label strin
 	}
 	group := path.Root("nodes").AtMapKey(label).AtName("resources").AtName("storage_autoscale").AtName("max_storage")
 	maxStorage, _ := saAttrs["max_storage"].(types.String)
+	if maxStorage.IsUnknown() {
+		return
+	}
 	if maxStorage.ValueString() == "" {
 		resp.Diagnostics.AddAttributeError(group, "Missing max_storage",
 			"Storage autoscaling needs a ceiling: set max_storage to the largest size the platform may grow group "+label+" to.")
@@ -349,7 +352,6 @@ func (r *postgresqlClusterResource) ModifyPlan(ctx context.Context, req resource
 			resp.Diagnostics.AddAttributeWarning(group.AtName("count"), "Removed nodes lose their volumes",
 				"Group "+name+" goes from "+current.Count.String()+" to "+planned.Count.String()+" nodes. Relay deletes the removed nodes and their volumes without draining them first.")
 		}
-		// The block itself has no prior counterpart to copy from, same as a brand new map element.
 		if current.Resources.StorageAutoscale.IsNull() && !planned.Resources.StorageAutoscale.IsNull() && !planned.Resources.StorageAutoscale.IsUnknown() {
 			planned.Resources.StorageAutoscale = unknownComputedStorageAutoscale(planned.Resources.StorageAutoscale)
 			plan.Nodes[name] = planned

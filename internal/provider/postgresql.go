@@ -216,9 +216,6 @@ func storageAutoscaleToProto(o types.Object) *serverv1.StorageAutoscale {
 	return out
 }
 
-// storageAutoscaleFromProto keeps state null for an absent block when the platform reports it
-// disabled, so a config that never mentions storage_autoscale never drifts against the
-// explicit {enabled: false} the provider sends for it.
 func storageAutoscaleFromProto(sa *serverv1.StorageAutoscale, prior types.Object) types.Object {
 	if sa == nil || (!sa.GetEnabled() && prior.IsNull()) {
 		return types.ObjectNull(storageAutoscaleAttrTypes)

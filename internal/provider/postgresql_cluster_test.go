@@ -985,6 +985,27 @@ func TestPostgreSQLClusterResource_StorageStatusNoDrift(t *testing.T) {
 	})
 }
 
+func TestPostgreSQLClusterResource_StorageAutoscaleUnknownCeilingPlans(t *testing.T) {
+	f := startFakeServer(t)
+	config := `
+resource "terraform_data" "ceiling" {
+  input = "50Gi"
+}
+` + storageAutoscaleClusterConfig(f, `        storage = "10Gi"
+        storage_autoscale = {
+          enabled     = true
+          max_storage = terraform_data.ceiling.id
+        }`)
+	resource.UnitTest(t, resource.TestCase{
+		ProtoV6ProviderFactories: factories(relay.Dial),
+		Steps: []resource.TestStep{{
+			Config:             config,
+			PlanOnly:           true,
+			ExpectNonEmptyPlan: true,
+		}},
+	})
+}
+
 func TestPostgreSQLClusterResource_StorageAutoscaleValidation(t *testing.T) {
 	f := startFakeServer(t)
 	cases := map[string]struct {
