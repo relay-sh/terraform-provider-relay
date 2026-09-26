@@ -27,6 +27,10 @@ resource "relay_postgresql_cluster" "billing" {
       tier   = "R30"
       resources = {
         storage = "100Gi"
+        storage_autoscale = {
+          enabled     = true
+          max_storage = "500Gi"
+        }
       }
     }
 
@@ -92,6 +96,7 @@ resource "relay_postgresql_cluster" "billing" {
 - `private_endpoints` (Attributes List) Private endpoints by role, when private access is enabled. (see [below for nested schema](#nestedatt--private_endpoints))
 - `public_endpoints` (Attributes List) Public endpoints by role. (see [below for nested schema](#nestedatt--public_endpoints))
 - `ready_nodes` (Number) Nodes ready.
+- `storage_status` (Attributes List) Per-group volume size the platform has grown to via `storage_autoscale`, when above the group's `storage` floor. (see [below for nested schema](#nestedatt--storage_status))
 - `total_nodes` (Number) Nodes expected.
 - `updated_at` (String) Last change time, RFC 3339.
 
@@ -115,18 +120,33 @@ Optional:
 
 Required:
 
-- `storage` (String) Volume size, Kubernetes quantity. It can only grow; a plan that shrinks it fails.
+- `storage` (String) Volume size, Kubernetes quantity. It can only grow here; a plan that shrinks it fails. This is the floor: with `storage_autoscale` enabled the platform may grow the volume past it, reported in `storage_status`, and that growth never shows as drift, because `storage` always reads from the spec, never from status.
 
 Optional:
 
 - `disk_type` (String) Cloud volume type. AWS: `gp3` (default), `io1`, `io2` (min 4Gi). GCP: `pd-ssd`, `pd-balanced`, `hyperdisk-balanced`. Azure: `PremiumV2_LRS`, `UltraSSD_LRS`. Can change in place. `io1`/`io2` require `iops` within the per-GiB cap.
 - `iops` (Number) Provisioned IOPS. Can change in place. Required for `io1`/`io2`. AWS caps: gp3 3000–80000 (500/GiB above 3000), io1 100–64000 (50/GiB), io2 100–256000 (1000/GiB).
+- `storage_autoscale` (Attributes) Grows the group's volumes past `storage`, up to `max_storage`, when disk usage crosses `threshold_percent`. Omitting this block, or removing it from a config that had it, disables autoscaling. (see [below for nested schema](#nestedatt--nodes--resources--storage_autoscale))
 - `throughput` (Number) Provisioned throughput in MiB/s. Can change in place.
 
 Read-Only:
 
 - `cpu` (String) CPU request derived from `tier`.
 - `memory` (String) Memory request derived from `tier`.
+
+<a id="nestedatt--nodes--resources--storage_autoscale"></a>
+### Nested Schema for `nodes.resources.storage_autoscale`
+
+Required:
+
+- `enabled` (Boolean) Turn storage autoscaling on for this group.
+
+Optional:
+
+- `increase_percent` (Number) Percent to grow the volume by on each trigger. `0` or omitted uses the platform default of 20; otherwise 10-100.
+- `max_storage` (String) Ceiling the platform will not grow past, Kubernetes quantity. Required when `enabled` is true, and must be at least `storage`.
+- `threshold_percent` (Number) Disk-usage percent that triggers a grow. `0` or omitted uses the platform default of 80; otherwise 50-95.
+
 
 
 
@@ -167,6 +187,15 @@ Read-Only:
 - `host` (String)
 - `port` (Number)
 - `role` (String)
+
+
+<a id="nestedatt--storage_status"></a>
+### Nested Schema for `storage_status`
+
+Read-Only:
+
+- `node_group` (String)
+- `size` (String)
 
 ## Import
 

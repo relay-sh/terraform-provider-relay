@@ -39,6 +39,7 @@ data "relay_postgresql_cluster" "billing" {
 - `private_endpoints` (Attributes List) (see [below for nested schema](#nestedatt--private_endpoints))
 - `public_endpoints` (Attributes List) (see [below for nested schema](#nestedatt--public_endpoints))
 - `ready_nodes` (Number)
+- `storage_status` (Attributes List) (see [below for nested schema](#nestedatt--storage_status))
 - `total_nodes` (Number)
 - `version` (String)
 
@@ -60,3 +61,12 @@ Read-Only:
 - `host` (String)
 - `port` (Number)
 - `role` (String)
+
+
+<a id="nestedatt--storage_status"></a>
+### Nested Schema for `storage_status`
+
+Read-Only:
+
+- `node_group` (String)
+- `size` (String)

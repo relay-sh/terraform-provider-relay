@@ -27,6 +27,7 @@ type postgresqlClusterDataModel struct {
 	EndpointPort     types.Int64  `tfsdk:"endpoint_port"`
 	PublicEndpoints  types.List   `tfsdk:"public_endpoints"`
 	PrivateEndpoints types.List   `tfsdk:"private_endpoints"`
+	StorageStatus    types.List   `tfsdk:"storage_status"`
 	ReadyNodes       types.Int64  `tfsdk:"ready_nodes"`
 	TotalNodes       types.Int64  `tfsdk:"total_nodes"`
 }
@@ -57,8 +58,15 @@ func (d *postgresqlClusterDataSource) Schema(_ context.Context, _ datasource.Sch
 			"endpoint_port":     schema.Int64Attribute{Computed: true},
 			"public_endpoints":  schema.ListNestedAttribute{Computed: true, NestedObject: endpoint},
 			"private_endpoints": schema.ListNestedAttribute{Computed: true, NestedObject: endpoint},
-			"ready_nodes":       schema.Int64Attribute{Computed: true},
-			"total_nodes":       schema.Int64Attribute{Computed: true},
+			"storage_status": schema.ListNestedAttribute{
+				Computed: true,
+				NestedObject: schema.NestedAttributeObject{Attributes: map[string]schema.Attribute{
+					"node_group": schema.StringAttribute{Computed: true},
+					"size":       schema.StringAttribute{Computed: true},
+				}},
+			},
+			"ready_nodes": schema.Int64Attribute{Computed: true},
+			"total_nodes": schema.Int64Attribute{Computed: true},
 		},
 	}
 }
@@ -111,6 +119,7 @@ func (d *postgresqlClusterDataSource) Read(ctx context.Context, req datasource.R
 		EndpointPort:     types.Int64Value(int64(st.GetEndpoint().GetPort())),
 		PublicEndpoints:  endpointsFromProto(st.GetPublicEndpoints()),
 		PrivateEndpoints: endpointsFromProto(st.GetPrivateEndpoints()),
+		StorageStatus:    storageStatusFromProto(st.GetStorage()),
 		ReadyNodes:       types.Int64Value(int64(st.GetReadyNodes())),
 		TotalNodes:       types.Int64Value(int64(st.GetTotalNodes())),
 	}
