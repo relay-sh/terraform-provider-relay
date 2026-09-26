@@ -7099,48 +7099,57 @@ var ServerService_ServiceDesc = grpc.ServiceDesc{
 }
 
 const (
-	AdminService_AdminListOrganizations_FullMethodName          = "/relay.server.v1.AdminService/AdminListOrganizations"
-	AdminService_AdminGetOrganization_FullMethodName            = "/relay.server.v1.AdminService/AdminGetOrganization"
-	AdminService_AdminGetOrganizationResources_FullMethodName   = "/relay.server.v1.AdminService/AdminGetOrganizationResources"
-	AdminService_AdminGetOrganizationBilling_FullMethodName     = "/relay.server.v1.AdminService/AdminGetOrganizationBilling"
-	AdminService_AdminSetOrganizationPlan_FullMethodName        = "/relay.server.v1.AdminService/AdminSetOrganizationPlan"
-	AdminService_AdminGetOrganizationCost_FullMethodName        = "/relay.server.v1.AdminService/AdminGetOrganizationCost"
-	AdminService_AdminListSignupAllowlist_FullMethodName        = "/relay.server.v1.AdminService/AdminListSignupAllowlist"
-	AdminService_AdminAddSignupAllowlistEntry_FullMethodName    = "/relay.server.v1.AdminService/AdminAddSignupAllowlistEntry"
-	AdminService_AdminRemoveSignupAllowlistEntry_FullMethodName = "/relay.server.v1.AdminService/AdminRemoveSignupAllowlistEntry"
-	AdminService_AdminListSignupAttempts_FullMethodName         = "/relay.server.v1.AdminService/AdminListSignupAttempts"
-	AdminService_AdminDismissSignupAttempt_FullMethodName       = "/relay.server.v1.AdminService/AdminDismissSignupAttempt"
-	AdminService_AdminListAuditLog_FullMethodName               = "/relay.server.v1.AdminService/AdminListAuditLog"
-	AdminService_AdminGetCloudCosts_FullMethodName              = "/relay.server.v1.AdminService/AdminGetCloudCosts"
-	AdminService_AdminGetRevenueOverview_FullMethodName         = "/relay.server.v1.AdminService/AdminGetRevenueOverview"
-	AdminService_AdminListSupportReports_FullMethodName         = "/relay.server.v1.AdminService/AdminListSupportReports"
-	AdminService_AdminGetSupportReport_FullMethodName           = "/relay.server.v1.AdminService/AdminGetSupportReport"
-	AdminService_AdminAddSupportReportComment_FullMethodName    = "/relay.server.v1.AdminService/AdminAddSupportReportComment"
-	AdminService_AdminGetSupportAttachment_FullMethodName       = "/relay.server.v1.AdminService/AdminGetSupportAttachment"
-	AdminService_AdminUpdateSupportReportStatus_FullMethodName  = "/relay.server.v1.AdminService/AdminUpdateSupportReportStatus"
-	AdminService_AdminListMembers_FullMethodName                = "/relay.server.v1.AdminService/AdminListMembers"
-	AdminService_AdminSetMemberRole_FullMethodName              = "/relay.server.v1.AdminService/AdminSetMemberRole"
-	AdminService_AdminRemoveMember_FullMethodName               = "/relay.server.v1.AdminService/AdminRemoveMember"
-	AdminService_AdminInviteMember_FullMethodName               = "/relay.server.v1.AdminService/AdminInviteMember"
-	AdminService_AdminListInvitations_FullMethodName            = "/relay.server.v1.AdminService/AdminListInvitations"
-	AdminService_AdminRevokeInvitation_FullMethodName           = "/relay.server.v1.AdminService/AdminRevokeInvitation"
-	AdminService_AdminListClusters_FullMethodName               = "/relay.server.v1.AdminService/AdminListClusters"
-	AdminService_AdminListPendingOperations_FullMethodName      = "/relay.server.v1.AdminService/AdminListPendingOperations"
-	AdminService_AdminListAgents_FullMethodName                 = "/relay.server.v1.AdminService/AdminListAgents"
-	AdminService_AdminListTunnelSessions_FullMethodName         = "/relay.server.v1.AdminService/AdminListTunnelSessions"
-	AdminService_AdminRetryDeleteDatabase_FullMethodName        = "/relay.server.v1.AdminService/AdminRetryDeleteDatabase"
-	AdminService_AdminSearchUsers_FullMethodName                = "/relay.server.v1.AdminService/AdminSearchUsers"
-	AdminService_AdminGetUser_FullMethodName                    = "/relay.server.v1.AdminService/AdminGetUser"
-	AdminService_AdminRevokeUserSessions_FullMethodName         = "/relay.server.v1.AdminService/AdminRevokeUserSessions"
-	AdminService_AdminGetOrganizationActivity_FullMethodName    = "/relay.server.v1.AdminService/AdminGetOrganizationActivity"
-	AdminService_AdminGetOrganizationSecurity_FullMethodName    = "/relay.server.v1.AdminService/AdminGetOrganizationSecurity"
-	AdminService_AdminGetPlatformOverview_FullMethodName        = "/relay.server.v1.AdminService/AdminGetPlatformOverview"
-	AdminService_AdminListOrgActivation_FullMethodName          = "/relay.server.v1.AdminService/AdminListOrgActivation"
-	AdminService_AdminSuspendOrganization_FullMethodName        = "/relay.server.v1.AdminService/AdminSuspendOrganization"
-	AdminService_AdminUnsuspendOrganization_FullMethodName      = "/relay.server.v1.AdminService/AdminUnsuspendOrganization"
-	AdminService_AdminGetMaintenanceBanner_FullMethodName       = "/relay.server.v1.AdminService/AdminGetMaintenanceBanner"
-	AdminService_AdminSetMaintenanceBanner_FullMethodName       = "/relay.server.v1.AdminService/AdminSetMaintenanceBanner"
-	AdminService_AdminClearMaintenanceBanner_FullMethodName     = "/relay.server.v1.AdminService/AdminClearMaintenanceBanner"
+	AdminService_AdminListOrganizations_FullMethodName            = "/relay.server.v1.AdminService/AdminListOrganizations"
+	AdminService_AdminGetOrganization_FullMethodName              = "/relay.server.v1.AdminService/AdminGetOrganization"
+	AdminService_AdminGetOrganizationResources_FullMethodName     = "/relay.server.v1.AdminService/AdminGetOrganizationResources"
+	AdminService_AdminGetOrganizationBilling_FullMethodName       = "/relay.server.v1.AdminService/AdminGetOrganizationBilling"
+	AdminService_AdminSetOrganizationPlan_FullMethodName          = "/relay.server.v1.AdminService/AdminSetOrganizationPlan"
+	AdminService_AdminGetOrganizationCost_FullMethodName          = "/relay.server.v1.AdminService/AdminGetOrganizationCost"
+	AdminService_AdminListSignupAllowlist_FullMethodName          = "/relay.server.v1.AdminService/AdminListSignupAllowlist"
+	AdminService_AdminAddSignupAllowlistEntry_FullMethodName      = "/relay.server.v1.AdminService/AdminAddSignupAllowlistEntry"
+	AdminService_AdminRemoveSignupAllowlistEntry_FullMethodName   = "/relay.server.v1.AdminService/AdminRemoveSignupAllowlistEntry"
+	AdminService_AdminListSignupAttempts_FullMethodName           = "/relay.server.v1.AdminService/AdminListSignupAttempts"
+	AdminService_AdminDismissSignupAttempt_FullMethodName         = "/relay.server.v1.AdminService/AdminDismissSignupAttempt"
+	AdminService_AdminListAuditLog_FullMethodName                 = "/relay.server.v1.AdminService/AdminListAuditLog"
+	AdminService_AdminGetCloudCosts_FullMethodName                = "/relay.server.v1.AdminService/AdminGetCloudCosts"
+	AdminService_AdminGetRevenueOverview_FullMethodName           = "/relay.server.v1.AdminService/AdminGetRevenueOverview"
+	AdminService_AdminListSupportReports_FullMethodName           = "/relay.server.v1.AdminService/AdminListSupportReports"
+	AdminService_AdminGetSupportReport_FullMethodName             = "/relay.server.v1.AdminService/AdminGetSupportReport"
+	AdminService_AdminAddSupportReportComment_FullMethodName      = "/relay.server.v1.AdminService/AdminAddSupportReportComment"
+	AdminService_AdminGetSupportAttachment_FullMethodName         = "/relay.server.v1.AdminService/AdminGetSupportAttachment"
+	AdminService_AdminUpdateSupportReportStatus_FullMethodName    = "/relay.server.v1.AdminService/AdminUpdateSupportReportStatus"
+	AdminService_AdminListMembers_FullMethodName                  = "/relay.server.v1.AdminService/AdminListMembers"
+	AdminService_AdminSetMemberRole_FullMethodName                = "/relay.server.v1.AdminService/AdminSetMemberRole"
+	AdminService_AdminRemoveMember_FullMethodName                 = "/relay.server.v1.AdminService/AdminRemoveMember"
+	AdminService_AdminInviteMember_FullMethodName                 = "/relay.server.v1.AdminService/AdminInviteMember"
+	AdminService_AdminListInvitations_FullMethodName              = "/relay.server.v1.AdminService/AdminListInvitations"
+	AdminService_AdminRevokeInvitation_FullMethodName             = "/relay.server.v1.AdminService/AdminRevokeInvitation"
+	AdminService_AdminListClusters_FullMethodName                 = "/relay.server.v1.AdminService/AdminListClusters"
+	AdminService_AdminListPendingOperations_FullMethodName        = "/relay.server.v1.AdminService/AdminListPendingOperations"
+	AdminService_AdminListAgents_FullMethodName                   = "/relay.server.v1.AdminService/AdminListAgents"
+	AdminService_AdminListTunnelSessions_FullMethodName           = "/relay.server.v1.AdminService/AdminListTunnelSessions"
+	AdminService_AdminRetryDeleteDatabase_FullMethodName          = "/relay.server.v1.AdminService/AdminRetryDeleteDatabase"
+	AdminService_AdminSearchUsers_FullMethodName                  = "/relay.server.v1.AdminService/AdminSearchUsers"
+	AdminService_AdminGetUser_FullMethodName                      = "/relay.server.v1.AdminService/AdminGetUser"
+	AdminService_AdminRevokeUserSessions_FullMethodName           = "/relay.server.v1.AdminService/AdminRevokeUserSessions"
+	AdminService_AdminGetOrganizationActivity_FullMethodName      = "/relay.server.v1.AdminService/AdminGetOrganizationActivity"
+	AdminService_AdminGetOrganizationSecurity_FullMethodName      = "/relay.server.v1.AdminService/AdminGetOrganizationSecurity"
+	AdminService_AdminGetPlatformOverview_FullMethodName          = "/relay.server.v1.AdminService/AdminGetPlatformOverview"
+	AdminService_AdminListOrgActivation_FullMethodName            = "/relay.server.v1.AdminService/AdminListOrgActivation"
+	AdminService_AdminSuspendOrganization_FullMethodName          = "/relay.server.v1.AdminService/AdminSuspendOrganization"
+	AdminService_AdminUnsuspendOrganization_FullMethodName        = "/relay.server.v1.AdminService/AdminUnsuspendOrganization"
+	AdminService_AdminGetMaintenanceBanner_FullMethodName         = "/relay.server.v1.AdminService/AdminGetMaintenanceBanner"
+	AdminService_AdminSetMaintenanceBanner_FullMethodName         = "/relay.server.v1.AdminService/AdminSetMaintenanceBanner"
+	AdminService_AdminClearMaintenanceBanner_FullMethodName       = "/relay.server.v1.AdminService/AdminClearMaintenanceBanner"
+	AdminService_AdminListFeatureFlags_FullMethodName             = "/relay.server.v1.AdminService/AdminListFeatureFlags"
+	AdminService_AdminGetFeatureFlag_FullMethodName               = "/relay.server.v1.AdminService/AdminGetFeatureFlag"
+	AdminService_AdminCreateFeatureFlag_FullMethodName            = "/relay.server.v1.AdminService/AdminCreateFeatureFlag"
+	AdminService_AdminUpdateFeatureFlag_FullMethodName            = "/relay.server.v1.AdminService/AdminUpdateFeatureFlag"
+	AdminService_AdminArchiveFeatureFlag_FullMethodName           = "/relay.server.v1.AdminService/AdminArchiveFeatureFlag"
+	AdminService_AdminSetOrgFeatureOverride_FullMethodName        = "/relay.server.v1.AdminService/AdminSetOrgFeatureOverride"
+	AdminService_AdminClearOrgFeatureOverride_FullMethodName      = "/relay.server.v1.AdminService/AdminClearOrgFeatureOverride"
+	AdminService_AdminListFeatureFlagOrganizations_FullMethodName = "/relay.server.v1.AdminService/AdminListFeatureFlagOrganizations"
+	AdminService_AdminPreviewFeatureFlagRollout_FullMethodName    = "/relay.server.v1.AdminService/AdminPreviewFeatureFlagRollout"
 )
 
 // AdminServiceClient is the client API for AdminService service.
@@ -7298,6 +7307,30 @@ type AdminServiceClient interface {
 	// AdminClearMaintenanceBanner takes the live banner down. FAILED_PRECONDITION
 	// (code MAINTENANCE_BANNER_NOT_LIVE) when none is live.
 	AdminClearMaintenanceBanner(ctx context.Context, in *AdminClearMaintenanceBannerRequest, opts ...grpc.CallOption) (*AdminClearMaintenanceBannerResponse, error)
+	// AdminListFeatureFlags lists flags with the count of orgs each reaches.
+	AdminListFeatureFlags(ctx context.Context, in *AdminListFeatureFlagsRequest, opts ...grpc.CallOption) (*AdminListFeatureFlagsResponse, error)
+	// AdminGetFeatureFlag returns one flag plus its reach count.
+	AdminGetFeatureFlag(ctx context.Context, in *AdminGetFeatureFlagRequest, opts ...grpc.CallOption) (*AdminGetFeatureFlagResponse, error)
+	// AdminCreateFeatureFlag creates a flag in its default-off, kill-switch-on
+	// state. ALREADY_EXISTS if the key is taken; INVALID_ARGUMENT on a bad key.
+	AdminCreateFeatureFlag(ctx context.Context, in *AdminCreateFeatureFlagRequest, opts ...grpc.CallOption) (*AdminCreateFeatureFlagResponse, error)
+	// AdminUpdateFeatureFlag rewrites a flag's rollout strategy and re-propagates
+	// the resolved per-org state.
+	AdminUpdateFeatureFlag(ctx context.Context, in *AdminUpdateFeatureFlagRequest, opts ...grpc.CallOption) (*AdminUpdateFeatureFlagResponse, error)
+	// AdminArchiveFeatureFlag retires (or un-retires) a flag; archived flags read
+	// off everywhere but keep their history.
+	AdminArchiveFeatureFlag(ctx context.Context, in *AdminArchiveFeatureFlagRequest, opts ...grpc.CallOption) (*AdminArchiveFeatureFlagResponse, error)
+	// AdminSetOrgFeatureOverride pins a flag on or off for one org, immune to the
+	// rollout strategy (the support escape hatch).
+	AdminSetOrgFeatureOverride(ctx context.Context, in *AdminSetOrgFeatureOverrideRequest, opts ...grpc.CallOption) (*AdminSetOrgFeatureOverrideResponse, error)
+	// AdminClearOrgFeatureOverride removes a manual pin so the org falls back to
+	// the strategy.
+	AdminClearOrgFeatureOverride(ctx context.Context, in *AdminClearOrgFeatureOverrideRequest, opts ...grpc.CallOption) (*AdminClearOrgFeatureOverrideResponse, error)
+	// AdminListFeatureFlagOrganizations lists the orgs a flag currently reaches.
+	AdminListFeatureFlagOrganizations(ctx context.Context, in *AdminListFeatureFlagOrganizationsRequest, opts ...grpc.CallOption) (*AdminListFeatureFlagOrganizationsResponse, error)
+	// AdminPreviewFeatureFlagRollout dry-runs a strategy and returns how many orgs
+	// it would reach, without applying it.
+	AdminPreviewFeatureFlagRollout(ctx context.Context, in *AdminPreviewFeatureFlagRolloutRequest, opts ...grpc.CallOption) (*AdminPreviewFeatureFlagRolloutResponse, error)
 }
 
 type adminServiceClient struct {
@@ -7728,6 +7761,96 @@ func (c *adminServiceClient) AdminClearMaintenanceBanner(ctx context.Context, in
 	return out, nil
 }
 
+func (c *adminServiceClient) AdminListFeatureFlags(ctx context.Context, in *AdminListFeatureFlagsRequest, opts ...grpc.CallOption) (*AdminListFeatureFlagsResponse, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(AdminListFeatureFlagsResponse)
+	err := c.cc.Invoke(ctx, AdminService_AdminListFeatureFlags_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *adminServiceClient) AdminGetFeatureFlag(ctx context.Context, in *AdminGetFeatureFlagRequest, opts ...grpc.CallOption) (*AdminGetFeatureFlagResponse, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(AdminGetFeatureFlagResponse)
+	err := c.cc.Invoke(ctx, AdminService_AdminGetFeatureFlag_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *adminServiceClient) AdminCreateFeatureFlag(ctx context.Context, in *AdminCreateFeatureFlagRequest, opts ...grpc.CallOption) (*AdminCreateFeatureFlagResponse, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(AdminCreateFeatureFlagResponse)
+	err := c.cc.Invoke(ctx, AdminService_AdminCreateFeatureFlag_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *adminServiceClient) AdminUpdateFeatureFlag(ctx context.Context, in *AdminUpdateFeatureFlagRequest, opts ...grpc.CallOption) (*AdminUpdateFeatureFlagResponse, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(AdminUpdateFeatureFlagResponse)
+	err := c.cc.Invoke(ctx, AdminService_AdminUpdateFeatureFlag_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *adminServiceClient) AdminArchiveFeatureFlag(ctx context.Context, in *AdminArchiveFeatureFlagRequest, opts ...grpc.CallOption) (*AdminArchiveFeatureFlagResponse, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(AdminArchiveFeatureFlagResponse)
+	err := c.cc.Invoke(ctx, AdminService_AdminArchiveFeatureFlag_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *adminServiceClient) AdminSetOrgFeatureOverride(ctx context.Context, in *AdminSetOrgFeatureOverrideRequest, opts ...grpc.CallOption) (*AdminSetOrgFeatureOverrideResponse, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(AdminSetOrgFeatureOverrideResponse)
+	err := c.cc.Invoke(ctx, AdminService_AdminSetOrgFeatureOverride_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *adminServiceClient) AdminClearOrgFeatureOverride(ctx context.Context, in *AdminClearOrgFeatureOverrideRequest, opts ...grpc.CallOption) (*AdminClearOrgFeatureOverrideResponse, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(AdminClearOrgFeatureOverrideResponse)
+	err := c.cc.Invoke(ctx, AdminService_AdminClearOrgFeatureOverride_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *adminServiceClient) AdminListFeatureFlagOrganizations(ctx context.Context, in *AdminListFeatureFlagOrganizationsRequest, opts ...grpc.CallOption) (*AdminListFeatureFlagOrganizationsResponse, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(AdminListFeatureFlagOrganizationsResponse)
+	err := c.cc.Invoke(ctx, AdminService_AdminListFeatureFlagOrganizations_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *adminServiceClient) AdminPreviewFeatureFlagRollout(ctx context.Context, in *AdminPreviewFeatureFlagRolloutRequest, opts ...grpc.CallOption) (*AdminPreviewFeatureFlagRolloutResponse, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(AdminPreviewFeatureFlagRolloutResponse)
+	err := c.cc.Invoke(ctx, AdminService_AdminPreviewFeatureFlagRollout_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
 // AdminServiceServer is the server API for AdminService service.
 // All implementations must embed UnimplementedAdminServiceServer
 // for forward compatibility.
@@ -7883,6 +8006,30 @@ type AdminServiceServer interface {
 	// AdminClearMaintenanceBanner takes the live banner down. FAILED_PRECONDITION
 	// (code MAINTENANCE_BANNER_NOT_LIVE) when none is live.
 	AdminClearMaintenanceBanner(context.Context, *AdminClearMaintenanceBannerRequest) (*AdminClearMaintenanceBannerResponse, error)
+	// AdminListFeatureFlags lists flags with the count of orgs each reaches.
+	AdminListFeatureFlags(context.Context, *AdminListFeatureFlagsRequest) (*AdminListFeatureFlagsResponse, error)
+	// AdminGetFeatureFlag returns one flag plus its reach count.
+	AdminGetFeatureFlag(context.Context, *AdminGetFeatureFlagRequest) (*AdminGetFeatureFlagResponse, error)
+	// AdminCreateFeatureFlag creates a flag in its default-off, kill-switch-on
+	// state. ALREADY_EXISTS if the key is taken; INVALID_ARGUMENT on a bad key.
+	AdminCreateFeatureFlag(context.Context, *AdminCreateFeatureFlagRequest) (*AdminCreateFeatureFlagResponse, error)
+	// AdminUpdateFeatureFlag rewrites a flag's rollout strategy and re-propagates
+	// the resolved per-org state.
+	AdminUpdateFeatureFlag(context.Context, *AdminUpdateFeatureFlagRequest) (*AdminUpdateFeatureFlagResponse, error)
+	// AdminArchiveFeatureFlag retires (or un-retires) a flag; archived flags read
+	// off everywhere but keep their history.
+	AdminArchiveFeatureFlag(context.Context, *AdminArchiveFeatureFlagRequest) (*AdminArchiveFeatureFlagResponse, error)
+	// AdminSetOrgFeatureOverride pins a flag on or off for one org, immune to the
+	// rollout strategy (the support escape hatch).
+	AdminSetOrgFeatureOverride(context.Context, *AdminSetOrgFeatureOverrideRequest) (*AdminSetOrgFeatureOverrideResponse, error)
+	// AdminClearOrgFeatureOverride removes a manual pin so the org falls back to
+	// the strategy.
+	AdminClearOrgFeatureOverride(context.Context, *AdminClearOrgFeatureOverrideRequest) (*AdminClearOrgFeatureOverrideResponse, error)
+	// AdminListFeatureFlagOrganizations lists the orgs a flag currently reaches.
+	AdminListFeatureFlagOrganizations(context.Context, *AdminListFeatureFlagOrganizationsRequest) (*AdminListFeatureFlagOrganizationsResponse, error)
+	// AdminPreviewFeatureFlagRollout dry-runs a strategy and returns how many orgs
+	// it would reach, without applying it.
+	AdminPreviewFeatureFlagRollout(context.Context, *AdminPreviewFeatureFlagRolloutRequest) (*AdminPreviewFeatureFlagRolloutResponse, error)
 	mustEmbedUnimplementedAdminServiceServer()
 }
 
@@ -8018,6 +8165,33 @@ func (UnimplementedAdminServiceServer) AdminSetMaintenanceBanner(context.Context
 }
 func (UnimplementedAdminServiceServer) AdminClearMaintenanceBanner(context.Context, *AdminClearMaintenanceBannerRequest) (*AdminClearMaintenanceBannerResponse, error) {
 	return nil, status.Error(codes.Unimplemented, "method AdminClearMaintenanceBanner not implemented")
+}
+func (UnimplementedAdminServiceServer) AdminListFeatureFlags(context.Context, *AdminListFeatureFlagsRequest) (*AdminListFeatureFlagsResponse, error) {
+	return nil, status.Error(codes.Unimplemented, "method AdminListFeatureFlags not implemented")
+}
+func (UnimplementedAdminServiceServer) AdminGetFeatureFlag(context.Context, *AdminGetFeatureFlagRequest) (*AdminGetFeatureFlagResponse, error) {
+	return nil, status.Error(codes.Unimplemented, "method AdminGetFeatureFlag not implemented")
+}
+func (UnimplementedAdminServiceServer) AdminCreateFeatureFlag(context.Context, *AdminCreateFeatureFlagRequest) (*AdminCreateFeatureFlagResponse, error) {
+	return nil, status.Error(codes.Unimplemented, "method AdminCreateFeatureFlag not implemented")
+}
+func (UnimplementedAdminServiceServer) AdminUpdateFeatureFlag(context.Context, *AdminUpdateFeatureFlagRequest) (*AdminUpdateFeatureFlagResponse, error) {
+	return nil, status.Error(codes.Unimplemented, "method AdminUpdateFeatureFlag not implemented")
+}
+func (UnimplementedAdminServiceServer) AdminArchiveFeatureFlag(context.Context, *AdminArchiveFeatureFlagRequest) (*AdminArchiveFeatureFlagResponse, error) {
+	return nil, status.Error(codes.Unimplemented, "method AdminArchiveFeatureFlag not implemented")
+}
+func (UnimplementedAdminServiceServer) AdminSetOrgFeatureOverride(context.Context, *AdminSetOrgFeatureOverrideRequest) (*AdminSetOrgFeatureOverrideResponse, error) {
+	return nil, status.Error(codes.Unimplemented, "method AdminSetOrgFeatureOverride not implemented")
+}
+func (UnimplementedAdminServiceServer) AdminClearOrgFeatureOverride(context.Context, *AdminClearOrgFeatureOverrideRequest) (*AdminClearOrgFeatureOverrideResponse, error) {
+	return nil, status.Error(codes.Unimplemented, "method AdminClearOrgFeatureOverride not implemented")
+}
+func (UnimplementedAdminServiceServer) AdminListFeatureFlagOrganizations(context.Context, *AdminListFeatureFlagOrganizationsRequest) (*AdminListFeatureFlagOrganizationsResponse, error) {
+	return nil, status.Error(codes.Unimplemented, "method AdminListFeatureFlagOrganizations not implemented")
+}
+func (UnimplementedAdminServiceServer) AdminPreviewFeatureFlagRollout(context.Context, *AdminPreviewFeatureFlagRolloutRequest) (*AdminPreviewFeatureFlagRolloutResponse, error) {
+	return nil, status.Error(codes.Unimplemented, "method AdminPreviewFeatureFlagRollout not implemented")
 }
 func (UnimplementedAdminServiceServer) mustEmbedUnimplementedAdminServiceServer() {}
 func (UnimplementedAdminServiceServer) testEmbeddedByValue()                      {}
@@ -8796,6 +8970,168 @@ func _AdminService_AdminClearMaintenanceBanner_Handler(srv interface{}, ctx cont
 	return interceptor(ctx, in, info, handler)
 }
 
+func _AdminService_AdminListFeatureFlags_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(AdminListFeatureFlagsRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(AdminServiceServer).AdminListFeatureFlags(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: AdminService_AdminListFeatureFlags_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(AdminServiceServer).AdminListFeatureFlags(ctx, req.(*AdminListFeatureFlagsRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _AdminService_AdminGetFeatureFlag_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(AdminGetFeatureFlagRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(AdminServiceServer).AdminGetFeatureFlag(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: AdminService_AdminGetFeatureFlag_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(AdminServiceServer).AdminGetFeatureFlag(ctx, req.(*AdminGetFeatureFlagRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _AdminService_AdminCreateFeatureFlag_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(AdminCreateFeatureFlagRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(AdminServiceServer).AdminCreateFeatureFlag(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: AdminService_AdminCreateFeatureFlag_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(AdminServiceServer).AdminCreateFeatureFlag(ctx, req.(*AdminCreateFeatureFlagRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _AdminService_AdminUpdateFeatureFlag_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(AdminUpdateFeatureFlagRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(AdminServiceServer).AdminUpdateFeatureFlag(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: AdminService_AdminUpdateFeatureFlag_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(AdminServiceServer).AdminUpdateFeatureFlag(ctx, req.(*AdminUpdateFeatureFlagRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _AdminService_AdminArchiveFeatureFlag_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(AdminArchiveFeatureFlagRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(AdminServiceServer).AdminArchiveFeatureFlag(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: AdminService_AdminArchiveFeatureFlag_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(AdminServiceServer).AdminArchiveFeatureFlag(ctx, req.(*AdminArchiveFeatureFlagRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _AdminService_AdminSetOrgFeatureOverride_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(AdminSetOrgFeatureOverrideRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(AdminServiceServer).AdminSetOrgFeatureOverride(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: AdminService_AdminSetOrgFeatureOverride_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(AdminServiceServer).AdminSetOrgFeatureOverride(ctx, req.(*AdminSetOrgFeatureOverrideRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _AdminService_AdminClearOrgFeatureOverride_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(AdminClearOrgFeatureOverrideRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(AdminServiceServer).AdminClearOrgFeatureOverride(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: AdminService_AdminClearOrgFeatureOverride_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(AdminServiceServer).AdminClearOrgFeatureOverride(ctx, req.(*AdminClearOrgFeatureOverrideRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _AdminService_AdminListFeatureFlagOrganizations_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(AdminListFeatureFlagOrganizationsRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(AdminServiceServer).AdminListFeatureFlagOrganizations(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: AdminService_AdminListFeatureFlagOrganizations_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(AdminServiceServer).AdminListFeatureFlagOrganizations(ctx, req.(*AdminListFeatureFlagOrganizationsRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _AdminService_AdminPreviewFeatureFlagRollout_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(AdminPreviewFeatureFlagRolloutRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(AdminServiceServer).AdminPreviewFeatureFlagRollout(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: AdminService_AdminPreviewFeatureFlagRollout_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(AdminServiceServer).AdminPreviewFeatureFlagRollout(ctx, req.(*AdminPreviewFeatureFlagRolloutRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
 // AdminService_ServiceDesc is the grpc.ServiceDesc for AdminService service.
 // It's only intended for direct use with grpc.RegisterService,
 // and not to be introspected or modified (even as a copy)
@@ -8970,6 +9306,42 @@ var AdminService_ServiceDesc = grpc.ServiceDesc{
 		{
 			MethodName: "AdminClearMaintenanceBanner",
 			Handler:    _AdminService_AdminClearMaintenanceBanner_Handler,
+		},
+		{
+			MethodName: "AdminListFeatureFlags",
+			Handler:    _AdminService_AdminListFeatureFlags_Handler,
+		},
+		{
+			MethodName: "AdminGetFeatureFlag",
+			Handler:    _AdminService_AdminGetFeatureFlag_Handler,
+		},
+		{
+			MethodName: "AdminCreateFeatureFlag",
+			Handler:    _AdminService_AdminCreateFeatureFlag_Handler,
+		},
+		{
+			MethodName: "AdminUpdateFeatureFlag",
+			Handler:    _AdminService_AdminUpdateFeatureFlag_Handler,
+		},
+		{
+			MethodName: "AdminArchiveFeatureFlag",
+			Handler:    _AdminService_AdminArchiveFeatureFlag_Handler,
+		},
+		{
+			MethodName: "AdminSetOrgFeatureOverride",
+			Handler:    _AdminService_AdminSetOrgFeatureOverride_Handler,
+		},
+		{
+			MethodName: "AdminClearOrgFeatureOverride",
+			Handler:    _AdminService_AdminClearOrgFeatureOverride_Handler,
+		},
+		{
+			MethodName: "AdminListFeatureFlagOrganizations",
+			Handler:    _AdminService_AdminListFeatureFlagOrganizations_Handler,
+		},
+		{
+			MethodName: "AdminPreviewFeatureFlagRollout",
+			Handler:    _AdminService_AdminPreviewFeatureFlagRollout_Handler,
 		},
 	},
 	Streams:  []grpc.StreamDesc{},

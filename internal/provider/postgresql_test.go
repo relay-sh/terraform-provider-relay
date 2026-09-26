@@ -68,6 +68,10 @@ func TestNodesToProtoOrdersElectableFirst(t *testing.T) {
 }
 
 func TestNodesRoundTrip(t *testing.T) {
+	enabledAutoscale := types.ObjectValueMust(storageAutoscaleAttrTypes, map[string]attr.Value{
+		"enabled": types.BoolValue(true), "threshold_percent": types.Int64Value(85),
+		"increase_percent": types.Int64Value(25), "max_storage": types.StringValue("50Gi"),
+	})
 	nodes := map[string]nodeGroupModel{
 		"writers": {
 			Role:  types.StringValue(roleElectable),
@@ -76,7 +80,7 @@ func TestNodesRoundTrip(t *testing.T) {
 			Resources: resourcesModel{
 				CPU: types.StringValue("1"), Memory: types.StringValue("1Gi"), Storage: types.StringValue("1Gi"),
 				IOPS: types.Int64Unknown(), Throughput: types.Int64Value(250),
-				DiskType: types.StringUnknown(),
+				DiskType: types.StringUnknown(), StorageAutoscale: types.ObjectNull(storageAutoscaleAttrTypes),
 			},
 		},
 		"readers": {
@@ -86,7 +90,7 @@ func TestNodesRoundTrip(t *testing.T) {
 			Resources: resourcesModel{
 				CPU: types.StringValue("2"), Memory: types.StringValue("4Gi"), Storage: types.StringValue("9Gi"),
 				IOPS: types.Int64Value(3000), Throughput: types.Int64Null(),
-				DiskType: types.StringValue("io1"),
+				DiskType: types.StringValue("io1"), StorageAutoscale: enabledAutoscale,
 			},
 		},
 	}
@@ -116,17 +120,103 @@ func TestNodesRoundTrip(t *testing.T) {
 	if out[1].GetResources().GetDiskType() != "io1" {
 		t.Errorf("readers disk_type = %q, want io1", out[1].GetResources().GetDiskType())
 	}
+	if sa := res.GetStorageAutoscale(); sa == nil || sa.GetEnabled() {
+		t.Errorf("an absent block must still send an explicit disabled StorageAutoscale, got %+v", sa)
+	}
+	if sa := out[1].GetResources().GetStorageAutoscale(); !sa.GetEnabled() || sa.GetThresholdPercent() != 85 || sa.GetIncreasePercent() != 25 || sa.GetMaxStorage() != "50Gi" {
+		t.Errorf("readers storage_autoscale = %+v", sa)
+	}
 
 	// The platform answers cloud+region on a node and never echoes the provisioner.
 	for _, n := range out {
 		n.Cloud, n.Provider = "aws", ""
 	}
-	back := nodesFromProto(out)
+	back := nodesFromProto(out, nodes)
 	if g := back["readers"]; g.Role.ValueString() != roleReadOnly || g.Resources.IOPS.ValueInt64() != 3000 || g.Tier.ValueString() != "R20" || g.Resources.DiskType.ValueString() != "io1" {
 		t.Errorf("readers round trip = %+v", g)
 	}
+	if g := back["readers"]; g.Resources.StorageAutoscale.IsNull() {
+		t.Error("an enabled block must round trip visible")
+	} else if attrs := g.Resources.StorageAutoscale.Attributes(); attrs["threshold_percent"].(types.Int64).ValueInt64() != 85 {
+		t.Errorf("readers storage_autoscale round trip = %+v", attrs)
+	}
 	if g := back["writers"]; g.Role.ValueString() != roleElectable || !g.Resources.IOPS.IsNull() || g.Cloud.ValueString() != "aws" || g.Tier.ValueString() != "R10" {
 		t.Errorf("writers round trip = %+v", g)
+	}
+	if g := back["writers"]; !g.Resources.StorageAutoscale.IsNull() {
+		t.Errorf("an absent block must read back null, got %+v", g.Resources.StorageAutoscale)
+	}
+}
+
+func TestStorageAutoscaleConversions(t *testing.T) {
+	if got := storageAutoscaleToProto(types.ObjectNull(storageAutoscaleAttrTypes)); got == nil || got.GetEnabled() {
+		t.Errorf("a null block must still send an explicit disabled StorageAutoscale, got %+v", got)
+	}
+	if got := storageAutoscaleToProto(types.ObjectUnknown(storageAutoscaleAttrTypes)); got == nil || got.GetEnabled() {
+		t.Errorf("an unknown block must not be sent as enabled, got %+v", got)
+	}
+	enabled := types.ObjectValueMust(storageAutoscaleAttrTypes, map[string]attr.Value{
+		"enabled": types.BoolValue(true), "threshold_percent": types.Int64Value(85),
+		"increase_percent": types.Int64Value(25), "max_storage": types.StringValue("50Gi"),
+	})
+	if got := storageAutoscaleToProto(enabled); !got.GetEnabled() || got.GetThresholdPercent() != 85 || got.GetIncreasePercent() != 25 || got.GetMaxStorage() != "50Gi" {
+		t.Errorf("enabled block = %+v", got)
+	}
+	unknownFields := types.ObjectValueMust(storageAutoscaleAttrTypes, map[string]attr.Value{
+		"enabled": types.BoolValue(true), "threshold_percent": types.Int64Unknown(),
+		"increase_percent": types.Int64Unknown(), "max_storage": types.StringUnknown(),
+	})
+	if got := storageAutoscaleToProto(unknownFields); !got.GetEnabled() || got.ThresholdPercent != 0 || got.IncreasePercent != 0 || got.MaxStorage != "" {
+		t.Errorf("unknown limits must be omitted: %+v", got)
+	}
+
+	if got := storageAutoscaleFromProto(nil, types.ObjectNull(storageAutoscaleAttrTypes)); !got.IsNull() {
+		t.Error("no StorageAutoscale on the wire must read as null")
+	}
+	disabled := &serverv1.StorageAutoscale{Enabled: false}
+	if got := storageAutoscaleFromProto(disabled, types.ObjectNull(storageAutoscaleAttrTypes)); !got.IsNull() {
+		t.Error("a disabled response with no prior block must stay null, so an absent config never drifts")
+	}
+	priorDisabled := types.ObjectValueMust(storageAutoscaleAttrTypes, map[string]attr.Value{
+		"enabled": types.BoolValue(false), "threshold_percent": types.Int64Value(0),
+		"increase_percent": types.Int64Value(0), "max_storage": types.StringNull(),
+	})
+	if got := storageAutoscaleFromProto(disabled, priorDisabled); got.IsNull() {
+		t.Error("a block the config explicitly disabled must stay visible")
+	}
+	on := &serverv1.StorageAutoscale{Enabled: true, ThresholdPercent: 80, IncreasePercent: 20, MaxStorage: "50Gi"}
+	got := storageAutoscaleFromProto(on, types.ObjectNull(storageAutoscaleAttrTypes))
+	if got.IsNull() {
+		t.Fatal("an enabled response must always surface")
+	}
+	attrs := got.Attributes()
+	if !attrs["enabled"].(types.Bool).ValueBool() || attrs["threshold_percent"].(types.Int64).ValueInt64() != 80 ||
+		attrs["increase_percent"].(types.Int64).ValueInt64() != 20 || attrs["max_storage"].(types.String).ValueString() != "50Gi" {
+		t.Errorf("enabled round trip = %+v", got)
+	}
+}
+
+func TestStorageStatusFromProto(t *testing.T) {
+	if got := storageStatusFromProto(nil); len(got.Elements()) != 0 {
+		t.Errorf("no entries must read as an empty list, got %v", got)
+	}
+	got := storageStatusFromProto([]*serverv1.NodeGroupStorage{{NodeGroup: "writers", Size: "15Gi"}})
+	elems := got.Elements()
+	if len(elems) != 1 {
+		t.Fatalf("entries = %v", elems)
+	}
+	attrs := elems[0].(types.Object).Attributes()
+	if attrs["node_group"].(types.String).ValueString() != "writers" || attrs["size"].(types.String).ValueString() != "15Gi" {
+		t.Errorf("entry = %+v", attrs)
+	}
+}
+
+func TestOptionalString(t *testing.T) {
+	if got := optionalString(""); !got.IsNull() {
+		t.Errorf("an empty string must read as null, got %v", got)
+	}
+	if got := optionalString("50Gi"); got.ValueString() != "50Gi" {
+		t.Errorf("optionalString(%q) = %v", "50Gi", got)
 	}
 }
 

@@ -790,6 +790,261 @@ func TestPostgreSQLClusterResource_DestroyAfterAFailedCreate(t *testing.T) {
 	}
 }
 
+func storageAutoscaleClusterConfig(f *fakeServer, resourcesBody string) string {
+	return providerBlock(f) + fmt.Sprintf(`
+resource "relay_postgresql_cluster" "this" {
+  workspace_id = %q
+  name         = "billing"
+
+  nodes = {
+    writers = {
+      role = "electable"
+      tier = "R10"
+      resources = {
+%s
+      }
+    }
+  }
+}
+`, dbWorkspace, resourcesBody)
+}
+
+func TestPostgreSQLClusterResource_StorageAutoscale(t *testing.T) {
+	f := startFakeServer(t)
+	resource.UnitTest(t, resource.TestCase{
+		ProtoV6ProviderFactories: factories(relay.Dial),
+		Steps: []resource.TestStep{
+			{
+				Config: storageAutoscaleClusterConfig(f, `        storage = "10Gi"`),
+				Check: resource.ComposeAggregateTestCheckFunc(
+					resource.TestCheckNoResourceAttr("relay_postgresql_cluster.this", "nodes.writers.resources.storage_autoscale.enabled"),
+					func(*terraform.State) error {
+						sa := f.lastDBCreate.GetSpec().GetNodes()[0].GetResources().GetStorageAutoscale()
+						if sa == nil || sa.GetEnabled() {
+							return fmt.Errorf("an absent block must still send an explicit disabled StorageAutoscale, got %+v", sa)
+						}
+						return nil
+					},
+				),
+			},
+			{
+				Config: storageAutoscaleClusterConfig(f, `        storage = "10Gi"
+        storage_autoscale = {
+          enabled           = true
+          threshold_percent = 85
+          increase_percent  = 25
+          max_storage       = "50Gi"
+        }`),
+				Check: resource.ComposeAggregateTestCheckFunc(
+					resource.TestCheckResourceAttr("relay_postgresql_cluster.this", "nodes.writers.resources.storage_autoscale.enabled", "true"),
+					resource.TestCheckResourceAttr("relay_postgresql_cluster.this", "nodes.writers.resources.storage_autoscale.threshold_percent", "85"),
+					resource.TestCheckResourceAttr("relay_postgresql_cluster.this", "nodes.writers.resources.storage_autoscale.increase_percent", "25"),
+					resource.TestCheckResourceAttr("relay_postgresql_cluster.this", "nodes.writers.resources.storage_autoscale.max_storage", "50Gi"),
+					func(*terraform.State) error {
+						sa := f.lastDBUpdate.GetSpec().GetNodes()[0].GetResources().GetStorageAutoscale()
+						if !sa.GetEnabled() || sa.GetThresholdPercent() != 85 || sa.GetIncreasePercent() != 25 || sa.GetMaxStorage() != "50Gi" {
+							return fmt.Errorf("update must send the enabled block as configured, got %+v", sa)
+						}
+						return nil
+					},
+				),
+			},
+			{
+				Config: storageAutoscaleClusterConfig(f, `        storage = "10Gi"`),
+				Check: resource.ComposeAggregateTestCheckFunc(
+					resource.TestCheckNoResourceAttr("relay_postgresql_cluster.this", "nodes.writers.resources.storage_autoscale.enabled"),
+					func(*terraform.State) error {
+						sa := f.lastDBUpdate.GetSpec().GetNodes()[0].GetResources().GetStorageAutoscale()
+						if sa == nil || sa.GetEnabled() {
+							return fmt.Errorf("removing the block must disable autoscaling explicitly, because the server keeps a nil field unchanged, got %+v", sa)
+						}
+						return nil
+					},
+				),
+			},
+			{
+				Config: storageAutoscaleClusterConfig(f, `        storage = "10Gi"
+        storage_autoscale = { enabled = false }`),
+				Check: resource.ComposeAggregateTestCheckFunc(
+					resource.TestCheckResourceAttr("relay_postgresql_cluster.this", "nodes.writers.resources.storage_autoscale.enabled", "false"),
+					func(*terraform.State) error {
+						sa := f.lastDBUpdate.GetSpec().GetNodes()[0].GetResources().GetStorageAutoscale()
+						if sa == nil || sa.GetEnabled() {
+							return fmt.Errorf("an explicit disabled block must still send enabled=false, got %+v", sa)
+						}
+						return nil
+					},
+				),
+			},
+		},
+	})
+}
+
+func TestPostgreSQLClusterResource_StorageAutoscaleNewNodeGroup(t *testing.T) {
+	f := startFakeServer(t)
+	resource.UnitTest(t, resource.TestCase{
+		ProtoV6ProviderFactories: factories(relay.Dial),
+		Steps: []resource.TestStep{
+			{
+				Config: providerBlock(f) + fmt.Sprintf(`
+resource "relay_postgresql_cluster" "this" {
+  workspace_id = %q
+  name         = "billing"
+
+  nodes = {
+    writers = {
+      role      = "electable"
+      tier      = "R10"
+      resources = { storage = "10Gi" }
+    }
+  }
+}
+`, dbWorkspace),
+			},
+			{
+				Config: providerBlock(f) + fmt.Sprintf(`
+resource "relay_postgresql_cluster" "this" {
+  workspace_id = %q
+  name         = "billing"
+
+  nodes = {
+    writers = {
+      role      = "electable"
+      tier      = "R10"
+      resources = { storage = "10Gi" }
+    }
+
+    readers = {
+      role = "read_only"
+      tier = "R10"
+      resources = {
+        storage = "20Gi"
+        storage_autoscale = {
+          enabled     = true
+          max_storage = "40Gi"
+        }
+      }
+    }
+  }
+}
+`, dbWorkspace),
+				Check: resource.ComposeAggregateTestCheckFunc(
+					resource.TestCheckResourceAttr("relay_postgresql_cluster.this", "nodes.readers.resources.storage_autoscale.enabled", "true"),
+					resource.TestCheckResourceAttr("relay_postgresql_cluster.this", "nodes.readers.resources.storage_autoscale.max_storage", "40Gi"),
+					func(*terraform.State) error {
+						for _, n := range f.lastDBUpdate.GetSpec().GetNodes() {
+							if n.GetName() == "readers" {
+								if sa := n.GetResources().GetStorageAutoscale(); !sa.GetEnabled() {
+									return fmt.Errorf("a new node group's storage_autoscale must reach the platform enabled, got %+v", sa)
+								}
+								return nil
+							}
+						}
+						return errors.New("readers group missing from the update")
+					},
+				),
+			},
+		},
+	})
+}
+
+func TestPostgreSQLClusterResource_StorageStatusNoDrift(t *testing.T) {
+	f := startFakeServer(t)
+	resource.UnitTest(t, resource.TestCase{
+		ProtoV6ProviderFactories: factories(relay.Dial),
+		Steps: []resource.TestStep{
+			{
+				Config: storageAutoscaleClusterConfig(f, `        storage = "10Gi"
+        storage_autoscale = {
+          enabled     = true
+          max_storage = "50Gi"
+        }`),
+			},
+			{
+				PreConfig: func() {
+					f.mu.Lock()
+					defer f.mu.Unlock()
+					for _, db := range f.databases {
+						db.Status.Storage = []*serverv1.NodeGroupStorage{{NodeGroup: "writers", Size: "15Gi"}}
+					}
+				},
+				Config: storageAutoscaleClusterConfig(f, `        storage = "10Gi"
+        storage_autoscale = {
+          enabled     = true
+          max_storage = "50Gi"
+        }`),
+				PlanOnly:           true,
+				ExpectNonEmptyPlan: false,
+				Check: resource.ComposeAggregateTestCheckFunc(
+					resource.TestCheckResourceAttr("relay_postgresql_cluster.this", "storage_status.0.node_group", "writers"),
+					resource.TestCheckResourceAttr("relay_postgresql_cluster.this", "storage_status.0.size", "15Gi"),
+					resource.TestCheckResourceAttr("relay_postgresql_cluster.this", "nodes.writers.resources.storage", "10Gi"),
+				),
+			},
+		},
+	})
+}
+
+func TestPostgreSQLClusterResource_StorageAutoscaleUnknownCeilingPlans(t *testing.T) {
+	f := startFakeServer(t)
+	config := `
+resource "terraform_data" "ceiling" {
+  input = "50Gi"
+}
+` + storageAutoscaleClusterConfig(f, `        storage = "10Gi"
+        storage_autoscale = {
+          enabled     = true
+          max_storage = terraform_data.ceiling.id
+        }`)
+	resource.UnitTest(t, resource.TestCase{
+		ProtoV6ProviderFactories: factories(relay.Dial),
+		Steps: []resource.TestStep{{
+			Config:             config,
+			PlanOnly:           true,
+			ExpectNonEmptyPlan: true,
+		}},
+	})
+}
+
+func TestPostgreSQLClusterResource_StorageAutoscaleValidation(t *testing.T) {
+	f := startFakeServer(t)
+	cases := map[string]struct {
+		resources string
+		want      string
+	}{
+		"missing max_storage": {`        storage = "10Gi"
+        storage_autoscale = { enabled = true }`, "Missing max_storage"},
+		"max_storage below storage": {`        storage = "10Gi"
+        storage_autoscale = {
+          enabled     = true
+          max_storage = "5Gi"
+        }`, "max_storage is below storage"},
+		"threshold_percent out of range": {`        storage = "10Gi"
+        storage_autoscale = {
+          enabled           = true
+          threshold_percent = 40
+          max_storage       = "50Gi"
+        }`, "between 50 and 95"},
+		"increase_percent out of range": {`        storage = "10Gi"
+        storage_autoscale = {
+          enabled          = true
+          increase_percent = 5
+          max_storage      = "50Gi"
+        }`, "between 10 and 100"},
+	}
+	for name, tc := range cases {
+		t.Run(name, func(t *testing.T) {
+			resource.UnitTest(t, resource.TestCase{
+				ProtoV6ProviderFactories: factories(relay.Dial),
+				Steps: []resource.TestStep{{
+					Config:      storageAutoscaleClusterConfig(f, tc.resources),
+					ExpectError: regexp.MustCompile(tc.want),
+				}},
+			})
+		})
+	}
+}
+
 // A remote group is standby: promotable, but never in the commit path, so a
 // distant member cannot hold up a write and the synchronous replica lands on a
 // group near the primary.

@@ -12,6 +12,10 @@ resource "relay_postgresql_cluster" "billing" {
       tier   = "R30"
       resources = {
         storage = "100Gi"
+        storage_autoscale = {
+          enabled     = true
+          max_storage = "500Gi"
+        }
       }
     }
 
