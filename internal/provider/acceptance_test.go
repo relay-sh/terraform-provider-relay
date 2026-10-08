@@ -1,10 +1,12 @@
 package provider
 
 import (
+	"context"
 	"crypto/rand"
 	"encoding/hex"
 	"fmt"
 	"os"
+	"regexp"
 	"strings"
 	"testing"
 
@@ -12,6 +14,9 @@ import (
 	"github.com/hashicorp/terraform-plugin-go/tfprotov6"
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
 	"github.com/hashicorp/terraform-plugin-testing/terraform"
+
+	serverv1 "github.com/relay-sh/relay-go/gen/relay/server/v1"
+	"github.com/relay-sh/relay-go/relay"
 )
 
 func acceptanceFactories(t *testing.T) map[string]func() (tfprotov6.ProviderServer, error) {
@@ -271,4 +276,70 @@ func workspaceScopedID(address string, attrs ...string) resource.ImportStateIdFu
 		}
 		return strings.Join(parts, "/"), nil
 	}
+}
+
+func skipUnlessPrivateEndpointsServed(t *testing.T, cloud, region string) {
+	t.Helper()
+	c, err := relay.Dial(relay.Options{Endpoint: os.Getenv("RELAY_ENDPOINT"), Credentials: relay.APIKey(os.Getenv("RELAY_API_KEY"))})
+	if err != nil {
+		t.Fatal(err)
+	}
+	ctx := context.Background()
+	org, err := c.Server.GetOrganization(ctx, &serverv1.GetOrganizationRequest{})
+	if err != nil {
+		t.Fatal(err)
+	}
+	out, err := c.Server.ListPrivateEndpointRegions(relay.WithOrg(ctx, org.GetOrganization().GetId()), &serverv1.ListPrivateEndpointRegionsRequest{})
+	if err != nil {
+		t.Fatal(err)
+	}
+	for _, r := range out.GetRegions() {
+		if r.GetProvider() == cloud && r.GetRegion() == region {
+			return
+		}
+	}
+	t.Skipf("the platform serves no private endpoints in %s/%s", cloud, region)
+}
+
+func TestAccPrivateEndpointService(t *testing.T) {
+	if os.Getenv("TF_ACC") == "" {
+		t.Skip("set TF_ACC=1 to run acceptance tests")
+	}
+	factories := acceptanceFactories(t)
+	cloud, region := envOr("RELAY_ACC_CLOUD", "aws"), envOr("RELAY_ACC_REGION", "us-east-1")
+	skipUnlessPrivateEndpointsServed(t, cloud, region)
+	resource.Test(t, resource.TestCase{
+		ProtoV6ProviderFactories: factories,
+		Steps: []resource.TestStep{
+			{
+				Config: fmt.Sprintf(`
+resource "relay_workspace" "this" {
+  name = %[1]q
+}
+
+resource "relay_private_endpoint_service" "this" {
+  workspace_id = relay_workspace.this.id
+  cloud        = %[2]q
+  region       = %[3]q
+}
+
+data "relay_private_endpoint_service" "this" {
+  workspace_id = relay_workspace.this.id
+  id           = relay_private_endpoint_service.this.id
+}
+`, acceptanceName(t), cloud, region),
+				Check: resource.ComposeAggregateTestCheckFunc(
+					resource.TestCheckResourceAttr("relay_private_endpoint_service.this", "status", "AVAILABLE"),
+					resource.TestMatchResourceAttr("relay_private_endpoint_service.this", "endpoint_service_name", regexp.MustCompile(`^com\.amazonaws\.vpce\.`)),
+					resource.TestCheckResourceAttr("data.relay_private_endpoint_service.this", "endpoints.#", "0"),
+				),
+			},
+			{
+				ResourceName:      "relay_private_endpoint_service.this",
+				ImportState:       true,
+				ImportStateIdFunc: workspaceScopedID("relay_private_endpoint_service.this", "cloud", "region"),
+				ImportStateVerify: true,
+			},
+		},
+	})
 }

@@ -156,7 +156,7 @@ func TestPrivateEndpointServiceResource_Failures(t *testing.T) {
 				Config: providerBlock(f),
 			},
 			{
-				PreConfig: func() { f.failWith("GetPrivateEndpointService", denied) },
+				PreConfig:   func() { f.failWith("GetPrivateEndpointService", denied) },
 				Config:      east,
 				ExpectError: regexp.MustCompile("did not become available"),
 			},
