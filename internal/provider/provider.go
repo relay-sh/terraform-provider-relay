@@ -42,7 +42,7 @@ func (p *relayProvider) Metadata(_ context.Context, _ provider.MetadataRequest, 
 
 func (p *relayProvider) Schema(_ context.Context, _ provider.SchemaRequest, resp *provider.SchemaResponse) {
 	resp.Schema = schema.Schema{
-		MarkdownDescription: "Manages Relay workspaces, API keys, connections and managed PostgreSQL clusters.",
+		MarkdownDescription: "Manages Relay workspaces, API keys, connections, managed PostgreSQL clusters and workspace network access.",
 		Attributes: map[string]schema.Attribute{
 			"api_key": schema.StringAttribute{
 				MarkdownDescription: "Organization or workspace API key (`rly_key_…`). Falls back to `RELAY_API_KEY`.",
@@ -104,6 +104,7 @@ func (p *relayProvider) Resources(context.Context) []func() resource.Resource {
 		newConnectionResource,
 		newPostgreSQLClusterResource,
 		newPostgreSQLUserResource,
+		newIPAccessListResource,
 	}
 }
 
@@ -113,6 +114,7 @@ func (p *relayProvider) DataSources(context.Context) []func() datasource.DataSou
 		newWorkspaceDataSource,
 		newAPIKeyDataSource,
 		newPostgreSQLClusterDataSource,
+		newIPAccessListDataSource,
 	}
 }
 

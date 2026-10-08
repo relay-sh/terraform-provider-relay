@@ -5,6 +5,7 @@ import (
 	"encoding/hex"
 	"fmt"
 	"os"
+	"strings"
 	"testing"
 
 	"github.com/hashicorp/terraform-plugin-framework/providerserver"
@@ -206,4 +207,68 @@ func envOr(key, fallback string) string {
 		return v
 	}
 	return fallback
+}
+
+func TestAccIPAccessList(t *testing.T) {
+	if os.Getenv("TF_ACC") == "" {
+		t.Skip("set TF_ACC=1 to run acceptance tests")
+	}
+	name := acceptanceName(t)
+	config := func(cidr, description string) string {
+		return fmt.Sprintf(`
+resource "relay_workspace" "this" {
+  name = %[1]q
+}
+
+resource "relay_ip_access_list" "this" {
+  workspace_id = relay_workspace.this.id
+  cidr         = %[2]q
+  description  = %[3]q
+}
+
+data "relay_ip_access_list" "this" {
+  workspace_id = relay_workspace.this.id
+  cidr         = relay_ip_access_list.this.cidr
+}
+`, name, cidr, description)
+	}
+	resource.Test(t, resource.TestCase{
+		ProtoV6ProviderFactories: acceptanceFactories(t),
+		Steps: []resource.TestStep{
+			{
+				Config: config("203.0.113.0/24", "created by acceptance tests"),
+				Check: resource.ComposeAggregateTestCheckFunc(
+					resource.TestCheckResourceAttrSet("relay_ip_access_list.this", "id"),
+					resource.TestCheckResourceAttrPair("data.relay_ip_access_list.this", "id", "relay_ip_access_list.this", "id"),
+				),
+			},
+			{
+				Config: config("198.51.100.7/32", "updated by acceptance tests"),
+				Check: resource.ComposeAggregateTestCheckFunc(
+					resource.TestCheckResourceAttr("relay_ip_access_list.this", "cidr", "198.51.100.7/32"),
+					resource.TestCheckResourceAttr("data.relay_ip_access_list.this", "description", "updated by acceptance tests"),
+				),
+			},
+			{
+				ResourceName:      "relay_ip_access_list.this",
+				ImportState:       true,
+				ImportStateIdFunc: workspaceScopedID("relay_ip_access_list.this", "cidr"),
+				ImportStateVerify: true,
+			},
+		},
+	})
+}
+
+func workspaceScopedID(address string, attrs ...string) resource.ImportStateIdFunc {
+	return func(s *terraform.State) (string, error) {
+		r, ok := s.RootModule().Resources[address]
+		if !ok {
+			return "", fmt.Errorf("%s is not in state", address)
+		}
+		parts := []string{r.Primary.Attributes["workspace_id"]}
+		for _, a := range attrs {
+			parts = append(parts, r.Primary.Attributes[a])
+		}
+		return strings.Join(parts, "/"), nil
+	}
 }
