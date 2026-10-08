@@ -60,6 +60,10 @@ type fakeServer struct {
 	lastDBCreate      *serverv1.CreateDatabaseRequest
 	lastDBUpdate      *serverv1.UpdateDatabaseRequest
 	lastDBDelete      *serverv1.DeleteDatabaseRequest
+	apiKeys           map[string]*serverv1.APIKey
+	callerKey         *serverv1.APIKey
+	lastKeyCreate     *serverv1.CreateAPIKeyRequest
+	lastKeyUpdate     *serverv1.UpdateAPIKeyRequest
 }
 
 func startFakeServer(t *testing.T) *fakeServer {
@@ -80,6 +84,7 @@ func startFakeServer(t *testing.T) *fakeServer {
 		readyAfter:    2,
 		users:         map[string]*serverv1.DatabaseUser{},
 		userCountdown: map[string]int{},
+		apiKeys:       map[string]*serverv1.APIKey{},
 		providers: []*serverv1.DatabaseProvider{
 			{Name: "aws-use1", Cloud: "aws", Region: "us-east-1", Engines: []string{"PostgreSQL"}},
 			{Name: "aws-euw1", Cloud: "aws", Region: "eu-west-1", Engines: []string{"PostgreSQL"}},

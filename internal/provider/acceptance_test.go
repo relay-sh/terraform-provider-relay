@@ -10,6 +10,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/providerserver"
 	"github.com/hashicorp/terraform-plugin-go/tfprotov6"
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
+	"github.com/hashicorp/terraform-plugin-testing/terraform"
 )
 
 func acceptanceFactories(t *testing.T) map[string]func() (tfprotov6.ProviderServer, error) {
@@ -83,6 +84,66 @@ resource "relay_connection" "this" {
 				ResourceName:      "relay_workspace.this",
 				ImportState:       true,
 				ImportStateVerify: true,
+			},
+		},
+	})
+}
+
+func TestAccAPIKeys(t *testing.T) {
+	if os.Getenv("TF_ACC") == "" {
+		t.Skip("set TF_ACC=1 to run acceptance tests")
+	}
+	name := acceptanceName(t)
+	config := func(role, cidr, lifetime string) string {
+		return fmt.Sprintf(`
+resource "relay_workspace" "this" {
+  name = %[1]q
+}
+
+resource "relay_api_key" "org" {
+  name          = %[1]q
+  role          = %[2]q
+  allowed_cidrs = [%[3]q]
+  expires_in    = %[4]q
+}
+
+resource "relay_api_key" "workspace" {
+  name         = %[1]q
+  workspace_id = relay_workspace.this.id
+  role         = "viewer"
+}
+
+data "relay_api_key" "workspace" {
+  id           = relay_api_key.workspace.id
+  workspace_id = relay_workspace.this.id
+}
+`, name, role, cidr, lifetime)
+	}
+	resource.Test(t, resource.TestCase{
+		ProtoV6ProviderFactories: acceptanceFactories(t),
+		Steps: []resource.TestStep{
+			{
+				Config: config("viewer", "192.168.1.10", "720h"),
+				Check: resource.ComposeAggregateTestCheckFunc(
+					resource.TestCheckResourceAttrSet("relay_api_key.org", "secret"),
+					resource.TestCheckResourceAttrSet("relay_api_key.org", "expires_at"),
+					resource.TestCheckTypeSetElemAttr("relay_api_key.org", "effective_allowed_cidrs.*", "192.168.1.10/32"),
+					resource.TestCheckResourceAttrPair("data.relay_api_key.workspace", "name", "relay_api_key.workspace", "name"),
+				),
+			},
+			{
+				Config: config("admin", "10.1.0.0/16", "48h"),
+				Check:  resource.TestCheckResourceAttr("relay_api_key.org", "role", "admin"),
+			},
+			{
+				ResourceName: "relay_api_key.workspace",
+				ImportState:  true,
+				ImportStateIdFunc: func(s *terraform.State) (string, error) {
+					r := s.RootModule().Resources["relay_api_key.workspace"].Primary
+					return r.Attributes["workspace_id"] + "/" + r.ID, nil
+				},
+				ImportStateVerify:       true,
+				ImportStateVerifyIgnore: []string{"secret"},
 			},
 		},
 	})
