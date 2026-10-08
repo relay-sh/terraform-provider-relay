@@ -2,6 +2,7 @@ package provider
 
 import (
 	"context"
+	"regexp"
 	"strings"
 
 	"github.com/hashicorp/terraform-plugin-framework-validators/setvalidator"
@@ -48,13 +49,14 @@ func (r *apiKeyResource) Metadata(_ context.Context, req resource.MetadataReques
 
 func (r *apiKeyResource) Schema(_ context.Context, _ resource.SchemaRequest, resp *resource.SchemaResponse) {
 	keep := []planmodifier.String{stringplanmodifier.UseStateForUnknown()}
+	trimmed := stringvalidator.RegexMatches(regexp.MustCompile(`^\S(?s:.*\S)?$`), "must not be empty or start or end with whitespace, which the API strips")
 	resp.Schema = schema.Schema{
 		MarkdownDescription: "An organization or workspace API key. A key created with an API key is its child: it cannot outlive it or reach past its allowed addresses, and revoking the parent revokes it. The secret is returned once, at creation.",
 		Attributes: map[string]schema.Attribute{
 			"id": schema.StringAttribute{Computed: true, PlanModifiers: keep, MarkdownDescription: "API key ID."},
 			"name": schema.StringAttribute{
 				Required:            true,
-				Validators:          []validator.String{stringvalidator.LengthBetween(1, 100)},
+				Validators:          []validator.String{stringvalidator.UTF8LengthBetween(1, 100), trimmed},
 				MarkdownDescription: "Display name, up to 100 characters. Names need not be unique.",
 			},
 			"workspace_id": schema.StringAttribute{
@@ -64,6 +66,7 @@ func (r *apiKeyResource) Schema(_ context.Context, _ resource.SchemaRequest, res
 			},
 			"role": schema.StringAttribute{
 				Required:            true,
+				Validators:          []validator.String{trimmed},
 				MarkdownDescription: "Role slug granted to the key, such as `admin` or `viewer`. It cannot grant a permission the caller lacks, nor an owner-level role. Changes in place.",
 			},
 			"allowed_cidrs": schema.SetAttribute{

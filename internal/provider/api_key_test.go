@@ -5,6 +5,7 @@ import (
 	"errors"
 	"fmt"
 	"regexp"
+	"strings"
 	"testing"
 
 	"github.com/hashicorp/terraform-plugin-framework/resource"
@@ -75,7 +76,7 @@ func TestAPIKeyResource_OrganizationLifecycle(t *testing.T) {
 			},
 			{
 				Config: apiKeyConfig(f, `
-  name          = "ci-renamed"
+  name          = "implantação contínua de produção — integração e configuração da esteira de entrega ção ção"
   role          = "admin"
   allowed_cidrs = ["10.0.0.0/8", "192.168.1.10"]
   expires_in    = "720h"
@@ -86,7 +87,7 @@ func TestAPIKeyResource_OrganizationLifecycle(t *testing.T) {
 					tfresource.TestCheckResourceAttr("relay_api_key.this", "expires_at", "2027-02-14T08:00:00Z"),
 					func(*terraform.State) error {
 						u := f.lastKeyUpdate
-						if u.GetRoleSlug() != "admin" || u.ExpiresInSeconds != nil || u.GetName() != "ci-renamed" {
+						if u.GetRoleSlug() != "admin" || u.ExpiresInSeconds != nil || u.GetName() != "implantação contínua de produção — integração e configuração da esteira de entrega ção ção" {
 							return fmt.Errorf("update = %+v", u)
 						}
 						if len(f.callsTo("CreateAPIKey")) != 1 {
@@ -339,7 +340,10 @@ func TestAPIKeyResource_InvalidConfig(t *testing.T) {
 		"bad address":       {`name = "ci"` + "\n" + `role = "viewer"` + "\n" + `allowed_cidrs = ["10.0.0.0/33"]`, "is not an IP address or CIDR block"},
 		"bad lifetime":      {`name = "ci"` + "\n" + `role = "viewer"` + "\n" + `expires_in = "30d"`, "Invalid expires_in"},
 		"lifetime too long": {`name = "ci"` + "\n" + `role = "viewer"` + "\n" + `expires_in = "8761h"`, "at most 8760h"},
-		"empty name":        {`name = ""` + "\n" + `role = "viewer"`, "string length must be between 1 and 100"},
+		"padded name":       {`name = "ci "` + "\n" + `role = "viewer"`, "must not be empty or start or end with whitespace"},
+		"padded role":       {`name = "ci"` + "\n" + `role = " viewer"`, "must not be empty or start or end with whitespace"},
+		"long name":         {`name = "` + strings.Repeat("a", 101) + `"` + "\n" + `role = "viewer"`, "UTF-8 character count must be between 1 and 100"},
+		"empty name":        {`name = ""` + "\n" + `role = "viewer"`, "UTF-8 character count must be between 1 and 100"},
 	}
 	for name, tc := range cases {
 		t.Run(name, func(t *testing.T) {
