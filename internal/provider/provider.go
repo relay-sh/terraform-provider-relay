@@ -106,6 +106,7 @@ func (p *relayProvider) Resources(context.Context) []func() resource.Resource {
 		newPostgreSQLUserResource,
 		newIPAccessListResource,
 		newPrivateEndpointServiceResource,
+		newPrivateEndpointResource,
 	}
 }
 
@@ -117,6 +118,7 @@ func (p *relayProvider) DataSources(context.Context) []func() datasource.DataSou
 		newPostgreSQLClusterDataSource,
 		newIPAccessListDataSource,
 		newPrivateEndpointServiceDataSource,
+		newPrivateEndpointDataSource,
 	}
 }
 

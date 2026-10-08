@@ -213,3 +213,88 @@ func (f *fakeServer) DeletePrivateEndpointService(ctx context.Context, req *serv
 	delete(f.peServices, svc.Id)
 	return &serverv1.DeletePrivateEndpointServiceResponse{}, nil
 }
+
+func (f *fakeServer) endpointIn(ctx context.Context, serviceID, id string) (*serverv1.PrivateEndpointService, int, error) {
+	svc, err := f.serviceIn(ctx, serviceID)
+	if err != nil {
+		return nil, 0, err
+	}
+	i := slices.IndexFunc(svc.Endpoints, func(e *serverv1.PrivateEndpoint) bool { return e.GetId() == id })
+	if i < 0 {
+		return nil, 0, status.Error(codes.NotFound, "private endpoint not found")
+	}
+	return svc, i, nil
+}
+
+func (f *fakeServer) CreatePrivateEndpoint(ctx context.Context, req *serverv1.CreatePrivateEndpointRequest) (*serverv1.CreatePrivateEndpointResponse, error) {
+	f.mu.Lock()
+	defer f.mu.Unlock()
+	if err := f.record(ctx, "CreatePrivateEndpoint"); err != nil {
+		return nil, err
+	}
+	svc, err := f.serviceIn(ctx, req.GetServiceId())
+	if err != nil {
+		return nil, err
+	}
+	for _, e := range svc.Endpoints {
+		if e.GetInterfaceEndpointId() == req.GetInterfaceEndpointId() {
+			return nil, status.Error(codes.AlreadyExists, "endpoint is already registered on this service")
+		}
+	}
+	ep := &serverv1.PrivateEndpoint{
+		Id:                  f.newID("pe"),
+		ServiceId:           svc.Id,
+		Provider:            svc.Provider,
+		Region:              svc.Region,
+		Index:               int32(f.nextID),
+		InterfaceEndpointId: req.GetInterfaceEndpointId(),
+		ConnectionStatus:    "PENDING",
+		CreatedAt:           timestamppb.New(fakeEpoch),
+	}
+	f.epCountdown[ep.Id] = f.pendingFor
+	svc.Endpoints = append(svc.Endpoints, ep)
+	return &serverv1.CreatePrivateEndpointResponse{Endpoint: ep}, nil
+}
+
+func (f *fakeServer) GetPrivateEndpoint(ctx context.Context, req *serverv1.GetPrivateEndpointRequest) (*serverv1.GetPrivateEndpointResponse, error) {
+	f.mu.Lock()
+	defer f.mu.Unlock()
+	if err := f.record(ctx, "GetPrivateEndpoint"); err != nil {
+		return nil, err
+	}
+	svc, i, err := f.endpointIn(ctx, req.GetServiceId(), req.GetId())
+	if err != nil {
+		return nil, err
+	}
+	ep := svc.Endpoints[i]
+	if f.epCountdown[ep.Id] > 0 {
+		f.epCountdown[ep.Id]--
+		return &serverv1.GetPrivateEndpointResponse{Endpoint: ep}, nil
+	}
+	switch {
+	case ep.GetDeleteRequested():
+		svc.Endpoints = slices.Delete(svc.Endpoints, i, i+1)
+		return nil, status.Error(codes.NotFound, "private endpoint not found")
+	case f.rejectEndpoint != "":
+		ep.ConnectionStatus, ep.ErrorMessage = endpointStatusRejected, f.rejectEndpoint
+	default:
+		ep.ConnectionStatus, ep.DnsName = endpointStatusAvailable, ep.GetInterfaceEndpointId()+".vpce-svc.us-east-1.vpce.amazonaws.com"
+	}
+	return &serverv1.GetPrivateEndpointResponse{Endpoint: ep}, nil
+}
+
+func (f *fakeServer) DeletePrivateEndpoint(ctx context.Context, req *serverv1.DeletePrivateEndpointRequest) (*serverv1.DeletePrivateEndpointResponse, error) {
+	f.mu.Lock()
+	defer f.mu.Unlock()
+	if err := f.record(ctx, "DeletePrivateEndpoint"); err != nil {
+		return nil, err
+	}
+	svc, i, err := f.endpointIn(ctx, req.GetServiceId(), req.GetId())
+	if err != nil {
+		return nil, err
+	}
+	ep := svc.Endpoints[i]
+	ep.DeleteRequested, ep.ConnectionStatus = true, "DELETING"
+	f.epCountdown[ep.Id] = f.deletingFor
+	return &serverv1.DeletePrivateEndpointResponse{}, nil
+}
