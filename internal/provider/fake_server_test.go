@@ -64,6 +64,11 @@ type fakeServer struct {
 	callerKey         *serverv1.APIKey
 	lastKeyCreate     *serverv1.CreateAPIKeyRequest
 	lastKeyUpdate     *serverv1.UpdateAPIKeyRequest
+
+	allowlist       map[string][]*serverv1.IPAllowlistEntry
+	syncingFor      int
+	syncCountdown   map[string]int
+	lastAllowUpdate *serverv1.UpdateIPAllowlistEntryRequest
 }
 
 func startFakeServer(t *testing.T) *fakeServer {
@@ -85,6 +90,8 @@ func startFakeServer(t *testing.T) *fakeServer {
 		users:         map[string]*serverv1.DatabaseUser{},
 		userCountdown: map[string]int{},
 		apiKeys:       map[string]*serverv1.APIKey{},
+		allowlist:     map[string][]*serverv1.IPAllowlistEntry{},
+		syncCountdown: map[string]int{},
 		providers: []*serverv1.DatabaseProvider{
 			{Name: "aws-use1", Cloud: "aws", Region: "us-east-1", Engines: []string{"PostgreSQL"}},
 			{Name: "aws-euw1", Cloud: "aws", Region: "eu-west-1", Engines: []string{"PostgreSQL"}},
