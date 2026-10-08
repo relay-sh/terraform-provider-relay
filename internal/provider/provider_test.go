@@ -29,6 +29,7 @@ const testOrgID = "8f5c2f3e-8e9b-4b4f-9d52-3f0a4f2d9a11"
 func TestMain(m *testing.M) {
 	cleanup := resolveTerraformCLI()
 	pollInterval = time.Millisecond
+	now = func() time.Time { return fakeNow }
 	code := m.Run()
 	cleanup()
 	os.Exit(code)

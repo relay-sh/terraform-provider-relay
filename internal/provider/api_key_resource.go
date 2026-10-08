@@ -4,6 +4,7 @@ import (
 	"context"
 	"regexp"
 	"strings"
+	"time"
 
 	"github.com/hashicorp/terraform-plugin-framework-validators/setvalidator"
 	"github.com/hashicorp/terraform-plugin-framework-validators/stringvalidator"
@@ -88,7 +89,7 @@ func (r *apiKeyResource) Schema(_ context.Context, _ resource.SchemaRequest, res
 				Validators:          []validator.String{lifetimeValidator{}},
 				MarkdownDescription: "Lifetime as a duration, such as `720h`, at most `8760h`. Counted from the apply that sets or changes it. Omit it for a key that never expires, or that expires with its parent.",
 			},
-			"expires_at": schema.StringAttribute{Computed: true, MarkdownDescription: "Expiry, RFC 3339. Null when the key never expires."},
+			"expires_at": schema.StringAttribute{Computed: true, MarkdownDescription: "Expiry, RFC 3339. Null when the key never expires. Once it passes, the next plan replaces the key, which issues a new `secret`."},
 			"secret": schema.StringAttribute{
 				Computed: true, Sensitive: true, PlanModifiers: keep,
 				MarkdownDescription: "The `rly_key_…` secret, stored in state. Not recoverable from the API, so it is null after an import.",
@@ -114,6 +115,17 @@ func (r *apiKeyResource) ModifyPlan(ctx context.Context, req resource.ModifyPlan
 		return
 	}
 	if !plan.WorkspaceID.Equal(prior.WorkspaceID) {
+		return
+	}
+	if expired(prior.ExpiresAt) {
+		resp.RequiresReplace = append(resp.RequiresReplace, path.Root("expires_at"))
+		resp.Diagnostics.AddAttributeWarning(path.Root("expires_at"), "API key expired",
+			"The key expired at "+prior.ExpiresAt.ValueString()+". Applying revokes it and creates a new key with a new secret.")
+		for _, attr := range []*types.String{&plan.ID, &plan.Secret, &plan.ExpiresAt, &plan.ParentKeyID, &plan.CreatedAt} {
+			*attr = types.StringUnknown()
+		}
+		plan.EffectiveAllowedCIDRs = types.SetUnknown(types.StringType)
+		resp.Diagnostics.Append(resp.Plan.Set(ctx, &plan)...)
 		return
 	}
 	if plan.ExpiresIn.Equal(prior.ExpiresIn) {
@@ -244,6 +256,11 @@ func apiKeyFromProto(k *serverv1.APIKey, prior apiKeyModel) apiKeyModel {
 	out.ParentKeyID = types.StringValue(k.GetParentKeyId())
 	out.CreatedAt = timestampValue(k.GetCreatedAt())
 	return out
+}
+
+func expired(expiresAt types.String) bool {
+	at, err := time.Parse(time.RFC3339, expiresAt.ValueString())
+	return err == nil && !at.After(now())
 }
 
 func lifetimeSeconds(v types.String) *int64 {

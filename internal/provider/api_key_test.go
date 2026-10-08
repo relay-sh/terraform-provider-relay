@@ -13,6 +13,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/tfsdk"
 	"github.com/hashicorp/terraform-plugin-framework/types"
 	tfresource "github.com/hashicorp/terraform-plugin-testing/helper/resource"
+	"github.com/hashicorp/terraform-plugin-testing/plancheck"
 	"github.com/hashicorp/terraform-plugin-testing/terraform"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
@@ -223,6 +224,41 @@ func TestAPIKeyValidators(t *testing.T) {
 			t.Errorf("%s must not be judged", value)
 		}
 	}
+}
+
+func TestAPIKeyResource_ExpiredKeyIsReplaced(t *testing.T) {
+	f := startFakeServer(t)
+	config := apiKeyConfig(f, `
+  name       = "ci"
+  role       = "viewer"
+  expires_in = "1h"
+`)
+	tfresource.UnitTest(t, tfresource.TestCase{
+		ProtoV6ProviderFactories: factories(relay.Dial),
+		CheckDestroy:             noAPIKeysLeft(f),
+		Steps: []tfresource.TestStep{
+			{Config: config},
+			{Config: config, PlanOnly: true},
+			{
+				PreConfig: func() { f.set(func() { f.apiKeys["key-1"].ExpiresAt = timestamppb.New(fakeNow) }) },
+				Config:    config,
+				ConfigPlanChecks: tfresource.ConfigPlanChecks{
+					PreApply: []plancheck.PlanCheck{plancheck.ExpectResourceAction("relay_api_key.this", plancheck.ResourceActionDestroyBeforeCreate)},
+				},
+				Check: tfresource.ComposeAggregateTestCheckFunc(
+					tfresource.TestCheckResourceAttr("relay_api_key.this", "id", "key-2"),
+					tfresource.TestCheckResourceAttr("relay_api_key.this", "secret", "rly_key_key-2"),
+					tfresource.TestCheckResourceAttr("relay_api_key.this", "expires_at", "2027-01-15T09:00:00Z"),
+					func(*terraform.State) error {
+						if _, ok := f.apiKeys["key-1"]; ok || len(f.callsTo("RevokeAPIKey")) != 1 {
+							return errors.New("the expired key must be revoked, not left behind")
+						}
+						return nil
+					},
+				),
+			},
+		},
+	})
 }
 
 func TestAPIKeyResource_Drift(t *testing.T) {

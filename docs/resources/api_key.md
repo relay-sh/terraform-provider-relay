@@ -50,7 +50,7 @@ output "ci_key" {
 
 - `created_at` (String) Creation time, RFC 3339.
 - `effective_allowed_cidrs` (Set of String) Addresses the platform enforces: `allowed_cidrs` normalized to CIDR blocks, or the parent key's when `allowed_cidrs` is empty.
-- `expires_at` (String) Expiry, RFC 3339. Null when the key never expires.
+- `expires_at` (String) Expiry, RFC 3339. Null when the key never expires. Once it passes, the next plan replaces the key, which issues a new `secret`.
 - `id` (String) API key ID.
 - `parent_key_id` (String) ID of the API key that created this one, empty when a user did.
 - `secret` (String, Sensitive) The `rly_key_…` secret, stored in state. Not recoverable from the API, so it is null after an import.

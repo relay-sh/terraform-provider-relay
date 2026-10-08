@@ -18,6 +18,8 @@ import (
 
 const maxAPIKeyLifetime = 365 * 24 * time.Hour
 
+var now = time.Now
+
 func listAPIKeys(ctx context.Context, c *client.Client, workspaceID string) ([]*serverv1.APIKey, error) {
 	out, err := c.API.ListAPIKeys(c.Org(ctx), &serverv1.ListAPIKeysRequest{WorkspaceId: workspaceID})
 	if err != nil {
