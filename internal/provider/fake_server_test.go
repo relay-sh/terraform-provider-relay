@@ -69,6 +69,13 @@ type fakeServer struct {
 	syncingFor      int
 	syncCountdown   map[string]int
 	lastAllowUpdate *serverv1.UpdateIPAllowlistEntryRequest
+
+	peServices     map[string]*serverv1.PrivateEndpointService
+	peRegions      []*serverv1.PrivateEndpointRegion
+	initiatingFor  int
+	failService    string
+	serviceBlocked int
+	svcCountdown   map[string]int
 }
 
 func startFakeServer(t *testing.T) *fakeServer {
@@ -92,6 +99,9 @@ func startFakeServer(t *testing.T) *fakeServer {
 		apiKeys:       map[string]*serverv1.APIKey{},
 		allowlist:     map[string][]*serverv1.IPAllowlistEntry{},
 		syncCountdown: map[string]int{},
+		peServices:    map[string]*serverv1.PrivateEndpointService{},
+		svcCountdown:  map[string]int{},
+		peRegions:     []*serverv1.PrivateEndpointRegion{{Provider: "aws", Region: "us-east-1"}},
 		providers: []*serverv1.DatabaseProvider{
 			{Name: "aws-use1", Cloud: "aws", Region: "us-east-1", Engines: []string{"PostgreSQL"}},
 			{Name: "aws-euw1", Cloud: "aws", Region: "eu-west-1", Engines: []string{"PostgreSQL"}},

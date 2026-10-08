@@ -25,3 +25,5 @@ FEATURES:
 * **New Resource:** `relay_postgresql_user`
 * **New Resource:** `relay_ip_access_list`
 * **New Data Source:** `relay_ip_access_list`
+* **New Resource:** `relay_private_endpoint_service`
+* **New Data Source:** `relay_private_endpoint_service`
