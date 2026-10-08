@@ -115,3 +115,101 @@ func (f *fakeServer) RemoveIPAllowlistEntry(ctx context.Context, req *serverv1.R
 	f.startSync(ws)
 	return &serverv1.RemoveIPAllowlistEntryResponse{}, nil
 }
+
+func (f *fakeServer) serviceIn(ctx context.Context, id string) (*serverv1.PrivateEndpointService, error) {
+	svc, ok := f.peServices[id]
+	if !ok || svc.GetCreatedBy() != workspaceOf(ctx) {
+		return nil, status.Error(codes.NotFound, "private endpoint service not found")
+	}
+	return svc, nil
+}
+
+func (f *fakeServer) CreatePrivateEndpointService(ctx context.Context, req *serverv1.CreatePrivateEndpointServiceRequest) (*serverv1.CreatePrivateEndpointServiceResponse, error) {
+	f.mu.Lock()
+	defer f.mu.Unlock()
+	if err := f.record(ctx, "CreatePrivateEndpointService"); err != nil {
+		return nil, err
+	}
+	served := slices.ContainsFunc(f.peRegions, func(r *serverv1.PrivateEndpointRegion) bool {
+		return r.GetProvider() == req.GetProvider() && r.GetRegion() == req.GetRegion()
+	})
+	if !served {
+		return nil, status.Errorf(codes.InvalidArgument, "no private endpoint service is available in %s/%s", req.GetProvider(), req.GetRegion())
+	}
+	ws := workspaceOf(ctx)
+	for _, s := range f.peServices {
+		if s.GetCreatedBy() == ws && s.GetProvider() == req.GetProvider() && s.GetRegion() == req.GetRegion() {
+			return nil, status.Error(codes.AlreadyExists, "workspace already has a service there")
+		}
+	}
+	svc := &serverv1.PrivateEndpointService{
+		Id:                  f.newID("pes"),
+		Provider:            req.GetProvider(),
+		Region:              req.GetRegion(),
+		Status:              endpointStatusAvailable,
+		EndpointServiceName: "com.amazonaws.vpce." + req.GetRegion() + ".vpce-svc-0123456789abcdef0",
+		CreatedBy:           ws,
+		CreatedAt:           timestamppb.New(fakeEpoch),
+	}
+	if f.initiatingFor > 0 {
+		svc.Status = "INITIATING"
+		f.svcCountdown[svc.Id] = f.initiatingFor
+	}
+	f.peServices[svc.Id] = svc
+	return &serverv1.CreatePrivateEndpointServiceResponse{Service: svc}, nil
+}
+
+func (f *fakeServer) GetPrivateEndpointService(ctx context.Context, req *serverv1.GetPrivateEndpointServiceRequest) (*serverv1.GetPrivateEndpointServiceResponse, error) {
+	f.mu.Lock()
+	defer f.mu.Unlock()
+	if err := f.record(ctx, "GetPrivateEndpointService"); err != nil {
+		return nil, err
+	}
+	svc, err := f.serviceIn(ctx, req.GetId())
+	if err != nil {
+		return nil, err
+	}
+	if f.svcCountdown[svc.Id] > 0 {
+		f.svcCountdown[svc.Id]--
+		if f.svcCountdown[svc.Id] == 0 {
+			svc.Status = endpointStatusAvailable
+			if f.failService != "" {
+				svc.Status, svc.ErrorMessage = endpointStatusFailed, f.failService
+			}
+		}
+	}
+	return &serverv1.GetPrivateEndpointServiceResponse{Service: svc}, nil
+}
+
+func (f *fakeServer) ListPrivateEndpointServices(ctx context.Context, _ *serverv1.ListPrivateEndpointServicesRequest) (*serverv1.ListPrivateEndpointServicesResponse, error) {
+	f.mu.Lock()
+	defer f.mu.Unlock()
+	if err := f.record(ctx, "ListPrivateEndpointServices"); err != nil {
+		return nil, err
+	}
+	out := &serverv1.ListPrivateEndpointServicesResponse{}
+	for _, s := range f.peServices {
+		if s.GetCreatedBy() == workspaceOf(ctx) {
+			out.Services = append(out.Services, s)
+		}
+	}
+	return out, nil
+}
+
+func (f *fakeServer) DeletePrivateEndpointService(ctx context.Context, req *serverv1.DeletePrivateEndpointServiceRequest) (*serverv1.DeletePrivateEndpointServiceResponse, error) {
+	f.mu.Lock()
+	defer f.mu.Unlock()
+	if err := f.record(ctx, "DeletePrivateEndpointService"); err != nil {
+		return nil, err
+	}
+	svc, err := f.serviceIn(ctx, req.GetId())
+	if err != nil {
+		return nil, err
+	}
+	if f.serviceBlocked > 0 || len(svc.GetEndpoints()) > 0 {
+		f.serviceBlocked--
+		return nil, status.Error(codes.FailedPrecondition, "service still has endpoints")
+	}
+	delete(f.peServices, svc.Id)
+	return &serverv1.DeletePrivateEndpointServiceResponse{}, nil
+}
