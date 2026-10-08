@@ -27,3 +27,5 @@ FEATURES:
 * **New Data Source:** `relay_ip_access_list`
 * **New Resource:** `relay_private_endpoint_service`
 * **New Data Source:** `relay_private_endpoint_service`
+* **New Resource:** `relay_private_endpoint`
+* **New Data Source:** `relay_private_endpoint`

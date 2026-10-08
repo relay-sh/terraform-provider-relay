@@ -116,8 +116,9 @@ func TestResourceGuards(t *testing.T) {
 	assertResourceGuards(t, newAPIKeyResource())
 	assertResourceGuards(t, newIPAccessListResource())
 	assertResourceGuards(t, newPrivateEndpointServiceResource())
+	assertResourceGuards(t, newPrivateEndpointResource())
 
-	for _, d := range []datasource.DataSource{newWorkspaceDataSource(), newPostgreSQLClusterDataSource(), newAPIKeyDataSource(), newIPAccessListDataSource(), newPrivateEndpointServiceDataSource()} {
+	for _, d := range []datasource.DataSource{newWorkspaceDataSource(), newPostgreSQLClusterDataSource(), newAPIKeyDataSource(), newIPAccessListDataSource(), newPrivateEndpointServiceDataSource(), newPrivateEndpointDataSource()} {
 		var dsSchema datasource.SchemaResponse
 		d.Schema(context.Background(), datasource.SchemaRequest{}, &dsSchema)
 		var readResp datasource.ReadResponse

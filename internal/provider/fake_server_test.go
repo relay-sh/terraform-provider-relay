@@ -76,6 +76,10 @@ type fakeServer struct {
 	failService    string
 	serviceBlocked int
 	svcCountdown   map[string]int
+	pendingFor     int
+	deletingFor    int
+	rejectEndpoint string
+	epCountdown    map[string]int
 }
 
 func startFakeServer(t *testing.T) *fakeServer {
@@ -101,6 +105,7 @@ func startFakeServer(t *testing.T) *fakeServer {
 		syncCountdown: map[string]int{},
 		peServices:    map[string]*serverv1.PrivateEndpointService{},
 		svcCountdown:  map[string]int{},
+		epCountdown:   map[string]int{},
 		peRegions:     []*serverv1.PrivateEndpointRegion{{Provider: "aws", Region: "us-east-1"}},
 		providers: []*serverv1.DatabaseProvider{
 			{Name: "aws-use1", Cloud: "aws", Region: "us-east-1", Engines: []string{"PostgreSQL"}},

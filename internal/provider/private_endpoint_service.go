@@ -14,6 +14,7 @@ const (
 	cloudAWS                = "aws"
 	endpointStatusAvailable = "AVAILABLE"
 	endpointStatusFailed    = "FAILED"
+	endpointStatusRejected  = "REJECTED"
 )
 
 type privateEndpointServiceModel struct {
