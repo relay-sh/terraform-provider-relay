@@ -17,6 +17,8 @@ FEATURES:
 
 * **New Resource:** `relay_workspace`
 * **New Data Source:** `relay_workspace`
+* **New Resource:** `relay_api_key`
+* **New Data Source:** `relay_api_key`
 * **New Resource:** `relay_connection`
 * **New Resource:** `relay_postgresql_cluster`
 * **New Data Source:** `relay_postgresql_cluster`
