@@ -119,6 +119,8 @@ func (p *relayProvider) DataSources(context.Context) []func() datasource.DataSou
 		newIPAccessListDataSource,
 		newPrivateEndpointServiceDataSource,
 		newPrivateEndpointDataSource,
+		newRegionsDataSource,
+		newCloudProvidersDataSource,
 	}
 }
 
