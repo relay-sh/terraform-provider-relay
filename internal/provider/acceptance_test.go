@@ -19,6 +19,8 @@ import (
 	"github.com/relay-sh/relay-go/relay"
 )
 
+var liveNow, livePollInterval = now, pollInterval
+
 func acceptanceFactories(t *testing.T) map[string]func() (tfprotov6.ProviderServer, error) {
 	t.Helper()
 	for _, env := range []string{"RELAY_ENDPOINT", "RELAY_API_KEY"} {
@@ -26,6 +28,9 @@ func acceptanceFactories(t *testing.T) map[string]func() (tfprotov6.ProviderServ
 			t.Skipf("%s is required for acceptance tests", env)
 		}
 	}
+	fakeClock, fakePoll := now, pollInterval
+	now, pollInterval = liveNow, livePollInterval
+	t.Cleanup(func() { now, pollInterval = fakeClock, fakePoll })
 	return map[string]func() (tfprotov6.ProviderServer, error){
 		"relay": providerserver.NewProtocol6WithError(New("acceptance")()),
 	}
