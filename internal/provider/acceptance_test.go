@@ -348,3 +348,25 @@ data "relay_private_endpoint_service" "this" {
 		},
 	})
 }
+
+func TestAccRegionsAndCloudProviders(t *testing.T) {
+	if os.Getenv("TF_ACC") == "" {
+		t.Skip("set TF_ACC=1 to run acceptance tests")
+	}
+	resource.Test(t, resource.TestCase{
+		ProtoV6ProviderFactories: acceptanceFactories(t),
+		Steps: []resource.TestStep{{
+			Config: `
+data "relay_regions" "postgresql" {
+  engine = "postgresql"
+}
+
+data "relay_cloud_providers" "all" {}
+`,
+			Check: resource.ComposeAggregateTestCheckFunc(
+				resource.TestCheckResourceAttrSet("data.relay_regions.postgresql", "regions.0.region"),
+				resource.TestCheckResourceAttrSet("data.relay_cloud_providers.all", "cloud_providers.0.name"),
+			),
+		}},
+	})
+}

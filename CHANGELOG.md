@@ -29,3 +29,5 @@ FEATURES:
 * **New Data Source:** `relay_private_endpoint_service`
 * **New Resource:** `relay_private_endpoint`
 * **New Data Source:** `relay_private_endpoint`
+* **New Data Source:** `relay_regions`
+* **New Data Source:** `relay_cloud_providers`

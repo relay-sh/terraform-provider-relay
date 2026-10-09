@@ -298,3 +298,12 @@ func (f *fakeServer) DeletePrivateEndpoint(ctx context.Context, req *serverv1.De
 	f.epCountdown[ep.Id] = f.deletingFor
 	return &serverv1.DeletePrivateEndpointResponse{}, nil
 }
+
+func (f *fakeServer) ListPrivateEndpointRegions(ctx context.Context, _ *serverv1.ListPrivateEndpointRegionsRequest) (*serverv1.ListPrivateEndpointRegionsResponse, error) {
+	f.mu.Lock()
+	defer f.mu.Unlock()
+	if err := f.record(ctx, "ListPrivateEndpointRegions"); err != nil {
+		return nil, err
+	}
+	return &serverv1.ListPrivateEndpointRegionsResponse{Regions: f.peRegions}, nil
+}
