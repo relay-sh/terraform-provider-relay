@@ -20,6 +20,7 @@ const _ = grpc.SupportPackageIsVersion9
 
 const (
 	ServerService_WhoAmI_FullMethodName                       = "/relay.server.v1.ServerService/WhoAmI"
+	ServerService_SetUserFlags_FullMethodName                 = "/relay.server.v1.ServerService/SetUserFlags"
 	ServerService_Logout_FullMethodName                       = "/relay.server.v1.ServerService/Logout"
 	ServerService_ListSessions_FullMethodName                 = "/relay.server.v1.ServerService/ListSessions"
 	ServerService_RevokeSession_FullMethodName                = "/relay.server.v1.ServerService/RevokeSession"
@@ -163,6 +164,9 @@ const (
 	ServerService_DeletePrivateEndpoint_FullMethodName        = "/relay.server.v1.ServerService/DeletePrivateEndpoint"
 	ServerService_ListBackupSchedules_FullMethodName          = "/relay.server.v1.ServerService/ListBackupSchedules"
 	ServerService_ListBackups_FullMethodName                  = "/relay.server.v1.ServerService/ListBackups"
+	ServerService_GetBackupSchedule_FullMethodName            = "/relay.server.v1.ServerService/GetBackupSchedule"
+	ServerService_UpsertBackupSchedule_FullMethodName         = "/relay.server.v1.ServerService/UpsertBackupSchedule"
+	ServerService_ResetBackupSchedule_FullMethodName          = "/relay.server.v1.ServerService/ResetBackupSchedule"
 	ServerService_UpdateBackupSchedule_FullMethodName         = "/relay.server.v1.ServerService/UpdateBackupSchedule"
 	ServerService_CreateBackup_FullMethodName                 = "/relay.server.v1.ServerService/CreateBackup"
 	ServerService_DeleteBackup_FullMethodName                 = "/relay.server.v1.ServerService/DeleteBackup"
@@ -191,6 +195,7 @@ const (
 	ServerService_DeleteOrgSSOConnection_FullMethodName       = "/relay.server.v1.ServerService/DeleteOrgSSOConnection"
 	ServerService_TestOrgSSOConnection_FullMethodName         = "/relay.server.v1.ServerService/TestOrgSSOConnection"
 	ServerService_ListPostgreSQLExtensions_FullMethodName     = "/relay.server.v1.ServerService/ListPostgreSQLExtensions"
+	ServerService_GetLicenseStatus_FullMethodName             = "/relay.server.v1.ServerService/GetLicenseStatus"
 )
 
 // ServerServiceClient is the client API for ServerService service.
@@ -201,6 +206,11 @@ const (
 type ServerServiceClient interface {
 	// WhoAmI returns the authenticated user's info.
 	WhoAmI(ctx context.Context, in *WhoAmIRequest, opts ...grpc.CallOption) (*WhoAmIResponse, error)
+	// SetUserFlags merges key:value pairs into the caller's own generic user
+	// flags map (for example, recorded consent to the Terms of Service and
+	// Privacy Policy). Self-service; a user only ever writes their own flags.
+	// These are user-scoped state, unrelated to organization feature flags.
+	SetUserFlags(ctx context.Context, in *SetUserFlagsRequest, opts ...grpc.CallOption) (*SetUserFlagsResponse, error)
 	// Logout revokes the caller's own current session token server-side (the
 	// credential presented on this request), so a leaked token can't outlive a
 	// sign-out. Only this token is revoked; other sessions/devices are untouched.
@@ -530,6 +540,24 @@ type ServerServiceClient interface {
 	ListBackupSchedules(ctx context.Context, in *ListBackupSchedulesRequest, opts ...grpc.CallOption) (*ListBackupSchedulesResponse, error)
 	// ListBackups returns the backup snapshots taken for a managed database.
 	ListBackups(ctx context.Context, in *ListBackupsRequest, opts ...grpc.CallOption) (*ListBackupsResponse, error)
+	// GetBackupSchedule returns the effective backup schedule of a managed
+	// database, keyed on the database: for PostgreSQL the schedule is part of
+	// the cluster's own spec. platform_default says whether the cluster still
+	// runs the built-in policy.
+	GetBackupSchedule(ctx context.Context, in *GetBackupScheduleRequest, opts ...grpc.CallOption) (*GetBackupScheduleResponse, error)
+	// UpsertBackupSchedule replaces the schedule of a managed database.
+	// Idempotent, no create/update split. Retention is capped by the
+	// organization's plan (FAILED_PRECONDITION with PLAN_LIMIT_REACHED).
+	UpsertBackupSchedule(ctx context.Context, in *UpsertBackupScheduleRequest, opts ...grpc.CallOption) (*UpsertBackupScheduleResponse, error)
+	// ResetBackupSchedule returns a managed database to the platform default
+	// policy. It never leaves the cluster without a policy; a Terraform destroy
+	// maps here. A no-op on a database already at the default.
+	ResetBackupSchedule(ctx context.Context, in *ResetBackupScheduleRequest, opts ...grpc.CallOption) (*ResetBackupScheduleResponse, error)
+	// Deprecated: Do not use.
+	// Deprecated: keyed on a maestro schedule id. Use UpsertBackupSchedule
+	// (keyed on the database). Removed once the dashboard has moved
+	// (relay-sh/server#238).
+	//
 	// UpdateBackupSchedule updates a backup schedule's spec, including the
 	// multi-tier policy fields (snapshot_time, policy_tiers, PITR/restore
 	// windows). The cron `schedule` and legacy `retention` are still honoured
@@ -563,8 +591,8 @@ type ServerServiceClient interface {
 	// DeleteLogicalDatabase removes a logical database (dropped only when the
 	// platform created it; adopted databases are retained).
 	DeleteLogicalDatabase(ctx context.Context, in *DeleteLogicalDatabaseRequest, opts ...grpc.CallOption) (*DeleteLogicalDatabaseResponse, error)
-	// ListDatabaseProviders returns the infrastructure providers
-	// maestro can provision into (kubernetes, aws-eks-*, gcp-gke-*, etc.).
+	// ListDatabaseProviders returns the cloud regions a database can be
+	// provisioned into, with the engines each one serves.
 	ListDatabaseProviders(ctx context.Context, in *ListDatabaseProvidersRequest, opts ...grpc.CallOption) (*ListDatabaseProvidersResponse, error)
 	// GetBillingState returns the org's current plan and subscription state.
 	GetBillingState(ctx context.Context, in *GetBillingStateRequest, opts ...grpc.CallOption) (*GetBillingStateResponse, error)
@@ -607,6 +635,10 @@ type ServerServiceClient interface {
 	// ListPostgreSQLExtensions returns the curated extension set bundled for a
 	// PostgreSQL major.
 	ListPostgreSQLExtensions(ctx context.Context, in *ListPostgreSQLExtensionsRequest, opts ...grpc.CallOption) (*ListPostgreSQLExtensionsResponse, error)
+	// GetLicenseStatus reports the offline license of the Agent Edition control
+	// plane: state, limits and current usage. Any authenticated member may call
+	// it. The SaaS edition has no license and answers state "none".
+	GetLicenseStatus(ctx context.Context, in *GetLicenseStatusRequest, opts ...grpc.CallOption) (*GetLicenseStatusResponse, error)
 }
 
 type serverServiceClient struct {
@@ -621,6 +653,16 @@ func (c *serverServiceClient) WhoAmI(ctx context.Context, in *WhoAmIRequest, opt
 	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
 	out := new(WhoAmIResponse)
 	err := c.cc.Invoke(ctx, ServerService_WhoAmI_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *serverServiceClient) SetUserFlags(ctx context.Context, in *SetUserFlagsRequest, opts ...grpc.CallOption) (*SetUserFlagsResponse, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(SetUserFlagsResponse)
+	err := c.cc.Invoke(ctx, ServerService_SetUserFlags_FullMethodName, in, out, cOpts...)
 	if err != nil {
 		return nil, err
 	}
@@ -2066,6 +2108,37 @@ func (c *serverServiceClient) ListBackups(ctx context.Context, in *ListBackupsRe
 	return out, nil
 }
 
+func (c *serverServiceClient) GetBackupSchedule(ctx context.Context, in *GetBackupScheduleRequest, opts ...grpc.CallOption) (*GetBackupScheduleResponse, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(GetBackupScheduleResponse)
+	err := c.cc.Invoke(ctx, ServerService_GetBackupSchedule_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *serverServiceClient) UpsertBackupSchedule(ctx context.Context, in *UpsertBackupScheduleRequest, opts ...grpc.CallOption) (*UpsertBackupScheduleResponse, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(UpsertBackupScheduleResponse)
+	err := c.cc.Invoke(ctx, ServerService_UpsertBackupSchedule_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *serverServiceClient) ResetBackupSchedule(ctx context.Context, in *ResetBackupScheduleRequest, opts ...grpc.CallOption) (*ResetBackupScheduleResponse, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(ResetBackupScheduleResponse)
+	err := c.cc.Invoke(ctx, ServerService_ResetBackupSchedule_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+// Deprecated: Do not use.
 func (c *serverServiceClient) UpdateBackupSchedule(ctx context.Context, in *UpdateBackupScheduleRequest, opts ...grpc.CallOption) (*UpdateBackupScheduleResponse, error) {
 	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
 	out := new(UpdateBackupScheduleResponse)
@@ -2346,6 +2419,16 @@ func (c *serverServiceClient) ListPostgreSQLExtensions(ctx context.Context, in *
 	return out, nil
 }
 
+func (c *serverServiceClient) GetLicenseStatus(ctx context.Context, in *GetLicenseStatusRequest, opts ...grpc.CallOption) (*GetLicenseStatusResponse, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(GetLicenseStatusResponse)
+	err := c.cc.Invoke(ctx, ServerService_GetLicenseStatus_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
 // ServerServiceServer is the server API for ServerService service.
 // All implementations must embed UnimplementedServerServiceServer
 // for forward compatibility.
@@ -2354,6 +2437,11 @@ func (c *serverServiceClient) ListPostgreSQLExtensions(ctx context.Context, in *
 type ServerServiceServer interface {
 	// WhoAmI returns the authenticated user's info.
 	WhoAmI(context.Context, *WhoAmIRequest) (*WhoAmIResponse, error)
+	// SetUserFlags merges key:value pairs into the caller's own generic user
+	// flags map (for example, recorded consent to the Terms of Service and
+	// Privacy Policy). Self-service; a user only ever writes their own flags.
+	// These are user-scoped state, unrelated to organization feature flags.
+	SetUserFlags(context.Context, *SetUserFlagsRequest) (*SetUserFlagsResponse, error)
 	// Logout revokes the caller's own current session token server-side (the
 	// credential presented on this request), so a leaked token can't outlive a
 	// sign-out. Only this token is revoked; other sessions/devices are untouched.
@@ -2683,6 +2771,24 @@ type ServerServiceServer interface {
 	ListBackupSchedules(context.Context, *ListBackupSchedulesRequest) (*ListBackupSchedulesResponse, error)
 	// ListBackups returns the backup snapshots taken for a managed database.
 	ListBackups(context.Context, *ListBackupsRequest) (*ListBackupsResponse, error)
+	// GetBackupSchedule returns the effective backup schedule of a managed
+	// database, keyed on the database: for PostgreSQL the schedule is part of
+	// the cluster's own spec. platform_default says whether the cluster still
+	// runs the built-in policy.
+	GetBackupSchedule(context.Context, *GetBackupScheduleRequest) (*GetBackupScheduleResponse, error)
+	// UpsertBackupSchedule replaces the schedule of a managed database.
+	// Idempotent, no create/update split. Retention is capped by the
+	// organization's plan (FAILED_PRECONDITION with PLAN_LIMIT_REACHED).
+	UpsertBackupSchedule(context.Context, *UpsertBackupScheduleRequest) (*UpsertBackupScheduleResponse, error)
+	// ResetBackupSchedule returns a managed database to the platform default
+	// policy. It never leaves the cluster without a policy; a Terraform destroy
+	// maps here. A no-op on a database already at the default.
+	ResetBackupSchedule(context.Context, *ResetBackupScheduleRequest) (*ResetBackupScheduleResponse, error)
+	// Deprecated: Do not use.
+	// Deprecated: keyed on a maestro schedule id. Use UpsertBackupSchedule
+	// (keyed on the database). Removed once the dashboard has moved
+	// (relay-sh/server#238).
+	//
 	// UpdateBackupSchedule updates a backup schedule's spec, including the
 	// multi-tier policy fields (snapshot_time, policy_tiers, PITR/restore
 	// windows). The cron `schedule` and legacy `retention` are still honoured
@@ -2716,8 +2822,8 @@ type ServerServiceServer interface {
 	// DeleteLogicalDatabase removes a logical database (dropped only when the
 	// platform created it; adopted databases are retained).
 	DeleteLogicalDatabase(context.Context, *DeleteLogicalDatabaseRequest) (*DeleteLogicalDatabaseResponse, error)
-	// ListDatabaseProviders returns the infrastructure providers
-	// maestro can provision into (kubernetes, aws-eks-*, gcp-gke-*, etc.).
+	// ListDatabaseProviders returns the cloud regions a database can be
+	// provisioned into, with the engines each one serves.
 	ListDatabaseProviders(context.Context, *ListDatabaseProvidersRequest) (*ListDatabaseProvidersResponse, error)
 	// GetBillingState returns the org's current plan and subscription state.
 	GetBillingState(context.Context, *GetBillingStateRequest) (*GetBillingStateResponse, error)
@@ -2760,6 +2866,10 @@ type ServerServiceServer interface {
 	// ListPostgreSQLExtensions returns the curated extension set bundled for a
 	// PostgreSQL major.
 	ListPostgreSQLExtensions(context.Context, *ListPostgreSQLExtensionsRequest) (*ListPostgreSQLExtensionsResponse, error)
+	// GetLicenseStatus reports the offline license of the Agent Edition control
+	// plane: state, limits and current usage. Any authenticated member may call
+	// it. The SaaS edition has no license and answers state "none".
+	GetLicenseStatus(context.Context, *GetLicenseStatusRequest) (*GetLicenseStatusResponse, error)
 	mustEmbedUnimplementedServerServiceServer()
 }
 
@@ -2772,6 +2882,9 @@ type UnimplementedServerServiceServer struct{}
 
 func (UnimplementedServerServiceServer) WhoAmI(context.Context, *WhoAmIRequest) (*WhoAmIResponse, error) {
 	return nil, status.Error(codes.Unimplemented, "method WhoAmI not implemented")
+}
+func (UnimplementedServerServiceServer) SetUserFlags(context.Context, *SetUserFlagsRequest) (*SetUserFlagsResponse, error) {
+	return nil, status.Error(codes.Unimplemented, "method SetUserFlags not implemented")
 }
 func (UnimplementedServerServiceServer) Logout(context.Context, *LogoutRequest) (*LogoutResponse, error) {
 	return nil, status.Error(codes.Unimplemented, "method Logout not implemented")
@@ -3202,6 +3315,15 @@ func (UnimplementedServerServiceServer) ListBackupSchedules(context.Context, *Li
 func (UnimplementedServerServiceServer) ListBackups(context.Context, *ListBackupsRequest) (*ListBackupsResponse, error) {
 	return nil, status.Error(codes.Unimplemented, "method ListBackups not implemented")
 }
+func (UnimplementedServerServiceServer) GetBackupSchedule(context.Context, *GetBackupScheduleRequest) (*GetBackupScheduleResponse, error) {
+	return nil, status.Error(codes.Unimplemented, "method GetBackupSchedule not implemented")
+}
+func (UnimplementedServerServiceServer) UpsertBackupSchedule(context.Context, *UpsertBackupScheduleRequest) (*UpsertBackupScheduleResponse, error) {
+	return nil, status.Error(codes.Unimplemented, "method UpsertBackupSchedule not implemented")
+}
+func (UnimplementedServerServiceServer) ResetBackupSchedule(context.Context, *ResetBackupScheduleRequest) (*ResetBackupScheduleResponse, error) {
+	return nil, status.Error(codes.Unimplemented, "method ResetBackupSchedule not implemented")
+}
 func (UnimplementedServerServiceServer) UpdateBackupSchedule(context.Context, *UpdateBackupScheduleRequest) (*UpdateBackupScheduleResponse, error) {
 	return nil, status.Error(codes.Unimplemented, "method UpdateBackupSchedule not implemented")
 }
@@ -3286,6 +3408,9 @@ func (UnimplementedServerServiceServer) TestOrgSSOConnection(context.Context, *T
 func (UnimplementedServerServiceServer) ListPostgreSQLExtensions(context.Context, *ListPostgreSQLExtensionsRequest) (*ListPostgreSQLExtensionsResponse, error) {
 	return nil, status.Error(codes.Unimplemented, "method ListPostgreSQLExtensions not implemented")
 }
+func (UnimplementedServerServiceServer) GetLicenseStatus(context.Context, *GetLicenseStatusRequest) (*GetLicenseStatusResponse, error) {
+	return nil, status.Error(codes.Unimplemented, "method GetLicenseStatus not implemented")
+}
 func (UnimplementedServerServiceServer) mustEmbedUnimplementedServerServiceServer() {}
 func (UnimplementedServerServiceServer) testEmbeddedByValue()                       {}
 
@@ -3321,6 +3446,24 @@ func _ServerService_WhoAmI_Handler(srv interface{}, ctx context.Context, dec fun
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
 		return srv.(ServerServiceServer).WhoAmI(ctx, req.(*WhoAmIRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _ServerService_SetUserFlags_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(SetUserFlagsRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(ServerServiceServer).SetUserFlags(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: ServerService_SetUserFlags_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(ServerServiceServer).SetUserFlags(ctx, req.(*SetUserFlagsRequest))
 	}
 	return interceptor(ctx, in, info, handler)
 }
@@ -5892,6 +6035,60 @@ func _ServerService_ListBackups_Handler(srv interface{}, ctx context.Context, de
 	return interceptor(ctx, in, info, handler)
 }
 
+func _ServerService_GetBackupSchedule_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(GetBackupScheduleRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(ServerServiceServer).GetBackupSchedule(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: ServerService_GetBackupSchedule_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(ServerServiceServer).GetBackupSchedule(ctx, req.(*GetBackupScheduleRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _ServerService_UpsertBackupSchedule_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(UpsertBackupScheduleRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(ServerServiceServer).UpsertBackupSchedule(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: ServerService_UpsertBackupSchedule_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(ServerServiceServer).UpsertBackupSchedule(ctx, req.(*UpsertBackupScheduleRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _ServerService_ResetBackupSchedule_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(ResetBackupScheduleRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(ServerServiceServer).ResetBackupSchedule(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: ServerService_ResetBackupSchedule_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(ServerServiceServer).ResetBackupSchedule(ctx, req.(*ResetBackupScheduleRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
 func _ServerService_UpdateBackupSchedule_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
 	in := new(UpdateBackupScheduleRequest)
 	if err := dec(in); err != nil {
@@ -6396,6 +6593,24 @@ func _ServerService_ListPostgreSQLExtensions_Handler(srv interface{}, ctx contex
 	return interceptor(ctx, in, info, handler)
 }
 
+func _ServerService_GetLicenseStatus_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(GetLicenseStatusRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(ServerServiceServer).GetLicenseStatus(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: ServerService_GetLicenseStatus_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(ServerServiceServer).GetLicenseStatus(ctx, req.(*GetLicenseStatusRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
 // ServerService_ServiceDesc is the grpc.ServiceDesc for ServerService service.
 // It's only intended for direct use with grpc.RegisterService,
 // and not to be introspected or modified (even as a copy)
@@ -6406,6 +6621,10 @@ var ServerService_ServiceDesc = grpc.ServiceDesc{
 		{
 			MethodName: "WhoAmI",
 			Handler:    _ServerService_WhoAmI_Handler,
+		},
+		{
+			MethodName: "SetUserFlags",
+			Handler:    _ServerService_SetUserFlags_Handler,
 		},
 		{
 			MethodName: "Logout",
@@ -6976,6 +7195,18 @@ var ServerService_ServiceDesc = grpc.ServiceDesc{
 			Handler:    _ServerService_ListBackups_Handler,
 		},
 		{
+			MethodName: "GetBackupSchedule",
+			Handler:    _ServerService_GetBackupSchedule_Handler,
+		},
+		{
+			MethodName: "UpsertBackupSchedule",
+			Handler:    _ServerService_UpsertBackupSchedule_Handler,
+		},
+		{
+			MethodName: "ResetBackupSchedule",
+			Handler:    _ServerService_ResetBackupSchedule_Handler,
+		},
+		{
 			MethodName: "UpdateBackupSchedule",
 			Handler:    _ServerService_UpdateBackupSchedule_Handler,
 		},
@@ -7087,6 +7318,10 @@ var ServerService_ServiceDesc = grpc.ServiceDesc{
 			MethodName: "ListPostgreSQLExtensions",
 			Handler:    _ServerService_ListPostgreSQLExtensions_Handler,
 		},
+		{
+			MethodName: "GetLicenseStatus",
+			Handler:    _ServerService_GetLicenseStatus_Handler,
+		},
 	},
 	Streams: []grpc.StreamDesc{
 		{
@@ -7104,6 +7339,12 @@ const (
 	AdminService_AdminGetOrganizationResources_FullMethodName     = "/relay.server.v1.AdminService/AdminGetOrganizationResources"
 	AdminService_AdminGetOrganizationBilling_FullMethodName       = "/relay.server.v1.AdminService/AdminGetOrganizationBilling"
 	AdminService_AdminSetOrganizationPlan_FullMethodName          = "/relay.server.v1.AdminService/AdminSetOrganizationPlan"
+	AdminService_AdminCreatePriceVersion_FullMethodName           = "/relay.server.v1.AdminService/AdminCreatePriceVersion"
+	AdminService_AdminPinOrganizationPriceVersion_FullMethodName  = "/relay.server.v1.AdminService/AdminPinOrganizationPriceVersion"
+	AdminService_AdminGrantOrganizationComp_FullMethodName        = "/relay.server.v1.AdminService/AdminGrantOrganizationComp"
+	AdminService_AdminRevokeOrganizationComp_FullMethodName       = "/relay.server.v1.AdminService/AdminRevokeOrganizationComp"
+	AdminService_AdminGrantOrganizationCredit_FullMethodName      = "/relay.server.v1.AdminService/AdminGrantOrganizationCredit"
+	AdminService_AdminRevokeOrganizationCredit_FullMethodName     = "/relay.server.v1.AdminService/AdminRevokeOrganizationCredit"
 	AdminService_AdminGetOrganizationCost_FullMethodName          = "/relay.server.v1.AdminService/AdminGetOrganizationCost"
 	AdminService_AdminListSignupAllowlist_FullMethodName          = "/relay.server.v1.AdminService/AdminListSignupAllowlist"
 	AdminService_AdminAddSignupAllowlistEntry_FullMethodName      = "/relay.server.v1.AdminService/AdminAddSignupAllowlistEntry"
@@ -7181,6 +7422,32 @@ type AdminServiceClient interface {
 	// platform-admin grant, up or down, no Stripe charge). The change is durable
 	// and takes effect across the platform immediately.
 	AdminSetOrganizationPlan(ctx context.Context, in *AdminSetOrganizationPlanRequest, opts ...grpc.CallOption) (*AdminSetOrganizationPlanResponse, error)
+	// AdminCreatePriceVersion publishes a new price-book version (a full machine-tier
+	// price set plus seat/storage/egress, effective from an instant). It never
+	// reprices a period already underway; unpinned orgs roll onto it next period,
+	// pinned orgs never do. Staff-gated and audit-logged.
+	AdminCreatePriceVersion(ctx context.Context, in *AdminCreatePriceVersionRequest, opts ...grpc.CallOption) (*AdminCreatePriceVersionResponse, error)
+	// AdminPinOrganizationPriceVersion pins an org to a price-book version
+	// (grandfathering / custom deal), or unpins it (blank version_id). Takes effect
+	// at the org's next period anchor.
+	AdminPinOrganizationPriceVersion(ctx context.Context, in *AdminPinOrganizationPriceVersionRequest, opts ...grpc.CallOption) (*AdminPinOrganizationPriceVersionResponse, error)
+	// AdminGrantOrganizationComp gives an organization a complimentary allowance:
+	// no monthly platform fee and usage waived up to an optional cap, with overage
+	// billed. Applies from the current month for an org that is not yet paying and
+	// from the next billing period for one with a live subscription.
+	AdminGrantOrganizationComp(ctx context.Context, in *AdminGrantOrganizationCompRequest, opts ...grpc.CallOption) (*AdminGrantOrganizationCompResponse, error)
+	// AdminRevokeOrganizationComp ends a comp so it stops applying to periods that
+	// have not yet closed.
+	AdminRevokeOrganizationComp(ctx context.Context, in *AdminRevokeOrganizationCompRequest, opts ...grpc.CallOption) (*AdminRevokeOrganizationCompResponse, error)
+	// AdminGrantOrganizationCredit funds a cumulative, depleting credit for an
+	// organization: a fixed amount that suppresses the platform fee and waives
+	// usage as it is spent, drawing down across periods until exhausted or the
+	// optional expiry passes, after which the org bills normally. Unused balance is
+	// forfeited at expiry. Effective-period rules match the comp grant.
+	AdminGrantOrganizationCredit(ctx context.Context, in *AdminGrantOrganizationCreditRequest, opts ...grpc.CallOption) (*AdminGrantOrganizationCreditResponse, error)
+	// AdminRevokeOrganizationCredit ends a credit so it stops applying to periods
+	// that have not yet closed.
+	AdminRevokeOrganizationCredit(ctx context.Context, in *AdminRevokeOrganizationCreditRequest, opts ...grpc.CallOption) (*AdminRevokeOrganizationCreditResponse, error)
 	// AdminGetOrganizationCost returns an organization's direct infra
 	// cost-to-serve over a window, from Kubecost, allocated by org. This is direct
 	// tenant cost only (shared/overhead is not attributed). Windows are limited by
@@ -7385,6 +7652,66 @@ func (c *adminServiceClient) AdminSetOrganizationPlan(ctx context.Context, in *A
 	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
 	out := new(AdminSetOrganizationPlanResponse)
 	err := c.cc.Invoke(ctx, AdminService_AdminSetOrganizationPlan_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *adminServiceClient) AdminCreatePriceVersion(ctx context.Context, in *AdminCreatePriceVersionRequest, opts ...grpc.CallOption) (*AdminCreatePriceVersionResponse, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(AdminCreatePriceVersionResponse)
+	err := c.cc.Invoke(ctx, AdminService_AdminCreatePriceVersion_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *adminServiceClient) AdminPinOrganizationPriceVersion(ctx context.Context, in *AdminPinOrganizationPriceVersionRequest, opts ...grpc.CallOption) (*AdminPinOrganizationPriceVersionResponse, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(AdminPinOrganizationPriceVersionResponse)
+	err := c.cc.Invoke(ctx, AdminService_AdminPinOrganizationPriceVersion_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *adminServiceClient) AdminGrantOrganizationComp(ctx context.Context, in *AdminGrantOrganizationCompRequest, opts ...grpc.CallOption) (*AdminGrantOrganizationCompResponse, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(AdminGrantOrganizationCompResponse)
+	err := c.cc.Invoke(ctx, AdminService_AdminGrantOrganizationComp_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *adminServiceClient) AdminRevokeOrganizationComp(ctx context.Context, in *AdminRevokeOrganizationCompRequest, opts ...grpc.CallOption) (*AdminRevokeOrganizationCompResponse, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(AdminRevokeOrganizationCompResponse)
+	err := c.cc.Invoke(ctx, AdminService_AdminRevokeOrganizationComp_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *adminServiceClient) AdminGrantOrganizationCredit(ctx context.Context, in *AdminGrantOrganizationCreditRequest, opts ...grpc.CallOption) (*AdminGrantOrganizationCreditResponse, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(AdminGrantOrganizationCreditResponse)
+	err := c.cc.Invoke(ctx, AdminService_AdminGrantOrganizationCredit_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *adminServiceClient) AdminRevokeOrganizationCredit(ctx context.Context, in *AdminRevokeOrganizationCreditRequest, opts ...grpc.CallOption) (*AdminRevokeOrganizationCreditResponse, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(AdminRevokeOrganizationCreditResponse)
+	err := c.cc.Invoke(ctx, AdminService_AdminRevokeOrganizationCredit_FullMethodName, in, out, cOpts...)
 	if err != nil {
 		return nil, err
 	}
@@ -7880,6 +8207,32 @@ type AdminServiceServer interface {
 	// platform-admin grant, up or down, no Stripe charge). The change is durable
 	// and takes effect across the platform immediately.
 	AdminSetOrganizationPlan(context.Context, *AdminSetOrganizationPlanRequest) (*AdminSetOrganizationPlanResponse, error)
+	// AdminCreatePriceVersion publishes a new price-book version (a full machine-tier
+	// price set plus seat/storage/egress, effective from an instant). It never
+	// reprices a period already underway; unpinned orgs roll onto it next period,
+	// pinned orgs never do. Staff-gated and audit-logged.
+	AdminCreatePriceVersion(context.Context, *AdminCreatePriceVersionRequest) (*AdminCreatePriceVersionResponse, error)
+	// AdminPinOrganizationPriceVersion pins an org to a price-book version
+	// (grandfathering / custom deal), or unpins it (blank version_id). Takes effect
+	// at the org's next period anchor.
+	AdminPinOrganizationPriceVersion(context.Context, *AdminPinOrganizationPriceVersionRequest) (*AdminPinOrganizationPriceVersionResponse, error)
+	// AdminGrantOrganizationComp gives an organization a complimentary allowance:
+	// no monthly platform fee and usage waived up to an optional cap, with overage
+	// billed. Applies from the current month for an org that is not yet paying and
+	// from the next billing period for one with a live subscription.
+	AdminGrantOrganizationComp(context.Context, *AdminGrantOrganizationCompRequest) (*AdminGrantOrganizationCompResponse, error)
+	// AdminRevokeOrganizationComp ends a comp so it stops applying to periods that
+	// have not yet closed.
+	AdminRevokeOrganizationComp(context.Context, *AdminRevokeOrganizationCompRequest) (*AdminRevokeOrganizationCompResponse, error)
+	// AdminGrantOrganizationCredit funds a cumulative, depleting credit for an
+	// organization: a fixed amount that suppresses the platform fee and waives
+	// usage as it is spent, drawing down across periods until exhausted or the
+	// optional expiry passes, after which the org bills normally. Unused balance is
+	// forfeited at expiry. Effective-period rules match the comp grant.
+	AdminGrantOrganizationCredit(context.Context, *AdminGrantOrganizationCreditRequest) (*AdminGrantOrganizationCreditResponse, error)
+	// AdminRevokeOrganizationCredit ends a credit so it stops applying to periods
+	// that have not yet closed.
+	AdminRevokeOrganizationCredit(context.Context, *AdminRevokeOrganizationCreditRequest) (*AdminRevokeOrganizationCreditResponse, error)
 	// AdminGetOrganizationCost returns an organization's direct infra
 	// cost-to-serve over a window, from Kubecost, allocated by org. This is direct
 	// tenant cost only (shared/overhead is not attributed). Windows are limited by
@@ -8054,6 +8407,24 @@ func (UnimplementedAdminServiceServer) AdminGetOrganizationBilling(context.Conte
 }
 func (UnimplementedAdminServiceServer) AdminSetOrganizationPlan(context.Context, *AdminSetOrganizationPlanRequest) (*AdminSetOrganizationPlanResponse, error) {
 	return nil, status.Error(codes.Unimplemented, "method AdminSetOrganizationPlan not implemented")
+}
+func (UnimplementedAdminServiceServer) AdminCreatePriceVersion(context.Context, *AdminCreatePriceVersionRequest) (*AdminCreatePriceVersionResponse, error) {
+	return nil, status.Error(codes.Unimplemented, "method AdminCreatePriceVersion not implemented")
+}
+func (UnimplementedAdminServiceServer) AdminPinOrganizationPriceVersion(context.Context, *AdminPinOrganizationPriceVersionRequest) (*AdminPinOrganizationPriceVersionResponse, error) {
+	return nil, status.Error(codes.Unimplemented, "method AdminPinOrganizationPriceVersion not implemented")
+}
+func (UnimplementedAdminServiceServer) AdminGrantOrganizationComp(context.Context, *AdminGrantOrganizationCompRequest) (*AdminGrantOrganizationCompResponse, error) {
+	return nil, status.Error(codes.Unimplemented, "method AdminGrantOrganizationComp not implemented")
+}
+func (UnimplementedAdminServiceServer) AdminRevokeOrganizationComp(context.Context, *AdminRevokeOrganizationCompRequest) (*AdminRevokeOrganizationCompResponse, error) {
+	return nil, status.Error(codes.Unimplemented, "method AdminRevokeOrganizationComp not implemented")
+}
+func (UnimplementedAdminServiceServer) AdminGrantOrganizationCredit(context.Context, *AdminGrantOrganizationCreditRequest) (*AdminGrantOrganizationCreditResponse, error) {
+	return nil, status.Error(codes.Unimplemented, "method AdminGrantOrganizationCredit not implemented")
+}
+func (UnimplementedAdminServiceServer) AdminRevokeOrganizationCredit(context.Context, *AdminRevokeOrganizationCreditRequest) (*AdminRevokeOrganizationCreditResponse, error) {
+	return nil, status.Error(codes.Unimplemented, "method AdminRevokeOrganizationCredit not implemented")
 }
 func (UnimplementedAdminServiceServer) AdminGetOrganizationCost(context.Context, *AdminGetOrganizationCostRequest) (*AdminGetOrganizationCostResponse, error) {
 	return nil, status.Error(codes.Unimplemented, "method AdminGetOrganizationCost not implemented")
@@ -8300,6 +8671,114 @@ func _AdminService_AdminSetOrganizationPlan_Handler(srv interface{}, ctx context
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
 		return srv.(AdminServiceServer).AdminSetOrganizationPlan(ctx, req.(*AdminSetOrganizationPlanRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _AdminService_AdminCreatePriceVersion_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(AdminCreatePriceVersionRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(AdminServiceServer).AdminCreatePriceVersion(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: AdminService_AdminCreatePriceVersion_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(AdminServiceServer).AdminCreatePriceVersion(ctx, req.(*AdminCreatePriceVersionRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _AdminService_AdminPinOrganizationPriceVersion_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(AdminPinOrganizationPriceVersionRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(AdminServiceServer).AdminPinOrganizationPriceVersion(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: AdminService_AdminPinOrganizationPriceVersion_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(AdminServiceServer).AdminPinOrganizationPriceVersion(ctx, req.(*AdminPinOrganizationPriceVersionRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _AdminService_AdminGrantOrganizationComp_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(AdminGrantOrganizationCompRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(AdminServiceServer).AdminGrantOrganizationComp(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: AdminService_AdminGrantOrganizationComp_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(AdminServiceServer).AdminGrantOrganizationComp(ctx, req.(*AdminGrantOrganizationCompRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _AdminService_AdminRevokeOrganizationComp_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(AdminRevokeOrganizationCompRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(AdminServiceServer).AdminRevokeOrganizationComp(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: AdminService_AdminRevokeOrganizationComp_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(AdminServiceServer).AdminRevokeOrganizationComp(ctx, req.(*AdminRevokeOrganizationCompRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _AdminService_AdminGrantOrganizationCredit_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(AdminGrantOrganizationCreditRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(AdminServiceServer).AdminGrantOrganizationCredit(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: AdminService_AdminGrantOrganizationCredit_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(AdminServiceServer).AdminGrantOrganizationCredit(ctx, req.(*AdminGrantOrganizationCreditRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _AdminService_AdminRevokeOrganizationCredit_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(AdminRevokeOrganizationCreditRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(AdminServiceServer).AdminRevokeOrganizationCredit(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: AdminService_AdminRevokeOrganizationCredit_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(AdminServiceServer).AdminRevokeOrganizationCredit(ctx, req.(*AdminRevokeOrganizationCreditRequest))
 	}
 	return interceptor(ctx, in, info, handler)
 }
@@ -9158,6 +9637,30 @@ var AdminService_ServiceDesc = grpc.ServiceDesc{
 		{
 			MethodName: "AdminSetOrganizationPlan",
 			Handler:    _AdminService_AdminSetOrganizationPlan_Handler,
+		},
+		{
+			MethodName: "AdminCreatePriceVersion",
+			Handler:    _AdminService_AdminCreatePriceVersion_Handler,
+		},
+		{
+			MethodName: "AdminPinOrganizationPriceVersion",
+			Handler:    _AdminService_AdminPinOrganizationPriceVersion_Handler,
+		},
+		{
+			MethodName: "AdminGrantOrganizationComp",
+			Handler:    _AdminService_AdminGrantOrganizationComp_Handler,
+		},
+		{
+			MethodName: "AdminRevokeOrganizationComp",
+			Handler:    _AdminService_AdminRevokeOrganizationComp_Handler,
+		},
+		{
+			MethodName: "AdminGrantOrganizationCredit",
+			Handler:    _AdminService_AdminGrantOrganizationCredit_Handler,
+		},
+		{
+			MethodName: "AdminRevokeOrganizationCredit",
+			Handler:    _AdminService_AdminRevokeOrganizationCredit_Handler,
 		},
 		{
 			MethodName: "AdminGetOrganizationCost",

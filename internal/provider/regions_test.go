@@ -17,7 +17,7 @@ import (
 func regionsFake(t *testing.T) *fakeServer {
 	f := startFakeServer(t)
 	f.peRegions = append(f.peRegions, &serverv1.PrivateEndpointRegion{Provider: "gcp", Region: "us-central1"})
-	f.providers = append(f.providers, &serverv1.DatabaseProvider{Name: "aws-use1-b", Cloud: "aws", Region: "us-east-1", Engines: []string{"postgresql"}})
+	f.providers = append(f.providers, &serverv1.DatabaseProvider{Cloud: "aws", Region: "us-east-1", Engines: []string{"postgresql"}})
 	return f
 }
 

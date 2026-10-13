@@ -70,8 +70,8 @@ func TestNodesRoundTrip(t *testing.T) {
 	if out[0].GetRole() != roleElectable || out[1].GetRole() != roleReadOnly {
 		t.Fatalf("the electable group must lead whatever the labels sort to, got %q then %q", out[0].GetRole(), out[1].GetRole())
 	}
-	if out[0].GetCloud() != "aws" || out[0].GetRegion() != "us-east-1" || out[0].GetProvider() != "" {
-		t.Errorf("placement = %q/%q provider %q, want aws/us-east-1 and no provider", out[0].GetCloud(), out[0].GetRegion(), out[0].GetProvider())
+	if out[0].GetCloud() != "aws" || out[0].GetRegion() != "us-east-1" {
+		t.Errorf("placement = %s/%s, want aws/us-east-1", out[0].GetCloud(), out[0].GetRegion())
 	}
 	res := out[0].GetResources()
 	if res.GetCpu() != "" || res.GetMemory() != "" {
@@ -96,10 +96,6 @@ func TestNodesRoundTrip(t *testing.T) {
 		t.Errorf("readers storage_autoscale = %+v", sa)
 	}
 
-	// The platform answers cloud+region on a node and never echoes the provisioner.
-	for _, n := range out {
-		n.Cloud, n.Provider = "aws", ""
-	}
 	back := nodesFromProto(out, nodes)
 	if g := back["readers"]; g.Role.ValueString() != roleReadOnly || g.Resources.IOPS.ValueInt64() != 3000 || g.Tier.ValueString() != "R20" || g.Resources.DiskType.ValueString() != "io1" {
 		t.Errorf("readers round trip = %+v", g)

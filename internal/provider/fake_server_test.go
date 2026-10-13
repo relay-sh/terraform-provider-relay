@@ -109,10 +109,9 @@ func startFakeServer(t *testing.T) *fakeServer {
 		epCountdown:   map[string]int{},
 		peRegions:     []*serverv1.PrivateEndpointRegion{{Provider: "aws", Region: "us-east-1"}},
 		providers: []*serverv1.DatabaseProvider{
-			{Name: "aws-use1", Cloud: "aws", Region: "us-east-1", Engines: []string{"PostgreSQL"}},
-			{Name: "aws-euw1", Cloud: "aws", Region: "eu-west-1", Engines: []string{"PostgreSQL"}},
-			{Name: "mongo-euw1", Cloud: "aws", Region: "eu-west-1", Engines: []string{"MongoDB"}},
-			{Name: "kubernetes"},
+			{Cloud: "aws", Region: "us-east-1", Engines: []string{"PostgreSQL"}},
+			{Cloud: "aws", Region: "eu-west-1", Engines: []string{"PostgreSQL"}},
+			{Cloud: "aws", Region: "eu-west-1", Engines: []string{"MongoDB"}},
 		},
 	}
 	srv := grpc.NewServer(grpc.UnaryInterceptor(f.snapshot))
