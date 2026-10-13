@@ -218,6 +218,8 @@ resource "relay_postgresql_cluster" "this" {
   nodes = {
     writers = {
       role      = "electable"
+      cloud  = "aws"
+      region = "us-east-1"
       tier      = "R5"
       resources = { storage = "5Gi" }
     }

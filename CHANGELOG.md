@@ -3,6 +3,7 @@
 BREAKING CHANGES:
 
 * resource/relay_postgresql_cluster: node groups take a required `role` of `electable` or `read_only`; the map key is now a free label, and the per-group `synchronous` and `failover` booleans are gone
+* resource/relay_postgresql_cluster: every node group requires `cloud` and `region`; a group that omitted them was placed on the first matching provisioner
 
 ENHANCEMENTS:
 

@@ -12,51 +12,23 @@ import (
 	serverv1 "github.com/relay-sh/relay-go/gen/relay/server/v1"
 )
 
-var testCatalog = []*serverv1.DatabaseProvider{
-	{Name: "aws-use1", Cloud: "aws", Region: "us-east-1", Engines: []string{"postgresql"}},
-	{Name: "mongo-euw1", Cloud: "aws", Region: "eu-west-1", Engines: []string{"mongodb"}},
-	{Name: "kubernetes"},
-}
-
-func TestProvisionerFor(t *testing.T) {
-	if got, err := provisionerFor(testCatalog, "", ""); got != "" || err != nil {
-		t.Errorf("an unplaced group must leave the choice to the platform, got %q %v", got, err)
-	}
-	if got, err := provisionerFor(testCatalog, "aws", "us-east-1"); got != "aws-use1" || err != nil {
-		t.Errorf("provisioner = %q, %v", got, err)
-	}
-	if got, err := provisionerFor(testCatalog, "", "us-east-1"); got != "aws-use1" || err != nil {
-		t.Errorf("a region alone must be enough, got %q %v", got, err)
-	}
-	_, err := provisionerFor(testCatalog, "aws", "eu-west-1")
-	if err == nil {
-		t.Fatal("a region that only serves MongoDB must not be accepted")
-	}
-	if want := `no PostgreSQL provisioner serves cloud "aws" in region "eu-west-1"; the platform offers [aws/us-east-1 /]`; err.Error() != want {
-		t.Errorf("error = %q", err)
-	}
-}
-
 func TestNodesToProtoOrdersElectableFirst(t *testing.T) {
 	group := func(role, tier string) nodeGroupModel {
 		return nodeGroupModel{
 			Role: types.StringValue(role), Count: types.Int64Value(1),
-			Cloud: types.StringNull(), Region: types.StringNull(), Tier: types.StringValue(tier),
+			Cloud: types.StringValue("aws"), Region: types.StringValue("us-east-1"), Tier: types.StringValue(tier),
 			Resources: resourcesModel{
 				Storage: types.StringValue("1Gi"), IOPS: types.Int64Null(),
 				Throughput: types.Int64Null(), DiskType: types.StringNull(),
 			},
 		}
 	}
-	out, err := nodesToProto(map[string]nodeGroupModel{
+	out := nodesToProto(map[string]nodeGroupModel{
 		"analytics": group(roleReadOnly, "R10"),
 		"dr":        group(roleStandby, "R20"),
 		"secondary": group(roleElectable, "R30"),
 		"primary":   group(roleElectable, "R40"),
-	}, testCatalog)
-	if err != nil {
-		t.Fatal(err)
-	}
+	})
 	var got []string
 	for _, n := range out {
 		got = append(got, n.GetRole()+"/"+n.GetTier())
@@ -85,7 +57,7 @@ func TestNodesRoundTrip(t *testing.T) {
 		},
 		"readers": {
 			Role:  types.StringValue(roleReadOnly),
-			Count: types.Int64Value(1), Cloud: types.StringNull(), Region: types.StringNull(),
+			Count: types.Int64Value(1), Cloud: types.StringValue("aws"), Region: types.StringValue("us-east-1"),
 			Tier: types.StringValue("R20"),
 			Resources: resourcesModel{
 				CPU: types.StringValue("2"), Memory: types.StringValue("4Gi"), Storage: types.StringValue("9Gi"),
@@ -94,15 +66,12 @@ func TestNodesRoundTrip(t *testing.T) {
 			},
 		},
 	}
-	out, err := nodesToProto(nodes, testCatalog)
-	if err != nil {
-		t.Fatal(err)
-	}
+	out := nodesToProto(nodes)
 	if out[0].GetRole() != roleElectable || out[1].GetRole() != roleReadOnly {
 		t.Fatalf("the electable group must lead whatever the labels sort to, got %q then %q", out[0].GetRole(), out[1].GetRole())
 	}
-	if out[0].GetProvider() != "aws-use1" || out[0].GetRegion() != "us-east-1" {
-		t.Errorf("placement = %q/%q", out[0].GetProvider(), out[0].GetRegion())
+	if out[0].GetCloud() != "aws" || out[0].GetRegion() != "us-east-1" || out[0].GetProvider() != "" {
+		t.Errorf("placement = %q/%q provider %q, want aws/us-east-1 and no provider", out[0].GetCloud(), out[0].GetRegion(), out[0].GetProvider())
 	}
 	res := out[0].GetResources()
 	if res.GetCpu() != "" || res.GetMemory() != "" {

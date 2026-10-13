@@ -40,6 +40,8 @@ resource "relay_postgresql_cluster" "this" {
 
     readers = {
       role  = "read_only"
+      cloud  = "aws"
+      region = "us-east-1"
       count = 1
       tier  = "R20"
       resources = {
@@ -92,7 +94,8 @@ func TestPostgreSQLClusterResource_Lifecycle(t *testing.T) {
 					resource.TestCheckResourceAttr("relay_postgresql_cluster.this", "nodes.writers.role", "electable"),
 					resource.TestCheckResourceAttr("relay_postgresql_cluster.this", "nodes.readers.role", "read_only"),
 					resource.TestCheckResourceAttr("relay_postgresql_cluster.this", "nodes.readers.count", "1"),
-					resource.TestCheckResourceAttr("relay_postgresql_cluster.this", "nodes.readers.cloud", ""),
+					resource.TestCheckResourceAttr("relay_postgresql_cluster.this", "nodes.readers.cloud", "aws"),
+					resource.TestCheckResourceAttr("relay_postgresql_cluster.this", "nodes.readers.region", "us-east-1"),
 					resource.TestCheckResourceAttr("relay_postgresql_cluster.this", "parameters.work_mem", "64MB"),
 					resource.TestCheckResourceAttr("relay_postgresql_cluster.this", "replication.synchronous_replicas", "1"),
 					resource.TestCheckResourceAttr("relay_postgresql_cluster.this", "endpoint_host", "billing.db.relay"),
@@ -109,10 +112,10 @@ func TestPostgreSQLClusterResource_Lifecycle(t *testing.T) {
 							return fmt.Errorf("engine = %q", spec.GetEngine())
 						case !spec.GetBackupsEnabled():
 							return errors.New("backups must always be requested on")
-						case spec.GetNodes()[0].GetProvider() != "aws-use1":
-							return fmt.Errorf("cloud and region must resolve to a provisioner, got %q", spec.GetNodes()[0].GetProvider())
-						case spec.GetNodes()[1].GetProvider() != "":
-							return fmt.Errorf("an unplaced group must not name a provisioner, got %q", spec.GetNodes()[1].GetProvider())
+						case spec.GetNodes()[0].GetCloud() != "aws" || spec.GetNodes()[0].GetRegion() != "us-east-1":
+							return fmt.Errorf("placement = %s/%s, want aws/us-east-1", spec.GetNodes()[0].GetCloud(), spec.GetNodes()[0].GetRegion())
+						case spec.GetNodes()[0].GetProvider() != "" || spec.GetNodes()[1].GetProvider() != "":
+							return errors.New("the provider must not name a provisioner; the platform picks it from cloud and region")
 						case spec.GetNodes()[0].GetRole() != "electable" || spec.GetNodes()[1].GetRole() != "read_only":
 							return fmt.Errorf("the electable group must lead whatever the labels sort to, got %q and %q", spec.GetNodes()[0].GetRole(), spec.GetNodes()[1].GetRole())
 						case spec.GetNodes()[0].GetTier() != "R10":
@@ -245,6 +248,8 @@ resource "relay_postgresql_cluster" "dev" {
   nodes = {
     only = {
       role = "electable"
+      cloud  = "aws"
+      region = "us-east-1"
       tier = "R5"
       resources = {
         storage = "5Gi"
@@ -302,6 +307,8 @@ resource "relay_postgresql_cluster" "this" {
   nodes = {
     writers = {
       role = "electable"
+      cloud  = "aws"
+      region = "us-east-1"
       tier = "R10"
       resources = { storage = "5Gi" }
     }
@@ -347,6 +354,8 @@ resource "relay_postgresql_cluster" "this" {
   nodes = {
     readers = {
       role = "read_only"
+      cloud  = "aws"
+      region = "us-east-1"
       tier = "R10"
       resources = { storage = "5Gi" }
     }
@@ -370,8 +379,10 @@ resource "relay_postgresql_cluster" "this" {
 
   nodes = {
     writers = {
-      role = "data"
-      tier = "R10"
+      role   = "data"
+      cloud  = "aws"
+      region = "us-east-1"
+      tier   = "R10"
       resources = { storage = "5Gi" }
     }
   }
@@ -416,14 +427,52 @@ resource "relay_postgresql_cluster" "this" {
   }
 }
 `, dbWorkspace),
-			ExpectError: regexp.MustCompile("Cannot place the cluster"),
+			ExpectError: regexp.MustCompile(`(?s)Cannot create cluster.*no provider registered for\s+fly/gru`),
+		}},
+	})
+}
+
+func TestPostgreSQLClusterResource_UnknownPlacementPlans(t *testing.T) {
+	f := startFakeServer(t)
+	config := providerBlock(f) + fmt.Sprintf(`
+resource "terraform_data" "region" {
+  input = "us-east-1"
+}
+
+resource "relay_postgresql_cluster" "this" {
+  workspace_id = %q
+  name         = "billing"
+
+  nodes = {
+    writers = {
+      role   = "electable"
+      cloud  = "aws"
+      region = "eu-west-1"
+      tier   = "R10"
+      resources = { storage = "5Gi" }
+    }
+    readers = {
+      role   = "read_only"
+      cloud  = "aws"
+      region = terraform_data.region.id
+      tier   = "R10"
+      resources = { storage = "5Gi" }
+    }
+  }
+}
+`, dbWorkspace)
+	resource.UnitTest(t, resource.TestCase{
+		ProtoV6ProviderFactories: factories(relay.Dial),
+		Steps: []resource.TestStep{{
+			Config:             config,
+			PlanOnly:           true,
+			ExpectNonEmptyPlan: true,
 		}},
 	})
 }
 
 func TestPostgreSQLClusterResource_NodeGroupChanges(t *testing.T) {
 	f := startFakeServer(t)
-	unavailable := status.Error(codes.Unavailable, "down")
 	writers := func(count int, region string) string {
 		return providerBlock(f) + fmt.Sprintf(`
 resource "relay_postgresql_cluster" "this" {
@@ -484,17 +533,9 @@ resource "relay_postgresql_cluster" "this" {
 			},
 			{
 				Config:      writers(1, "gru"),
-				ExpectError: regexp.MustCompile("Cannot place the cluster"),
+				ExpectError: regexp.MustCompile(`(?s)Cannot update cluster.*no provider registered for\s+aws/gru`),
 			},
-			{
-				PreConfig:   func() { f.failAfter("ListDatabaseProviders", 1, unavailable) },
-				Config:      writers(2, "us-east-1"),
-				ExpectError: regexp.MustCompile("Cannot list the platform's provisioners"),
-			},
-			{
-				PreConfig: func() { f.failWith("ListDatabaseProviders", nil) },
-				Config:    writers(2, "us-east-1"),
-			},
+			{Config: writers(2, "us-east-1")},
 		},
 	})
 }
@@ -505,9 +546,6 @@ func TestPostgreSQLClusterResource_ProvisioningOutcomes(t *testing.T) {
 		extra string
 		want  string
 	}{
-		"placement catalog unavailable": {func(f *fakeServer) {
-			f.failWith("ListDatabaseProviders", status.Error(codes.Unavailable, "down"))
-		}, "", "Cannot list the platform's provisioners"},
 		"create rejected": {func(f *fakeServer) {
 			f.failWith("CreateDatabase", status.Error(codes.FailedPrecondition, "plan limit"))
 		}, "", "Cannot create cluster"},
@@ -590,14 +628,6 @@ func TestPostgreSQLClusterResource_DriftAndFailures(t *testing.T) {
 				PreConfig:   func() { f.failWith("GetDatabase", unavailable) },
 				Config:      cfg,
 				ExpectError: regexp.MustCompile("Cannot read cluster"),
-			},
-			{
-				PreConfig: func() {
-					clearAll()
-					f.failWith("ListDatabaseProviders", unavailable)
-				},
-				Config:      cfg,
-				ExpectError: regexp.MustCompile("Cannot list the platform's provisioners"),
 			},
 			{
 				PreConfig: func() {
@@ -799,6 +829,8 @@ resource "relay_postgresql_cluster" "this" {
   nodes = {
     writers = {
       role = "electable"
+      cloud  = "aws"
+      region = "us-east-1"
       tier = "R10"
       resources = {
 %s
@@ -894,6 +926,8 @@ resource "relay_postgresql_cluster" "this" {
   nodes = {
     writers = {
       role      = "electable"
+      cloud  = "aws"
+      region = "us-east-1"
       tier      = "R10"
       resources = { storage = "10Gi" }
     }
@@ -910,12 +944,16 @@ resource "relay_postgresql_cluster" "this" {
   nodes = {
     writers = {
       role      = "electable"
+      cloud  = "aws"
+      region = "us-east-1"
       tier      = "R10"
       resources = { storage = "10Gi" }
     }
 
     readers = {
       role = "read_only"
+      cloud  = "aws"
+      region = "us-east-1"
       tier = "R10"
       resources = {
         storage = "20Gi"
