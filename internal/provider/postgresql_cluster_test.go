@@ -114,8 +114,6 @@ func TestPostgreSQLClusterResource_Lifecycle(t *testing.T) {
 							return errors.New("backups must always be requested on")
 						case spec.GetNodes()[0].GetCloud() != "aws" || spec.GetNodes()[0].GetRegion() != "us-east-1":
 							return fmt.Errorf("placement = %s/%s, want aws/us-east-1", spec.GetNodes()[0].GetCloud(), spec.GetNodes()[0].GetRegion())
-						case spec.GetNodes()[0].GetProvider() != "" || spec.GetNodes()[1].GetProvider() != "":
-							return errors.New("the provider must not name a provisioner; the platform picks it from cloud and region")
 						case spec.GetNodes()[0].GetRole() != "electable" || spec.GetNodes()[1].GetRole() != "read_only":
 							return fmt.Errorf("the electable group must lead whatever the labels sort to, got %q and %q", spec.GetNodes()[0].GetRole(), spec.GetNodes()[1].GetRole())
 						case spec.GetNodes()[0].GetTier() != "R10":

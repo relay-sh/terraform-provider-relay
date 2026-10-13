@@ -46,9 +46,6 @@ func regionCatalog(ctx context.Context, c *client.Client) ([]region, error) {
 		return byKey[key]
 	}
 	for _, p := range databases.GetProviders() {
-		if p.GetCloud() == "" || p.GetRegion() == "" {
-			continue
-		}
 		r := entry(p.GetCloud(), p.GetRegion())
 		for _, e := range p.GetEngines() {
 			if e := strings.ToLower(e); !slices.Contains(r.engines, e) {
