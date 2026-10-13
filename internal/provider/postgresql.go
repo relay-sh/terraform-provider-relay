@@ -1,9 +1,6 @@
 package provider
 
 import (
-	"context"
-	"fmt"
-	"slices"
 	"sort"
 	"strconv"
 	"strings"
@@ -14,8 +11,6 @@ import (
 	"google.golang.org/protobuf/types/known/timestamppb"
 
 	serverv1 "github.com/relay-sh/relay-go/gen/relay/server/v1"
-
-	"github.com/relay-sh/terraform-provider-relay/internal/client"
 )
 
 const (
@@ -59,38 +54,7 @@ var (
 	storageStatusAttrTypes = map[string]attr.Type{"node_group": types.StringType, "size": types.StringType}
 )
 
-func placements(ctx context.Context, c *client.Client) ([]*serverv1.DatabaseProvider, error) {
-	out, err := c.API.ListDatabaseProviders(ctx, &serverv1.ListDatabaseProvidersRequest{})
-	if err != nil {
-		return nil, err
-	}
-	catalog := out.GetProviders()
-	sort.Slice(catalog, func(i, j int) bool { return catalog[i].GetName() < catalog[j].GetName() })
-	return catalog, nil
-}
-
-func servesPostgreSQL(engine string) bool {
-	return strings.EqualFold(engine, enginePostgreSQL)
-}
-
-func provisionerFor(catalog []*serverv1.DatabaseProvider, cloud, region string) (string, error) {
-	if cloud == "" && region == "" {
-		return "", nil
-	}
-	available := make([]string, 0, len(catalog))
-	for _, p := range catalog {
-		if len(p.GetEngines()) > 0 && !slices.ContainsFunc(p.GetEngines(), servesPostgreSQL) {
-			continue
-		}
-		if (cloud == "" || p.GetCloud() == cloud) && (region == "" || p.GetRegion() == region) {
-			return p.GetName(), nil
-		}
-		available = append(available, p.GetCloud()+"/"+p.GetRegion())
-	}
-	return "", fmt.Errorf("no PostgreSQL provisioner serves cloud %q in region %q; the platform offers [%s]", cloud, region, strings.Join(available, " "))
-}
-
-func nodesToProto(nodes map[string]nodeGroupModel, catalog []*serverv1.DatabaseProvider) ([]*serverv1.NodeSpec, error) {
+func nodesToProto(nodes map[string]nodeGroupModel) []*serverv1.NodeSpec {
 	names := make([]string, 0, len(nodes))
 	for name := range nodes {
 		names = append(names, name)
@@ -108,10 +72,6 @@ func nodesToProto(nodes map[string]nodeGroupModel, catalog []*serverv1.DatabaseP
 	out := make([]*serverv1.NodeSpec, 0, len(names))
 	for _, name := range names {
 		n := nodes[name]
-		provisioner, err := provisionerFor(catalog, n.Cloud.ValueString(), n.Region.ValueString())
-		if err != nil {
-			return nil, err
-		}
 		res := &serverv1.ResourceRequirements{
 			Storage:          n.Resources.Storage.ValueString(),
 			StorageAutoscale: storageAutoscaleToProto(n.Resources.StorageAutoscale),
@@ -129,13 +89,13 @@ func nodesToProto(nodes map[string]nodeGroupModel, catalog []*serverv1.DatabaseP
 			Name:      name,
 			Role:      n.Role.ValueString(),
 			Count:     int32(n.Count.ValueInt64()),
-			Provider:  provisioner,
+			Cloud:     n.Cloud.ValueString(),
 			Region:    n.Region.ValueString(),
 			Tier:      n.Tier.ValueString(),
 			Resources: res,
 		})
 	}
-	return out, nil
+	return out
 }
 
 // primaryNodeGroup keeps the group the platform already chose when it is still electable,

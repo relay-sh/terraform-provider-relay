@@ -105,15 +105,15 @@ resource "relay_postgresql_cluster" "billing" {
 
 Required:
 
+- `cloud` (String) Cloud the group runs in: `aws`, `gcp` or `azure`. Changing cloud or region moves the group (add dest, switchover, drain source).
+- `region` (String) Region the group runs in, for example `us-east-1`. Changing it moves the group to that region.
 - `resources` (Attributes) (see [below for nested schema](#nestedatt--nodes--resources))
 - `role` (String) How much of the cluster's consensus this group takes part in. `electable` acknowledges synchronous commits and can be promoted. `standby` never acknowledges a commit, which is how a remote group stays out of the commit path — and, since the engine has no per-member preference, how you pin the synchronous replica to the groups near the primary; under `replication.mode = "synchronous"` only a group that was acknowledging commits is promoted, so a standby group is a manual failover, not an automatic one. `read_only` is neither acknowledged nor promoted. The platform derives the `nosync` and `nofailover` tags from this.
 - `tier` (String) Machine catalog name, for example `R20`. CPU and memory are derived from it; an unknown name is rejected. Changing it restarts the group's pods.
 
 Optional:
 
-- `cloud` (String) Cloud the group runs in, for example `aws`. With `region` it selects the provisioner. Changing cloud or region moves the group (add dest, switchover, drain source).
 - `count` (Number) Nodes in the group. Lowering it deletes the removed nodes' volumes without draining them first.
-- `region` (String) Region the group runs in, for example `us-east-1`. Changing it moves the group to that region.
 
 <a id="nestedatt--nodes--resources"></a>
 ### Nested Schema for `nodes.resources`

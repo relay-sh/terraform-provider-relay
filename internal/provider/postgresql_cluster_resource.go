@@ -118,11 +118,11 @@ func (r *postgresqlClusterResource) Schema(ctx context.Context, _ resource.Schem
 						MarkdownDescription: "Nodes in the group. Lowering it deletes the removed nodes' volumes without draining them first.",
 					},
 					"cloud": schema.StringAttribute{
-						Optional: true, Computed: true, PlanModifiers: keepString,
-						MarkdownDescription: "Cloud the group runs in, for example `aws`. With `region` it selects the provisioner. Changing cloud or region moves the group (add dest, switchover, drain source).",
+						Required:            true,
+						MarkdownDescription: "Cloud the group runs in: `aws`, `gcp` or `azure`. Changing cloud or region moves the group (add dest, switchover, drain source).",
 					},
 					"region": schema.StringAttribute{
-						Optional: true, Computed: true, PlanModifiers: keepString,
+						Required:            true,
 						MarkdownDescription: "Region the group runs in, for example `us-east-1`. Changing it moves the group to that region.",
 					},
 					"tier": schema.StringAttribute{
@@ -410,17 +410,7 @@ func (r *postgresqlClusterResource) Create(ctx context.Context, req resource.Cre
 	}
 
 	scoped := r.client.Workspace(ctx, plan.WorkspaceID.ValueString())
-	catalog, err := placements(scoped, r.client)
-	if err != nil {
-		resp.Diagnostics.AddError("Cannot list the platform's provisioners", err.Error())
-		return
-	}
-	spec, err := clusterSpecToProto(plan, catalog)
-	if err != nil {
-		resp.Diagnostics.AddAttributeError(path.Root("nodes"), "Cannot place the cluster", err.Error())
-		return
-	}
-	out, err := r.client.API.CreateDatabase(scoped, &serverv1.CreateDatabaseRequest{Name: plan.Name.ValueString(), Spec: spec})
+	out, err := r.client.API.CreateDatabase(scoped, &serverv1.CreateDatabaseRequest{Name: plan.Name.ValueString(), Spec: clusterSpecToProto(plan)})
 	if err != nil {
 		resp.Diagnostics.AddError("Cannot create cluster", err.Error())
 		return
@@ -438,7 +428,7 @@ func (r *postgresqlClusterResource) Create(ctx context.Context, req resource.Cre
 		resp.Diagnostics.AddError("Cluster did not become ready", err.Error())
 		return
 	}
-	state := clusterFromProto(db, plan, catalog)
+	state := clusterFromProto(db, plan)
 	resp.Diagnostics.Append(resp.State.Set(ctx, &state)...)
 }
 
@@ -462,12 +452,7 @@ func (r *postgresqlClusterResource) Read(ctx context.Context, req resource.ReadR
 		resp.State.RemoveResource(ctx)
 		return
 	}
-	catalog, err := placements(scoped, r.client)
-	if err != nil {
-		resp.Diagnostics.AddError("Cannot list the platform's provisioners", err.Error())
-		return
-	}
-	state = clusterFromProto(out.GetDatabase(), state, catalog)
+	state = clusterFromProto(out.GetDatabase(), state)
 	resp.Diagnostics.Append(resp.State.Set(ctx, &state)...)
 }
 
@@ -482,20 +467,10 @@ func (r *postgresqlClusterResource) Update(ctx context.Context, req resource.Upd
 	}
 
 	scoped := r.client.Workspace(ctx, plan.WorkspaceID.ValueString())
-	catalog, err := placements(scoped, r.client)
-	if err != nil {
-		resp.Diagnostics.AddError("Cannot list the platform's provisioners", err.Error())
-		return
-	}
 	if paths := clusterUpdateMask(plan, prior); len(paths) > 0 {
-		spec, specErr := clusterSpecToProto(plan, catalog)
-		if specErr != nil {
-			resp.Diagnostics.AddAttributeError(path.Root("nodes"), "Cannot place the cluster", specErr.Error())
-			return
-		}
-		if _, err = r.client.API.UpdateDatabase(scoped, &serverv1.UpdateDatabaseRequest{
+		if _, err := r.client.API.UpdateDatabase(scoped, &serverv1.UpdateDatabaseRequest{
 			Id:         plan.ID.ValueString(),
-			Spec:       spec,
+			Spec:       clusterSpecToProto(plan),
 			UpdateMask: &fieldmaskpb.FieldMask{Paths: paths},
 		}); err != nil {
 			resp.Diagnostics.AddError("Cannot update cluster", err.Error())
@@ -507,7 +482,7 @@ func (r *postgresqlClusterResource) Update(ctx context.Context, req resource.Upd
 		resp.Diagnostics.AddError("Cluster did not settle after update", err.Error())
 		return
 	}
-	state := clusterFromProto(db, plan, catalog)
+	state := clusterFromProto(db, plan)
 	resp.Diagnostics.Append(resp.State.Set(ctx, &state)...)
 }
 
@@ -578,15 +553,11 @@ func (r *postgresqlClusterResource) waitRunning(ctx context.Context, id string, 
 	return db, err
 }
 
-func clusterSpecToProto(m postgresqlClusterModel, catalog []*serverv1.DatabaseProvider) (*serverv1.DatabaseSpec, error) {
-	nodes, err := nodesToProto(m.Nodes, catalog)
-	if err != nil {
-		return nil, err
-	}
+func clusterSpecToProto(m postgresqlClusterModel) *serverv1.DatabaseSpec {
 	spec := &serverv1.DatabaseSpec{
 		Engine:           enginePostgreSQL,
 		Version:          m.Version.ValueString(),
-		Nodes:            nodes,
+		Nodes:            nodesToProto(m.Nodes),
 		PrimaryNodeGroup: primaryNodeGroup(m.Nodes, m.PrimaryNodeGroup),
 		// Turning backups off is accepted and then ignored, so on is the only value that reads back unchanged.
 		BackupsEnabled: true,
@@ -595,7 +566,7 @@ func clusterSpecToProto(m postgresqlClusterModel, catalog []*serverv1.DatabasePr
 	if !m.Parameters.IsNull() && !m.Parameters.IsUnknown() {
 		spec.Postgresql = &serverv1.PostgreSQLConfig{Parameters: stringMapToGo(m.Parameters)}
 	}
-	return spec, nil
+	return spec
 }
 
 func clusterUpdateMask(plan, prior postgresqlClusterModel) []string {
@@ -611,7 +582,7 @@ func clusterUpdateMask(plan, prior postgresqlClusterModel) []string {
 	return paths
 }
 
-func clusterFromProto(db *serverv1.Database, prior postgresqlClusterModel, catalog []*serverv1.DatabaseProvider) postgresqlClusterModel {
+func clusterFromProto(db *serverv1.Database, prior postgresqlClusterModel) postgresqlClusterModel {
 	spec, st := db.GetSpec(), db.GetStatus()
 	return postgresqlClusterModel{
 		ID:                   types.StringValue(db.GetId()),

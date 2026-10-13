@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 	"net"
+	"slices"
 	"sort"
 	"strconv"
 	"sync"
@@ -437,27 +438,27 @@ func validateNodes(spec *serverv1.DatabaseSpec) error {
 	if primary.GetRole() != roleElectable {
 		return status.Errorf(codes.InvalidArgument, "validate spec: primaryNodeGroup %q must have role %q, got %q", primary.GetName(), roleElectable, primary.GetRole())
 	}
-	for _, n := range nodes {
-		if n.GetName() == primary.GetName() {
-			continue
-		}
-		if n.GetProvider() != "" && primary.GetProvider() != "" && n.GetProvider() != primary.GetProvider() {
-			return status.Errorf(codes.InvalidArgument, "validate spec: node group %q: provider %q does not match the primary group %q", n.GetName(), n.GetProvider(), primary.GetProvider())
-		}
-	}
 	return nil
 }
 
-// resolvePlacement mirrors the platform: the request names a provisioner, the
-// reply names the cloud and region it serves and never echoes the provisioner.
-func (f *fakeServer) resolvePlacement(n *serverv1.NodeSpec) {
-	for _, p := range f.providers {
-		if p.GetName() == n.GetProvider() {
-			n.Cloud, n.Region = p.GetCloud(), p.GetRegion()
-			break
+// bindPlacement mirrors the platform: a group is placed by cloud and region, and
+// a pair no provisioner serves is rejected.
+func (f *fakeServer) bindPlacement(nodes []*serverv1.NodeSpec) error {
+	for i, n := range nodes {
+		if n.GetCloud() == "" {
+			return status.Errorf(codes.InvalidArgument, "nodes[%d].cloud is required", i)
+		}
+		if n.GetRegion() == "" {
+			return status.Errorf(codes.InvalidArgument, "nodes[%d].region is required", i)
+		}
+		served := slices.ContainsFunc(f.providers, func(p *serverv1.DatabaseProvider) bool {
+			return p.GetCloud() == n.GetCloud() && p.GetRegion() == n.GetRegion()
+		})
+		if !served {
+			return status.Errorf(codes.InvalidArgument, "nodes[%d]: no provider registered for %s/%s", i, n.GetCloud(), n.GetRegion())
 		}
 	}
-	n.Provider = ""
+	return nil
 }
 
 func (f *fakeServer) settle(id, phase string) {
@@ -481,11 +482,13 @@ func (f *fakeServer) CreateDatabase(ctx context.Context, req *serverv1.CreateDat
 		}
 	}
 	spec := proto.Clone(req.GetSpec()).(*serverv1.DatabaseSpec)
+	if err := f.bindPlacement(spec.GetNodes()); err != nil {
+		return nil, err
+	}
 	for _, n := range spec.GetNodes() {
 		if n.GetResources().GetStorageClass() == "" {
 			n.Resources.StorageClass = "standard"
 		}
-		f.resolvePlacement(n)
 	}
 	if spec.Replication == nil {
 		spec.Replication = &serverv1.Replication{Mode: "async"}
@@ -560,10 +563,10 @@ func (f *fakeServer) UpdateDatabase(ctx context.Context, req *serverv1.UpdateDat
 			if err := validateNodes(in); err != nil {
 				return nil, err
 			}
-			db.Spec.Nodes = in.GetNodes()
-			for _, n := range db.Spec.GetNodes() {
-				f.resolvePlacement(n)
+			if err := f.bindPlacement(in.GetNodes()); err != nil {
+				return nil, err
 			}
+			db.Spec.Nodes = in.GetNodes()
 		case "replication":
 			db.Spec.Replication = in.GetReplication()
 		case "postgresql":
