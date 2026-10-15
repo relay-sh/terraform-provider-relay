@@ -6,14 +6,18 @@ import (
 	"fmt"
 	"regexp"
 	"testing"
+	"time"
 
 	"github.com/hashicorp/terraform-plugin-framework/attr"
 	"github.com/hashicorp/terraform-plugin-framework/types"
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
+	"github.com/hashicorp/terraform-plugin-testing/plancheck"
 	"github.com/hashicorp/terraform-plugin-testing/terraform"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
+	"google.golang.org/protobuf/types/known/timestamppb"
 
+	serverv1 "github.com/relay-sh/relay-go/gen/relay/server/v1"
 	"github.com/relay-sh/relay-go/relay"
 )
 
@@ -139,7 +143,50 @@ func TestPostgreSQLUserResource_Lifecycle(t *testing.T) {
 				ImportState:             true,
 				ImportStateId:           dbWorkspace + "/db-1/app",
 				ImportStateVerify:       true,
-				ImportStateVerifyIgnore: []string{"password", "generated_password", "timeouts"},
+				ImportStateVerifyIgnore: []string{"password", "generate_password", "generated_password", "timeouts"},
+			},
+		},
+	})
+}
+
+func TestPostgreSQLUserResource_ImportWithGeneratePasswordUpdatesInPlace(t *testing.T) {
+	f := startFakeServer(t)
+	f.users[userKey("db-1", "app")] = &serverv1.DatabaseUser{
+		Username:   "app",
+		AuthMethod: "password",
+		Roles:      []*serverv1.DatabaseUserRole{{Role: "readWrite", Db: "app"}},
+		Phase:      "Ready",
+		CreatedAt:  timestamppb.New(time.Unix(1_700_000_000, 0)),
+	}
+	config := userConfig(f, "app", `  generate_password = true`)
+	resource.UnitTest(t, resource.TestCase{
+		ProtoV6ProviderFactories: factories(relay.Dial),
+		CheckDestroy:             noUsersLeft(f),
+		Steps: []resource.TestStep{
+			{
+				Config:             config,
+				ResourceName:       "relay_postgresql_user.this",
+				ImportState:        true,
+				ImportStateId:      dbWorkspace + "/db-1/app",
+				ImportStatePersist: true,
+			},
+			{
+				Config: config,
+				ConfigPlanChecks: resource.ConfigPlanChecks{
+					PreApply: []plancheck.PlanCheck{plancheck.ExpectResourceAction("relay_postgresql_user.this", plancheck.ResourceActionUpdate)},
+				},
+				Check: func(*terraform.State) error {
+					if n := len(f.callsTo("CreateDatabaseUser")); n != 0 {
+						return fmt.Errorf("an imported user must not be recreated, got %d creates", n)
+					}
+					return nil
+				},
+			},
+			{
+				Config: userConfig(f, "app", `  generate_password = false`),
+				ConfigPlanChecks: resource.ConfigPlanChecks{
+					PreApply: []plancheck.PlanCheck{plancheck.ExpectResourceAction("relay_postgresql_user.this", plancheck.ResourceActionDestroyBeforeCreate)},
+				},
 			},
 		},
 	})

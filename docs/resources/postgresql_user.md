@@ -45,7 +45,7 @@ output "app_password" {
 - `connection_limit` (Number) Maximum concurrent connections.
 - `description` (String) Free-text description.
 - `expires_at` (String) RFC 3339 expiry. Removing it makes the user permanent.
-- `generate_password` (Boolean) Let the platform generate the password. It is returned once in `generated_password`.
+- `generate_password` (Boolean) Let the platform generate the password. It is returned once in `generated_password`. An imported user's generated password cannot be recovered, so `generated_password` stays empty after an import.
 - `password` (String, Sensitive) Password. Write-only on the API: changes made outside Terraform are not detected.
 - `restricted_resources` (List of String) Resources the user is restricted to.
 - `statement_timeout` (String) Statement timeout, for example `30s`.
