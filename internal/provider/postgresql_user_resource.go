@@ -91,8 +91,14 @@ func (r *postgresqlUserResource) Schema(ctx context.Context, _ resource.SchemaRe
 			},
 			"generate_password": schema.BoolAttribute{
 				Optional: true, Computed: true, Default: booldefault.StaticBool(false),
-				PlanModifiers:       []planmodifier.Bool{boolplanmodifier.RequiresReplace()},
-				MarkdownDescription: "Let the platform generate the password. It is returned once in `generated_password`.",
+				PlanModifiers: []planmodifier.Bool{boolplanmodifier.RequiresReplaceIf(
+					func(_ context.Context, req planmodifier.BoolRequest, resp *boolplanmodifier.RequiresReplaceIfFuncResponse) {
+						resp.RequiresReplace = !req.StateValue.IsNull()
+					},
+					"Replace when generate_password changes on a user Terraform created; an imported user has no prior value and is not replaced.",
+					"Replace when `generate_password` changes on a user Terraform created; an imported user has no prior value and is not replaced.",
+				)},
+				MarkdownDescription: "Let the platform generate the password. It is returned once in `generated_password`. An imported user's generated password cannot be recovered, so `generated_password` stays empty after an import.",
 			},
 			"generated_password": schema.StringAttribute{
 				Computed: true, Sensitive: true, PlanModifiers: keep,
@@ -330,7 +336,6 @@ func (r *postgresqlUserResource) ImportState(ctx context.Context, req resource.I
 	resp.Diagnostics.Append(resp.State.SetAttribute(ctx, path.Root("workspace_id"), parts[0])...)
 	resp.Diagnostics.Append(resp.State.SetAttribute(ctx, path.Root("cluster_id"), parts[1])...)
 	resp.Diagnostics.Append(resp.State.SetAttribute(ctx, path.Root("username"), parts[2])...)
-	resp.Diagnostics.Append(resp.State.SetAttribute(ctx, path.Root("generate_password"), false)...)
 }
 
 func userFromProto(u *serverv1.DatabaseUser, prior postgresqlUserModel) postgresqlUserModel {
