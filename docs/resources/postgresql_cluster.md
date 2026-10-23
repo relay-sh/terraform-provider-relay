@@ -87,8 +87,8 @@ resource "relay_postgresql_cluster" "billing" {
 ### Read-Only
 
 - `created_at` (String) Creation time, RFC 3339.
-- `endpoint_host` (String) Primary endpoint host.
-- `endpoint_port` (Number) Primary endpoint port.
+- `endpoint_host` (String) Public read-write endpoint host, the same as the `rw` entry of `public_endpoints`. Empty until the platform publishes it.
+- `endpoint_port` (Number) Public read-write endpoint port.
 - `id` (String) Cluster ID.
 - `phase` (String) Lifecycle phase after the last apply.
 - `phase_message` (String) Detail for the phase.

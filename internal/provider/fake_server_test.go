@@ -323,7 +323,15 @@ func (f *fakeServer) CreateConnection(ctx context.Context, req *serverv1.CreateC
 	c.Password = ""
 	normalizeTLS(c)
 	f.connections[key] = c
-	return &serverv1.CreateConnectionResponse{Connection: c}, nil
+	return &serverv1.CreateConnectionResponse{Connection: userFacing(c)}, nil
+}
+
+func userFacing(c *serverv1.Connection) *serverv1.Connection {
+	out := proto.Clone(c).(*serverv1.Connection)
+	if out.GetManagedDatabaseId() != "" {
+		out.Host = ""
+	}
+	return out
 }
 
 func (f *fakeServer) GetConnections(ctx context.Context, req *serverv1.GetConnectionsRequest) (*serverv1.GetConnectionsResponse, error) {
@@ -338,7 +346,7 @@ func (f *fakeServer) GetConnections(ctx context.Context, req *serverv1.GetConnec
 		if !ok {
 			return nil, status.Errorf(codes.NotFound, "connection %q not found", name)
 		}
-		out.Connections = append(out.Connections, c)
+		out.Connections = append(out.Connections, userFacing(c))
 	}
 	return out, nil
 }
@@ -398,7 +406,7 @@ func (f *fakeServer) UpdateConnection(ctx context.Context, req *serverv1.UpdateC
 		c.HostTls = req.GetHostTls()
 	}
 	normalizeTLS(c)
-	return &serverv1.UpdateConnectionResponse{Connection: c}, nil
+	return &serverv1.UpdateConnectionResponse{Connection: userFacing(c)}, nil
 }
 
 func (f *fakeServer) DeleteConnection(ctx context.Context, req *serverv1.DeleteConnectionRequest) (*serverv1.DeleteConnectionResponse, error) {
@@ -507,8 +515,8 @@ func (f *fakeServer) CreateDatabase(ctx context.Context, req *serverv1.CreateDat
 		WorkspaceId: workspaceOf(ctx),
 		Spec:        spec,
 		Status: &serverv1.DatabaseStatus{
-			Endpoint:        &serverv1.Endpoint{Host: req.GetName() + ".db.relay", Port: 5432},
-			PublicEndpoints: []*serverv1.PublicEndpoint{{Role: "primary", Host: req.GetName() + ".public", Port: 5432}},
+			Endpoint:        &serverv1.Endpoint{Host: req.GetName() + ".public", Port: 5432},
+			PublicEndpoints: []*serverv1.PublicEndpoint{{Role: "rw", Host: req.GetName() + ".public", Port: 5432}},
 			TotalNodes:      1,
 		},
 	}

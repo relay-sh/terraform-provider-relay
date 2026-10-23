@@ -98,8 +98,8 @@ func TestPostgreSQLClusterResource_Lifecycle(t *testing.T) {
 					resource.TestCheckResourceAttr("relay_postgresql_cluster.this", "nodes.readers.region", "us-east-1"),
 					resource.TestCheckResourceAttr("relay_postgresql_cluster.this", "parameters.work_mem", "64MB"),
 					resource.TestCheckResourceAttr("relay_postgresql_cluster.this", "replication.synchronous_replicas", "1"),
-					resource.TestCheckResourceAttr("relay_postgresql_cluster.this", "endpoint_host", "billing.db.relay"),
-					resource.TestCheckResourceAttr("relay_postgresql_cluster.this", "public_endpoints.0.role", "primary"),
+					resource.TestCheckResourceAttr("relay_postgresql_cluster.this", "endpoint_host", "billing.public"),
+					resource.TestCheckResourceAttr("relay_postgresql_cluster.this", "public_endpoints.0.role", "rw"),
 					resource.TestCheckResourceAttr("relay_postgresql_cluster.this", "ready_nodes", "1"),
 					func(*terraform.State) error {
 						calls := f.callsTo("CreateDatabase")

@@ -88,7 +88,7 @@ func (r *connectionResource) Schema(_ context.Context, _ resource.SchemaRequest,
 			"workspace_id": schema.StringAttribute{Required: true, PlanModifiers: replace, MarkdownDescription: "Workspace the connection belongs to."},
 			"name":         schema.StringAttribute{Required: true, PlanModifiers: replace, MarkdownDescription: "Name, unique in the workspace. Changing it replaces the connection."},
 			"engine":       schema.StringAttribute{Required: true, MarkdownDescription: "Database engine, for example `postgres` or `mongodb`."},
-			"host":         schema.StringAttribute{Required: true, MarkdownDescription: "Upstream `host:port`."},
+			"host":         schema.StringAttribute{Required: true, MarkdownDescription: "Upstream `host:port`. The API does not return it for a connection with `managed_database_id`, so Terraform keeps the configured value, and an import leaves it empty until the next apply."},
 			"agent_pool":   schema.StringAttribute{Required: true, MarkdownDescription: "Agent pool that proxies this connection."},
 			"user":         emptyString("Upstream user."),
 			"password": schema.StringAttribute{
@@ -281,7 +281,7 @@ func connectionFromProto(c *serverv1.Connection, prior connectionModel) connecti
 		WorkspaceID:       prior.WorkspaceID,
 		Name:              types.StringValue(c.GetName()),
 		Engine:            types.StringValue(c.GetEngine()),
-		Host:              types.StringValue(c.GetHost()),
+		Host:              connectionHost(c, prior),
 		User:              types.StringValue(c.GetUser()),
 		Password:          prior.Password,
 		CredentialRef:     types.StringValue(c.GetCredentialRef()),
@@ -333,6 +333,13 @@ func redactRulesFromProto(rules []*serverv1.RedactRule, prior []redactRuleModel)
 		})
 	}
 	return out
+}
+
+func connectionHost(c *serverv1.Connection, prior connectionModel) types.String {
+	if c.GetHost() == "" && c.GetManagedDatabaseId() != "" && !prior.Host.IsNull() && !prior.Host.IsUnknown() {
+		return prior.Host
+	}
+	return types.StringValue(c.GetHost())
 }
 
 func nullIfEmpty(s string) types.String {

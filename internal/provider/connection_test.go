@@ -159,7 +159,7 @@ func TestConnectionResource_Lifecycle(t *testing.T) {
 				ImportState:             true,
 				ImportStateId:           connWorkspace + "/pg",
 				ImportStateVerify:       true,
-				ImportStateVerifyIgnore: []string{"password"},
+				ImportStateVerifyIgnore: []string{"password", "host"},
 			},
 			{
 				Config: connectionConfig(f, "pg-renamed", trimmedConnectionBody),

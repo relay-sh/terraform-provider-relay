@@ -54,8 +54,8 @@ func (d *postgresqlClusterDataSource) Schema(_ context.Context, _ datasource.Sch
 			"name":              schema.StringAttribute{Optional: true, Computed: true, MarkdownDescription: "Cluster name."},
 			"version":           schema.StringAttribute{Computed: true},
 			"phase":             schema.StringAttribute{Computed: true},
-			"endpoint_host":     schema.StringAttribute{Computed: true},
-			"endpoint_port":     schema.Int64Attribute{Computed: true},
+			"endpoint_host":     schema.StringAttribute{Computed: true, MarkdownDescription: "Public read-write endpoint host. Empty until the platform publishes it."},
+			"endpoint_port":     schema.Int64Attribute{Computed: true, MarkdownDescription: "Public read-write endpoint port."},
 			"public_endpoints":  schema.ListNestedAttribute{Computed: true, NestedObject: endpoint},
 			"private_endpoints": schema.ListNestedAttribute{Computed: true, NestedObject: endpoint},
 			"storage_status": schema.ListNestedAttribute{

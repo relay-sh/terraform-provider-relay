@@ -209,8 +209,8 @@ func (r *postgresqlClusterResource) Schema(ctx context.Context, _ resource.Schem
 			},
 			"phase":             schema.StringAttribute{Computed: true, MarkdownDescription: "Lifecycle phase after the last apply."},
 			"phase_message":     schema.StringAttribute{Computed: true, MarkdownDescription: "Detail for the phase."},
-			"endpoint_host":     schema.StringAttribute{Computed: true, MarkdownDescription: "Primary endpoint host."},
-			"endpoint_port":     schema.Int64Attribute{Computed: true, MarkdownDescription: "Primary endpoint port."},
+			"endpoint_host":     schema.StringAttribute{Computed: true, MarkdownDescription: "Public read-write endpoint host, the same as the `rw` entry of `public_endpoints`. Empty until the platform publishes it."},
+			"endpoint_port":     schema.Int64Attribute{Computed: true, MarkdownDescription: "Public read-write endpoint port."},
 			"public_endpoints":  schema.ListNestedAttribute{Computed: true, NestedObject: endpoint, MarkdownDescription: "Public endpoints by role."},
 			"private_endpoints": schema.ListNestedAttribute{Computed: true, NestedObject: endpoint, MarkdownDescription: "Private endpoints by role, when private access is enabled."},
 			"storage_status": schema.ListNestedAttribute{
