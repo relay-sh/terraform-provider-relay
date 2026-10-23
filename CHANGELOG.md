@@ -24,6 +24,7 @@ FEATURES:
 * **New Resource:** `relay_postgresql_cluster`
 * **New Data Source:** `relay_postgresql_cluster`
 * **New Resource:** `relay_postgresql_user`
+* **New Resource:** `relay_postgresql_database`
 * **New Resource:** `relay_ip_access_list`
 * **New Data Source:** `relay_ip_access_list`
 * **New Resource:** `relay_private_endpoint_service`

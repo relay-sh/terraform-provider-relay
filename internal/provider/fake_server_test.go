@@ -57,6 +57,12 @@ type fakeServer struct {
 	userWithoutTimes  bool
 	lastUserCreate    *serverv1.CreateDatabaseUserRequest
 	lastUserUpdate    *serverv1.UpdateDatabaseUserRequest
+	logicalDBs        map[string]*serverv1.LogicalDatabase
+	ldbCountdown      map[string]int
+	failLogicalDB     string
+	unlistedFor       int
+	lastLDBCreate     *serverv1.CreateLogicalDatabaseRequest
+	lastLDBUpdate     *serverv1.UpdateLogicalDatabaseRequest
 	providers         []*serverv1.DatabaseProvider
 	lastDBCreate      *serverv1.CreateDatabaseRequest
 	lastDBUpdate      *serverv1.UpdateDatabaseRequest
@@ -101,6 +107,8 @@ func startFakeServer(t *testing.T) *fakeServer {
 		readyAfter:    2,
 		users:         map[string]*serverv1.DatabaseUser{},
 		userCountdown: map[string]int{},
+		logicalDBs:    map[string]*serverv1.LogicalDatabase{},
+		ldbCountdown:  map[string]int{},
 		apiKeys:       map[string]*serverv1.APIKey{},
 		allowlist:     map[string][]*serverv1.IPAllowlistEntry{},
 		syncCountdown: map[string]int{},
@@ -741,4 +749,96 @@ func (f *fakeServer) DeleteDatabaseUser(ctx context.Context, req *serverv1.Delet
 	}
 	delete(f.users, key)
 	return &serverv1.DeleteDatabaseUserResponse{}, nil
+}
+
+func (f *fakeServer) CreateLogicalDatabase(ctx context.Context, req *serverv1.CreateLogicalDatabaseRequest) (*serverv1.CreateLogicalDatabaseResponse, error) {
+	f.mu.Lock()
+	defer f.mu.Unlock()
+	if err := f.record(ctx, "CreateLogicalDatabase"); err != nil {
+		return nil, err
+	}
+	f.lastLDBCreate = req
+	if req.GetName() == "postgres" {
+		return nil, status.Error(codes.InvalidArgument, `database name "postgres" is reserved`)
+	}
+	key := userKey(req.GetDatabaseId(), req.GetName())
+	if _, ok := f.logicalDBs[key]; ok {
+		return nil, status.Error(codes.AlreadyExists, "database already exists")
+	}
+	f.logicalDBs[key] = &serverv1.LogicalDatabase{
+		Name:        req.GetName(),
+		Owner:       req.GetOwner(),
+		Description: req.GetDescription(),
+		Phase:       "Pending",
+		Origin:      "Created",
+		CreatedAt:   timestamppb.New(time.Unix(1_700_000_000, 0)),
+	}
+	f.ldbCountdown[key] = f.readyAfter
+	return &serverv1.CreateLogicalDatabaseResponse{Database: f.logicalDBs[key]}, nil
+}
+
+func (f *fakeServer) ListLogicalDatabases(ctx context.Context, req *serverv1.ListLogicalDatabasesRequest) (*serverv1.ListLogicalDatabasesResponse, error) {
+	f.mu.Lock()
+	defer f.mu.Unlock()
+	if err := f.record(ctx, "ListLogicalDatabases"); err != nil {
+		return nil, err
+	}
+	if f.unlistedFor > 0 {
+		f.unlistedFor--
+		return &serverv1.ListLogicalDatabasesResponse{}, nil
+	}
+	out := &serverv1.ListLogicalDatabasesResponse{}
+	for key, db := range f.logicalDBs {
+		if key != userKey(req.GetDatabaseId(), db.GetName()) {
+			continue
+		}
+		if f.ldbCountdown[key] > 0 && !f.stuck {
+			f.ldbCountdown[key]--
+			if f.ldbCountdown[key] == 0 {
+				db.Phase = "Ready"
+				if f.failLogicalDB != "" {
+					db.Phase, db.PhaseMessage = "Failed", f.failLogicalDB
+				}
+			}
+		}
+		out.Databases = append(out.Databases, db)
+	}
+	sort.Slice(out.Databases, func(i, j int) bool { return out.Databases[i].GetName() < out.Databases[j].GetName() })
+	return out, nil
+}
+
+func (f *fakeServer) UpdateLogicalDatabase(ctx context.Context, req *serverv1.UpdateLogicalDatabaseRequest) (*serverv1.UpdateLogicalDatabaseResponse, error) {
+	f.mu.Lock()
+	defer f.mu.Unlock()
+	if err := f.record(ctx, "UpdateLogicalDatabase"); err != nil {
+		return nil, err
+	}
+	f.lastLDBUpdate = req
+	db, ok := f.logicalDBs[userKey(req.GetDatabaseId(), req.GetName())]
+	if !ok {
+		return nil, status.Error(codes.NotFound, "database not found")
+	}
+	if req.Owner != nil {
+		db.Owner = req.GetOwner()
+	}
+	if req.Description != nil {
+		db.Description = req.GetDescription()
+	}
+	updated := proto.Clone(db).(*serverv1.LogicalDatabase)
+	updated.CreatedAt = nil
+	return &serverv1.UpdateLogicalDatabaseResponse{Database: updated}, nil
+}
+
+func (f *fakeServer) DeleteLogicalDatabase(ctx context.Context, req *serverv1.DeleteLogicalDatabaseRequest) (*serverv1.DeleteLogicalDatabaseResponse, error) {
+	f.mu.Lock()
+	defer f.mu.Unlock()
+	if err := f.record(ctx, "DeleteLogicalDatabase"); err != nil {
+		return nil, err
+	}
+	key := userKey(req.GetDatabaseId(), req.GetName())
+	if _, ok := f.logicalDBs[key]; !ok {
+		return nil, status.Error(codes.NotFound, "database not found")
+	}
+	delete(f.logicalDBs, key)
+	return &serverv1.DeleteLogicalDatabaseResponse{}, nil
 }
