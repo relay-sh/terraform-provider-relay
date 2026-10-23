@@ -123,7 +123,7 @@ func (r *postgresqlUserResource) Schema(ctx context.Context, _ resource.SchemaRe
 					},
 					"database": schema.StringAttribute{
 						Optional: true, Computed: true, Default: stringdefault.StaticString(""),
-						MarkdownDescription: "Logical database the role applies to. Required for `readOnly` and `readWrite`.",
+						MarkdownDescription: "Logical database the role applies to. Required for `readOnly` and `readWrite`. It must exist on the cluster: create it with `relay_postgresql_database` and reference its `name`.",
 					},
 				}},
 			},

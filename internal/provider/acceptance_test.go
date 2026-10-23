@@ -189,12 +189,18 @@ resource "relay_postgresql_cluster" "this" {
   }
 }
 
+resource "relay_postgresql_database" "this" {
+  workspace_id = relay_workspace.this.id
+  cluster_id   = relay_postgresql_cluster.this.id
+  name         = "tfacc"
+}
+
 resource "relay_postgresql_user" "this" {
   workspace_id      = relay_workspace.this.id
   cluster_id        = relay_postgresql_cluster.this.id
   username          = "tfacc"
   generate_password = true
-  roles             = [{ role = "readOnly", database = "relay" }]
+  roles             = [{ role = "readOnly", database = relay_postgresql_database.this.name }]
 }
 
 data "relay_postgresql_cluster" "this" {
@@ -204,6 +210,7 @@ data "relay_postgresql_cluster" "this" {
 `, name, envOr("RELAY_ACC_PG_VERSION", "17"), envOr("RELAY_ACC_CLOUD", "aws"), envOr("RELAY_ACC_REGION", "us-east-1")),
 			Check: resource.ComposeAggregateTestCheckFunc(
 				resource.TestCheckResourceAttr("relay_postgresql_cluster.this", "phase", "running"),
+				resource.TestCheckResourceAttr("relay_postgresql_database.this", "phase", "Ready"),
 				resource.TestCheckResourceAttr("relay_postgresql_user.this", "phase", "Ready"),
 				resource.TestCheckResourceAttrSet("relay_postgresql_user.this", "generated_password"),
 				resource.TestCheckResourceAttrPair("data.relay_postgresql_cluster.this", "id", "relay_postgresql_cluster.this", "id"),
