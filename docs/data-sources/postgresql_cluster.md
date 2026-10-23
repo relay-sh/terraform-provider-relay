@@ -33,8 +33,8 @@ data "relay_postgresql_cluster" "billing" {
 
 ### Read-Only
 
-- `endpoint_host` (String)
-- `endpoint_port` (Number)
+- `endpoint_host` (String) Public read-write endpoint host. Empty until the platform publishes it.
+- `endpoint_port` (Number) Public read-write endpoint port.
 - `phase` (String)
 - `private_endpoints` (Attributes List) (see [below for nested schema](#nestedatt--private_endpoints))
 - `public_endpoints` (Attributes List) (see [below for nested schema](#nestedatt--public_endpoints))

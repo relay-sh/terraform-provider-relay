@@ -12,6 +12,11 @@ ENHANCEMENTS:
 * data-source/relay_postgresql_cluster: exposes `storage_status`
 * resource/relay_postgresql_user: `roles` accepts unknown values, so a user can reference a cluster created in the same apply
 
+BUG FIXES:
+
+* resource/relay_postgresql_cluster, data-source/relay_postgresql_cluster: `endpoint_host` and `endpoint_port` are the public read-write endpoint, no longer the cluster's in-cluster address
+* resource/relay_connection: a connection with `managed_database_id` keeps its configured `host`; the API no longer returns it
+
 FEATURES:
 
 * **New Data Source:** `relay_organization`
