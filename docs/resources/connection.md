@@ -3,12 +3,12 @@
 page_title: "relay_connection Resource - relay"
 subcategory: ""
 description: |-
-  A database connection reached through a Relay agent pool. Upstream TLS is always on; only its CA can be configured.
+  A database connection reached through a Relay agent. Upstream TLS is always on; only its CA can be configured.
 ---
 
 # relay_connection (Resource)
 
-A database connection reached through a Relay agent pool. Upstream TLS is always on; only its CA can be configured.
+A database connection reached through a Relay agent. Upstream TLS is always on; only its CA can be configured.
 
 ## Example Usage
 
@@ -36,7 +36,7 @@ resource "relay_connection" "orders" {
 
 ### Required
 
-- `agent_pool` (String) Agent pool that proxies this connection.
+- `agent_pool` (String) The agent (pool) that serves this connection, for example `default`, the workspace's managed agent.
 - `engine` (String) Database engine, for example `postgres` or `mongodb`.
 - `host` (String) Upstream `host:port`. The API does not return it for a connection with `managed_database_id`, so Terraform keeps the configured value, and an import leaves it empty until the next apply.
 - `name` (String) Name, unique in the workspace. Changing it replaces the connection.
