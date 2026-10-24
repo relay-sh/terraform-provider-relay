@@ -78,7 +78,7 @@ func (r *connectionResource) Schema(_ context.Context, _ resource.SchemaRequest,
 	}
 
 	resp.Schema = schema.Schema{
-		MarkdownDescription: "A database connection reached through a Relay agent pool. Upstream TLS is always on; only its CA can be configured.",
+		MarkdownDescription: "A database connection reached through a Relay agent. Upstream TLS is always on; only its CA can be configured.",
 		Attributes: map[string]schema.Attribute{
 			"id": schema.StringAttribute{
 				Computed:            true,
@@ -89,7 +89,7 @@ func (r *connectionResource) Schema(_ context.Context, _ resource.SchemaRequest,
 			"name":         schema.StringAttribute{Required: true, PlanModifiers: replace, MarkdownDescription: "Name, unique in the workspace. Changing it replaces the connection."},
 			"engine":       schema.StringAttribute{Required: true, MarkdownDescription: "Database engine, for example `postgres` or `mongodb`."},
 			"host":         schema.StringAttribute{Required: true, MarkdownDescription: "Upstream `host:port`. The API does not return it for a connection with `managed_database_id`, so Terraform keeps the configured value, and an import leaves it empty until the next apply."},
-			"agent_pool":   schema.StringAttribute{Required: true, MarkdownDescription: "Agent pool that proxies this connection."},
+			"agent_pool":   schema.StringAttribute{Required: true, MarkdownDescription: "The agent (pool) that serves this connection, for example `default`, the workspace's managed agent."},
 			"user":         emptyString("Upstream user."),
 			"password": schema.StringAttribute{
 				Optional:            true,
