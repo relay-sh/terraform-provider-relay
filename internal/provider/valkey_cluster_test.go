@@ -587,3 +587,28 @@ func TestFakeServerRejectsWhatThePlatformRejectsForValkey(t *testing.T) {
 		})
 	}
 }
+
+func TestValkeyClusterResource_ImportRejectsOtherEngine(t *testing.T) {
+	f := startFakeServer(t)
+	resource.UnitTest(t, resource.TestCase{
+		ProtoV6ProviderFactories: factories(relay.Dial),
+		Steps: []resource.TestStep{
+			{Config: replicationConfig(f, "9.1", "8Gi", `{}`, "")},
+			{
+				PreConfig: func() {
+					f.mu.Lock()
+					defer f.mu.Unlock()
+					f.databases["db-other"] = &serverv1.Database{
+						Id: "db-other", Name: "other", WorkspaceId: dbWorkspace,
+						Spec:   &serverv1.DatabaseSpec{Engine: "postgresql"},
+						Status: &serverv1.DatabaseStatus{Phase: "running"},
+					}
+				},
+				ResourceName:  "relay_valkey_cluster.this",
+				ImportState:   true,
+				ImportStateId: dbWorkspace + "/db-other",
+				ExpectError:   regexp.MustCompile(`(?s)is a postgresql cluster.*relay_postgresql_cluster`),
+			},
+		},
+	})
+}
