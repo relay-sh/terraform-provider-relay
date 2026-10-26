@@ -118,6 +118,7 @@ func (p *relayProvider) DataSources(context.Context) []func() datasource.DataSou
 		newWorkspaceDataSource,
 		newAPIKeyDataSource,
 		newPostgreSQLClusterDataSource,
+		newValkeyClusterDataSource,
 		newIPAccessListDataSource,
 		newPrivateEndpointServiceDataSource,
 		newPrivateEndpointDataSource,
