@@ -1,13 +1,16 @@
 package provider
 
 import (
+	"context"
 	"errors"
 	"fmt"
 	"regexp"
 	"slices"
+	"strings"
 	"testing"
 
 	"github.com/hashicorp/terraform-plugin-framework/attr"
+	fwresource "github.com/hashicorp/terraform-plugin-framework/resource"
 	"github.com/hashicorp/terraform-plugin-framework/types"
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
 	"github.com/hashicorp/terraform-plugin-testing/plancheck"
@@ -826,6 +829,38 @@ func TestValkeyClusterResource_StorageRaisedByThePlatform(t *testing.T) {
 				PlanOnly: true,
 			},
 			{
+				Config: valkeyConfig(f, valkeyGroup("cache", 1, "6144Mi", `
+        storage_autoscale = {
+          enabled     = true
+          max_storage = "6144Mi"
+        }`)),
+				Check: func(*terraform.State) error {
+					if n := len(f.callsTo("UpdateDatabase")); n != 0 {
+						return fmt.Errorf("the same size in another unit must not call UpdateDatabase, got %d calls", n)
+					}
+					return nil
+				},
+			},
+			{
+				Config: strings.Replace(valkeyConfig(f, valkeyGroup("cache", 1, "2Gi", autoscale)), "name         = \"sessions\"", "name         = \"sessions\"\n  parameters   = { maxmemory-policy = \"allkeys-lru\" }", 1),
+				Check: func(*terraform.State) error {
+					if n := len(f.callsTo("UpdateDatabase")); n != 1 {
+						return fmt.Errorf("a parameters change must call UpdateDatabase once, got %d calls", n)
+					}
+					up := f.lastDBUpdate
+					if st := up.GetSpec().GetNodes()[0].GetResources().GetStorage(); st != "6Gi" {
+						return fmt.Errorf("the update must carry the platform's storage, got %q", st)
+					}
+					if p := up.GetSpec().GetValkey().GetParameters()["maxmemory-policy"]; p != "allkeys-lru" {
+						return fmt.Errorf("the parameter must be applied, got %q", p)
+					}
+					if paths := up.GetUpdateMask().GetPaths(); slices.Contains(paths, "nodes") {
+						return fmt.Errorf("nodes must not be in the update mask, got %v", paths)
+					}
+					return nil
+				},
+			},
+			{
 				Config: valkeyConfig(f, valkeyGroup("cache", 1, "8Gi", `
         storage_autoscale = {
           enabled     = true
@@ -926,7 +961,10 @@ func TestKeepRaisedMaxStorage(t *testing.T) {
 		want             string
 	}{
 		"below the volume":       {res("6Gi", types.StringValue("4Gi")), raised, "6Gi"},
-		"at the volume":          {res("6Gi", types.StringValue("6Gi")), raised, ""},
+		"at the volume":          {res("6Gi", types.StringValue("6Gi")), raised, "6Gi"},
+		"same size other unit":   {res("6Gi", types.StringValue("6144Mi")), raised, "6Gi"},
+		"lowered to the volume":  {res("6Gi", types.StringValue("6Gi")), res("6Gi", types.StringValue("40Gi")), ""},
+		"unparsable ceiling":     {res("6Gi", types.StringValue("lots")), raised, ""},
 		"unknown ceiling":        {res("6Gi", types.StringUnknown()), raised, ""},
 		"no ceiling configured":  {null, raised, ""},
 		"no ceiling in state":    {res("6Gi", types.StringValue("4Gi")), null, ""},
@@ -936,6 +974,46 @@ func TestKeepRaisedMaxStorage(t *testing.T) {
 		got := keepRaisedMaxStorage(c.planned, c.current)
 		if c.want == "" && !got.IsNull() || c.want != "" && maxStorageOf(got).ValueString() != c.want {
 			t.Errorf("%s: got %v, want %q", name, got, c.want)
+		}
+	}
+}
+
+func TestSameSettingsCoversEveryConfigurableAttribute(t *testing.T) {
+	var resp fwresource.SchemaResponse
+	(&valkeyClusterResource{}).Schema(context.Background(), fwresource.SchemaRequest{}, &resp)
+	covered := map[string]bool{
+		"workspace_id": true, "name": true, "version": true, "mode": true, "shards": true, "replicas_per_shard": true,
+		"nodes": true, "parameters": true, "keep_backups_on_destroy": true, "timeouts": true,
+	}
+	for name, a := range resp.Schema.Attributes {
+		if (a.IsRequired() || a.IsOptional()) && !covered[name] {
+			t.Errorf("%s is configurable but sameSettings does not compare it", name)
+		}
+	}
+	for name := range covered {
+		if _, ok := resp.Schema.Attributes[name]; !ok && name != "timeouts" {
+			t.Errorf("%s is listed as covered but is not in the schema", name)
+		}
+	}
+}
+
+func TestCompareQuantity(t *testing.T) {
+	v := types.StringValue
+	cases := []struct {
+		a, b  types.String
+		order int
+		ok    bool
+	}{
+		{v("2Gi"), v("6Gi"), -1, true},
+		{v("8Gi"), v("6Gi"), 1, true},
+		{v("6144Mi"), v("6Gi"), 0, true},
+		{v("lots"), v("6Gi"), 0, false},
+		{types.StringNull(), v("6Gi"), 0, false},
+		{v("6Gi"), types.StringUnknown(), 0, false},
+	}
+	for _, c := range cases {
+		if order, ok := compareQuantity(c.a, c.b); order != c.order || ok != c.ok {
+			t.Errorf("compareQuantity(%v, %v) = %d, %v", c.a, c.b, order, ok)
 		}
 	}
 }

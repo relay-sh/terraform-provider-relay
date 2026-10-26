@@ -317,7 +317,7 @@ func (r *valkeyClusterResource) ModifyPlan(ctx context.Context, req resource.Mod
 			changed = true
 			continue
 		}
-		if shrinks(planned.Resources.Storage, current.Resources.Storage) {
+		if order, ok := compareQuantity(planned.Resources.Storage, current.Resources.Storage); ok && order <= 0 {
 			planned.Resources.Storage = current.Resources.Storage
 			plan.Nodes[name] = planned
 			changed = true
@@ -562,12 +562,35 @@ func maxStorageOf(autoscale types.Object) types.String {
 
 func keepRaisedMaxStorage(planned, current valkeyResourcesModel) types.Object {
 	want, have := maxStorageOf(planned.StorageAutoscale), maxStorageOf(current.StorageAutoscale)
-	if want.IsNull() || want.IsUnknown() || have.IsNull() || !shrinks(want, planned.Storage) || shrinks(have, planned.Storage) {
+	if want.IsNull() || want.IsUnknown() || have.IsNull() {
+		return types.ObjectNull(storageAutoscaleAttrTypes)
+	}
+	below, ok := compareQuantity(want, planned.Storage)
+	kept, kok := compareQuantity(have, want)
+	held, hok := compareQuantity(have, planned.Storage)
+	if !ok || !kok || !hok || below > 0 || held < 0 || (below == 0 && kept != 0) {
 		return types.ObjectNull(storageAutoscaleAttrTypes)
 	}
 	attrs := planned.StorageAutoscale.Attributes()
 	attrs["max_storage"] = have
 	return types.ObjectValueMust(storageAutoscaleAttrTypes, attrs)
+}
+
+func compareQuantity(a, b types.String) (int, bool) {
+	if a.IsUnknown() || b.IsUnknown() || a.IsNull() || b.IsNull() {
+		return 0, false
+	}
+	x, xok := parseQuantity(a.ValueString())
+	y, yok := parseQuantity(b.ValueString())
+	switch {
+	case !xok || !yok:
+		return 0, false
+	case x < y:
+		return -1, true
+	case x > y:
+		return 1, true
+	}
+	return 0, true
 }
 
 func valkeyUpdateMask(plan, prior valkeyClusterModel) []string {
