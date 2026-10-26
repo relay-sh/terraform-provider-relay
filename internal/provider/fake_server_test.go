@@ -456,6 +456,32 @@ func validateNodes(spec *serverv1.DatabaseSpec) error {
 	return nil
 }
 
+func validateValkey(spec *serverv1.DatabaseSpec) error {
+	if spec.GetEngine() != engineValkey {
+		return nil
+	}
+	if spec.GetReplication() != nil {
+		return status.Error(codes.InvalidArgument, "validate spec: replication tuning is not supported for Valkey")
+	}
+	if len(spec.GetNodes()) != 1 {
+		return status.Errorf(codes.InvalidArgument, "validate spec: exactly one node group is supported for Valkey, got %d", len(spec.GetNodes()))
+	}
+	v, count := spec.GetValkey(), spec.GetNodes()[0].GetCount()
+	switch v.GetMode() {
+	case valkeyModeReplication:
+		if v.GetShards() != 0 || v.GetReplicasPerShard() != 0 {
+			return status.Error(codes.InvalidArgument, "validate spec: shards and replicasPerShard apply only to mode cluster")
+		}
+	case valkeyModeCluster:
+		if want := v.GetShards() * (1 + v.GetReplicasPerShard()); count != want {
+			return status.Errorf(codes.InvalidArgument, "validate spec: node count must be shards * (1 + replicasPerShard) = %d, got %d", want, count)
+		}
+	default:
+		return status.Errorf(codes.InvalidArgument, "validate spec: mode must be replication or cluster, got %q", v.GetMode())
+	}
+	return nil
+}
+
 // bindPlacement mirrors the platform: a group is placed by cloud and region, and
 // a pair no provisioner serves is rejected.
 func (f *fakeServer) bindPlacement(nodes []*serverv1.NodeSpec) error {
@@ -491,6 +517,9 @@ func (f *fakeServer) CreateDatabase(ctx context.Context, req *serverv1.CreateDat
 	if err := validateNodes(req.GetSpec()); err != nil {
 		return nil, err
 	}
+	if err := validateValkey(req.GetSpec()); err != nil {
+		return nil, err
+	}
 	for _, db := range f.databases {
 		if db.GetWorkspaceId() == workspaceOf(ctx) && db.GetName() == req.GetName() {
 			return nil, status.Error(codes.AlreadyExists, "database already exists")
@@ -505,7 +534,10 @@ func (f *fakeServer) CreateDatabase(ctx context.Context, req *serverv1.CreateDat
 			n.Resources.StorageClass = "standard"
 		}
 	}
-	if spec.Replication == nil {
+	port := int32(5432)
+	if spec.GetEngine() == engineValkey {
+		port = 6379
+	} else if spec.Replication == nil {
 		spec.Replication = &serverv1.Replication{Mode: "async"}
 	}
 	db := &serverv1.Database{
@@ -515,8 +547,8 @@ func (f *fakeServer) CreateDatabase(ctx context.Context, req *serverv1.CreateDat
 		WorkspaceId: workspaceOf(ctx),
 		Spec:        spec,
 		Status: &serverv1.DatabaseStatus{
-			Endpoint:        &serverv1.Endpoint{Host: req.GetName() + ".public", Port: 5432},
-			PublicEndpoints: []*serverv1.PublicEndpoint{{Role: "rw", Host: req.GetName() + ".public", Port: 5432}},
+			Endpoint:        &serverv1.Endpoint{Host: req.GetName() + ".public", Port: port},
+			PublicEndpoints: []*serverv1.PublicEndpoint{{Role: "rw", Host: req.GetName() + ".public", Port: port}},
 			TotalNodes:      1,
 		},
 	}
@@ -572,6 +604,7 @@ func (f *fakeServer) UpdateDatabase(ctx context.Context, req *serverv1.UpdateDat
 		return nil, status.Error(codes.NotFound, "database not found")
 	}
 	in := req.GetSpec()
+	merged := proto.Clone(db.GetSpec()).(*serverv1.DatabaseSpec)
 	for _, p := range req.GetUpdateMask().GetPaths() {
 		switch p {
 		case "nodes":
@@ -581,15 +614,21 @@ func (f *fakeServer) UpdateDatabase(ctx context.Context, req *serverv1.UpdateDat
 			if err := f.bindPlacement(in.GetNodes()); err != nil {
 				return nil, err
 			}
-			db.Spec.Nodes = in.GetNodes()
+			merged.Nodes = in.GetNodes()
 		case "replication":
-			db.Spec.Replication = in.GetReplication()
+			merged.Replication = in.GetReplication()
 		case "postgresql":
-			db.Spec.Postgresql = in.GetPostgresql()
+			merged.Postgresql = in.GetPostgresql()
+		case "valkey":
+			merged.Valkey = in.GetValkey()
 		default:
 			return nil, status.Errorf(codes.InvalidArgument, "path %q is not updatable", p)
 		}
 	}
+	if err := validateValkey(merged); err != nil {
+		return nil, err
+	}
+	db.Spec = merged
 	f.settle(db.Id, "provisioning")
 	return &serverv1.UpdateDatabaseResponse{Database: db}, nil
 }
