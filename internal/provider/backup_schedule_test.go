@@ -130,12 +130,12 @@ func TestBackupScheduleResource_PostgreSQLLifecycle(t *testing.T) {
 				ImportStateId:     dbWorkspace + "/db-1",
 				ImportStateVerify: true,
 				ImportStateCheck: func(states []*terraform.InstanceState) error {
-					if a := states[0].Attributes; a["tiers.#"] != "2" || a["tiers.1.retention_unit"] != "weeks" || a["tiers.1.enabled"] != "true" || a["pitr_window_days"] != "7" {
-						return fmt.Errorf("an import must read every attribute, got %v", a)
+					if a := states[0].Attributes; a["tiers.#"] != "2" || a["tiers.1.retention_unit"] != "weeks" || a["tiers.1.enabled"] != "true" || a["pitr_window_days"] != "7" || a["max_backups"] != "" {
+						return fmt.Errorf("an import must read the tiers in place of max_backups, got %v", a)
 					}
 					return nil
 				},
-				ImportStateVerifyIgnore: []string{"tiers", "pitr_window_days"},
+				ImportStateVerifyIgnore: []string{"tiers", "pitr_window_days", "max_backups"},
 			},
 		},
 	})

@@ -377,10 +377,10 @@ func backupScheduleFromProto(s *serverv1.BackupSchedule, prior backupScheduleMod
 	if imported || !prior.Tiers.IsNull() {
 		out.Tiers = types.ListValueMust(types.ObjectType{AttrTypes: tierAttrTypes}, tiers)
 	}
-	if imported || !prior.MaxBackups.IsNull() {
+	if imported && len(tiers) == 0 && spec.GetRetention().GetMaxBackups() > 0 || !prior.MaxBackups.IsNull() {
 		out.MaxBackups = types.Int64Value(int64(spec.GetRetention().GetMaxBackups()))
 	}
-	if imported || !prior.PITRWindowDays.IsNull() {
+	if imported && spec.GetPitrWindowDays() > 0 || !prior.PITRWindowDays.IsNull() {
 		out.PITRWindowDays = types.Int64Value(int64(spec.GetPitrWindowDays()))
 	}
 	out.PlatformDefault = types.BoolValue(s.GetPlatformDefault())
