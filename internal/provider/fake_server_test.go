@@ -88,6 +88,8 @@ type fakeServer struct {
 	deletingFor    int
 	rejectEndpoint string
 	epCountdown    map[string]int
+
+	cloudIntegrations []*serverv1.CloudIntegration
 }
 
 func startFakeServer(t *testing.T) *fakeServer {
@@ -911,4 +913,27 @@ func (f *fakeServer) DeleteLogicalDatabase(ctx context.Context, req *serverv1.De
 	}
 	delete(f.logicalDBs, key)
 	return &serverv1.DeleteLogicalDatabaseResponse{}, nil
+}
+
+func (f *fakeServer) ListCloudIntegrations(ctx context.Context, _ *serverv1.ListCloudIntegrationsRequest) (*serverv1.ListCloudIntegrationsResponse, error) {
+	f.mu.Lock()
+	defer f.mu.Unlock()
+	if err := f.record(ctx, "ListCloudIntegrations"); err != nil {
+		return nil, err
+	}
+	return &serverv1.ListCloudIntegrationsResponse{Integrations: f.cloudIntegrations}, nil
+}
+
+func (f *fakeServer) GetCloudIntegration(ctx context.Context, req *serverv1.GetCloudIntegrationRequest) (*serverv1.GetCloudIntegrationResponse, error) {
+	f.mu.Lock()
+	defer f.mu.Unlock()
+	if err := f.record(ctx, "GetCloudIntegration"); err != nil {
+		return nil, err
+	}
+	for _, it := range f.cloudIntegrations {
+		if it.GetId() == req.GetId() {
+			return &serverv1.GetCloudIntegrationResponse{Integration: it}, nil
+		}
+	}
+	return nil, status.Error(codes.NotFound, "cloud integration not found")
 }
