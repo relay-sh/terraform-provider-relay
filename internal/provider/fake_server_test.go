@@ -94,6 +94,8 @@ type fakeServer struct {
 	lastScheduleSpec  *serverv1.BackupScheduleSpec
 	planRetentionDays int64
 	cloudIntegrations []*serverv1.CloudIntegration
+	autoExport        *serverv1.BackupAutoExport
+	lastAutoExport    *serverv1.UpsertBackupAutoExportRequest
 }
 
 func startFakeServer(t *testing.T) *fakeServer {

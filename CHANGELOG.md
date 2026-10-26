@@ -45,3 +45,4 @@ FEATURES:
 * **New Data Source:** `relay_valkey_cluster`
 * **New Resource:** `relay_backup_schedule`
 * **New Data Source:** `relay_cloud_integration`
+* **New Resource:** `relay_backup_auto_export`

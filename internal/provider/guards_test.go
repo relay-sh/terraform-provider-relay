@@ -118,6 +118,7 @@ func TestResourceGuards(t *testing.T) {
 	assertResourceGuards(t, newValkeyClusterResource())
 	assertResourceGuards(t, newValkeyUserResource())
 	assertResourceGuards(t, newBackupScheduleResource())
+	assertResourceGuards(t, newBackupAutoExportResource())
 	assertResourceGuards(t, newAPIKeyResource())
 	assertResourceGuards(t, newIPAccessListResource())
 	assertResourceGuards(t, newPrivateEndpointServiceResource())
