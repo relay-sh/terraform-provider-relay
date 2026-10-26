@@ -168,8 +168,10 @@ func (r *valkeyClusterResource) Schema(ctx context.Context, _ resource.SchemaReq
 							"cpu":    schema.StringAttribute{Computed: true, PlanModifiers: keepString, MarkdownDescription: "CPU request derived from `tier`."},
 							"memory": schema.StringAttribute{Computed: true, PlanModifiers: keepString, MarkdownDescription: "Memory request derived from `tier`."},
 							"storage": schema.StringAttribute{
-								Required: true,
-								MarkdownDescription: "Volume size for persistence, Kubernetes quantity. It can only grow here; a plan that shrinks it fails. " +
+								Optional: true, Computed: true, PlanModifiers: keepString,
+								MarkdownDescription: "Minimum volume size for persistence, Kubernetes quantity. Omit it to use the tier's storage. " +
+									"The platform raises the volume to at least 1.5 times the node's memory and never lowers it, so after a refresh this holds the size it is at; " +
+									"a configured value at or below that plans no change, and a larger one grows the volume. " +
 									"With `storage_autoscale` enabled the platform may grow the volume past it, reported in `storage_status`.",
 							},
 							"storage_autoscale": schema.SingleNestedAttribute{
@@ -189,8 +191,9 @@ func (r *valkeyClusterResource) Schema(ctx context.Context, _ resource.SchemaReq
 										MarkdownDescription: "Percent to grow the volume by on each trigger. `0` or omitted uses the platform default of 20; otherwise 10-100.",
 									},
 									"max_storage": schema.StringAttribute{
-										Optional:            true,
-										MarkdownDescription: "Ceiling the platform will not grow past, Kubernetes quantity. Required when `enabled` is true, and must be at least `storage`.",
+										Optional: true,
+										MarkdownDescription: "Ceiling the platform will not grow past, Kubernetes quantity. Required when `enabled` is true, and must be at least `storage`. " +
+											"The platform raises it to the volume size when the volume is larger, and a configured value below that plans no change.",
 									},
 								},
 							},
@@ -314,10 +317,15 @@ func (r *valkeyClusterResource) ModifyPlan(ctx context.Context, req resource.Mod
 			changed = true
 			continue
 		}
-		group := path.Root("nodes").AtMapKey(name)
-		if shrinks(planned.Resources.Storage, current.Resources.Storage) {
-			resp.Diagnostics.AddAttributeError(group.AtName("resources").AtName("storage"), "Storage cannot shrink",
-				"Volumes only grow. Group "+name+" is at "+current.Resources.Storage.ValueString()+" and the plan asks for "+planned.Resources.Storage.ValueString()+".")
+		if order, ok := compareQuantity(planned.Resources.Storage, current.Resources.Storage); ok && order <= 0 {
+			planned.Resources.Storage = current.Resources.Storage
+			plan.Nodes[name] = planned
+			changed = true
+		}
+		if raised := keepRaisedMaxStorage(planned.Resources, current.Resources); !raised.IsNull() {
+			planned.Resources.StorageAutoscale = raised
+			plan.Nodes[name] = planned
+			changed = true
 		}
 		if current.Resources.StorageAutoscale.IsNull() && !planned.Resources.StorageAutoscale.IsNull() && !planned.Resources.StorageAutoscale.IsUnknown() {
 			planned.Resources.StorageAutoscale = unknownComputedStorageAutoscale(planned.Resources.StorageAutoscale)
@@ -325,9 +333,20 @@ func (r *valkeyClusterResource) ModifyPlan(ctx context.Context, req resource.Mod
 			changed = true
 		}
 	}
-	if changed {
-		resp.Diagnostics.Append(resp.Plan.Set(ctx, &plan)...)
+	if !changed {
+		return
 	}
+	if reflect.DeepEqual(plan.Nodes, prior.Nodes) && sameSettings(plan, prior) {
+		resp.Diagnostics.Append(resp.Plan.Set(ctx, &prior)...)
+		return
+	}
+	resp.Diagnostics.Append(resp.Plan.Set(ctx, &plan)...)
+}
+
+func sameSettings(a, b valkeyClusterModel) bool {
+	return a.Name.Equal(b.Name) && a.WorkspaceID.Equal(b.WorkspaceID) && a.Version.Equal(b.Version) && a.Mode.Equal(b.Mode) &&
+		a.Shards.Equal(b.Shards) && a.ReplicasPerShard.Equal(b.ReplicasPerShard) && a.Parameters.Equal(b.Parameters) &&
+		a.KeepBackupsOnDestroy.Equal(b.KeepBackupsOnDestroy) && a.Timeouts.Equal(b.Timeouts)
 }
 
 func (r *valkeyClusterResource) Create(ctx context.Context, req resource.CreateRequest, resp *resource.CreateResponse) {
@@ -356,6 +375,7 @@ func (r *valkeyClusterResource) Create(ctx context.Context, req resource.CreateR
 		return
 	}
 	state := valkeyClusterFromProto(db, plan)
+	keepPlannedStorage(state.Nodes, plan.Nodes)
 	resp.Diagnostics.Append(resp.State.Set(ctx, &state)...)
 }
 
@@ -414,6 +434,7 @@ func (r *valkeyClusterResource) Update(ctx context.Context, req resource.UpdateR
 		return
 	}
 	state := valkeyClusterFromProto(db, plan)
+	keepPlannedStorage(state.Nodes, plan.Nodes)
 	resp.Diagnostics.Append(resp.State.Set(ctx, &state)...)
 }
 
@@ -512,6 +533,64 @@ func valkeySpecToProto(m valkeyClusterModel) *serverv1.DatabaseSpec {
 		})
 	}
 	return spec
+}
+
+func keepPlannedStorage(state, plan map[string]valkeyNodeGroupModel) {
+	for name, planned := range plan {
+		got, ok := state[name]
+		if !ok {
+			continue
+		}
+		if !planned.Resources.Storage.IsUnknown() && !planned.Resources.Storage.IsNull() {
+			got.Resources.Storage = planned.Resources.Storage
+		}
+		if want, have := maxStorageOf(planned.Resources.StorageAutoscale), got.Resources.StorageAutoscale; !want.IsNull() && !want.IsUnknown() && !have.IsNull() {
+			attrs := have.Attributes()
+			attrs["max_storage"] = want
+			got.Resources.StorageAutoscale = types.ObjectValueMust(storageAutoscaleAttrTypes, attrs)
+		}
+		state[name] = got
+	}
+}
+
+func maxStorageOf(autoscale types.Object) types.String {
+	if autoscale.IsNull() || autoscale.IsUnknown() {
+		return types.StringNull()
+	}
+	return autoscale.Attributes()["max_storage"].(types.String)
+}
+
+func keepRaisedMaxStorage(planned, current valkeyResourcesModel) types.Object {
+	want, have := maxStorageOf(planned.StorageAutoscale), maxStorageOf(current.StorageAutoscale)
+	if want.IsNull() || want.IsUnknown() || have.IsNull() {
+		return types.ObjectNull(storageAutoscaleAttrTypes)
+	}
+	below, ok := compareQuantity(want, planned.Storage)
+	kept, kok := compareQuantity(have, want)
+	held, hok := compareQuantity(have, planned.Storage)
+	if !ok || !kok || !hok || below > 0 || held < 0 || (below == 0 && kept != 0) {
+		return types.ObjectNull(storageAutoscaleAttrTypes)
+	}
+	attrs := planned.StorageAutoscale.Attributes()
+	attrs["max_storage"] = have
+	return types.ObjectValueMust(storageAutoscaleAttrTypes, attrs)
+}
+
+func compareQuantity(a, b types.String) (int, bool) {
+	if a.IsUnknown() || b.IsUnknown() || a.IsNull() || b.IsNull() {
+		return 0, false
+	}
+	x, xok := parseQuantity(a.ValueString())
+	y, yok := parseQuantity(b.ValueString())
+	switch {
+	case !xok || !yok:
+		return 0, false
+	case x < y:
+		return -1, true
+	case x > y:
+		return 1, true
+	}
+	return 0, true
 }
 
 func valkeyUpdateMask(plan, prior valkeyClusterModel) []string {

@@ -48,6 +48,7 @@ type fakeServer struct {
 	databases         map[string]*serverv1.Database
 	dbCountdown       map[string]int
 	readyAfter        int
+	valkeyFloor       string
 	stuck             bool
 	failProvision     string
 	failDeletion      string
@@ -548,6 +549,7 @@ func (f *fakeServer) CreateDatabase(ctx context.Context, req *serverv1.CreateDat
 	}
 	spec := proto.Clone(req.GetSpec()).(*serverv1.DatabaseSpec)
 	canonicalizeValkeyParameters(spec)
+	f.raiseValkeyStorage(spec, nil)
 	if err := f.bindPlacement(spec.GetNodes()); err != nil {
 		return nil, err
 	}
@@ -653,6 +655,7 @@ func (f *fakeServer) UpdateDatabase(ctx context.Context, req *serverv1.UpdateDat
 	if err := validateValkey(merged); err != nil {
 		return nil, err
 	}
+	f.raiseValkeyStorage(merged, db.GetSpec())
 	db.Spec = merged
 	f.settle(db.Id, "provisioning")
 	return &serverv1.UpdateDatabaseResponse{Database: db}, nil
@@ -936,4 +939,33 @@ func (f *fakeServer) GetCloudIntegration(ctx context.Context, req *serverv1.GetC
 		}
 	}
 	return nil, status.Error(codes.NotFound, "cloud integration not found")
+}
+
+func (f *fakeServer) raiseValkeyStorage(spec, stored *serverv1.DatabaseSpec) {
+	if spec.GetEngine() != engineValkey || f.valkeyFloor == "" {
+		return
+	}
+	for _, n := range spec.GetNodes() {
+		if n.Resources == nil {
+			n.Resources = &serverv1.ResourceRequirements{}
+		}
+		candidates := []string{n.Resources.Storage, f.valkeyFloor}
+		for _, old := range stored.GetNodes() {
+			if old.GetName() == n.GetName() {
+				candidates = append(candidates, old.GetResources().GetStorage())
+			}
+		}
+		best, bestSize := "", -1.0
+		for _, c := range candidates {
+			if size, ok := parseQuantity(c); ok && size > bestSize {
+				best, bestSize = c, size
+			}
+		}
+		n.Resources.Storage = best
+		if sa := n.Resources.StorageAutoscale; sa.GetEnabled() {
+			if limit, ok := parseQuantity(sa.GetMaxStorage()); ok && limit < bestSize {
+				sa.MaxStorage = best
+			}
+		}
+	}
 }

@@ -115,12 +115,9 @@ Optional:
 <a id="nestedatt--nodes--resources"></a>
 ### Nested Schema for `nodes.resources`
 
-Required:
-
-- `storage` (String) Volume size for persistence, Kubernetes quantity. It can only grow here; a plan that shrinks it fails. With `storage_autoscale` enabled the platform may grow the volume past it, reported in `storage_status`.
-
 Optional:
 
+- `storage` (String) Minimum volume size for persistence, Kubernetes quantity. Omit it to use the tier's storage. The platform raises the volume to at least 1.5 times the node's memory and never lowers it, so after a refresh this holds the size it is at; a configured value at or below that plans no change, and a larger one grows the volume. With `storage_autoscale` enabled the platform may grow the volume past it, reported in `storage_status`.
 - `storage_autoscale` (Attributes) Grows the group's volumes past `storage`, up to `max_storage`, when disk usage crosses `threshold_percent`. Omitting this block, or removing it from a config that had it, disables autoscaling. (see [below for nested schema](#nestedatt--nodes--resources--storage_autoscale))
 
 Read-Only:
@@ -138,7 +135,7 @@ Required:
 Optional:
 
 - `increase_percent` (Number) Percent to grow the volume by on each trigger. `0` or omitted uses the platform default of 20; otherwise 10-100.
-- `max_storage` (String) Ceiling the platform will not grow past, Kubernetes quantity. Required when `enabled` is true, and must be at least `storage`.
+- `max_storage` (String) Ceiling the platform will not grow past, Kubernetes quantity. Required when `enabled` is true, and must be at least `storage`. The platform raises it to the volume size when the volume is larger, and a configured value below that plans no change.
 - `threshold_percent` (Number) Disk-usage percent that triggers a grow. `0` or omitted uses the platform default of 80; otherwise 50-95.
 
 
