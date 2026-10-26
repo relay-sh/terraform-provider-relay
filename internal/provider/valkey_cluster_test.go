@@ -103,8 +103,8 @@ func TestValkeyClusterResource_Lifecycle(t *testing.T) {
 					resource.TestCheckResourceAttr("relay_valkey_cluster.this", "parameters.%", "0"),
 					func(*terraform.State) error {
 						paths := f.lastDBUpdate.GetUpdateMask().GetPaths()
-						if !slices.Equal(paths, []string{"nodes", "valkey"}) {
-							return fmt.Errorf("update mask = %v, want only the changed fields", paths)
+						if !slices.Equal(paths, []string{"nodes", "valkey.parameters"}) {
+							return fmt.Errorf("a parameters-only change must not send the topology, got mask %v", paths)
 						}
 						if v := f.lastDBUpdate.GetSpec().GetValkey(); v.GetMode() != "replication" || v.GetParameters() != nil {
 							return fmt.Errorf("an emptied parameters map must clear them and keep the mode, got %+v", v)
