@@ -1,12 +1,16 @@
 package provider
 
 import (
+	"context"
 	"errors"
 	"fmt"
 	"regexp"
 	"slices"
+	"strings"
 	"testing"
 
+	"github.com/hashicorp/terraform-plugin-framework/attr"
+	fwresource "github.com/hashicorp/terraform-plugin-framework/resource"
 	"github.com/hashicorp/terraform-plugin-framework/types"
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
 	"github.com/hashicorp/terraform-plugin-testing/plancheck"
@@ -29,6 +33,10 @@ resource "relay_valkey_cluster" "this" {
 }
 
 func valkeyGroup(label string, count int, storage, extra string) string {
+	storageLine := ""
+	if storage != "" {
+		storageLine = fmt.Sprintf("storage = %q", storage)
+	}
 	return fmt.Sprintf(`
   nodes = {
     %s = {
@@ -37,11 +45,11 @@ func valkeyGroup(label string, count int, storage, extra string) string {
       region = "us-east-1"
       tier   = "RC10"
       resources = {
-        storage = %q%s
+        %s%s
       }
     }
   }
-`, label, count, storage, extra)
+`, label, count, storageLine, extra)
 }
 
 func replicationConfig(f *fakeServer, version, storage, parameters, extra string) string {
@@ -131,8 +139,13 @@ func TestValkeyClusterResource_Lifecycle(t *testing.T) {
 				ExpectError: regexp.MustCompile("Version cannot change here"),
 			},
 			{
-				Config:      replicationConfig(f, "9.1", "4Gi", `{}`, ""),
-				ExpectError: regexp.MustCompile("Storage cannot shrink"),
+				Config: replicationConfig(f, "9.1", "4Gi", `{}`, ""),
+				Check: func(*terraform.State) error {
+					if n := len(f.callsTo("UpdateDatabase")); n != 1 {
+						return fmt.Errorf("a storage below the current size must not call UpdateDatabase, got %d calls", n)
+					}
+					return nil
+				},
 			},
 			{
 				ResourceName: "relay_valkey_cluster.this",
@@ -553,6 +566,14 @@ func TestValkeyClusterResource_DriftAndFailures(t *testing.T) {
 			{
 				PreConfig: func() {
 					clearAll()
+					f.failAfter("GetDatabase", 1, status.Error(codes.PermissionDenied, "denied"))
+				},
+				Config:      replicationConfig(f, "9.1", "11Gi", `{}`, ""),
+				ExpectError: regexp.MustCompile(`did not settle after update`),
+			},
+			{
+				PreConfig: func() {
+					clearAll()
 					f.mu.Lock()
 					defer f.mu.Unlock()
 					for _, db := range f.databases {
@@ -778,4 +799,221 @@ func TestValkeyClusterResource_ImportRejectsOtherEngine(t *testing.T) {
 			},
 		},
 	})
+}
+
+func TestValkeyClusterResource_StorageRaisedByThePlatform(t *testing.T) {
+	f := startFakeServer(t)
+	f.valkeyFloor = "6Gi"
+	const storage = "relay_valkey_cluster.this"
+	autoscale := `
+        storage_autoscale = {
+          enabled     = true
+          max_storage = "4Gi"
+        }`
+	resource.UnitTest(t, resource.TestCase{
+		ProtoV6ProviderFactories: factories(relay.Dial),
+		Steps: []resource.TestStep{
+			{
+				Config: valkeyConfig(f, valkeyGroup("cache", 1, "2Gi", autoscale)),
+				Check:  resource.TestCheckResourceAttr(storage, "nodes.cache.resources.storage", "2Gi"),
+			},
+			{
+				RefreshState: true,
+				Check: resource.ComposeAggregateTestCheckFunc(
+					resource.TestCheckResourceAttr(storage, "nodes.cache.resources.storage", "6Gi"),
+					resource.TestCheckResourceAttr(storage, "nodes.cache.resources.storage_autoscale.max_storage", "6Gi"),
+				),
+			},
+			{
+				Config:   valkeyConfig(f, valkeyGroup("cache", 1, "2Gi", autoscale)),
+				PlanOnly: true,
+			},
+			{
+				Config: valkeyConfig(f, valkeyGroup("cache", 1, "6144Mi", `
+        storage_autoscale = {
+          enabled     = true
+          max_storage = "6144Mi"
+        }`)),
+				Check: func(*terraform.State) error {
+					if n := len(f.callsTo("UpdateDatabase")); n != 0 {
+						return fmt.Errorf("the same size in another unit must not call UpdateDatabase, got %d calls", n)
+					}
+					return nil
+				},
+			},
+			{
+				Config: strings.Replace(valkeyConfig(f, valkeyGroup("cache", 1, "2Gi", autoscale)), "name         = \"sessions\"", "name         = \"sessions\"\n  parameters   = { maxmemory-policy = \"allkeys-lru\" }", 1),
+				Check: func(*terraform.State) error {
+					if n := len(f.callsTo("UpdateDatabase")); n != 1 {
+						return fmt.Errorf("a parameters change must call UpdateDatabase once, got %d calls", n)
+					}
+					up := f.lastDBUpdate
+					if st := up.GetSpec().GetNodes()[0].GetResources().GetStorage(); st != "6Gi" {
+						return fmt.Errorf("the update must carry the platform's storage, got %q", st)
+					}
+					if p := up.GetSpec().GetValkey().GetParameters()["maxmemory-policy"]; p != "allkeys-lru" {
+						return fmt.Errorf("the parameter must be applied, got %q", p)
+					}
+					if paths := up.GetUpdateMask().GetPaths(); slices.Contains(paths, "nodes") {
+						return fmt.Errorf("nodes must not be in the update mask, got %v", paths)
+					}
+					return nil
+				},
+			},
+			{
+				Config: valkeyConfig(f, valkeyGroup("cache", 1, "8Gi", `
+        storage_autoscale = {
+          enabled     = true
+          max_storage = "20Gi"
+        }`)),
+				Check: resource.ComposeAggregateTestCheckFunc(
+					resource.TestCheckResourceAttr(storage, "nodes.cache.resources.storage", "8Gi"),
+					resource.TestCheckResourceAttr(storage, "nodes.cache.resources.storage_autoscale.max_storage", "20Gi"),
+				),
+			},
+		},
+	})
+}
+
+func TestValkeyClusterResource_OmittedStorageFollowsThePlatform(t *testing.T) {
+	f := startFakeServer(t)
+	f.valkeyFloor = "6Gi"
+	resource.UnitTest(t, resource.TestCase{
+		ProtoV6ProviderFactories: factories(relay.Dial),
+		Steps: []resource.TestStep{
+			{
+				Config: valkeyConfig(f, valkeyGroup("cache", 1, "", "")),
+				Check:  resource.TestCheckResourceAttr("relay_valkey_cluster.this", "nodes.cache.resources.storage", "6Gi"),
+			},
+			{
+				Config: valkeyConfig(f, valkeyGroup("cache", 1, "", "")),
+				Check: func(*terraform.State) error {
+					if n := len(f.callsTo("UpdateDatabase")); n != 0 {
+						return fmt.Errorf("an unchanged config must not call UpdateDatabase, got %d calls", n)
+					}
+					return nil
+				},
+			},
+		},
+	})
+}
+
+func TestKeepPlannedStorage(t *testing.T) {
+	autoscale := func(limit types.String) types.Object {
+		return types.ObjectValueMust(storageAutoscaleAttrTypes, map[string]attr.Value{
+			"enabled": types.BoolValue(true), "threshold_percent": types.Int64Value(80),
+			"increase_percent": types.Int64Value(20), "max_storage": limit,
+		})
+	}
+	group := func(storage types.String, sa types.Object) valkeyNodeGroupModel {
+		return valkeyNodeGroupModel{Resources: valkeyResourcesModel{Storage: storage, StorageAutoscale: sa}}
+	}
+	null := types.ObjectNull(storageAutoscaleAttrTypes)
+	state := map[string]valkeyNodeGroupModel{
+		"a": group(types.StringValue("6Gi"), autoscale(types.StringValue("6Gi"))),
+		"b": group(types.StringValue("6Gi"), null),
+		"c": group(types.StringValue("6Gi"), autoscale(types.StringValue("6Gi"))),
+	}
+	plan := map[string]valkeyNodeGroupModel{
+		"a": group(types.StringValue("2Gi"), autoscale(types.StringValue("4Gi"))),
+		"b": group(types.StringUnknown(), autoscale(types.StringValue("4Gi"))),
+		"c": group(types.StringNull(), autoscale(types.StringUnknown())),
+		"d": group(types.StringValue("2Gi"), null),
+	}
+	keepPlannedStorage(state, plan)
+	if got := state["a"].Resources.Storage.ValueString(); got != "2Gi" {
+		t.Errorf("a configured storage must stay in state, got %q", got)
+	}
+	if got := maxStorageOf(state["a"].Resources.StorageAutoscale).ValueString(); got != "4Gi" {
+		t.Errorf("a configured max_storage must stay in state, got %q", got)
+	}
+	if got := state["b"].Resources.Storage.ValueString(); got != "6Gi" {
+		t.Errorf("an unknown plan must keep the platform's storage, got %q", got)
+	}
+	if !state["b"].Resources.StorageAutoscale.IsNull() {
+		t.Error("a platform without autoscale must stay null")
+	}
+	if got := state["c"].Resources.Storage.ValueString(); got != "6Gi" {
+		t.Errorf("a null plan must keep the platform's storage, got %q", got)
+	}
+	if got := maxStorageOf(state["c"].Resources.StorageAutoscale).ValueString(); got != "6Gi" {
+		t.Errorf("an unknown max_storage must keep the platform's, got %q", got)
+	}
+	if _, ok := state["d"]; ok {
+		t.Error("a group the platform does not return must not be added")
+	}
+}
+
+func TestKeepRaisedMaxStorage(t *testing.T) {
+	autoscale := func(limit types.String) types.Object {
+		return types.ObjectValueMust(storageAutoscaleAttrTypes, map[string]attr.Value{
+			"enabled": types.BoolValue(true), "threshold_percent": types.Int64Value(80),
+			"increase_percent": types.Int64Value(20), "max_storage": limit,
+		})
+	}
+	res := func(storage string, limit types.String) valkeyResourcesModel {
+		return valkeyResourcesModel{Storage: types.StringValue(storage), StorageAutoscale: autoscale(limit)}
+	}
+	null := valkeyResourcesModel{Storage: types.StringValue("6Gi"), StorageAutoscale: types.ObjectNull(storageAutoscaleAttrTypes)}
+	raised := res("6Gi", types.StringValue("6Gi"))
+	cases := map[string]struct {
+		planned, current valkeyResourcesModel
+		want             string
+	}{
+		"below the volume":       {res("6Gi", types.StringValue("4Gi")), raised, "6Gi"},
+		"at the volume":          {res("6Gi", types.StringValue("6Gi")), raised, "6Gi"},
+		"same size other unit":   {res("6Gi", types.StringValue("6144Mi")), raised, "6Gi"},
+		"lowered to the volume":  {res("6Gi", types.StringValue("6Gi")), res("6Gi", types.StringValue("40Gi")), ""},
+		"unparsable ceiling":     {res("6Gi", types.StringValue("lots")), raised, ""},
+		"unknown ceiling":        {res("6Gi", types.StringUnknown()), raised, ""},
+		"no ceiling configured":  {null, raised, ""},
+		"no ceiling in state":    {res("6Gi", types.StringValue("4Gi")), null, ""},
+		"state below the volume": {res("6Gi", types.StringValue("4Gi")), res("6Gi", types.StringValue("5Gi")), ""},
+	}
+	for name, c := range cases {
+		got := keepRaisedMaxStorage(c.planned, c.current)
+		if c.want == "" && !got.IsNull() || c.want != "" && maxStorageOf(got).ValueString() != c.want {
+			t.Errorf("%s: got %v, want %q", name, got, c.want)
+		}
+	}
+}
+
+func TestSameSettingsCoversEveryConfigurableAttribute(t *testing.T) {
+	var resp fwresource.SchemaResponse
+	(&valkeyClusterResource{}).Schema(context.Background(), fwresource.SchemaRequest{}, &resp)
+	covered := map[string]bool{
+		"workspace_id": true, "name": true, "version": true, "mode": true, "shards": true, "replicas_per_shard": true,
+		"nodes": true, "parameters": true, "keep_backups_on_destroy": true, "timeouts": true,
+	}
+	for name, a := range resp.Schema.Attributes {
+		if (a.IsRequired() || a.IsOptional()) && !covered[name] {
+			t.Errorf("%s is configurable but sameSettings does not compare it", name)
+		}
+	}
+	for name := range covered {
+		if _, ok := resp.Schema.Attributes[name]; !ok && name != "timeouts" {
+			t.Errorf("%s is listed as covered but is not in the schema", name)
+		}
+	}
+}
+
+func TestCompareQuantity(t *testing.T) {
+	v := types.StringValue
+	cases := []struct {
+		a, b  types.String
+		order int
+		ok    bool
+	}{
+		{v("2Gi"), v("6Gi"), -1, true},
+		{v("8Gi"), v("6Gi"), 1, true},
+		{v("6144Mi"), v("6Gi"), 0, true},
+		{v("lots"), v("6Gi"), 0, false},
+		{types.StringNull(), v("6Gi"), 0, false},
+		{v("6Gi"), types.StringUnknown(), 0, false},
+	}
+	for _, c := range cases {
+		if order, ok := compareQuantity(c.a, c.b); order != c.order || ok != c.ok {
+			t.Errorf("compareQuantity(%v, %v) = %d, %v", c.a, c.b, order, ok)
+		}
+	}
 }
