@@ -13,6 +13,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/providerserver"
 	"github.com/hashicorp/terraform-plugin-go/tfprotov6"
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
+	"github.com/hashicorp/terraform-plugin-testing/plancheck"
 	"github.com/hashicorp/terraform-plugin-testing/terraform"
 
 	serverv1 "github.com/relay-sh/relay-go/gen/relay/server/v1"
@@ -216,6 +217,134 @@ data "relay_postgresql_cluster" "this" {
 				resource.TestCheckResourceAttrPair("data.relay_postgresql_cluster.this", "id", "relay_postgresql_cluster.this", "id"),
 			),
 		}},
+	})
+}
+
+func TestAccValkeyClusterAndUser(t *testing.T) {
+	if os.Getenv("TF_ACC") == "" || os.Getenv("RELAY_ACC_DATABASES") == "" {
+		t.Skip("set TF_ACC=1 and RELAY_ACC_DATABASES=1 to provision real clusters")
+	}
+	name := acceptanceName(t)
+	config := func(policy, role string) string {
+		return fmt.Sprintf(`
+resource "relay_workspace" "this" {
+  name = %[1]q
+}
+
+resource "relay_valkey_cluster" "this" {
+  workspace_id = relay_workspace.this.id
+  name         = "valkey"
+  version      = %[2]q
+  mode         = "replication"
+
+  parameters = {
+    maxmemory-policy = %[3]q
+  }
+
+  nodes = {
+    cache = {
+      count     = 2
+      cloud     = %[4]q
+      region    = %[5]q
+      tier      = %[6]q
+      resources = { storage = "5Gi" }
+    }
+  }
+}
+
+resource "relay_valkey_user" "this" {
+  workspace_id      = relay_workspace.this.id
+  cluster_id        = relay_valkey_cluster.this.id
+  username          = "tfacc"
+  generate_password = true
+  role              = %[7]q
+}
+`, name, envOr("RELAY_ACC_VALKEY_VERSION", "9.1"), policy, envOr("RELAY_ACC_CLOUD", "aws"), envOr("RELAY_ACC_REGION", "us-east-1"), envOr("RELAY_ACC_VALKEY_TIER", "RC10"), role)
+	}
+	resource.Test(t, resource.TestCase{
+		ProtoV6ProviderFactories: acceptanceFactories(t),
+		Steps: []resource.TestStep{
+			{
+				Config: config("allkeys-lru", "readOnly"),
+				Check: resource.ComposeAggregateTestCheckFunc(
+					resource.TestCheckResourceAttr("relay_valkey_cluster.this", "phase", "running"),
+					resource.TestCheckResourceAttr("relay_valkey_cluster.this", "parameters.maxmemory-policy", "allkeys-lru"),
+					resource.TestCheckResourceAttr("relay_valkey_user.this", "phase", "Ready"),
+					resource.TestCheckResourceAttr("relay_valkey_user.this", "role", "readOnly"),
+					resource.TestCheckResourceAttrSet("relay_valkey_user.this", "generated_password"),
+				),
+			},
+			{
+				Config: config("volatile-lru", "readWrite"),
+				ConfigPlanChecks: resource.ConfigPlanChecks{
+					PreApply: []plancheck.PlanCheck{
+						plancheck.ExpectResourceAction("relay_valkey_cluster.this", plancheck.ResourceActionUpdate),
+						plancheck.ExpectResourceAction("relay_valkey_user.this", plancheck.ResourceActionUpdate),
+					},
+				},
+				Check: resource.ComposeAggregateTestCheckFunc(
+					resource.TestCheckResourceAttr("relay_valkey_cluster.this", "phase", "running"),
+					resource.TestCheckResourceAttr("relay_valkey_cluster.this", "parameters.maxmemory-policy", "volatile-lru"),
+					resource.TestCheckResourceAttr("relay_valkey_user.this", "phase", "Ready"),
+					resource.TestCheckResourceAttr("relay_valkey_user.this", "role", "readWrite"),
+				),
+			},
+		},
+	})
+}
+
+func TestAccValkeyClusterModeReshard(t *testing.T) {
+	if os.Getenv("TF_ACC") == "" || os.Getenv("RELAY_ACC_DATABASES") == "" || os.Getenv("RELAY_ACC_VALKEY_CLUSTER_MODE") == "" {
+		t.Skip("set TF_ACC=1, RELAY_ACC_DATABASES=1 and RELAY_ACC_VALKEY_CLUSTER_MODE=1 to provision a sharded Valkey cluster")
+	}
+	name := acceptanceName(t)
+	config := func(shards int) string {
+		return fmt.Sprintf(`
+resource "relay_workspace" "this" {
+  name = %[1]q
+}
+
+resource "relay_valkey_cluster" "this" {
+  workspace_id = relay_workspace.this.id
+  name         = "valkey"
+  version      = %[2]q
+  mode         = "cluster"
+  shards       = %[3]d
+
+  nodes = {
+    cache = {
+      count     = %[3]d
+      cloud     = %[4]q
+      region    = %[5]q
+      tier      = %[6]q
+      resources = { storage = "5Gi" }
+    }
+  }
+}
+`, name, envOr("RELAY_ACC_VALKEY_VERSION", "9.1"), shards, envOr("RELAY_ACC_CLOUD", "aws"), envOr("RELAY_ACC_REGION", "us-east-1"), envOr("RELAY_ACC_VALKEY_TIER", "RC10"))
+	}
+	resource.Test(t, resource.TestCase{
+		ProtoV6ProviderFactories: acceptanceFactories(t),
+		Steps: []resource.TestStep{
+			{
+				Config: config(3),
+				Check: resource.ComposeAggregateTestCheckFunc(
+					resource.TestCheckResourceAttr("relay_valkey_cluster.this", "phase", "running"),
+					resource.TestCheckResourceAttr("relay_valkey_cluster.this", "shards", "3"),
+				),
+			},
+			{
+				Config: config(4),
+				ConfigPlanChecks: resource.ConfigPlanChecks{
+					PreApply: []plancheck.PlanCheck{plancheck.ExpectResourceAction("relay_valkey_cluster.this", plancheck.ResourceActionUpdate)},
+				},
+				Check: resource.ComposeAggregateTestCheckFunc(
+					resource.TestCheckResourceAttr("relay_valkey_cluster.this", "phase", "running"),
+					resource.TestCheckResourceAttr("relay_valkey_cluster.this", "shards", "4"),
+					resource.TestCheckResourceAttr("relay_valkey_cluster.this", "nodes.cache.count", "4"),
+				),
+			},
+		},
 	})
 }
 
