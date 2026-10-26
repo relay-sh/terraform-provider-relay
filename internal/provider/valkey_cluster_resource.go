@@ -516,8 +516,11 @@ func valkeyUpdateMask(plan, prior valkeyClusterModel) []string {
 	if !reflect.DeepEqual(plan.Nodes, prior.Nodes) {
 		paths = append(paths, "nodes")
 	}
-	if !plan.Shards.Equal(prior.Shards) || !plan.ReplicasPerShard.Equal(prior.ReplicasPerShard) || !plan.Parameters.Equal(prior.Parameters) {
+	switch {
+	case !plan.Shards.Equal(prior.Shards) || !plan.ReplicasPerShard.Equal(prior.ReplicasPerShard):
 		paths = append(paths, "valkey")
+	case !plan.Parameters.Equal(prior.Parameters):
+		paths = append(paths, "valkey.parameters")
 	}
 	return paths
 }
