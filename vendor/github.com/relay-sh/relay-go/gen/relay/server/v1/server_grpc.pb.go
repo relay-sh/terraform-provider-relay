@@ -34,10 +34,14 @@ const (
 	ServerService_CreateConnection_FullMethodName             = "/relay.server.v1.ServerService/CreateConnection"
 	ServerService_DeleteConnection_FullMethodName             = "/relay.server.v1.ServerService/DeleteConnection"
 	ServerService_UpdateConnection_FullMethodName             = "/relay.server.v1.ServerService/UpdateConnection"
+	ServerService_SetConnectionPools_FullMethodName           = "/relay.server.v1.ServerService/SetConnectionPools"
 	ServerService_IssueTunnelToken_FullMethodName             = "/relay.server.v1.ServerService/IssueTunnelToken"
 	ServerService_ResolveTunnelToken_FullMethodName           = "/relay.server.v1.ServerService/ResolveTunnelToken"
 	ServerService_ReportTunnelSessions_FullMethodName         = "/relay.server.v1.ServerService/ReportTunnelSessions"
 	ServerService_ListTunnelSessions_FullMethodName           = "/relay.server.v1.ServerService/ListTunnelSessions"
+	ServerService_ReportMaskingClassifications_FullMethodName = "/relay.server.v1.ServerService/ReportMaskingClassifications"
+	ServerService_ListMaskingClassifications_FullMethodName   = "/relay.server.v1.ServerService/ListMaskingClassifications"
+	ServerService_ResolveMaskingClassification_FullMethodName = "/relay.server.v1.ServerService/ResolveMaskingClassification"
 	ServerService_ListConnectionGroups_FullMethodName         = "/relay.server.v1.ServerService/ListConnectionGroups"
 	ServerService_CreateConnectionGroup_FullMethodName        = "/relay.server.v1.ServerService/CreateConnectionGroup"
 	ServerService_DeleteConnectionGroup_FullMethodName        = "/relay.server.v1.ServerService/DeleteConnectionGroup"
@@ -51,6 +55,17 @@ const (
 	ServerService_DeletePolicy_FullMethodName                 = "/relay.server.v1.ServerService/DeletePolicy"
 	ServerService_SetConnectionPolicies_FullMethodName        = "/relay.server.v1.ServerService/SetConnectionPolicies"
 	ServerService_ListConnectionPolicies_FullMethodName       = "/relay.server.v1.ServerService/ListConnectionPolicies"
+	ServerService_RequestQueryApproval_FullMethodName         = "/relay.server.v1.ServerService/RequestQueryApproval"
+	ServerService_WaitQueryApproval_FullMethodName            = "/relay.server.v1.ServerService/WaitQueryApproval"
+	ServerService_ListQueryApprovals_FullMethodName           = "/relay.server.v1.ServerService/ListQueryApprovals"
+	ServerService_GetQueryApproval_FullMethodName             = "/relay.server.v1.ServerService/GetQueryApproval"
+	ServerService_ApproveQueryApproval_FullMethodName         = "/relay.server.v1.ServerService/ApproveQueryApproval"
+	ServerService_DenyQueryApproval_FullMethodName            = "/relay.server.v1.ServerService/DenyQueryApproval"
+	ServerService_DetachQueryApproval_FullMethodName          = "/relay.server.v1.ServerService/DetachQueryApproval"
+	ServerService_CancelQueryApproval_FullMethodName          = "/relay.server.v1.ServerService/CancelQueryApproval"
+	ServerService_ListApprovalIntegrations_FullMethodName     = "/relay.server.v1.ServerService/ListApprovalIntegrations"
+	ServerService_UpsertApprovalIntegration_FullMethodName    = "/relay.server.v1.ServerService/UpsertApprovalIntegration"
+	ServerService_DeleteApprovalIntegration_FullMethodName    = "/relay.server.v1.ServerService/DeleteApprovalIntegration"
 	ServerService_ListAccessGrants_FullMethodName             = "/relay.server.v1.ServerService/ListAccessGrants"
 	ServerService_CreateAccessGrant_FullMethodName            = "/relay.server.v1.ServerService/CreateAccessGrant"
 	ServerService_DeleteAccessGrant_FullMethodName            = "/relay.server.v1.ServerService/DeleteAccessGrant"
@@ -81,6 +96,7 @@ const (
 	ServerService_CreateAgentPool_FullMethodName              = "/relay.server.v1.ServerService/CreateAgentPool"
 	ServerService_DeleteAgentPool_FullMethodName              = "/relay.server.v1.ServerService/DeleteAgentPool"
 	ServerService_UpdateAgentPool_FullMethodName              = "/relay.server.v1.ServerService/UpdateAgentPool"
+	ServerService_SetAgentPoolTeams_FullMethodName            = "/relay.server.v1.ServerService/SetAgentPoolTeams"
 	ServerService_ResolveConnectionCredential_FullMethodName  = "/relay.server.v1.ServerService/ResolveConnectionCredential"
 	ServerService_ResolveExternalSecretSource_FullMethodName  = "/relay.server.v1.ServerService/ResolveExternalSecretSource"
 	ServerService_ListExternalSecretSources_FullMethodName    = "/relay.server.v1.ServerService/ListExternalSecretSources"
@@ -99,6 +115,11 @@ const (
 	ServerService_GetBackupAutoExport_FullMethodName          = "/relay.server.v1.ServerService/GetBackupAutoExport"
 	ServerService_UpsertBackupAutoExport_FullMethodName       = "/relay.server.v1.ServerService/UpsertBackupAutoExport"
 	ServerService_ExportToCloud_FullMethodName                = "/relay.server.v1.ServerService/ExportToCloud"
+	ServerService_ListLogDestinations_FullMethodName          = "/relay.server.v1.ServerService/ListLogDestinations"
+	ServerService_CreateLogDestination_FullMethodName         = "/relay.server.v1.ServerService/CreateLogDestination"
+	ServerService_UpdateLogDestination_FullMethodName         = "/relay.server.v1.ServerService/UpdateLogDestination"
+	ServerService_DeleteLogDestination_FullMethodName         = "/relay.server.v1.ServerService/DeleteLogDestination"
+	ServerService_TestLogDestination_FullMethodName           = "/relay.server.v1.ServerService/TestLogDestination"
 	ServerService_IngestAuditEvents_FullMethodName            = "/relay.server.v1.ServerService/IngestAuditEvents"
 	ServerService_ListAuditLogs_FullMethodName                = "/relay.server.v1.ServerService/ListAuditLogs"
 	ServerService_GetAuditMetrics_FullMethodName              = "/relay.server.v1.ServerService/GetAuditMetrics"
@@ -167,7 +188,6 @@ const (
 	ServerService_GetBackupSchedule_FullMethodName            = "/relay.server.v1.ServerService/GetBackupSchedule"
 	ServerService_UpsertBackupSchedule_FullMethodName         = "/relay.server.v1.ServerService/UpsertBackupSchedule"
 	ServerService_ResetBackupSchedule_FullMethodName          = "/relay.server.v1.ServerService/ResetBackupSchedule"
-	ServerService_UpdateBackupSchedule_FullMethodName         = "/relay.server.v1.ServerService/UpdateBackupSchedule"
 	ServerService_CreateBackup_FullMethodName                 = "/relay.server.v1.ServerService/CreateBackup"
 	ServerService_DeleteBackup_FullMethodName                 = "/relay.server.v1.ServerService/DeleteBackup"
 	ServerService_ListDatabaseUsers_FullMethodName            = "/relay.server.v1.ServerService/ListDatabaseUsers"
@@ -196,6 +216,20 @@ const (
 	ServerService_TestOrgSSOConnection_FullMethodName         = "/relay.server.v1.ServerService/TestOrgSSOConnection"
 	ServerService_ListPostgreSQLExtensions_FullMethodName     = "/relay.server.v1.ServerService/ListPostgreSQLExtensions"
 	ServerService_GetLicenseStatus_FullMethodName             = "/relay.server.v1.ServerService/GetLicenseStatus"
+	ServerService_ExportLicenseUsageReport_FullMethodName     = "/relay.server.v1.ServerService/ExportLicenseUsageReport"
+	ServerService_GetRunbookSource_FullMethodName             = "/relay.server.v1.ServerService/GetRunbookSource"
+	ServerService_UpsertRunbookSource_FullMethodName          = "/relay.server.v1.ServerService/UpsertRunbookSource"
+	ServerService_DeleteRunbookSource_FullMethodName          = "/relay.server.v1.ServerService/DeleteRunbookSource"
+	ServerService_SyncRunbooks_FullMethodName                 = "/relay.server.v1.ServerService/SyncRunbooks"
+	ServerService_RotateRunbookWebhookSecret_FullMethodName   = "/relay.server.v1.ServerService/RotateRunbookWebhookSecret"
+	ServerService_FetchRunbookHostKey_FullMethodName          = "/relay.server.v1.ServerService/FetchRunbookHostKey"
+	ServerService_ListRunbooks_FullMethodName                 = "/relay.server.v1.ServerService/ListRunbooks"
+	ServerService_GetRunbook_FullMethodName                   = "/relay.server.v1.ServerService/GetRunbook"
+	ServerService_RunRunbook_FullMethodName                   = "/relay.server.v1.ServerService/RunRunbook"
+	ServerService_GetRunbookExecution_FullMethodName          = "/relay.server.v1.ServerService/GetRunbookExecution"
+	ServerService_ListRunbookExecutions_FullMethodName        = "/relay.server.v1.ServerService/ListRunbookExecutions"
+	ServerService_ClaimRunbookExecutions_FullMethodName       = "/relay.server.v1.ServerService/ClaimRunbookExecutions"
+	ServerService_ReportRunbookExecution_FullMethodName       = "/relay.server.v1.ServerService/ReportRunbookExecution"
 )
 
 // ServerServiceClient is the client API for ServerService service.
@@ -243,6 +277,7 @@ type ServerServiceClient interface {
 	DeleteConnection(ctx context.Context, in *DeleteConnectionRequest, opts ...grpc.CallOption) (*DeleteConnectionResponse, error)
 	// UpdateConnection updates an existing connection.
 	UpdateConnection(ctx context.Context, in *UpdateConnectionRequest, opts ...grpc.CallOption) (*UpdateConnectionResponse, error)
+	SetConnectionPools(ctx context.Context, in *SetConnectionPoolsRequest, opts ...grpc.CallOption) (*SetConnectionPoolsResponse, error)
 	// IssueTunnelToken mints a short-lived token a CLI uses to prove its identity
 	// to the agent when opening a tunnel to the given connection (user-authed).
 	IssueTunnelToken(ctx context.Context, in *IssueTunnelTokenRequest, opts ...grpc.CallOption) (*IssueTunnelTokenResponse, error)
@@ -262,6 +297,17 @@ type ServerServiceClient interface {
 	// (user-authed, org.connections.read; non-admins only see sessions on
 	// connections they can reach).
 	ListTunnelSessions(ctx context.Context, in *ListTunnelSessionsRequest, opts ...grpc.CallOption) (*ListTunnelSessionsResponse, error)
+	// ReportMaskingClassifications records which columns the agent's automatic
+	// classifier masked (agent-authed, scoped to connections the agent serves).
+	// Idempotent per (connection, table, column, category).
+	ReportMaskingClassifications(ctx context.Context, in *ReportMaskingClassificationsRequest, opts ...grpc.CallOption) (*ReportMaskingClassificationsResponse, error)
+	// ListMaskingClassifications lists the detected columns of the caller's
+	// workspace for review (user-authed, org.connections.read).
+	ListMaskingClassifications(ctx context.Context, in *ListMaskingClassificationsRequest, opts ...grpc.CallOption) (*ListMaskingClassificationsResponse, error)
+	// ResolveMaskingClassification turns a detected column into an explicit
+	// masking rule ("accept") or an exemption ("exempt") on its connection
+	// (user-authed, org.connections.update).
+	ResolveMaskingClassification(ctx context.Context, in *ResolveMaskingClassificationRequest, opts ...grpc.CallOption) (*ResolveMaskingClassificationResponse, error)
 	// ListConnectionGroups returns all connection groups in the user's organization.
 	ListConnectionGroups(ctx context.Context, in *ListConnectionGroupsRequest, opts ...grpc.CallOption) (*ListConnectionGroupsResponse, error)
 	// CreateConnectionGroup creates a new connection group.
@@ -288,6 +334,42 @@ type ServerServiceClient interface {
 	SetConnectionPolicies(ctx context.Context, in *SetConnectionPoliciesRequest, opts ...grpc.CallOption) (*SetConnectionPoliciesResponse, error)
 	// ListConnectionPolicies returns the names of policies activated on a connection.
 	ListConnectionPolicies(ctx context.Context, in *ListConnectionPoliciesRequest, opts ...grpc.CallOption) (*ListConnectionPoliciesResponse, error)
+	// RequestQueryApproval is called by an agent when a statement matched an
+	// approve action. It consumes a matching approval (the statement may run
+	// once), or opens or returns the pending request the user must get approved.
+	RequestQueryApproval(ctx context.Context, in *RequestQueryApprovalRequest, opts ...grpc.CallOption) (*RequestQueryApprovalResponse, error)
+	// WaitQueryApproval is a long poll an agent makes for a request it holds: it
+	// returns when the request is decided or the wait elapses, whichever is
+	// first. It never consumes an approval; the agent still calls
+	// RequestQueryApproval to use one up.
+	WaitQueryApproval(ctx context.Context, in *WaitQueryApprovalRequest, opts ...grpc.CallOption) (*WaitQueryApprovalResponse, error)
+	// ListQueryApprovals returns the workspace's query approval requests the
+	// caller may see: all of them with org.query_approvals.read, otherwise the
+	// caller's own and those the caller may decide.
+	ListQueryApprovals(ctx context.Context, in *ListQueryApprovalsRequest, opts ...grpc.CallOption) (*ListQueryApprovalsResponse, error)
+	// GetQueryApproval returns one query approval request by id.
+	GetQueryApproval(ctx context.Context, in *GetQueryApprovalRequest, opts ...grpc.CallOption) (*GetQueryApprovalResponse, error)
+	// ApproveQueryApproval approves a pending request. The requester can never
+	// approve their own request.
+	ApproveQueryApproval(ctx context.Context, in *ApproveQueryApprovalRequest, opts ...grpc.CallOption) (*ApproveQueryApprovalResponse, error)
+	// DenyQueryApproval denies a pending request.
+	DenyQueryApproval(ctx context.Context, in *DenyQueryApprovalRequest, opts ...grpc.CallOption) (*DenyQueryApprovalResponse, error)
+	// DetachQueryApproval is called by an agent whose client disconnected while
+	// the agent held a statement for a policy that runs it when approved. It
+	// hands the control plane what is needed to replay the statement, or says
+	// why it cannot be replayed.
+	DetachQueryApproval(ctx context.Context, in *DetachQueryApprovalRequest, opts ...grpc.CallOption) (*DetachQueryApprovalResponse, error)
+	// CancelQueryApproval lets the requester withdraw a request that is still
+	// waiting for a decision (or an approval not used yet).
+	CancelQueryApproval(ctx context.Context, in *CancelQueryApprovalRequest, opts ...grpc.CallOption) (*CancelQueryApprovalResponse, error)
+	// ListApprovalIntegrations returns the workspace's approval integrations
+	// (outbound webhooks and Jira), without their secrets.
+	ListApprovalIntegrations(ctx context.Context, in *ListApprovalIntegrationsRequest, opts ...grpc.CallOption) (*ListApprovalIntegrationsResponse, error)
+	// UpsertApprovalIntegration creates or replaces an approval integration by
+	// name. The signing secret is returned only when it is generated.
+	UpsertApprovalIntegration(ctx context.Context, in *UpsertApprovalIntegrationRequest, opts ...grpc.CallOption) (*UpsertApprovalIntegrationResponse, error)
+	// DeleteApprovalIntegration removes an approval integration by name.
+	DeleteApprovalIntegration(ctx context.Context, in *DeleteApprovalIntegrationRequest, opts ...grpc.CallOption) (*DeleteApprovalIntegrationResponse, error)
 	// ListAccessGrants returns all access grants in the user's organization.
 	ListAccessGrants(ctx context.Context, in *ListAccessGrantsRequest, opts ...grpc.CallOption) (*ListAccessGrantsResponse, error)
 	// CreateAccessGrant creates a new access grant.
@@ -348,6 +430,7 @@ type ServerServiceClient interface {
 	DeleteAgentPool(ctx context.Context, in *DeleteAgentPoolRequest, opts ...grpc.CallOption) (*DeleteAgentPoolResponse, error)
 	// UpdateAgentPool updates an existing agent pool.
 	UpdateAgentPool(ctx context.Context, in *UpdateAgentPoolRequest, opts ...grpc.CallOption) (*UpdateAgentPoolResponse, error)
+	SetAgentPoolTeams(ctx context.Context, in *SetAgentPoolTeamsRequest, opts ...grpc.CallOption) (*SetAgentPoolTeamsResponse, error)
 	// ResolveConnectionCredential returns a connection's stored password to the
 	// agent that proxies it (agent-only auth). It exists so the credential can
 	// stop travelling on the user-facing connection read, which reaches the agent
@@ -385,6 +468,14 @@ type ServerServiceClient interface {
 	GetBackupAutoExport(ctx context.Context, in *GetBackupAutoExportRequest, opts ...grpc.CallOption) (*GetBackupAutoExportResponse, error)
 	UpsertBackupAutoExport(ctx context.Context, in *UpsertBackupAutoExportRequest, opts ...grpc.CallOption) (*UpsertBackupAutoExportResponse, error)
 	ExportToCloud(ctx context.Context, in *ExportToCloudRequest, opts ...grpc.CallOption) (*ExportToCloudResponse, error)
+	// Push destinations for the audit and activity streams (webhook, Splunk HEC,
+	// Datadog Logs, syslog over TLS). Secrets are write-only.
+	ListLogDestinations(ctx context.Context, in *ListLogDestinationsRequest, opts ...grpc.CallOption) (*ListLogDestinationsResponse, error)
+	CreateLogDestination(ctx context.Context, in *CreateLogDestinationRequest, opts ...grpc.CallOption) (*CreateLogDestinationResponse, error)
+	UpdateLogDestination(ctx context.Context, in *UpdateLogDestinationRequest, opts ...grpc.CallOption) (*UpdateLogDestinationResponse, error)
+	DeleteLogDestination(ctx context.Context, in *DeleteLogDestinationRequest, opts ...grpc.CallOption) (*DeleteLogDestinationResponse, error)
+	// Sends one synthetic event (schema relay.test.v1) and reports the outcome.
+	TestLogDestination(ctx context.Context, in *TestLogDestinationRequest, opts ...grpc.CallOption) (*TestLogDestinationResponse, error)
 	// IngestAuditEvents receives audit events from an agent.
 	IngestAuditEvents(ctx context.Context, in *IngestAuditEventsRequest, opts ...grpc.CallOption) (*IngestAuditEventsResponse, error)
 	// ListAuditLogs returns audit logs for the user's organization.
@@ -553,16 +644,6 @@ type ServerServiceClient interface {
 	// policy. It never leaves the cluster without a policy; a Terraform destroy
 	// maps here. A no-op on a database already at the default.
 	ResetBackupSchedule(ctx context.Context, in *ResetBackupScheduleRequest, opts ...grpc.CallOption) (*ResetBackupScheduleResponse, error)
-	// Deprecated: Do not use.
-	// Deprecated: keyed on a maestro schedule id. Use UpsertBackupSchedule
-	// (keyed on the database). Removed once the dashboard has moved
-	// (relay-sh/server#238).
-	//
-	// UpdateBackupSchedule updates a backup schedule's spec, including the
-	// multi-tier policy fields (snapshot_time, policy_tiers, PITR/restore
-	// windows). The cron `schedule` and legacy `retention` are still honoured
-	// by maestro/operator-mongodb — these fields are additive metadata.
-	UpdateBackupSchedule(ctx context.Context, in *UpdateBackupScheduleRequest, opts ...grpc.CallOption) (*UpdateBackupScheduleResponse, error)
 	// CreateBackup takes an on-demand snapshot of a managed database. The
 	// engine and cluster ref come from the database itself; when the
 	// database has a backup schedule its volume snapshot class is reused
@@ -600,8 +681,9 @@ type ServerServiceClient interface {
 	CreateCheckoutSession(ctx context.Context, in *CreateCheckoutSessionRequest, opts ...grpc.CallOption) (*CreateCheckoutSessionResponse, error)
 	// CreateBillingPortalSession opens the Stripe Billing Portal for the org.
 	CreateBillingPortalSession(ctx context.Context, in *CreateBillingPortalSessionRequest, opts ...grpc.CallOption) (*CreateBillingPortalSessionResponse, error)
-	// ChangePlan moves an already-subscribed org up to a higher self-serve band
-	// (team → business). Downgrades go through the billing portal; enterprise is
+	// ChangePlan moves an already-subscribed org to another self-serve band
+	// (team ↔ business). An upgrade applies immediately; a downgrade is scheduled
+	// for the end of the current billing period (no proration). Enterprise is
 	// managed by sales. Requires org.billing.manage.
 	ChangePlan(ctx context.Context, in *ChangePlanRequest, opts ...grpc.CallOption) (*ChangePlanResponse, error)
 	// CreateSupportReport files a support ticket for the caller's org.
@@ -639,6 +721,41 @@ type ServerServiceClient interface {
 	// plane: state, limits and current usage. Any authenticated member may call
 	// it. The SaaS edition has no license and answers state "none".
 	GetLicenseStatus(ctx context.Context, in *GetLicenseStatusRequest, opts ...grpc.CallOption) (*GetLicenseStatusResponse, error)
+	// ExportLicenseUsageReport returns a usage report for license audits, signed
+	// by this instance's Ed25519 report key: counts of agents, connections,
+	// members, and per month the active users and peak concurrent tunnel
+	// sessions. Generated locally and returned to the caller only; nothing is
+	// sent anywhere. Requires org.organizations.settings.update. Agent Edition
+	// only (SaaS answers FailedPrecondition).
+	ExportLicenseUsageReport(ctx context.Context, in *ExportLicenseUsageReportRequest, opts ...grpc.CallOption) (*ExportLicenseUsageReportResponse, error)
+	// GetRunbookSource returns the workspace's runbook Git source, if one is set.
+	// The access token is write-only: reads carry token_set instead.
+	GetRunbookSource(ctx context.Context, in *GetRunbookSourceRequest, opts ...grpc.CallOption) (*GetRunbookSourceResponse, error)
+	// UpsertRunbookSource sets the workspace's runbook Git source.
+	UpsertRunbookSource(ctx context.Context, in *UpsertRunbookSourceRequest, opts ...grpc.CallOption) (*UpsertRunbookSourceResponse, error)
+	// DeleteRunbookSource removes the source and retires every runbook it held.
+	DeleteRunbookSource(ctx context.Context, in *DeleteRunbookSourceRequest, opts ...grpc.CallOption) (*DeleteRunbookSourceResponse, error)
+	// SyncRunbooks fetches the source now and records new runbook versions.
+	SyncRunbooks(ctx context.Context, in *SyncRunbooksRequest, opts ...grpc.CallOption) (*SyncRunbooksResponse, error)
+	// RotateRunbookWebhookSecret generates the source's webhook secret (or clears
+	// it with disable). The secret is returned once.
+	RotateRunbookWebhookSecret(ctx context.Context, in *RotateRunbookWebhookSecretRequest, opts ...grpc.CallOption) (*RotateRunbookWebhookSecretResponse, error)
+	// FetchRunbookHostKey reads the SSH host key an ssh:// repository URL
+	// presents, for the caller to confirm and pin.
+	FetchRunbookHostKey(ctx context.Context, in *FetchRunbookHostKeyRequest, opts ...grpc.CallOption) (*FetchRunbookHostKeyResponse, error)
+	ListRunbooks(ctx context.Context, in *ListRunbooksRequest, opts ...grpc.CallOption) (*ListRunbooksResponse, error)
+	GetRunbook(ctx context.Context, in *GetRunbookRequest, opts ...grpc.CallOption) (*GetRunbookResponse, error)
+	// RunRunbook queues one execution of a pinned runbook version on a
+	// connection. An agent serving the connection runs it.
+	RunRunbook(ctx context.Context, in *RunRunbookRequest, opts ...grpc.CallOption) (*RunRunbookResponse, error)
+	GetRunbookExecution(ctx context.Context, in *GetRunbookExecutionRequest, opts ...grpc.CallOption) (*GetRunbookExecutionResponse, error)
+	ListRunbookExecutions(ctx context.Context, in *ListRunbookExecutionsRequest, opts ...grpc.CallOption) (*ListRunbookExecutionsResponse, error)
+	// ClaimRunbookExecutions hands the calling agent the pending executions it
+	// may run (agent-only auth).
+	ClaimRunbookExecutions(ctx context.Context, in *ClaimRunbookExecutionsRequest, opts ...grpc.CallOption) (*ClaimRunbookExecutionsResponse, error)
+	// ReportRunbookExecution records the outcome of a claimed execution
+	// (agent-only auth).
+	ReportRunbookExecution(ctx context.Context, in *ReportRunbookExecutionRequest, opts ...grpc.CallOption) (*ReportRunbookExecutionResponse, error)
 }
 
 type serverServiceClient struct {
@@ -799,6 +916,16 @@ func (c *serverServiceClient) UpdateConnection(ctx context.Context, in *UpdateCo
 	return out, nil
 }
 
+func (c *serverServiceClient) SetConnectionPools(ctx context.Context, in *SetConnectionPoolsRequest, opts ...grpc.CallOption) (*SetConnectionPoolsResponse, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(SetConnectionPoolsResponse)
+	err := c.cc.Invoke(ctx, ServerService_SetConnectionPools_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
 func (c *serverServiceClient) IssueTunnelToken(ctx context.Context, in *IssueTunnelTokenRequest, opts ...grpc.CallOption) (*IssueTunnelTokenResponse, error) {
 	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
 	out := new(IssueTunnelTokenResponse)
@@ -833,6 +960,36 @@ func (c *serverServiceClient) ListTunnelSessions(ctx context.Context, in *ListTu
 	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
 	out := new(ListTunnelSessionsResponse)
 	err := c.cc.Invoke(ctx, ServerService_ListTunnelSessions_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *serverServiceClient) ReportMaskingClassifications(ctx context.Context, in *ReportMaskingClassificationsRequest, opts ...grpc.CallOption) (*ReportMaskingClassificationsResponse, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(ReportMaskingClassificationsResponse)
+	err := c.cc.Invoke(ctx, ServerService_ReportMaskingClassifications_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *serverServiceClient) ListMaskingClassifications(ctx context.Context, in *ListMaskingClassificationsRequest, opts ...grpc.CallOption) (*ListMaskingClassificationsResponse, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(ListMaskingClassificationsResponse)
+	err := c.cc.Invoke(ctx, ServerService_ListMaskingClassifications_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *serverServiceClient) ResolveMaskingClassification(ctx context.Context, in *ResolveMaskingClassificationRequest, opts ...grpc.CallOption) (*ResolveMaskingClassificationResponse, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(ResolveMaskingClassificationResponse)
+	err := c.cc.Invoke(ctx, ServerService_ResolveMaskingClassification_FullMethodName, in, out, cOpts...)
 	if err != nil {
 		return nil, err
 	}
@@ -963,6 +1120,116 @@ func (c *serverServiceClient) ListConnectionPolicies(ctx context.Context, in *Li
 	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
 	out := new(ListConnectionPoliciesResponse)
 	err := c.cc.Invoke(ctx, ServerService_ListConnectionPolicies_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *serverServiceClient) RequestQueryApproval(ctx context.Context, in *RequestQueryApprovalRequest, opts ...grpc.CallOption) (*RequestQueryApprovalResponse, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(RequestQueryApprovalResponse)
+	err := c.cc.Invoke(ctx, ServerService_RequestQueryApproval_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *serverServiceClient) WaitQueryApproval(ctx context.Context, in *WaitQueryApprovalRequest, opts ...grpc.CallOption) (*WaitQueryApprovalResponse, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(WaitQueryApprovalResponse)
+	err := c.cc.Invoke(ctx, ServerService_WaitQueryApproval_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *serverServiceClient) ListQueryApprovals(ctx context.Context, in *ListQueryApprovalsRequest, opts ...grpc.CallOption) (*ListQueryApprovalsResponse, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(ListQueryApprovalsResponse)
+	err := c.cc.Invoke(ctx, ServerService_ListQueryApprovals_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *serverServiceClient) GetQueryApproval(ctx context.Context, in *GetQueryApprovalRequest, opts ...grpc.CallOption) (*GetQueryApprovalResponse, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(GetQueryApprovalResponse)
+	err := c.cc.Invoke(ctx, ServerService_GetQueryApproval_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *serverServiceClient) ApproveQueryApproval(ctx context.Context, in *ApproveQueryApprovalRequest, opts ...grpc.CallOption) (*ApproveQueryApprovalResponse, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(ApproveQueryApprovalResponse)
+	err := c.cc.Invoke(ctx, ServerService_ApproveQueryApproval_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *serverServiceClient) DenyQueryApproval(ctx context.Context, in *DenyQueryApprovalRequest, opts ...grpc.CallOption) (*DenyQueryApprovalResponse, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(DenyQueryApprovalResponse)
+	err := c.cc.Invoke(ctx, ServerService_DenyQueryApproval_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *serverServiceClient) DetachQueryApproval(ctx context.Context, in *DetachQueryApprovalRequest, opts ...grpc.CallOption) (*DetachQueryApprovalResponse, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(DetachQueryApprovalResponse)
+	err := c.cc.Invoke(ctx, ServerService_DetachQueryApproval_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *serverServiceClient) CancelQueryApproval(ctx context.Context, in *CancelQueryApprovalRequest, opts ...grpc.CallOption) (*CancelQueryApprovalResponse, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(CancelQueryApprovalResponse)
+	err := c.cc.Invoke(ctx, ServerService_CancelQueryApproval_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *serverServiceClient) ListApprovalIntegrations(ctx context.Context, in *ListApprovalIntegrationsRequest, opts ...grpc.CallOption) (*ListApprovalIntegrationsResponse, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(ListApprovalIntegrationsResponse)
+	err := c.cc.Invoke(ctx, ServerService_ListApprovalIntegrations_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *serverServiceClient) UpsertApprovalIntegration(ctx context.Context, in *UpsertApprovalIntegrationRequest, opts ...grpc.CallOption) (*UpsertApprovalIntegrationResponse, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(UpsertApprovalIntegrationResponse)
+	err := c.cc.Invoke(ctx, ServerService_UpsertApprovalIntegration_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *serverServiceClient) DeleteApprovalIntegration(ctx context.Context, in *DeleteApprovalIntegrationRequest, opts ...grpc.CallOption) (*DeleteApprovalIntegrationResponse, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(DeleteApprovalIntegrationResponse)
+	err := c.cc.Invoke(ctx, ServerService_DeleteApprovalIntegration_FullMethodName, in, out, cOpts...)
 	if err != nil {
 		return nil, err
 	}
@@ -1269,6 +1536,16 @@ func (c *serverServiceClient) UpdateAgentPool(ctx context.Context, in *UpdateAge
 	return out, nil
 }
 
+func (c *serverServiceClient) SetAgentPoolTeams(ctx context.Context, in *SetAgentPoolTeamsRequest, opts ...grpc.CallOption) (*SetAgentPoolTeamsResponse, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(SetAgentPoolTeamsResponse)
+	err := c.cc.Invoke(ctx, ServerService_SetAgentPoolTeams_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
 func (c *serverServiceClient) ResolveConnectionCredential(ctx context.Context, in *ResolveConnectionCredentialRequest, opts ...grpc.CallOption) (*ResolveConnectionCredentialResponse, error) {
 	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
 	out := new(ResolveConnectionCredentialResponse)
@@ -1443,6 +1720,56 @@ func (c *serverServiceClient) ExportToCloud(ctx context.Context, in *ExportToClo
 	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
 	out := new(ExportToCloudResponse)
 	err := c.cc.Invoke(ctx, ServerService_ExportToCloud_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *serverServiceClient) ListLogDestinations(ctx context.Context, in *ListLogDestinationsRequest, opts ...grpc.CallOption) (*ListLogDestinationsResponse, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(ListLogDestinationsResponse)
+	err := c.cc.Invoke(ctx, ServerService_ListLogDestinations_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *serverServiceClient) CreateLogDestination(ctx context.Context, in *CreateLogDestinationRequest, opts ...grpc.CallOption) (*CreateLogDestinationResponse, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(CreateLogDestinationResponse)
+	err := c.cc.Invoke(ctx, ServerService_CreateLogDestination_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *serverServiceClient) UpdateLogDestination(ctx context.Context, in *UpdateLogDestinationRequest, opts ...grpc.CallOption) (*UpdateLogDestinationResponse, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(UpdateLogDestinationResponse)
+	err := c.cc.Invoke(ctx, ServerService_UpdateLogDestination_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *serverServiceClient) DeleteLogDestination(ctx context.Context, in *DeleteLogDestinationRequest, opts ...grpc.CallOption) (*DeleteLogDestinationResponse, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(DeleteLogDestinationResponse)
+	err := c.cc.Invoke(ctx, ServerService_DeleteLogDestination_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *serverServiceClient) TestLogDestination(ctx context.Context, in *TestLogDestinationRequest, opts ...grpc.CallOption) (*TestLogDestinationResponse, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(TestLogDestinationResponse)
+	err := c.cc.Invoke(ctx, ServerService_TestLogDestination_FullMethodName, in, out, cOpts...)
 	if err != nil {
 		return nil, err
 	}
@@ -2138,17 +2465,6 @@ func (c *serverServiceClient) ResetBackupSchedule(ctx context.Context, in *Reset
 	return out, nil
 }
 
-// Deprecated: Do not use.
-func (c *serverServiceClient) UpdateBackupSchedule(ctx context.Context, in *UpdateBackupScheduleRequest, opts ...grpc.CallOption) (*UpdateBackupScheduleResponse, error) {
-	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
-	out := new(UpdateBackupScheduleResponse)
-	err := c.cc.Invoke(ctx, ServerService_UpdateBackupSchedule_FullMethodName, in, out, cOpts...)
-	if err != nil {
-		return nil, err
-	}
-	return out, nil
-}
-
 func (c *serverServiceClient) CreateBackup(ctx context.Context, in *CreateBackupRequest, opts ...grpc.CallOption) (*CreateBackupResponse, error) {
 	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
 	out := new(CreateBackupResponse)
@@ -2429,6 +2745,146 @@ func (c *serverServiceClient) GetLicenseStatus(ctx context.Context, in *GetLicen
 	return out, nil
 }
 
+func (c *serverServiceClient) ExportLicenseUsageReport(ctx context.Context, in *ExportLicenseUsageReportRequest, opts ...grpc.CallOption) (*ExportLicenseUsageReportResponse, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(ExportLicenseUsageReportResponse)
+	err := c.cc.Invoke(ctx, ServerService_ExportLicenseUsageReport_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *serverServiceClient) GetRunbookSource(ctx context.Context, in *GetRunbookSourceRequest, opts ...grpc.CallOption) (*GetRunbookSourceResponse, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(GetRunbookSourceResponse)
+	err := c.cc.Invoke(ctx, ServerService_GetRunbookSource_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *serverServiceClient) UpsertRunbookSource(ctx context.Context, in *UpsertRunbookSourceRequest, opts ...grpc.CallOption) (*UpsertRunbookSourceResponse, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(UpsertRunbookSourceResponse)
+	err := c.cc.Invoke(ctx, ServerService_UpsertRunbookSource_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *serverServiceClient) DeleteRunbookSource(ctx context.Context, in *DeleteRunbookSourceRequest, opts ...grpc.CallOption) (*DeleteRunbookSourceResponse, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(DeleteRunbookSourceResponse)
+	err := c.cc.Invoke(ctx, ServerService_DeleteRunbookSource_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *serverServiceClient) SyncRunbooks(ctx context.Context, in *SyncRunbooksRequest, opts ...grpc.CallOption) (*SyncRunbooksResponse, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(SyncRunbooksResponse)
+	err := c.cc.Invoke(ctx, ServerService_SyncRunbooks_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *serverServiceClient) RotateRunbookWebhookSecret(ctx context.Context, in *RotateRunbookWebhookSecretRequest, opts ...grpc.CallOption) (*RotateRunbookWebhookSecretResponse, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(RotateRunbookWebhookSecretResponse)
+	err := c.cc.Invoke(ctx, ServerService_RotateRunbookWebhookSecret_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *serverServiceClient) FetchRunbookHostKey(ctx context.Context, in *FetchRunbookHostKeyRequest, opts ...grpc.CallOption) (*FetchRunbookHostKeyResponse, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(FetchRunbookHostKeyResponse)
+	err := c.cc.Invoke(ctx, ServerService_FetchRunbookHostKey_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *serverServiceClient) ListRunbooks(ctx context.Context, in *ListRunbooksRequest, opts ...grpc.CallOption) (*ListRunbooksResponse, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(ListRunbooksResponse)
+	err := c.cc.Invoke(ctx, ServerService_ListRunbooks_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *serverServiceClient) GetRunbook(ctx context.Context, in *GetRunbookRequest, opts ...grpc.CallOption) (*GetRunbookResponse, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(GetRunbookResponse)
+	err := c.cc.Invoke(ctx, ServerService_GetRunbook_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *serverServiceClient) RunRunbook(ctx context.Context, in *RunRunbookRequest, opts ...grpc.CallOption) (*RunRunbookResponse, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(RunRunbookResponse)
+	err := c.cc.Invoke(ctx, ServerService_RunRunbook_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *serverServiceClient) GetRunbookExecution(ctx context.Context, in *GetRunbookExecutionRequest, opts ...grpc.CallOption) (*GetRunbookExecutionResponse, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(GetRunbookExecutionResponse)
+	err := c.cc.Invoke(ctx, ServerService_GetRunbookExecution_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *serverServiceClient) ListRunbookExecutions(ctx context.Context, in *ListRunbookExecutionsRequest, opts ...grpc.CallOption) (*ListRunbookExecutionsResponse, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(ListRunbookExecutionsResponse)
+	err := c.cc.Invoke(ctx, ServerService_ListRunbookExecutions_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *serverServiceClient) ClaimRunbookExecutions(ctx context.Context, in *ClaimRunbookExecutionsRequest, opts ...grpc.CallOption) (*ClaimRunbookExecutionsResponse, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(ClaimRunbookExecutionsResponse)
+	err := c.cc.Invoke(ctx, ServerService_ClaimRunbookExecutions_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *serverServiceClient) ReportRunbookExecution(ctx context.Context, in *ReportRunbookExecutionRequest, opts ...grpc.CallOption) (*ReportRunbookExecutionResponse, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(ReportRunbookExecutionResponse)
+	err := c.cc.Invoke(ctx, ServerService_ReportRunbookExecution_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
 // ServerServiceServer is the server API for ServerService service.
 // All implementations must embed UnimplementedServerServiceServer
 // for forward compatibility.
@@ -2474,6 +2930,7 @@ type ServerServiceServer interface {
 	DeleteConnection(context.Context, *DeleteConnectionRequest) (*DeleteConnectionResponse, error)
 	// UpdateConnection updates an existing connection.
 	UpdateConnection(context.Context, *UpdateConnectionRequest) (*UpdateConnectionResponse, error)
+	SetConnectionPools(context.Context, *SetConnectionPoolsRequest) (*SetConnectionPoolsResponse, error)
 	// IssueTunnelToken mints a short-lived token a CLI uses to prove its identity
 	// to the agent when opening a tunnel to the given connection (user-authed).
 	IssueTunnelToken(context.Context, *IssueTunnelTokenRequest) (*IssueTunnelTokenResponse, error)
@@ -2493,6 +2950,17 @@ type ServerServiceServer interface {
 	// (user-authed, org.connections.read; non-admins only see sessions on
 	// connections they can reach).
 	ListTunnelSessions(context.Context, *ListTunnelSessionsRequest) (*ListTunnelSessionsResponse, error)
+	// ReportMaskingClassifications records which columns the agent's automatic
+	// classifier masked (agent-authed, scoped to connections the agent serves).
+	// Idempotent per (connection, table, column, category).
+	ReportMaskingClassifications(context.Context, *ReportMaskingClassificationsRequest) (*ReportMaskingClassificationsResponse, error)
+	// ListMaskingClassifications lists the detected columns of the caller's
+	// workspace for review (user-authed, org.connections.read).
+	ListMaskingClassifications(context.Context, *ListMaskingClassificationsRequest) (*ListMaskingClassificationsResponse, error)
+	// ResolveMaskingClassification turns a detected column into an explicit
+	// masking rule ("accept") or an exemption ("exempt") on its connection
+	// (user-authed, org.connections.update).
+	ResolveMaskingClassification(context.Context, *ResolveMaskingClassificationRequest) (*ResolveMaskingClassificationResponse, error)
 	// ListConnectionGroups returns all connection groups in the user's organization.
 	ListConnectionGroups(context.Context, *ListConnectionGroupsRequest) (*ListConnectionGroupsResponse, error)
 	// CreateConnectionGroup creates a new connection group.
@@ -2519,6 +2987,42 @@ type ServerServiceServer interface {
 	SetConnectionPolicies(context.Context, *SetConnectionPoliciesRequest) (*SetConnectionPoliciesResponse, error)
 	// ListConnectionPolicies returns the names of policies activated on a connection.
 	ListConnectionPolicies(context.Context, *ListConnectionPoliciesRequest) (*ListConnectionPoliciesResponse, error)
+	// RequestQueryApproval is called by an agent when a statement matched an
+	// approve action. It consumes a matching approval (the statement may run
+	// once), or opens or returns the pending request the user must get approved.
+	RequestQueryApproval(context.Context, *RequestQueryApprovalRequest) (*RequestQueryApprovalResponse, error)
+	// WaitQueryApproval is a long poll an agent makes for a request it holds: it
+	// returns when the request is decided or the wait elapses, whichever is
+	// first. It never consumes an approval; the agent still calls
+	// RequestQueryApproval to use one up.
+	WaitQueryApproval(context.Context, *WaitQueryApprovalRequest) (*WaitQueryApprovalResponse, error)
+	// ListQueryApprovals returns the workspace's query approval requests the
+	// caller may see: all of them with org.query_approvals.read, otherwise the
+	// caller's own and those the caller may decide.
+	ListQueryApprovals(context.Context, *ListQueryApprovalsRequest) (*ListQueryApprovalsResponse, error)
+	// GetQueryApproval returns one query approval request by id.
+	GetQueryApproval(context.Context, *GetQueryApprovalRequest) (*GetQueryApprovalResponse, error)
+	// ApproveQueryApproval approves a pending request. The requester can never
+	// approve their own request.
+	ApproveQueryApproval(context.Context, *ApproveQueryApprovalRequest) (*ApproveQueryApprovalResponse, error)
+	// DenyQueryApproval denies a pending request.
+	DenyQueryApproval(context.Context, *DenyQueryApprovalRequest) (*DenyQueryApprovalResponse, error)
+	// DetachQueryApproval is called by an agent whose client disconnected while
+	// the agent held a statement for a policy that runs it when approved. It
+	// hands the control plane what is needed to replay the statement, or says
+	// why it cannot be replayed.
+	DetachQueryApproval(context.Context, *DetachQueryApprovalRequest) (*DetachQueryApprovalResponse, error)
+	// CancelQueryApproval lets the requester withdraw a request that is still
+	// waiting for a decision (or an approval not used yet).
+	CancelQueryApproval(context.Context, *CancelQueryApprovalRequest) (*CancelQueryApprovalResponse, error)
+	// ListApprovalIntegrations returns the workspace's approval integrations
+	// (outbound webhooks and Jira), without their secrets.
+	ListApprovalIntegrations(context.Context, *ListApprovalIntegrationsRequest) (*ListApprovalIntegrationsResponse, error)
+	// UpsertApprovalIntegration creates or replaces an approval integration by
+	// name. The signing secret is returned only when it is generated.
+	UpsertApprovalIntegration(context.Context, *UpsertApprovalIntegrationRequest) (*UpsertApprovalIntegrationResponse, error)
+	// DeleteApprovalIntegration removes an approval integration by name.
+	DeleteApprovalIntegration(context.Context, *DeleteApprovalIntegrationRequest) (*DeleteApprovalIntegrationResponse, error)
 	// ListAccessGrants returns all access grants in the user's organization.
 	ListAccessGrants(context.Context, *ListAccessGrantsRequest) (*ListAccessGrantsResponse, error)
 	// CreateAccessGrant creates a new access grant.
@@ -2579,6 +3083,7 @@ type ServerServiceServer interface {
 	DeleteAgentPool(context.Context, *DeleteAgentPoolRequest) (*DeleteAgentPoolResponse, error)
 	// UpdateAgentPool updates an existing agent pool.
 	UpdateAgentPool(context.Context, *UpdateAgentPoolRequest) (*UpdateAgentPoolResponse, error)
+	SetAgentPoolTeams(context.Context, *SetAgentPoolTeamsRequest) (*SetAgentPoolTeamsResponse, error)
 	// ResolveConnectionCredential returns a connection's stored password to the
 	// agent that proxies it (agent-only auth). It exists so the credential can
 	// stop travelling on the user-facing connection read, which reaches the agent
@@ -2616,6 +3121,14 @@ type ServerServiceServer interface {
 	GetBackupAutoExport(context.Context, *GetBackupAutoExportRequest) (*GetBackupAutoExportResponse, error)
 	UpsertBackupAutoExport(context.Context, *UpsertBackupAutoExportRequest) (*UpsertBackupAutoExportResponse, error)
 	ExportToCloud(context.Context, *ExportToCloudRequest) (*ExportToCloudResponse, error)
+	// Push destinations for the audit and activity streams (webhook, Splunk HEC,
+	// Datadog Logs, syslog over TLS). Secrets are write-only.
+	ListLogDestinations(context.Context, *ListLogDestinationsRequest) (*ListLogDestinationsResponse, error)
+	CreateLogDestination(context.Context, *CreateLogDestinationRequest) (*CreateLogDestinationResponse, error)
+	UpdateLogDestination(context.Context, *UpdateLogDestinationRequest) (*UpdateLogDestinationResponse, error)
+	DeleteLogDestination(context.Context, *DeleteLogDestinationRequest) (*DeleteLogDestinationResponse, error)
+	// Sends one synthetic event (schema relay.test.v1) and reports the outcome.
+	TestLogDestination(context.Context, *TestLogDestinationRequest) (*TestLogDestinationResponse, error)
 	// IngestAuditEvents receives audit events from an agent.
 	IngestAuditEvents(context.Context, *IngestAuditEventsRequest) (*IngestAuditEventsResponse, error)
 	// ListAuditLogs returns audit logs for the user's organization.
@@ -2784,16 +3297,6 @@ type ServerServiceServer interface {
 	// policy. It never leaves the cluster without a policy; a Terraform destroy
 	// maps here. A no-op on a database already at the default.
 	ResetBackupSchedule(context.Context, *ResetBackupScheduleRequest) (*ResetBackupScheduleResponse, error)
-	// Deprecated: Do not use.
-	// Deprecated: keyed on a maestro schedule id. Use UpsertBackupSchedule
-	// (keyed on the database). Removed once the dashboard has moved
-	// (relay-sh/server#238).
-	//
-	// UpdateBackupSchedule updates a backup schedule's spec, including the
-	// multi-tier policy fields (snapshot_time, policy_tiers, PITR/restore
-	// windows). The cron `schedule` and legacy `retention` are still honoured
-	// by maestro/operator-mongodb — these fields are additive metadata.
-	UpdateBackupSchedule(context.Context, *UpdateBackupScheduleRequest) (*UpdateBackupScheduleResponse, error)
 	// CreateBackup takes an on-demand snapshot of a managed database. The
 	// engine and cluster ref come from the database itself; when the
 	// database has a backup schedule its volume snapshot class is reused
@@ -2831,8 +3334,9 @@ type ServerServiceServer interface {
 	CreateCheckoutSession(context.Context, *CreateCheckoutSessionRequest) (*CreateCheckoutSessionResponse, error)
 	// CreateBillingPortalSession opens the Stripe Billing Portal for the org.
 	CreateBillingPortalSession(context.Context, *CreateBillingPortalSessionRequest) (*CreateBillingPortalSessionResponse, error)
-	// ChangePlan moves an already-subscribed org up to a higher self-serve band
-	// (team → business). Downgrades go through the billing portal; enterprise is
+	// ChangePlan moves an already-subscribed org to another self-serve band
+	// (team ↔ business). An upgrade applies immediately; a downgrade is scheduled
+	// for the end of the current billing period (no proration). Enterprise is
 	// managed by sales. Requires org.billing.manage.
 	ChangePlan(context.Context, *ChangePlanRequest) (*ChangePlanResponse, error)
 	// CreateSupportReport files a support ticket for the caller's org.
@@ -2870,6 +3374,41 @@ type ServerServiceServer interface {
 	// plane: state, limits and current usage. Any authenticated member may call
 	// it. The SaaS edition has no license and answers state "none".
 	GetLicenseStatus(context.Context, *GetLicenseStatusRequest) (*GetLicenseStatusResponse, error)
+	// ExportLicenseUsageReport returns a usage report for license audits, signed
+	// by this instance's Ed25519 report key: counts of agents, connections,
+	// members, and per month the active users and peak concurrent tunnel
+	// sessions. Generated locally and returned to the caller only; nothing is
+	// sent anywhere. Requires org.organizations.settings.update. Agent Edition
+	// only (SaaS answers FailedPrecondition).
+	ExportLicenseUsageReport(context.Context, *ExportLicenseUsageReportRequest) (*ExportLicenseUsageReportResponse, error)
+	// GetRunbookSource returns the workspace's runbook Git source, if one is set.
+	// The access token is write-only: reads carry token_set instead.
+	GetRunbookSource(context.Context, *GetRunbookSourceRequest) (*GetRunbookSourceResponse, error)
+	// UpsertRunbookSource sets the workspace's runbook Git source.
+	UpsertRunbookSource(context.Context, *UpsertRunbookSourceRequest) (*UpsertRunbookSourceResponse, error)
+	// DeleteRunbookSource removes the source and retires every runbook it held.
+	DeleteRunbookSource(context.Context, *DeleteRunbookSourceRequest) (*DeleteRunbookSourceResponse, error)
+	// SyncRunbooks fetches the source now and records new runbook versions.
+	SyncRunbooks(context.Context, *SyncRunbooksRequest) (*SyncRunbooksResponse, error)
+	// RotateRunbookWebhookSecret generates the source's webhook secret (or clears
+	// it with disable). The secret is returned once.
+	RotateRunbookWebhookSecret(context.Context, *RotateRunbookWebhookSecretRequest) (*RotateRunbookWebhookSecretResponse, error)
+	// FetchRunbookHostKey reads the SSH host key an ssh:// repository URL
+	// presents, for the caller to confirm and pin.
+	FetchRunbookHostKey(context.Context, *FetchRunbookHostKeyRequest) (*FetchRunbookHostKeyResponse, error)
+	ListRunbooks(context.Context, *ListRunbooksRequest) (*ListRunbooksResponse, error)
+	GetRunbook(context.Context, *GetRunbookRequest) (*GetRunbookResponse, error)
+	// RunRunbook queues one execution of a pinned runbook version on a
+	// connection. An agent serving the connection runs it.
+	RunRunbook(context.Context, *RunRunbookRequest) (*RunRunbookResponse, error)
+	GetRunbookExecution(context.Context, *GetRunbookExecutionRequest) (*GetRunbookExecutionResponse, error)
+	ListRunbookExecutions(context.Context, *ListRunbookExecutionsRequest) (*ListRunbookExecutionsResponse, error)
+	// ClaimRunbookExecutions hands the calling agent the pending executions it
+	// may run (agent-only auth).
+	ClaimRunbookExecutions(context.Context, *ClaimRunbookExecutionsRequest) (*ClaimRunbookExecutionsResponse, error)
+	// ReportRunbookExecution records the outcome of a claimed execution
+	// (agent-only auth).
+	ReportRunbookExecution(context.Context, *ReportRunbookExecutionRequest) (*ReportRunbookExecutionResponse, error)
 	mustEmbedUnimplementedServerServiceServer()
 }
 
@@ -2925,6 +3464,9 @@ func (UnimplementedServerServiceServer) DeleteConnection(context.Context, *Delet
 func (UnimplementedServerServiceServer) UpdateConnection(context.Context, *UpdateConnectionRequest) (*UpdateConnectionResponse, error) {
 	return nil, status.Error(codes.Unimplemented, "method UpdateConnection not implemented")
 }
+func (UnimplementedServerServiceServer) SetConnectionPools(context.Context, *SetConnectionPoolsRequest) (*SetConnectionPoolsResponse, error) {
+	return nil, status.Error(codes.Unimplemented, "method SetConnectionPools not implemented")
+}
 func (UnimplementedServerServiceServer) IssueTunnelToken(context.Context, *IssueTunnelTokenRequest) (*IssueTunnelTokenResponse, error) {
 	return nil, status.Error(codes.Unimplemented, "method IssueTunnelToken not implemented")
 }
@@ -2936,6 +3478,15 @@ func (UnimplementedServerServiceServer) ReportTunnelSessions(context.Context, *R
 }
 func (UnimplementedServerServiceServer) ListTunnelSessions(context.Context, *ListTunnelSessionsRequest) (*ListTunnelSessionsResponse, error) {
 	return nil, status.Error(codes.Unimplemented, "method ListTunnelSessions not implemented")
+}
+func (UnimplementedServerServiceServer) ReportMaskingClassifications(context.Context, *ReportMaskingClassificationsRequest) (*ReportMaskingClassificationsResponse, error) {
+	return nil, status.Error(codes.Unimplemented, "method ReportMaskingClassifications not implemented")
+}
+func (UnimplementedServerServiceServer) ListMaskingClassifications(context.Context, *ListMaskingClassificationsRequest) (*ListMaskingClassificationsResponse, error) {
+	return nil, status.Error(codes.Unimplemented, "method ListMaskingClassifications not implemented")
+}
+func (UnimplementedServerServiceServer) ResolveMaskingClassification(context.Context, *ResolveMaskingClassificationRequest) (*ResolveMaskingClassificationResponse, error) {
+	return nil, status.Error(codes.Unimplemented, "method ResolveMaskingClassification not implemented")
 }
 func (UnimplementedServerServiceServer) ListConnectionGroups(context.Context, *ListConnectionGroupsRequest) (*ListConnectionGroupsResponse, error) {
 	return nil, status.Error(codes.Unimplemented, "method ListConnectionGroups not implemented")
@@ -2975,6 +3526,39 @@ func (UnimplementedServerServiceServer) SetConnectionPolicies(context.Context, *
 }
 func (UnimplementedServerServiceServer) ListConnectionPolicies(context.Context, *ListConnectionPoliciesRequest) (*ListConnectionPoliciesResponse, error) {
 	return nil, status.Error(codes.Unimplemented, "method ListConnectionPolicies not implemented")
+}
+func (UnimplementedServerServiceServer) RequestQueryApproval(context.Context, *RequestQueryApprovalRequest) (*RequestQueryApprovalResponse, error) {
+	return nil, status.Error(codes.Unimplemented, "method RequestQueryApproval not implemented")
+}
+func (UnimplementedServerServiceServer) WaitQueryApproval(context.Context, *WaitQueryApprovalRequest) (*WaitQueryApprovalResponse, error) {
+	return nil, status.Error(codes.Unimplemented, "method WaitQueryApproval not implemented")
+}
+func (UnimplementedServerServiceServer) ListQueryApprovals(context.Context, *ListQueryApprovalsRequest) (*ListQueryApprovalsResponse, error) {
+	return nil, status.Error(codes.Unimplemented, "method ListQueryApprovals not implemented")
+}
+func (UnimplementedServerServiceServer) GetQueryApproval(context.Context, *GetQueryApprovalRequest) (*GetQueryApprovalResponse, error) {
+	return nil, status.Error(codes.Unimplemented, "method GetQueryApproval not implemented")
+}
+func (UnimplementedServerServiceServer) ApproveQueryApproval(context.Context, *ApproveQueryApprovalRequest) (*ApproveQueryApprovalResponse, error) {
+	return nil, status.Error(codes.Unimplemented, "method ApproveQueryApproval not implemented")
+}
+func (UnimplementedServerServiceServer) DenyQueryApproval(context.Context, *DenyQueryApprovalRequest) (*DenyQueryApprovalResponse, error) {
+	return nil, status.Error(codes.Unimplemented, "method DenyQueryApproval not implemented")
+}
+func (UnimplementedServerServiceServer) DetachQueryApproval(context.Context, *DetachQueryApprovalRequest) (*DetachQueryApprovalResponse, error) {
+	return nil, status.Error(codes.Unimplemented, "method DetachQueryApproval not implemented")
+}
+func (UnimplementedServerServiceServer) CancelQueryApproval(context.Context, *CancelQueryApprovalRequest) (*CancelQueryApprovalResponse, error) {
+	return nil, status.Error(codes.Unimplemented, "method CancelQueryApproval not implemented")
+}
+func (UnimplementedServerServiceServer) ListApprovalIntegrations(context.Context, *ListApprovalIntegrationsRequest) (*ListApprovalIntegrationsResponse, error) {
+	return nil, status.Error(codes.Unimplemented, "method ListApprovalIntegrations not implemented")
+}
+func (UnimplementedServerServiceServer) UpsertApprovalIntegration(context.Context, *UpsertApprovalIntegrationRequest) (*UpsertApprovalIntegrationResponse, error) {
+	return nil, status.Error(codes.Unimplemented, "method UpsertApprovalIntegration not implemented")
+}
+func (UnimplementedServerServiceServer) DeleteApprovalIntegration(context.Context, *DeleteApprovalIntegrationRequest) (*DeleteApprovalIntegrationResponse, error) {
+	return nil, status.Error(codes.Unimplemented, "method DeleteApprovalIntegration not implemented")
 }
 func (UnimplementedServerServiceServer) ListAccessGrants(context.Context, *ListAccessGrantsRequest) (*ListAccessGrantsResponse, error) {
 	return nil, status.Error(codes.Unimplemented, "method ListAccessGrants not implemented")
@@ -3066,6 +3650,9 @@ func (UnimplementedServerServiceServer) DeleteAgentPool(context.Context, *Delete
 func (UnimplementedServerServiceServer) UpdateAgentPool(context.Context, *UpdateAgentPoolRequest) (*UpdateAgentPoolResponse, error) {
 	return nil, status.Error(codes.Unimplemented, "method UpdateAgentPool not implemented")
 }
+func (UnimplementedServerServiceServer) SetAgentPoolTeams(context.Context, *SetAgentPoolTeamsRequest) (*SetAgentPoolTeamsResponse, error) {
+	return nil, status.Error(codes.Unimplemented, "method SetAgentPoolTeams not implemented")
+}
 func (UnimplementedServerServiceServer) ResolveConnectionCredential(context.Context, *ResolveConnectionCredentialRequest) (*ResolveConnectionCredentialResponse, error) {
 	return nil, status.Error(codes.Unimplemented, "method ResolveConnectionCredential not implemented")
 }
@@ -3119,6 +3706,21 @@ func (UnimplementedServerServiceServer) UpsertBackupAutoExport(context.Context, 
 }
 func (UnimplementedServerServiceServer) ExportToCloud(context.Context, *ExportToCloudRequest) (*ExportToCloudResponse, error) {
 	return nil, status.Error(codes.Unimplemented, "method ExportToCloud not implemented")
+}
+func (UnimplementedServerServiceServer) ListLogDestinations(context.Context, *ListLogDestinationsRequest) (*ListLogDestinationsResponse, error) {
+	return nil, status.Error(codes.Unimplemented, "method ListLogDestinations not implemented")
+}
+func (UnimplementedServerServiceServer) CreateLogDestination(context.Context, *CreateLogDestinationRequest) (*CreateLogDestinationResponse, error) {
+	return nil, status.Error(codes.Unimplemented, "method CreateLogDestination not implemented")
+}
+func (UnimplementedServerServiceServer) UpdateLogDestination(context.Context, *UpdateLogDestinationRequest) (*UpdateLogDestinationResponse, error) {
+	return nil, status.Error(codes.Unimplemented, "method UpdateLogDestination not implemented")
+}
+func (UnimplementedServerServiceServer) DeleteLogDestination(context.Context, *DeleteLogDestinationRequest) (*DeleteLogDestinationResponse, error) {
+	return nil, status.Error(codes.Unimplemented, "method DeleteLogDestination not implemented")
+}
+func (UnimplementedServerServiceServer) TestLogDestination(context.Context, *TestLogDestinationRequest) (*TestLogDestinationResponse, error) {
+	return nil, status.Error(codes.Unimplemented, "method TestLogDestination not implemented")
 }
 func (UnimplementedServerServiceServer) IngestAuditEvents(context.Context, *IngestAuditEventsRequest) (*IngestAuditEventsResponse, error) {
 	return nil, status.Error(codes.Unimplemented, "method IngestAuditEvents not implemented")
@@ -3324,9 +3926,6 @@ func (UnimplementedServerServiceServer) UpsertBackupSchedule(context.Context, *U
 func (UnimplementedServerServiceServer) ResetBackupSchedule(context.Context, *ResetBackupScheduleRequest) (*ResetBackupScheduleResponse, error) {
 	return nil, status.Error(codes.Unimplemented, "method ResetBackupSchedule not implemented")
 }
-func (UnimplementedServerServiceServer) UpdateBackupSchedule(context.Context, *UpdateBackupScheduleRequest) (*UpdateBackupScheduleResponse, error) {
-	return nil, status.Error(codes.Unimplemented, "method UpdateBackupSchedule not implemented")
-}
 func (UnimplementedServerServiceServer) CreateBackup(context.Context, *CreateBackupRequest) (*CreateBackupResponse, error) {
 	return nil, status.Error(codes.Unimplemented, "method CreateBackup not implemented")
 }
@@ -3410,6 +4009,48 @@ func (UnimplementedServerServiceServer) ListPostgreSQLExtensions(context.Context
 }
 func (UnimplementedServerServiceServer) GetLicenseStatus(context.Context, *GetLicenseStatusRequest) (*GetLicenseStatusResponse, error) {
 	return nil, status.Error(codes.Unimplemented, "method GetLicenseStatus not implemented")
+}
+func (UnimplementedServerServiceServer) ExportLicenseUsageReport(context.Context, *ExportLicenseUsageReportRequest) (*ExportLicenseUsageReportResponse, error) {
+	return nil, status.Error(codes.Unimplemented, "method ExportLicenseUsageReport not implemented")
+}
+func (UnimplementedServerServiceServer) GetRunbookSource(context.Context, *GetRunbookSourceRequest) (*GetRunbookSourceResponse, error) {
+	return nil, status.Error(codes.Unimplemented, "method GetRunbookSource not implemented")
+}
+func (UnimplementedServerServiceServer) UpsertRunbookSource(context.Context, *UpsertRunbookSourceRequest) (*UpsertRunbookSourceResponse, error) {
+	return nil, status.Error(codes.Unimplemented, "method UpsertRunbookSource not implemented")
+}
+func (UnimplementedServerServiceServer) DeleteRunbookSource(context.Context, *DeleteRunbookSourceRequest) (*DeleteRunbookSourceResponse, error) {
+	return nil, status.Error(codes.Unimplemented, "method DeleteRunbookSource not implemented")
+}
+func (UnimplementedServerServiceServer) SyncRunbooks(context.Context, *SyncRunbooksRequest) (*SyncRunbooksResponse, error) {
+	return nil, status.Error(codes.Unimplemented, "method SyncRunbooks not implemented")
+}
+func (UnimplementedServerServiceServer) RotateRunbookWebhookSecret(context.Context, *RotateRunbookWebhookSecretRequest) (*RotateRunbookWebhookSecretResponse, error) {
+	return nil, status.Error(codes.Unimplemented, "method RotateRunbookWebhookSecret not implemented")
+}
+func (UnimplementedServerServiceServer) FetchRunbookHostKey(context.Context, *FetchRunbookHostKeyRequest) (*FetchRunbookHostKeyResponse, error) {
+	return nil, status.Error(codes.Unimplemented, "method FetchRunbookHostKey not implemented")
+}
+func (UnimplementedServerServiceServer) ListRunbooks(context.Context, *ListRunbooksRequest) (*ListRunbooksResponse, error) {
+	return nil, status.Error(codes.Unimplemented, "method ListRunbooks not implemented")
+}
+func (UnimplementedServerServiceServer) GetRunbook(context.Context, *GetRunbookRequest) (*GetRunbookResponse, error) {
+	return nil, status.Error(codes.Unimplemented, "method GetRunbook not implemented")
+}
+func (UnimplementedServerServiceServer) RunRunbook(context.Context, *RunRunbookRequest) (*RunRunbookResponse, error) {
+	return nil, status.Error(codes.Unimplemented, "method RunRunbook not implemented")
+}
+func (UnimplementedServerServiceServer) GetRunbookExecution(context.Context, *GetRunbookExecutionRequest) (*GetRunbookExecutionResponse, error) {
+	return nil, status.Error(codes.Unimplemented, "method GetRunbookExecution not implemented")
+}
+func (UnimplementedServerServiceServer) ListRunbookExecutions(context.Context, *ListRunbookExecutionsRequest) (*ListRunbookExecutionsResponse, error) {
+	return nil, status.Error(codes.Unimplemented, "method ListRunbookExecutions not implemented")
+}
+func (UnimplementedServerServiceServer) ClaimRunbookExecutions(context.Context, *ClaimRunbookExecutionsRequest) (*ClaimRunbookExecutionsResponse, error) {
+	return nil, status.Error(codes.Unimplemented, "method ClaimRunbookExecutions not implemented")
+}
+func (UnimplementedServerServiceServer) ReportRunbookExecution(context.Context, *ReportRunbookExecutionRequest) (*ReportRunbookExecutionResponse, error) {
+	return nil, status.Error(codes.Unimplemented, "method ReportRunbookExecution not implemented")
 }
 func (UnimplementedServerServiceServer) mustEmbedUnimplementedServerServiceServer() {}
 func (UnimplementedServerServiceServer) testEmbeddedByValue()                       {}
@@ -3702,6 +4343,24 @@ func _ServerService_UpdateConnection_Handler(srv interface{}, ctx context.Contex
 	return interceptor(ctx, in, info, handler)
 }
 
+func _ServerService_SetConnectionPools_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(SetConnectionPoolsRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(ServerServiceServer).SetConnectionPools(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: ServerService_SetConnectionPools_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(ServerServiceServer).SetConnectionPools(ctx, req.(*SetConnectionPoolsRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
 func _ServerService_IssueTunnelToken_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
 	in := new(IssueTunnelTokenRequest)
 	if err := dec(in); err != nil {
@@ -3770,6 +4429,60 @@ func _ServerService_ListTunnelSessions_Handler(srv interface{}, ctx context.Cont
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
 		return srv.(ServerServiceServer).ListTunnelSessions(ctx, req.(*ListTunnelSessionsRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _ServerService_ReportMaskingClassifications_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(ReportMaskingClassificationsRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(ServerServiceServer).ReportMaskingClassifications(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: ServerService_ReportMaskingClassifications_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(ServerServiceServer).ReportMaskingClassifications(ctx, req.(*ReportMaskingClassificationsRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _ServerService_ListMaskingClassifications_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(ListMaskingClassificationsRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(ServerServiceServer).ListMaskingClassifications(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: ServerService_ListMaskingClassifications_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(ServerServiceServer).ListMaskingClassifications(ctx, req.(*ListMaskingClassificationsRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _ServerService_ResolveMaskingClassification_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(ResolveMaskingClassificationRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(ServerServiceServer).ResolveMaskingClassification(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: ServerService_ResolveMaskingClassification_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(ServerServiceServer).ResolveMaskingClassification(ctx, req.(*ResolveMaskingClassificationRequest))
 	}
 	return interceptor(ctx, in, info, handler)
 }
@@ -4004,6 +4717,204 @@ func _ServerService_ListConnectionPolicies_Handler(srv interface{}, ctx context.
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
 		return srv.(ServerServiceServer).ListConnectionPolicies(ctx, req.(*ListConnectionPoliciesRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _ServerService_RequestQueryApproval_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(RequestQueryApprovalRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(ServerServiceServer).RequestQueryApproval(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: ServerService_RequestQueryApproval_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(ServerServiceServer).RequestQueryApproval(ctx, req.(*RequestQueryApprovalRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _ServerService_WaitQueryApproval_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(WaitQueryApprovalRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(ServerServiceServer).WaitQueryApproval(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: ServerService_WaitQueryApproval_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(ServerServiceServer).WaitQueryApproval(ctx, req.(*WaitQueryApprovalRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _ServerService_ListQueryApprovals_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(ListQueryApprovalsRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(ServerServiceServer).ListQueryApprovals(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: ServerService_ListQueryApprovals_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(ServerServiceServer).ListQueryApprovals(ctx, req.(*ListQueryApprovalsRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _ServerService_GetQueryApproval_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(GetQueryApprovalRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(ServerServiceServer).GetQueryApproval(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: ServerService_GetQueryApproval_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(ServerServiceServer).GetQueryApproval(ctx, req.(*GetQueryApprovalRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _ServerService_ApproveQueryApproval_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(ApproveQueryApprovalRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(ServerServiceServer).ApproveQueryApproval(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: ServerService_ApproveQueryApproval_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(ServerServiceServer).ApproveQueryApproval(ctx, req.(*ApproveQueryApprovalRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _ServerService_DenyQueryApproval_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(DenyQueryApprovalRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(ServerServiceServer).DenyQueryApproval(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: ServerService_DenyQueryApproval_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(ServerServiceServer).DenyQueryApproval(ctx, req.(*DenyQueryApprovalRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _ServerService_DetachQueryApproval_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(DetachQueryApprovalRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(ServerServiceServer).DetachQueryApproval(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: ServerService_DetachQueryApproval_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(ServerServiceServer).DetachQueryApproval(ctx, req.(*DetachQueryApprovalRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _ServerService_CancelQueryApproval_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(CancelQueryApprovalRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(ServerServiceServer).CancelQueryApproval(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: ServerService_CancelQueryApproval_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(ServerServiceServer).CancelQueryApproval(ctx, req.(*CancelQueryApprovalRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _ServerService_ListApprovalIntegrations_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(ListApprovalIntegrationsRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(ServerServiceServer).ListApprovalIntegrations(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: ServerService_ListApprovalIntegrations_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(ServerServiceServer).ListApprovalIntegrations(ctx, req.(*ListApprovalIntegrationsRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _ServerService_UpsertApprovalIntegration_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(UpsertApprovalIntegrationRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(ServerServiceServer).UpsertApprovalIntegration(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: ServerService_UpsertApprovalIntegration_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(ServerServiceServer).UpsertApprovalIntegration(ctx, req.(*UpsertApprovalIntegrationRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _ServerService_DeleteApprovalIntegration_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(DeleteApprovalIntegrationRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(ServerServiceServer).DeleteApprovalIntegration(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: ServerService_DeleteApprovalIntegration_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(ServerServiceServer).DeleteApprovalIntegration(ctx, req.(*DeleteApprovalIntegrationRequest))
 	}
 	return interceptor(ctx, in, info, handler)
 }
@@ -4548,6 +5459,24 @@ func _ServerService_UpdateAgentPool_Handler(srv interface{}, ctx context.Context
 	return interceptor(ctx, in, info, handler)
 }
 
+func _ServerService_SetAgentPoolTeams_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(SetAgentPoolTeamsRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(ServerServiceServer).SetAgentPoolTeams(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: ServerService_SetAgentPoolTeams_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(ServerServiceServer).SetAgentPoolTeams(ctx, req.(*SetAgentPoolTeamsRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
 func _ServerService_ResolveConnectionCredential_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
 	in := new(ResolveConnectionCredentialRequest)
 	if err := dec(in); err != nil {
@@ -4868,6 +5797,96 @@ func _ServerService_ExportToCloud_Handler(srv interface{}, ctx context.Context, 
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
 		return srv.(ServerServiceServer).ExportToCloud(ctx, req.(*ExportToCloudRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _ServerService_ListLogDestinations_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(ListLogDestinationsRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(ServerServiceServer).ListLogDestinations(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: ServerService_ListLogDestinations_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(ServerServiceServer).ListLogDestinations(ctx, req.(*ListLogDestinationsRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _ServerService_CreateLogDestination_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(CreateLogDestinationRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(ServerServiceServer).CreateLogDestination(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: ServerService_CreateLogDestination_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(ServerServiceServer).CreateLogDestination(ctx, req.(*CreateLogDestinationRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _ServerService_UpdateLogDestination_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(UpdateLogDestinationRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(ServerServiceServer).UpdateLogDestination(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: ServerService_UpdateLogDestination_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(ServerServiceServer).UpdateLogDestination(ctx, req.(*UpdateLogDestinationRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _ServerService_DeleteLogDestination_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(DeleteLogDestinationRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(ServerServiceServer).DeleteLogDestination(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: ServerService_DeleteLogDestination_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(ServerServiceServer).DeleteLogDestination(ctx, req.(*DeleteLogDestinationRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _ServerService_TestLogDestination_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(TestLogDestinationRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(ServerServiceServer).TestLogDestination(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: ServerService_TestLogDestination_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(ServerServiceServer).TestLogDestination(ctx, req.(*TestLogDestinationRequest))
 	}
 	return interceptor(ctx, in, info, handler)
 }
@@ -6089,24 +7108,6 @@ func _ServerService_ResetBackupSchedule_Handler(srv interface{}, ctx context.Con
 	return interceptor(ctx, in, info, handler)
 }
 
-func _ServerService_UpdateBackupSchedule_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(UpdateBackupScheduleRequest)
-	if err := dec(in); err != nil {
-		return nil, err
-	}
-	if interceptor == nil {
-		return srv.(ServerServiceServer).UpdateBackupSchedule(ctx, in)
-	}
-	info := &grpc.UnaryServerInfo{
-		Server:     srv,
-		FullMethod: ServerService_UpdateBackupSchedule_FullMethodName,
-	}
-	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(ServerServiceServer).UpdateBackupSchedule(ctx, req.(*UpdateBackupScheduleRequest))
-	}
-	return interceptor(ctx, in, info, handler)
-}
-
 func _ServerService_CreateBackup_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
 	in := new(CreateBackupRequest)
 	if err := dec(in); err != nil {
@@ -6611,6 +7612,258 @@ func _ServerService_GetLicenseStatus_Handler(srv interface{}, ctx context.Contex
 	return interceptor(ctx, in, info, handler)
 }
 
+func _ServerService_ExportLicenseUsageReport_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(ExportLicenseUsageReportRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(ServerServiceServer).ExportLicenseUsageReport(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: ServerService_ExportLicenseUsageReport_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(ServerServiceServer).ExportLicenseUsageReport(ctx, req.(*ExportLicenseUsageReportRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _ServerService_GetRunbookSource_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(GetRunbookSourceRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(ServerServiceServer).GetRunbookSource(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: ServerService_GetRunbookSource_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(ServerServiceServer).GetRunbookSource(ctx, req.(*GetRunbookSourceRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _ServerService_UpsertRunbookSource_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(UpsertRunbookSourceRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(ServerServiceServer).UpsertRunbookSource(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: ServerService_UpsertRunbookSource_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(ServerServiceServer).UpsertRunbookSource(ctx, req.(*UpsertRunbookSourceRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _ServerService_DeleteRunbookSource_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(DeleteRunbookSourceRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(ServerServiceServer).DeleteRunbookSource(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: ServerService_DeleteRunbookSource_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(ServerServiceServer).DeleteRunbookSource(ctx, req.(*DeleteRunbookSourceRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _ServerService_SyncRunbooks_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(SyncRunbooksRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(ServerServiceServer).SyncRunbooks(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: ServerService_SyncRunbooks_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(ServerServiceServer).SyncRunbooks(ctx, req.(*SyncRunbooksRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _ServerService_RotateRunbookWebhookSecret_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(RotateRunbookWebhookSecretRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(ServerServiceServer).RotateRunbookWebhookSecret(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: ServerService_RotateRunbookWebhookSecret_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(ServerServiceServer).RotateRunbookWebhookSecret(ctx, req.(*RotateRunbookWebhookSecretRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _ServerService_FetchRunbookHostKey_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(FetchRunbookHostKeyRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(ServerServiceServer).FetchRunbookHostKey(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: ServerService_FetchRunbookHostKey_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(ServerServiceServer).FetchRunbookHostKey(ctx, req.(*FetchRunbookHostKeyRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _ServerService_ListRunbooks_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(ListRunbooksRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(ServerServiceServer).ListRunbooks(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: ServerService_ListRunbooks_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(ServerServiceServer).ListRunbooks(ctx, req.(*ListRunbooksRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _ServerService_GetRunbook_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(GetRunbookRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(ServerServiceServer).GetRunbook(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: ServerService_GetRunbook_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(ServerServiceServer).GetRunbook(ctx, req.(*GetRunbookRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _ServerService_RunRunbook_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(RunRunbookRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(ServerServiceServer).RunRunbook(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: ServerService_RunRunbook_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(ServerServiceServer).RunRunbook(ctx, req.(*RunRunbookRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _ServerService_GetRunbookExecution_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(GetRunbookExecutionRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(ServerServiceServer).GetRunbookExecution(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: ServerService_GetRunbookExecution_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(ServerServiceServer).GetRunbookExecution(ctx, req.(*GetRunbookExecutionRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _ServerService_ListRunbookExecutions_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(ListRunbookExecutionsRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(ServerServiceServer).ListRunbookExecutions(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: ServerService_ListRunbookExecutions_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(ServerServiceServer).ListRunbookExecutions(ctx, req.(*ListRunbookExecutionsRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _ServerService_ClaimRunbookExecutions_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(ClaimRunbookExecutionsRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(ServerServiceServer).ClaimRunbookExecutions(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: ServerService_ClaimRunbookExecutions_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(ServerServiceServer).ClaimRunbookExecutions(ctx, req.(*ClaimRunbookExecutionsRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _ServerService_ReportRunbookExecution_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(ReportRunbookExecutionRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(ServerServiceServer).ReportRunbookExecution(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: ServerService_ReportRunbookExecution_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(ServerServiceServer).ReportRunbookExecution(ctx, req.(*ReportRunbookExecutionRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
 // ServerService_ServiceDesc is the grpc.ServiceDesc for ServerService service.
 // It's only intended for direct use with grpc.RegisterService,
 // and not to be introspected or modified (even as a copy)
@@ -6679,6 +7932,10 @@ var ServerService_ServiceDesc = grpc.ServiceDesc{
 			Handler:    _ServerService_UpdateConnection_Handler,
 		},
 		{
+			MethodName: "SetConnectionPools",
+			Handler:    _ServerService_SetConnectionPools_Handler,
+		},
+		{
 			MethodName: "IssueTunnelToken",
 			Handler:    _ServerService_IssueTunnelToken_Handler,
 		},
@@ -6693,6 +7950,18 @@ var ServerService_ServiceDesc = grpc.ServiceDesc{
 		{
 			MethodName: "ListTunnelSessions",
 			Handler:    _ServerService_ListTunnelSessions_Handler,
+		},
+		{
+			MethodName: "ReportMaskingClassifications",
+			Handler:    _ServerService_ReportMaskingClassifications_Handler,
+		},
+		{
+			MethodName: "ListMaskingClassifications",
+			Handler:    _ServerService_ListMaskingClassifications_Handler,
+		},
+		{
+			MethodName: "ResolveMaskingClassification",
+			Handler:    _ServerService_ResolveMaskingClassification_Handler,
 		},
 		{
 			MethodName: "ListConnectionGroups",
@@ -6745,6 +8014,50 @@ var ServerService_ServiceDesc = grpc.ServiceDesc{
 		{
 			MethodName: "ListConnectionPolicies",
 			Handler:    _ServerService_ListConnectionPolicies_Handler,
+		},
+		{
+			MethodName: "RequestQueryApproval",
+			Handler:    _ServerService_RequestQueryApproval_Handler,
+		},
+		{
+			MethodName: "WaitQueryApproval",
+			Handler:    _ServerService_WaitQueryApproval_Handler,
+		},
+		{
+			MethodName: "ListQueryApprovals",
+			Handler:    _ServerService_ListQueryApprovals_Handler,
+		},
+		{
+			MethodName: "GetQueryApproval",
+			Handler:    _ServerService_GetQueryApproval_Handler,
+		},
+		{
+			MethodName: "ApproveQueryApproval",
+			Handler:    _ServerService_ApproveQueryApproval_Handler,
+		},
+		{
+			MethodName: "DenyQueryApproval",
+			Handler:    _ServerService_DenyQueryApproval_Handler,
+		},
+		{
+			MethodName: "DetachQueryApproval",
+			Handler:    _ServerService_DetachQueryApproval_Handler,
+		},
+		{
+			MethodName: "CancelQueryApproval",
+			Handler:    _ServerService_CancelQueryApproval_Handler,
+		},
+		{
+			MethodName: "ListApprovalIntegrations",
+			Handler:    _ServerService_ListApprovalIntegrations_Handler,
+		},
+		{
+			MethodName: "UpsertApprovalIntegration",
+			Handler:    _ServerService_UpsertApprovalIntegration_Handler,
+		},
+		{
+			MethodName: "DeleteApprovalIntegration",
+			Handler:    _ServerService_DeleteApprovalIntegration_Handler,
 		},
 		{
 			MethodName: "ListAccessGrants",
@@ -6867,6 +8180,10 @@ var ServerService_ServiceDesc = grpc.ServiceDesc{
 			Handler:    _ServerService_UpdateAgentPool_Handler,
 		},
 		{
+			MethodName: "SetAgentPoolTeams",
+			Handler:    _ServerService_SetAgentPoolTeams_Handler,
+		},
+		{
 			MethodName: "ResolveConnectionCredential",
 			Handler:    _ServerService_ResolveConnectionCredential_Handler,
 		},
@@ -6937,6 +8254,26 @@ var ServerService_ServiceDesc = grpc.ServiceDesc{
 		{
 			MethodName: "ExportToCloud",
 			Handler:    _ServerService_ExportToCloud_Handler,
+		},
+		{
+			MethodName: "ListLogDestinations",
+			Handler:    _ServerService_ListLogDestinations_Handler,
+		},
+		{
+			MethodName: "CreateLogDestination",
+			Handler:    _ServerService_CreateLogDestination_Handler,
+		},
+		{
+			MethodName: "UpdateLogDestination",
+			Handler:    _ServerService_UpdateLogDestination_Handler,
+		},
+		{
+			MethodName: "DeleteLogDestination",
+			Handler:    _ServerService_DeleteLogDestination_Handler,
+		},
+		{
+			MethodName: "TestLogDestination",
+			Handler:    _ServerService_TestLogDestination_Handler,
 		},
 		{
 			MethodName: "IngestAuditEvents",
@@ -7207,10 +8544,6 @@ var ServerService_ServiceDesc = grpc.ServiceDesc{
 			Handler:    _ServerService_ResetBackupSchedule_Handler,
 		},
 		{
-			MethodName: "UpdateBackupSchedule",
-			Handler:    _ServerService_UpdateBackupSchedule_Handler,
-		},
-		{
 			MethodName: "CreateBackup",
 			Handler:    _ServerService_CreateBackup_Handler,
 		},
@@ -7321,6 +8654,62 @@ var ServerService_ServiceDesc = grpc.ServiceDesc{
 		{
 			MethodName: "GetLicenseStatus",
 			Handler:    _ServerService_GetLicenseStatus_Handler,
+		},
+		{
+			MethodName: "ExportLicenseUsageReport",
+			Handler:    _ServerService_ExportLicenseUsageReport_Handler,
+		},
+		{
+			MethodName: "GetRunbookSource",
+			Handler:    _ServerService_GetRunbookSource_Handler,
+		},
+		{
+			MethodName: "UpsertRunbookSource",
+			Handler:    _ServerService_UpsertRunbookSource_Handler,
+		},
+		{
+			MethodName: "DeleteRunbookSource",
+			Handler:    _ServerService_DeleteRunbookSource_Handler,
+		},
+		{
+			MethodName: "SyncRunbooks",
+			Handler:    _ServerService_SyncRunbooks_Handler,
+		},
+		{
+			MethodName: "RotateRunbookWebhookSecret",
+			Handler:    _ServerService_RotateRunbookWebhookSecret_Handler,
+		},
+		{
+			MethodName: "FetchRunbookHostKey",
+			Handler:    _ServerService_FetchRunbookHostKey_Handler,
+		},
+		{
+			MethodName: "ListRunbooks",
+			Handler:    _ServerService_ListRunbooks_Handler,
+		},
+		{
+			MethodName: "GetRunbook",
+			Handler:    _ServerService_GetRunbook_Handler,
+		},
+		{
+			MethodName: "RunRunbook",
+			Handler:    _ServerService_RunRunbook_Handler,
+		},
+		{
+			MethodName: "GetRunbookExecution",
+			Handler:    _ServerService_GetRunbookExecution_Handler,
+		},
+		{
+			MethodName: "ListRunbookExecutions",
+			Handler:    _ServerService_ListRunbookExecutions_Handler,
+		},
+		{
+			MethodName: "ClaimRunbookExecutions",
+			Handler:    _ServerService_ClaimRunbookExecutions_Handler,
+		},
+		{
+			MethodName: "ReportRunbookExecution",
+			Handler:    _ServerService_ReportRunbookExecution_Handler,
 		},
 	},
 	Streams: []grpc.StreamDesc{
