@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"reflect"
 	"regexp"
+	"slices"
 	"strconv"
 	"strings"
 	"time"
@@ -14,6 +15,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework-validators/int64validator"
 	"github.com/hashicorp/terraform-plugin-framework-validators/mapvalidator"
 	"github.com/hashicorp/terraform-plugin-framework-validators/stringvalidator"
+	"github.com/hashicorp/terraform-plugin-framework/attr"
 	"github.com/hashicorp/terraform-plugin-framework/path"
 	"github.com/hashicorp/terraform-plugin-framework/resource"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema"
@@ -200,7 +202,8 @@ func (r *valkeyClusterResource) Schema(ctx context.Context, _ resource.SchemaReq
 				ElementType: types.StringType, Optional: true, Computed: true,
 				PlanModifiers: []planmodifier.Map{mapplanmodifier.UseStateForUnknown()},
 				MarkdownDescription: "Valkey settings, for example `maxmemory-policy`. An empty map resets them to defaults; omitting the attribute leaves them unmanaged. " +
-					"Settings the platform manages, such as `maxmemory` or `port`, are rejected.",
+					"Settings the platform manages, such as `maxmemory` or `port`, are rejected. " +
+					"The platform stores canonical names (lower case, aliases resolved); the spelling you configure is kept in state when it maps to the stored name.",
 			},
 			"keep_backups_on_destroy": schema.BoolAttribute{
 				Optional: true, Computed: true, Default: booldefault.StaticBool(false),
@@ -549,6 +552,56 @@ func valkeyNodesFromProto(nodes []*serverv1.NodeSpec, prior map[string]valkeyNod
 	return out
 }
 
+func keepConfiguredParameterNames(server map[string]string, prior types.Map) types.Map {
+	if prior.IsNull() || prior.IsUnknown() {
+		return stringMapFromGo(server)
+	}
+	configured := make(map[string]string, len(prior.Elements()))
+	for k, v := range prior.Elements() {
+		configured[k] = v.(types.String).ValueString()
+	}
+	keys := make([]string, 0, len(server))
+	for k := range server {
+		keys = append(keys, k)
+	}
+	slices.Sort(keys)
+	names := make(map[string]string, len(server))
+	claimed := map[string]bool{}
+	for _, k := range keys {
+		if _, ok := configured[k]; ok {
+			names[k] = k
+		}
+	}
+	sameName := func(k, p string) bool { return strings.ToLower(p) == k }
+	sameValue := func(k, p string) bool { return configured[p] == server[k] }
+	for _, match := range []func(k, p string) bool{sameName, sameValue} {
+		for _, k := range keys {
+			if _, ok := names[k]; ok {
+				continue
+			}
+			var candidates []string
+			for p := range configured {
+				if _, inServer := server[p]; !inServer && !claimed[p] && match(k, p) {
+					candidates = append(candidates, p)
+				}
+			}
+			if len(candidates) == 1 {
+				names[k] = candidates[0]
+				claimed[candidates[0]] = true
+			}
+		}
+	}
+	elems := make(map[string]attr.Value, len(server))
+	for _, k := range keys {
+		name, ok := names[k]
+		if !ok {
+			name = k
+		}
+		elems[name] = types.StringValue(server[k])
+	}
+	return types.MapValueMust(types.StringType, elems)
+}
+
 func valkeyClusterFromProto(db *serverv1.Database, prior valkeyClusterModel) valkeyClusterModel {
 	spec, st := db.GetSpec(), db.GetStatus()
 	v := spec.GetValkey()
@@ -572,7 +625,7 @@ func valkeyClusterFromProto(db *serverv1.Database, prior valkeyClusterModel) val
 		Shards:               shards,
 		ReplicasPerShard:     replicas,
 		Nodes:                valkeyNodesFromProto(spec.GetNodes(), prior.Nodes),
-		Parameters:           stringMapFromGo(v.GetParameters()),
+		Parameters:           keepConfiguredParameterNames(v.GetParameters(), prior.Parameters),
 		KeepBackupsOnDestroy: prior.KeepBackupsOnDestroy,
 		Phase:                types.StringValue(st.GetPhase()),
 		PhaseMessage:         types.StringValue(st.GetMessage()),

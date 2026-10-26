@@ -7,6 +7,7 @@ import (
 	"slices"
 	"sort"
 	"strconv"
+	"strings"
 	"sync"
 	"testing"
 	"time"
@@ -456,6 +457,24 @@ func validateNodes(spec *serverv1.DatabaseSpec) error {
 	return nil
 }
 
+var valkeyParameterAliases = map[string]string{"hash-max-ziplist-entries": "hash-max-listpack-entries"}
+
+func canonicalizeValkeyParameters(spec *serverv1.DatabaseSpec) {
+	v := spec.GetValkey()
+	if len(v.GetParameters()) == 0 {
+		return
+	}
+	out := make(map[string]string, len(v.GetParameters()))
+	for k, val := range v.GetParameters() {
+		name := strings.ToLower(k)
+		if canonical, ok := valkeyParameterAliases[name]; ok {
+			name = canonical
+		}
+		out[name] = val
+	}
+	v.Parameters = out
+}
+
 func validateValkey(spec *serverv1.DatabaseSpec) error {
 	if spec.GetEngine() != engineValkey {
 		return nil
@@ -526,6 +545,7 @@ func (f *fakeServer) CreateDatabase(ctx context.Context, req *serverv1.CreateDat
 		}
 	}
 	spec := proto.Clone(req.GetSpec()).(*serverv1.DatabaseSpec)
+	canonicalizeValkeyParameters(spec)
 	if err := f.bindPlacement(spec.GetNodes()); err != nil {
 		return nil, err
 	}
@@ -627,6 +647,7 @@ func (f *fakeServer) UpdateDatabase(ctx context.Context, req *serverv1.UpdateDat
 			return nil, status.Errorf(codes.InvalidArgument, "path %q is not updatable", p)
 		}
 	}
+	canonicalizeValkeyParameters(merged)
 	if err := validateValkey(merged); err != nil {
 		return nil, err
 	}

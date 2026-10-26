@@ -147,6 +147,80 @@ func TestValkeyClusterResource_Lifecycle(t *testing.T) {
 	})
 }
 
+func TestValkeyClusterResource_KeepsTheConfiguredParameterSpelling(t *testing.T) {
+	f := startFakeServer(t)
+	const upper = `{ "MaxMemory-Policy" = "allkeys-lru", "hash-max-ziplist-entries" = "512" }`
+	const changed = `{ "MaxMemory-Policy" = "allkeys-lru", "hash-max-ziplist-entries" = "256" }`
+	resource.UnitTest(t, resource.TestCase{
+		ProtoV6ProviderFactories: factories(relay.Dial),
+		CheckDestroy:             noClustersLeft(f),
+		Steps: []resource.TestStep{
+			{
+				Config: replicationConfig(f, "9.1", "8Gi", upper, ""),
+				Check: resource.ComposeAggregateTestCheckFunc(
+					resource.TestCheckResourceAttr("relay_valkey_cluster.this", "parameters.MaxMemory-Policy", "allkeys-lru"),
+					resource.TestCheckResourceAttr("relay_valkey_cluster.this", "parameters.hash-max-ziplist-entries", "512"),
+					resource.TestCheckResourceAttr("relay_valkey_cluster.this", "parameters.%", "2"),
+				),
+			},
+			{Config: replicationConfig(f, "9.1", "8Gi", upper, ""), PlanOnly: true},
+			{
+				Config: replicationConfig(f, "9.1", "8Gi", changed, ""),
+				Check:  resource.TestCheckResourceAttr("relay_valkey_cluster.this", "parameters.hash-max-ziplist-entries", "256"),
+			},
+			{Config: replicationConfig(f, "9.1", "8Gi", changed, ""), PlanOnly: true},
+		},
+	})
+}
+
+func TestKeepConfiguredParameterNames(t *testing.T) {
+	prior := func(m map[string]string) types.Map { return stringMapFromGo(m) }
+	cases := map[string]struct {
+		server map[string]string
+		prior  types.Map
+		want   map[string]string
+	}{
+		"null prior returns the server map": {
+			server: map[string]string{"a": "1"}, prior: types.MapNull(types.StringType), want: map[string]string{"a": "1"},
+		},
+		"unknown prior returns the server map": {
+			server: map[string]string{"a": "1"}, prior: types.MapUnknown(types.StringType), want: map[string]string{"a": "1"},
+		},
+		"exact match is kept": {
+			server: map[string]string{"a": "1"}, prior: prior(map[string]string{"a": "1"}), want: map[string]string{"a": "1"},
+		},
+		"upper case spelling is kept": {
+			server: map[string]string{"maxmemory-policy": "x"}, prior: prior(map[string]string{"MaxMemory-Policy": "x"}),
+			want: map[string]string{"MaxMemory-Policy": "x"},
+		},
+		"alias with the same value is kept": {
+			server: map[string]string{"new": "1"}, prior: prior(map[string]string{"old": "1"}), want: map[string]string{"old": "1"},
+		},
+		"alias with another value stays a diff": {
+			server: map[string]string{"new": "2"}, prior: prior(map[string]string{"old": "1"}), want: map[string]string{"new": "2"},
+		},
+		"two candidates with the same value are not remapped": {
+			server: map[string]string{"new": "1"}, prior: prior(map[string]string{"old1": "1", "old2": "1"}), want: map[string]string{"new": "1"},
+		},
+		"a prior key present in the response is not a candidate": {
+			server: map[string]string{"a": "1", "new": "1"}, prior: prior(map[string]string{"a": "1", "old": "1"}),
+			want: map[string]string{"a": "1", "old": "1"},
+		},
+		"a prior key is claimed once": {
+			server: map[string]string{"n1": "1", "n2": "1"}, prior: prior(map[string]string{"old": "1"}),
+			want: map[string]string{"old": "1", "n2": "1"},
+		},
+	}
+	for name, tc := range cases {
+		t.Run(name, func(t *testing.T) {
+			got := keepConfiguredParameterNames(tc.server, tc.prior)
+			if want := stringMapFromGo(tc.want); !got.Equal(want) {
+				t.Errorf("got %v, want %v", got, want)
+			}
+		})
+	}
+}
+
 func TestValkeyClusterResource_MinimalCluster(t *testing.T) {
 	f := startFakeServer(t)
 	config := valkeyConfig(f, valkeyGroup("cache", 1, "1Gi", ""))
