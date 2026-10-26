@@ -16,6 +16,8 @@ BUG FIXES:
 
 * resource/relay_postgresql_cluster, data-source/relay_postgresql_cluster: `endpoint_host` and `endpoint_port` are the public read-write endpoint, no longer the cluster's in-cluster address
 * resource/relay_connection: a connection with `managed_database_id` keeps its configured `host`; the API no longer returns it
+* resource/relay_postgresql_cluster, resource/relay_valkey_cluster: reading a cluster of the other engine, as an import of the wrong ID does, fails instead of filling state
+* resource/relay_postgresql_cluster, resource/relay_valkey_cluster: reading a cluster of the other engine, as an import of the wrong ID does, fails instead of filling state
 
 FEATURES:
 
