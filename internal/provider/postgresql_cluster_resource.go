@@ -3,6 +3,7 @@ package provider
 import (
 	"context"
 	"errors"
+	"fmt"
 	"reflect"
 	"sort"
 	"strings"
@@ -450,6 +451,10 @@ func (r *postgresqlClusterResource) Read(ctx context.Context, req resource.ReadR
 	}
 	if phase := out.GetDatabase().GetStatus().GetPhase(); phase == "deleting" || phase == phaseDeleted {
 		resp.State.RemoveResource(ctx)
+		return
+	}
+	if actual := out.GetDatabase().GetSpec().GetEngine(); !strings.EqualFold(actual, enginePostgreSQL) {
+		resp.Diagnostics.AddError("Wrong cluster engine", fmt.Sprintf("Cluster %q is a %s cluster; manage it with relay_valkey_cluster.", state.ID.ValueString(), actual))
 		return
 	}
 	state = clusterFromProto(out.GetDatabase(), state)

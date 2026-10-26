@@ -3,6 +3,7 @@ package provider
 import (
 	"context"
 	"errors"
+	"fmt"
 	"reflect"
 	"regexp"
 	"slices"
@@ -376,6 +377,10 @@ func (r *valkeyClusterResource) Read(ctx context.Context, req resource.ReadReque
 	}
 	if phase := out.GetDatabase().GetStatus().GetPhase(); phase == "deleting" || phase == phaseDeleted {
 		resp.State.RemoveResource(ctx)
+		return
+	}
+	if actual := out.GetDatabase().GetSpec().GetEngine(); !strings.EqualFold(actual, engineValkey) {
+		resp.Diagnostics.AddError("Wrong cluster engine", fmt.Sprintf("Cluster %q is a %s cluster; manage it with relay_postgresql_cluster.", state.ID.ValueString(), actual))
 		return
 	}
 	state = valkeyClusterFromProto(out.GetDatabase(), state)
