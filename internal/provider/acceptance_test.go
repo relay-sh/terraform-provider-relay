@@ -348,6 +348,108 @@ resource "relay_valkey_cluster" "this" {
 	})
 }
 
+func TestAccBackupSchedule(t *testing.T) {
+	if os.Getenv("TF_ACC") == "" || os.Getenv("RELAY_ACC_DATABASES") == "" {
+		t.Skip("set TF_ACC=1 and RELAY_ACC_DATABASES=1 to provision real clusters")
+	}
+	name := acceptanceName(t)
+	config := func(weeklyRetention, valkeyHour int) string {
+		return fmt.Sprintf(`
+resource "relay_workspace" "this" {
+  name = %[1]q
+}
+
+resource "relay_postgresql_cluster" "this" {
+  workspace_id = relay_workspace.this.id
+  name         = "pg"
+  version      = %[2]q
+
+  nodes = {
+    writers = {
+      role      = "electable"
+      cloud     = %[3]q
+      region    = %[4]q
+      tier      = "R5"
+      resources = { storage = "5Gi" }
+    }
+  }
+}
+
+resource "relay_valkey_cluster" "this" {
+  workspace_id = relay_workspace.this.id
+  name         = "valkey"
+  version      = %[5]q
+  mode         = "replication"
+
+  nodes = {
+    cache = {
+      count     = 2
+      cloud     = %[3]q
+      region    = %[4]q
+      tier      = %[6]q
+      resources = { storage = "5Gi" }
+    }
+  }
+}
+
+resource "relay_backup_schedule" "pg" {
+  workspace_id     = relay_workspace.this.id
+  cluster_id       = relay_postgresql_cluster.this.id
+  snapshot_time    = { hour = 3, minute = 15 }
+  pitr_window_days = 3
+  tiers = [
+    { frequency = "daily", interval = 1, retention_value = 7, retention_unit = "days", enabled = true },
+    { frequency = "weekly", interval = 1, retention_value = %[7]d, retention_unit = "weeks", enabled = true },
+  ]
+}
+
+resource "relay_backup_schedule" "valkey" {
+  workspace_id  = relay_workspace.this.id
+  cluster_id    = relay_valkey_cluster.this.id
+  snapshot_time = { hour = %[8]d, minute = 0 }
+  max_backups   = 2
+}
+`, name, envOr("RELAY_ACC_PG_VERSION", "17"), envOr("RELAY_ACC_CLOUD", "aws"), envOr("RELAY_ACC_REGION", "us-east-1"),
+			envOr("RELAY_ACC_VALKEY_VERSION", "9.1"), envOr("RELAY_ACC_VALKEY_TIER", "RC10"), weeklyRetention, valkeyHour)
+	}
+	resource.Test(t, resource.TestCase{
+		ProtoV6ProviderFactories: acceptanceFactories(t),
+		Steps: []resource.TestStep{
+			{
+				Config: config(2, 4),
+				Check: resource.ComposeAggregateTestCheckFunc(
+					resource.TestCheckResourceAttr("relay_backup_schedule.pg", "platform_default", "false"),
+					resource.TestCheckResourceAttr("relay_backup_schedule.pg", "pitr_window_days", "3"),
+					resource.TestCheckResourceAttrSet("relay_backup_schedule.pg", "next_backup_time"),
+					resource.TestCheckResourceAttr("relay_backup_schedule.valkey", "platform_default", "false"),
+					resource.TestCheckResourceAttr("relay_backup_schedule.valkey", "max_backups", "2"),
+					resource.TestCheckResourceAttr("relay_backup_schedule.valkey", "snapshot_time.hour", "4"),
+				),
+			},
+			{
+				Config: config(3, 5),
+				ConfigPlanChecks: resource.ConfigPlanChecks{
+					PreApply: []plancheck.PlanCheck{
+						plancheck.ExpectResourceAction("relay_backup_schedule.pg", plancheck.ResourceActionUpdate),
+						plancheck.ExpectResourceAction("relay_backup_schedule.valkey", plancheck.ResourceActionUpdate),
+					},
+				},
+				Check: resource.ComposeAggregateTestCheckFunc(
+					resource.TestCheckResourceAttr("relay_backup_schedule.pg", "tiers.1.retention_value", "3"),
+					resource.TestCheckResourceAttr("relay_backup_schedule.valkey", "snapshot_time.hour", "5"),
+				),
+			},
+			{
+				ResourceName:            "relay_backup_schedule.pg",
+				ImportState:             true,
+				ImportStateIdFunc:       workspaceScopedID("relay_backup_schedule.pg", "cluster_id"),
+				ImportStateVerify:       true,
+				ImportStateVerifyIgnore: []string{"last_backup_time", "next_backup_time", "active_backups"},
+			},
+		},
+	})
+}
+
 func envOr(key, fallback string) string {
 	if v := os.Getenv(key); v != "" {
 		return v
