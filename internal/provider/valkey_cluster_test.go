@@ -147,6 +147,80 @@ func TestValkeyClusterResource_Lifecycle(t *testing.T) {
 	})
 }
 
+func TestValkeyClusterResource_KeepsTheConfiguredParameterSpelling(t *testing.T) {
+	f := startFakeServer(t)
+	const upper = `{ "MaxMemory-Policy" = "allkeys-lru", "hash-max-ziplist-entries" = "512" }`
+	const changed = `{ "MaxMemory-Policy" = "allkeys-lru", "hash-max-ziplist-entries" = "256" }`
+	resource.UnitTest(t, resource.TestCase{
+		ProtoV6ProviderFactories: factories(relay.Dial),
+		CheckDestroy:             noClustersLeft(f),
+		Steps: []resource.TestStep{
+			{
+				Config: replicationConfig(f, "9.1", "8Gi", upper, ""),
+				Check: resource.ComposeAggregateTestCheckFunc(
+					resource.TestCheckResourceAttr("relay_valkey_cluster.this", "parameters.MaxMemory-Policy", "allkeys-lru"),
+					resource.TestCheckResourceAttr("relay_valkey_cluster.this", "parameters.hash-max-ziplist-entries", "512"),
+					resource.TestCheckResourceAttr("relay_valkey_cluster.this", "parameters.%", "2"),
+				),
+			},
+			{Config: replicationConfig(f, "9.1", "8Gi", upper, ""), PlanOnly: true},
+			{
+				Config: replicationConfig(f, "9.1", "8Gi", changed, ""),
+				Check:  resource.TestCheckResourceAttr("relay_valkey_cluster.this", "parameters.hash-max-ziplist-entries", "256"),
+			},
+			{Config: replicationConfig(f, "9.1", "8Gi", changed, ""), PlanOnly: true},
+		},
+	})
+}
+
+func TestKeepConfiguredParameterNames(t *testing.T) {
+	prior := func(m map[string]string) types.Map { return stringMapFromGo(m) }
+	cases := map[string]struct {
+		server map[string]string
+		prior  types.Map
+		want   map[string]string
+	}{
+		"null prior returns the server map": {
+			server: map[string]string{"a": "1"}, prior: types.MapNull(types.StringType), want: map[string]string{"a": "1"},
+		},
+		"unknown prior returns the server map": {
+			server: map[string]string{"a": "1"}, prior: types.MapUnknown(types.StringType), want: map[string]string{"a": "1"},
+		},
+		"exact match is kept": {
+			server: map[string]string{"a": "1"}, prior: prior(map[string]string{"a": "1"}), want: map[string]string{"a": "1"},
+		},
+		"upper case spelling is kept": {
+			server: map[string]string{"maxmemory-policy": "x"}, prior: prior(map[string]string{"MaxMemory-Policy": "x"}),
+			want: map[string]string{"MaxMemory-Policy": "x"},
+		},
+		"alias with the same value is kept": {
+			server: map[string]string{"new": "1"}, prior: prior(map[string]string{"old": "1"}), want: map[string]string{"old": "1"},
+		},
+		"alias with another value stays a diff": {
+			server: map[string]string{"new": "2"}, prior: prior(map[string]string{"old": "1"}), want: map[string]string{"new": "2"},
+		},
+		"two candidates with the same value are not remapped": {
+			server: map[string]string{"new": "1"}, prior: prior(map[string]string{"old1": "1", "old2": "1"}), want: map[string]string{"new": "1"},
+		},
+		"a prior key present in the response is not a candidate": {
+			server: map[string]string{"a": "1", "new": "1"}, prior: prior(map[string]string{"a": "1", "old": "1"}),
+			want: map[string]string{"a": "1", "old": "1"},
+		},
+		"a prior key is claimed once": {
+			server: map[string]string{"n1": "1", "n2": "1"}, prior: prior(map[string]string{"old": "1"}),
+			want: map[string]string{"old": "1", "n2": "1"},
+		},
+	}
+	for name, tc := range cases {
+		t.Run(name, func(t *testing.T) {
+			got := keepConfiguredParameterNames(tc.server, tc.prior)
+			if want := stringMapFromGo(tc.want); !got.Equal(want) {
+				t.Errorf("got %v, want %v", got, want)
+			}
+		})
+	}
+}
+
 func TestValkeyClusterResource_MinimalCluster(t *testing.T) {
 	f := startFakeServer(t)
 	config := valkeyConfig(f, valkeyGroup("cache", 1, "1Gi", ""))
@@ -586,4 +660,122 @@ func TestFakeServerRejectsWhatThePlatformRejectsForValkey(t *testing.T) {
 			}
 		})
 	}
+}
+
+func TestValkeyClusterDataSource(t *testing.T) {
+	f := startFakeServer(t)
+	f.databases["db-pg"] = &serverv1.Database{
+		Id: "db-pg", Name: "sessions", WorkspaceId: dbWorkspace,
+		Spec:   &serverv1.DatabaseSpec{Engine: "postgresql"},
+		Status: &serverv1.DatabaseStatus{Phase: "running"},
+	}
+	f.databases["db-cache"] = &serverv1.Database{
+		Id: "db-cache", Name: "sessions", WorkspaceId: dbWorkspace,
+		Spec: &serverv1.DatabaseSpec{
+			Engine: "valkey", Version: "9.1",
+			Valkey: &serverv1.ValkeyConfig{Mode: "cluster", Shards: 3, ReplicasPerShard: 1, Parameters: map[string]string{"maxmemory-policy": "allkeys-lru"}},
+			Nodes: []*serverv1.NodeSpec{{
+				Name: "main", Count: 6, Cloud: "aws", Region: "us-east-1", Tier: "RC10",
+				Resources: &serverv1.ResourceRequirements{
+					Cpu: "1", Memory: "2Gi", Storage: "10Gi",
+					StorageAutoscale: &serverv1.StorageAutoscale{Enabled: true, ThresholdPercent: 80, IncreasePercent: 20, MaxStorage: "50Gi"},
+				},
+			}},
+		},
+		Status: &serverv1.DatabaseStatus{Phase: "running", TotalNodes: 6, ReadyNodes: 6, Endpoint: &serverv1.Endpoint{Host: "cache.db", Port: 6379}},
+	}
+	f.databases["db-plain"] = &serverv1.Database{
+		Id: "db-plain", Name: "plain", WorkspaceId: dbWorkspace,
+		Spec:   &serverv1.DatabaseSpec{Engine: "valkey", Version: "9.1", Nodes: []*serverv1.NodeSpec{{Name: "main", Count: 2}}},
+		Status: &serverv1.DatabaseStatus{Phase: "running"},
+	}
+	resource.UnitTest(t, resource.TestCase{
+		ProtoV6ProviderFactories: factories(relay.Dial),
+		Steps: []resource.TestStep{{
+			Config: providerBlock(f) + fmt.Sprintf(`
+data "relay_valkey_cluster" "by_name" {
+  workspace_id = %[1]q
+  name         = "sessions"
+}
+
+data "relay_valkey_cluster" "by_id" {
+  workspace_id = %[1]q
+  id           = "db-plain"
+}
+`, dbWorkspace),
+			Check: resource.ComposeAggregateTestCheckFunc(
+				resource.TestCheckResourceAttr("data.relay_valkey_cluster.by_name", "id", "db-cache"),
+				resource.TestCheckResourceAttr("data.relay_valkey_cluster.by_name", "mode", "cluster"),
+				resource.TestCheckResourceAttr("data.relay_valkey_cluster.by_name", "shards", "3"),
+				resource.TestCheckResourceAttr("data.relay_valkey_cluster.by_name", "replicas_per_shard", "1"),
+				resource.TestCheckResourceAttr("data.relay_valkey_cluster.by_name", "parameters.maxmemory-policy", "allkeys-lru"),
+				resource.TestCheckResourceAttr("data.relay_valkey_cluster.by_name", "nodes.main.tier", "RC10"),
+				resource.TestCheckResourceAttr("data.relay_valkey_cluster.by_name", "nodes.main.resources.storage_autoscale.max_storage", "50Gi"),
+				resource.TestCheckResourceAttr("data.relay_valkey_cluster.by_name", "endpoint_port", "6379"),
+				resource.TestCheckResourceAttr("data.relay_valkey_cluster.by_name", "ready_nodes", "6"),
+				resource.TestCheckResourceAttr("data.relay_valkey_cluster.by_id", "name", "plain"),
+				resource.TestCheckResourceAttr("data.relay_valkey_cluster.by_id", "mode", "replication"),
+				resource.TestCheckNoResourceAttr("data.relay_valkey_cluster.by_id", "shards"),
+				resource.TestCheckNoResourceAttr("data.relay_valkey_cluster.by_id", "nodes.main.resources.storage_autoscale.enabled"),
+			),
+		}},
+	})
+}
+
+func TestValkeyClusterDataSource_Errors(t *testing.T) {
+	unavailable := status.Error(codes.Unavailable, "down")
+	cases := map[string]struct {
+		body   string
+		method string
+		err    error
+		want   string
+	}{
+		"missing by name": {`name = "nope"`, "", nil, "Cluster not found"},
+		"missing by id":   {`id = "nope"`, "", nil, "Cluster not found"},
+		"other engine":    {`id = "db-pg"`, "", nil, "Cluster not found"},
+		"list failure":    {`name = "x"`, "ListDatabases", unavailable, "Cannot list clusters"},
+		"get failure":     {`id = "x"`, "GetDatabase", unavailable, "Cannot read cluster"},
+		"both keys":       {"id = \"a\"\n  name = \"b\"", "", nil, "Invalid Attribute Combination"},
+	}
+	for name, tc := range cases {
+		t.Run(name, func(t *testing.T) {
+			f := startFakeServer(t)
+			f.databases["db-pg"] = &serverv1.Database{Id: "db-pg", Name: "pg", WorkspaceId: dbWorkspace, Spec: &serverv1.DatabaseSpec{Engine: "postgresql"}, Status: &serverv1.DatabaseStatus{Phase: "running"}}
+			if tc.method != "" {
+				f.failWith(tc.method, tc.err)
+			}
+			resource.UnitTest(t, resource.TestCase{
+				ProtoV6ProviderFactories: factories(relay.Dial),
+				Steps: []resource.TestStep{{
+					Config:      providerBlock(f) + fmt.Sprintf("data \"relay_valkey_cluster\" \"x\" {\n  workspace_id = %q\n  %s\n}\n", dbWorkspace, tc.body),
+					ExpectError: regexp.MustCompile(tc.want),
+				}},
+			})
+		})
+	}
+}
+
+func TestValkeyClusterResource_ImportRejectsOtherEngine(t *testing.T) {
+	f := startFakeServer(t)
+	resource.UnitTest(t, resource.TestCase{
+		ProtoV6ProviderFactories: factories(relay.Dial),
+		Steps: []resource.TestStep{
+			{Config: replicationConfig(f, "9.1", "8Gi", `{}`, "")},
+			{
+				PreConfig: func() {
+					f.mu.Lock()
+					defer f.mu.Unlock()
+					f.databases["db-other"] = &serverv1.Database{
+						Id: "db-other", Name: "other", WorkspaceId: dbWorkspace,
+						Spec:   &serverv1.DatabaseSpec{Engine: "postgresql"},
+						Status: &serverv1.DatabaseStatus{Phase: "running"},
+					}
+				},
+				ResourceName:  "relay_valkey_cluster.this",
+				ImportState:   true,
+				ImportStateId: dbWorkspace + "/db-other",
+				ExpectError:   regexp.MustCompile(`(?s)is a postgresql cluster.*relay_postgresql_cluster`),
+			},
+		},
+	})
 }
