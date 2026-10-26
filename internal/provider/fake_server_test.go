@@ -621,6 +621,8 @@ func (f *fakeServer) UpdateDatabase(ctx context.Context, req *serverv1.UpdateDat
 			merged.Postgresql = in.GetPostgresql()
 		case "valkey":
 			merged.Valkey = in.GetValkey()
+		case "valkey.parameters":
+			merged.Valkey.Parameters = in.GetValkey().GetParameters()
 		default:
 			return nil, status.Errorf(codes.InvalidArgument, "path %q is not updatable", p)
 		}
