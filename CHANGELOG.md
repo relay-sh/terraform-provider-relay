@@ -43,3 +43,4 @@ FEATURES:
 * **New Resource:** `relay_valkey_cluster`
 * **New Resource:** `relay_valkey_user`
 * **New Data Source:** `relay_valkey_cluster`
+* **New Resource:** `relay_backup_schedule`

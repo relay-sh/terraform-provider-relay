@@ -117,6 +117,7 @@ func TestResourceGuards(t *testing.T) {
 	assertResourceGuards(t, newPostgreSQLDatabaseResource())
 	assertResourceGuards(t, newValkeyClusterResource())
 	assertResourceGuards(t, newValkeyUserResource())
+	assertResourceGuards(t, newBackupScheduleResource())
 	assertResourceGuards(t, newAPIKeyResource())
 	assertResourceGuards(t, newIPAccessListResource())
 	assertResourceGuards(t, newPrivateEndpointServiceResource())
