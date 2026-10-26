@@ -77,17 +77,18 @@ func assertResourceGuards(t *testing.T, r resource.Resource) {
 
 func TestClusterModifyPlanStopsOnMalformedInput(t *testing.T) {
 	ctx := context.Background()
-	r := newPostgreSQLClusterResource().(*postgresqlClusterResource)
-	var schemaResp resource.SchemaResponse
-	r.Schema(ctx, resource.SchemaRequest{}, &schemaResp)
+	for _, r := range []resource.ResourceWithModifyPlan{newPostgreSQLClusterResource().(*postgresqlClusterResource), newValkeyClusterResource().(*valkeyClusterResource)} {
+		var schemaResp resource.SchemaResponse
+		r.Schema(ctx, resource.SchemaRequest{}, &schemaResp)
 
-	var resp resource.ModifyPlanResponse
-	r.ModifyPlan(ctx, resource.ModifyPlanRequest{
-		Plan:  tfsdk.Plan{Schema: schemaResp.Schema, Raw: malformed},
-		State: tfsdk.State{Schema: schemaResp.Schema, Raw: malformed},
-	}, &resp)
-	if !resp.Diagnostics.HasError() {
-		t.Error("ModifyPlan must stop on malformed input")
+		var resp resource.ModifyPlanResponse
+		r.ModifyPlan(ctx, resource.ModifyPlanRequest{
+			Plan:  tfsdk.Plan{Schema: schemaResp.Schema, Raw: malformed},
+			State: tfsdk.State{Schema: schemaResp.Schema, Raw: malformed},
+		}, &resp)
+		if !resp.Diagnostics.HasError() {
+			t.Errorf("%T ModifyPlan must stop on malformed input", r)
+		}
 	}
 }
 
@@ -114,6 +115,7 @@ func TestResourceGuards(t *testing.T) {
 	assertResourceGuards(t, newPostgreSQLClusterResource())
 	assertResourceGuards(t, newPostgreSQLUserResource())
 	assertResourceGuards(t, newPostgreSQLDatabaseResource())
+	assertResourceGuards(t, newValkeyClusterResource())
 	assertResourceGuards(t, newAPIKeyResource())
 	assertResourceGuards(t, newIPAccessListResource())
 	assertResourceGuards(t, newPrivateEndpointServiceResource())

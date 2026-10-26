@@ -105,6 +105,7 @@ func (p *relayProvider) Resources(context.Context) []func() resource.Resource {
 		newPostgreSQLClusterResource,
 		newPostgreSQLUserResource,
 		newPostgreSQLDatabaseResource,
+		newValkeyClusterResource,
 		newIPAccessListResource,
 		newPrivateEndpointServiceResource,
 		newPrivateEndpointResource,
