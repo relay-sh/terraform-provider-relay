@@ -41,4 +41,5 @@ FEATURES:
 * **New Data Source:** `relay_regions`
 * **New Data Source:** `relay_cloud_providers`
 * **New Resource:** `relay_valkey_cluster`
+* **New Resource:** `relay_valkey_user`
 * **New Data Source:** `relay_valkey_cluster`
