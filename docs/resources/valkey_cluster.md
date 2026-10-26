@@ -77,7 +77,7 @@ resource "relay_valkey_cluster" "leaderboard" {
 
 - `keep_backups_on_destroy` (Boolean) Keep the cluster's backups when it is destroyed.
 - `mode` (String) `replication` runs one primary and its replicas. `cluster` shards the keyspace across `shards` primaries, each with `replicas_per_shard` replicas. Changing it replaces the cluster.
-- `parameters` (Map of String) Valkey settings, for example `maxmemory-policy`. An empty map resets them to defaults; omitting the attribute leaves them unmanaged. Settings the platform manages, such as `maxmemory` or `port`, are rejected.
+- `parameters` (Map of String) Valkey settings, for example `maxmemory-policy`. An empty map resets them to defaults; omitting the attribute leaves them unmanaged. Settings the platform manages, such as `maxmemory` or `port`, are rejected. The platform stores canonical names (lower case, aliases resolved); the spelling you configure is kept in state when it maps to the stored name.
 - `replicas_per_shard` (Number) Replicas behind each shard's primary, 0-4. Only in `cluster` mode; omitted means 0.
 - `shards` (Number) Primaries the keyspace is split across, 3-100. Required in `cluster` mode and not allowed in `replication` mode. Changing it reshards in place, together with the node group's `count`.
 - `timeouts` (Block, Optional) (see [below for nested schema](#nestedblock--timeouts))
