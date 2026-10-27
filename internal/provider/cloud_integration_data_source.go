@@ -47,7 +47,7 @@ func (d *cloudIntegrationDataSource) Schema(_ context.Context, _ datasource.Sche
 		Attributes: map[string]schema.Attribute{
 			"workspace_id":   schema.StringAttribute{Required: true, MarkdownDescription: "Workspace to look in."},
 			"id":             schema.StringAttribute{Optional: true, Computed: true, MarkdownDescription: "Integration ID."},
-			"name":           schema.StringAttribute{Optional: true, Computed: true, MarkdownDescription: "Integration name. The API does not enforce unique names, so the lookup fails when more than one integration has it."},
+			"name":           schema.StringAttribute{Optional: true, Computed: true, MarkdownDescription: "Integration name, unique in the workspace."},
 			"cloud":          computed("Cloud provider, `aws`."),
 			"aws_account_id": computed("AWS account the role belongs to."),
 			"role_arn":       computed("ARN of the IAM role Relay assumes."),
