@@ -497,6 +497,49 @@ resource "relay_backup_auto_export" "this" {
 	})
 }
 
+func TestAccCloudIntegration(t *testing.T) {
+	workspace, role := os.Getenv("RELAY_ACC_WORKSPACE_ID"), os.Getenv("RELAY_ACC_CLOUD_ROLE_ARN")
+	if os.Getenv("TF_ACC") == "" || workspace == "" || role == "" {
+		t.Skip("set TF_ACC=1, RELAY_ACC_WORKSPACE_ID and RELAY_ACC_CLOUD_ROLE_ARN, an IAM role that trusts relay_cloud_integration_setup's trust policy, to create a real integration")
+	}
+	name := acceptanceName(t)
+	config := func(name string) string {
+		return fmt.Sprintf(`
+data "relay_cloud_integration_setup" "this" {
+  workspace_id = %[1]q
+}
+
+resource "relay_cloud_integration" "this" {
+  workspace_id = %[1]q
+  name         = %[2]q
+  role_arn     = %[3]q
+}
+`, workspace, name, role)
+	}
+	resource.Test(t, resource.TestCase{
+		ProtoV6ProviderFactories: acceptanceFactories(t),
+		Steps: []resource.TestStep{
+			{
+				Config: config(name),
+				Check: resource.ComposeAggregateTestCheckFunc(
+					resource.TestCheckResourceAttrPair("relay_cloud_integration.this", "external_id", "data.relay_cloud_integration_setup.this", "external_id"),
+					resource.TestCheckResourceAttr("relay_cloud_integration.this", "status", "connected"),
+				),
+			},
+			{
+				Config: config(name + "-renamed"),
+				Check:  resource.TestCheckResourceAttr("relay_cloud_integration.this", "name", name+"-renamed"),
+			},
+			{
+				ResourceName:      "relay_cloud_integration.this",
+				ImportState:       true,
+				ImportStateIdFunc: workspaceScopedID("relay_cloud_integration.this", "id"),
+				ImportStateVerify: true,
+			},
+		},
+	})
+}
+
 func envOr(key, fallback string) string {
 	if v := os.Getenv(key); v != "" {
 		return v

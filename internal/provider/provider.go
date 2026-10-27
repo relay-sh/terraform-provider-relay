@@ -109,6 +109,7 @@ func (p *relayProvider) Resources(context.Context) []func() resource.Resource {
 		newValkeyUserResource,
 		newBackupScheduleResource,
 		newBackupAutoExportResource,
+		newCloudIntegrationResource,
 		newIPAccessListResource,
 		newPrivateEndpointServiceResource,
 		newPrivateEndpointResource,
@@ -128,6 +129,7 @@ func (p *relayProvider) DataSources(context.Context) []func() datasource.DataSou
 		newRegionsDataSource,
 		newCloudProvidersDataSource,
 		newCloudIntegrationDataSource,
+		newCloudIntegrationSetupDataSource,
 	}
 }
 

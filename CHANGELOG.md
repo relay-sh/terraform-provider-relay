@@ -46,3 +46,5 @@ FEATURES:
 * **New Resource:** `relay_backup_schedule`
 * **New Data Source:** `relay_cloud_integration`
 * **New Resource:** `relay_backup_auto_export`
+* **New Resource:** `relay_cloud_integration`
+* **New Data Source:** `relay_cloud_integration_setup`
