@@ -294,8 +294,8 @@ resource "relay_valkey_user" "this" {
 }
 
 func TestAccValkeyClusterModeReshard(t *testing.T) {
-	if os.Getenv("TF_ACC") == "" || os.Getenv("RELAY_ACC_DATABASES") == "" || os.Getenv("RELAY_ACC_VALKEY_CLUSTER_MODE") == "" {
-		t.Skip("set TF_ACC=1, RELAY_ACC_DATABASES=1 and RELAY_ACC_VALKEY_CLUSTER_MODE=1 to provision a sharded Valkey cluster")
+	if os.Getenv("TF_ACC") == "" || os.Getenv("RELAY_ACC_DATABASES") == "" {
+		t.Skip("set TF_ACC=1 and RELAY_ACC_DATABASES=1 to provision a sharded Valkey cluster")
 	}
 	name := acceptanceName(t)
 	config := func(shards int) string {
