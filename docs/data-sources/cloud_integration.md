@@ -29,7 +29,7 @@ data "relay_cloud_integration" "backups" {
 ### Optional
 
 - `id` (String) Integration ID.
-- `name` (String) Integration name. The API does not enforce unique names, so the lookup fails when more than one integration has it.
+- `name` (String) Integration name, unique in the workspace.
 
 ### Read-Only
 

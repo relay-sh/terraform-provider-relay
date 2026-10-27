@@ -94,6 +94,8 @@ type fakeServer struct {
 	lastScheduleSpec  *serverv1.BackupScheduleSpec
 	planRetentionDays int64
 	cloudIntegrations []*serverv1.CloudIntegration
+	relayAWSAccountID string
+	assumeRoleError   string
 	autoExport        *serverv1.BackupAutoExport
 	lastAutoExport    *serverv1.UpsertBackupAutoExportRequest
 }
@@ -105,27 +107,28 @@ func startFakeServer(t *testing.T) *fakeServer {
 		t.Fatalf("listen: %v", err)
 	}
 	f := &fakeServer{
-		addr:          lis.Addr().String(),
-		errs:          map[string]error{},
-		skip:          map[string]int{},
-		orgs:          map[string]*serverv1.Organization{},
-		workspaces:    map[string]*serverv1.Workspace{},
-		connections:   map[string]*serverv1.Connection{},
-		databases:     map[string]*serverv1.Database{},
-		dbCountdown:   map[string]int{},
-		readyAfter:    2,
-		users:         map[string]*serverv1.DatabaseUser{},
-		userCountdown: map[string]int{},
-		logicalDBs:    map[string]*serverv1.LogicalDatabase{},
-		ldbCountdown:  map[string]int{},
-		apiKeys:       map[string]*serverv1.APIKey{},
-		allowlist:     map[string][]*serverv1.IPAllowlistEntry{},
-		syncCountdown: map[string]int{},
-		peServices:    map[string]*serverv1.PrivateEndpointService{},
-		svcCountdown:  map[string]int{},
-		epCountdown:   map[string]int{},
-		schedules:     map[string]*serverv1.BackupScheduleSpec{},
-		peRegions:     []*serverv1.PrivateEndpointRegion{{Provider: "aws", Region: "us-east-1"}},
+		addr:              lis.Addr().String(),
+		errs:              map[string]error{},
+		skip:              map[string]int{},
+		orgs:              map[string]*serverv1.Organization{},
+		workspaces:        map[string]*serverv1.Workspace{},
+		connections:       map[string]*serverv1.Connection{},
+		databases:         map[string]*serverv1.Database{},
+		dbCountdown:       map[string]int{},
+		readyAfter:        2,
+		users:             map[string]*serverv1.DatabaseUser{},
+		userCountdown:     map[string]int{},
+		logicalDBs:        map[string]*serverv1.LogicalDatabase{},
+		ldbCountdown:      map[string]int{},
+		apiKeys:           map[string]*serverv1.APIKey{},
+		allowlist:         map[string][]*serverv1.IPAllowlistEntry{},
+		syncCountdown:     map[string]int{},
+		peServices:        map[string]*serverv1.PrivateEndpointService{},
+		svcCountdown:      map[string]int{},
+		epCountdown:       map[string]int{},
+		schedules:         map[string]*serverv1.BackupScheduleSpec{},
+		relayAWSAccountID: "111122223333",
+		peRegions:         []*serverv1.PrivateEndpointRegion{{Provider: "aws", Region: "us-east-1"}},
 		providers: []*serverv1.DatabaseProvider{
 			{Cloud: "aws", Region: "us-east-1", Engines: []string{"PostgreSQL"}},
 			{Cloud: "aws", Region: "eu-west-1", Engines: []string{"PostgreSQL"}},
@@ -923,30 +926,6 @@ func (f *fakeServer) DeleteLogicalDatabase(ctx context.Context, req *serverv1.De
 	delete(f.logicalDBs, key)
 	return &serverv1.DeleteLogicalDatabaseResponse{}, nil
 }
-
-func (f *fakeServer) ListCloudIntegrations(ctx context.Context, _ *serverv1.ListCloudIntegrationsRequest) (*serverv1.ListCloudIntegrationsResponse, error) {
-	f.mu.Lock()
-	defer f.mu.Unlock()
-	if err := f.record(ctx, "ListCloudIntegrations"); err != nil {
-		return nil, err
-	}
-	return &serverv1.ListCloudIntegrationsResponse{Integrations: f.cloudIntegrations}, nil
-}
-
-func (f *fakeServer) GetCloudIntegration(ctx context.Context, req *serverv1.GetCloudIntegrationRequest) (*serverv1.GetCloudIntegrationResponse, error) {
-	f.mu.Lock()
-	defer f.mu.Unlock()
-	if err := f.record(ctx, "GetCloudIntegration"); err != nil {
-		return nil, err
-	}
-	for _, it := range f.cloudIntegrations {
-		if it.GetId() == req.GetId() {
-			return &serverv1.GetCloudIntegrationResponse{Integration: it}, nil
-		}
-	}
-	return nil, status.Error(codes.NotFound, "cloud integration not found")
-}
-
 func (f *fakeServer) raiseValkeyStorage(spec, stored *serverv1.DatabaseSpec) {
 	if spec.GetEngine() != engineValkey || f.valkeyFloor == "" {
 		return

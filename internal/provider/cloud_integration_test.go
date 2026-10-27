@@ -20,7 +20,7 @@ func TestCloudIntegrationDataSource(t *testing.T) {
 	f := startFakeServer(t)
 	f.cloudIntegrations = []*serverv1.CloudIntegration{
 		{
-			Id: "ci-1", Provider: "aws", Name: "backups", AwsAccountId: "123456789012",
+			Id: "c1000000-0000-4000-8000-000000000001", Provider: "aws", Name: "backups", AwsAccountId: "123456789012",
 			RoleArn: "arn:aws:iam::123456789012:role/relay-backups", ExternalId: "relay-org-1",
 			Status: "error", LastError: "AccessDenied",
 		},
@@ -56,7 +56,7 @@ data "relay_cloud_integration" "this" {
 			{
 				Config: ds(`  name = "backups"`),
 				Check: resource.ComposeAggregateTestCheckFunc(
-					resource.TestCheckResourceAttr(addr, "id", "ci-1"),
+					resource.TestCheckResourceAttr(addr, "id", "c1000000-0000-4000-8000-000000000001"),
 					resource.TestCheckResourceAttr(addr, "cloud", "aws"),
 					resource.TestCheckResourceAttr(addr, "aws_account_id", "123456789012"),
 					resource.TestCheckResourceAttr(addr, "role_arn", "arn:aws:iam::123456789012:role/relay-backups"),
@@ -67,7 +67,7 @@ data "relay_cloud_integration" "this" {
 				),
 			},
 			{
-				Config: ds(`  id = "ci-1"`),
+				Config: ds(`  id = "c1000000-0000-4000-8000-000000000001"`),
 				Check: resource.ComposeAggregateTestCheckFunc(
 					resource.TestCheckResourceAttr(addr, "name", "backups"),
 					resource.TestCheckResourceAttr(addr, "workspace_id", ciWorkspace),
@@ -75,7 +75,7 @@ data "relay_cloud_integration" "this" {
 				),
 			},
 			{
-				Config:      ds("  id = \"ci-1\"\n  name = \"backups\""),
+				Config:      ds("  id = \"c1000000-0000-4000-8000-000000000001\"\n  name = \"backups\""),
 				ExpectError: regexp.MustCompile("Invalid Attribute Combination"),
 			},
 			{
@@ -91,12 +91,12 @@ data "relay_cloud_integration" "this" {
 				ExpectError: regexp.MustCompile("Cloud integration not found"),
 			},
 			{
-				Config:      ds(`  id = "ci-missing"`),
+				Config:      ds(`  id = "c1000000-0000-4000-8000-0000000000ff"`),
 				ExpectError: regexp.MustCompile("Cloud integration not found"),
 			},
 			{
 				PreConfig:   func() { f.failWith("GetCloudIntegration", status.Error(codes.PermissionDenied, "denied")) },
-				Config:      ds(`  id = "ci-1"`),
+				Config:      ds(`  id = "c1000000-0000-4000-8000-000000000001"`),
 				ExpectError: regexp.MustCompile("Cannot read cloud integration"),
 			},
 			{
