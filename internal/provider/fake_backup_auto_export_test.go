@@ -89,3 +89,13 @@ func (f *fakeServer) UpsertBackupAutoExport(ctx context.Context, req *serverv1.U
 	returned.LastError, returned.LastExportedAt = "", nil
 	return &serverv1.UpsertBackupAutoExportResponse{AutoExport: returned}, nil
 }
+
+func (f *fakeServer) DeleteBackupAutoExport(ctx context.Context, _ *serverv1.DeleteBackupAutoExportRequest) (*serverv1.DeleteBackupAutoExportResponse, error) {
+	f.mu.Lock()
+	defer f.mu.Unlock()
+	if err := f.record(ctx, "DeleteBackupAutoExport"); err != nil {
+		return nil, err
+	}
+	f.autoExport = nil
+	return &serverv1.DeleteBackupAutoExportResponse{}, nil
+}

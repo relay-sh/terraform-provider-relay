@@ -48,12 +48,12 @@ resource "relay_backup_auto_export" "this" {
 `, ciWorkspace, body)
 }
 
-func exportDisabled(f *fakeServer) tfresource.TestCheckFunc {
+func exportDeleted(f *fakeServer) tfresource.TestCheckFunc {
 	return func(*terraform.State) error {
 		f.mu.Lock()
 		defer f.mu.Unlock()
-		if f.autoExport.GetEnabled() {
-			return fmt.Errorf("destroy must disable the export, got %+v", f.autoExport)
+		if f.autoExport != nil {
+			return fmt.Errorf("destroy must delete the export, got %+v", f.autoExport)
 		}
 		return nil
 	}
@@ -69,7 +69,7 @@ func TestBackupAutoExportResource_Lifecycle(t *testing.T) {
 `, exportCluster2, exportCluster1)
 	tfresource.UnitTest(t, tfresource.TestCase{
 		ProtoV6ProviderFactories: factories(relay.Dial),
-		CheckDestroy:             exportDisabled(f),
+		CheckDestroy:             exportDeleted(f),
 		Steps: []tfresource.TestStep{
 			{
 				Config: exportConfig(f, selected),
@@ -141,11 +141,11 @@ func TestBackupAutoExportResource_Lifecycle(t *testing.T) {
 			},
 		},
 	})
-	if n := len(f.callsTo("UpsertBackupAutoExport")); n != 3 {
-		t.Errorf("create, update and destroy upsert once each, got %d", n)
+	if n := len(f.callsTo("UpsertBackupAutoExport")); n != 2 {
+		t.Errorf("create and update upsert once each, got %d", n)
 	}
-	if f.lastAutoExport.GetBackfill() || f.autoExport.GetBucket() != "relay-backups" {
-		t.Errorf("destroy must keep the settings and not backfill, got %+v", f.lastAutoExport)
+	if calls := f.callsTo("DeleteBackupAutoExport"); len(calls) != 1 || calls[0].workspace != ciWorkspace {
+		t.Errorf("destroy must delete the export once, workspace-scoped, got %+v", calls)
 	}
 }
 
@@ -226,11 +226,15 @@ func TestBackupAutoExportResource_Drift(t *testing.T) {
 				ExpectError: regexp.MustCompile("Cannot set backup auto-export"),
 			},
 			{
+				PreConfig: func() {
+					f.failWith("UpsertBackupAutoExport", nil)
+					f.failWith("DeleteBackupAutoExport", unavailable)
+				},
 				Config:      providerBlock(f),
-				ExpectError: regexp.MustCompile("Cannot disable backup auto-export"),
+				ExpectError: regexp.MustCompile("Cannot delete backup auto-export"),
 			},
 			{
-				PreConfig: func() { f.failWith("UpsertBackupAutoExport", status.Error(codes.NotFound, "gone")) },
+				PreConfig: func() { f.failWith("DeleteBackupAutoExport", status.Error(codes.NotFound, "gone")) },
 				Config:    providerBlock(f),
 			},
 		},
@@ -325,4 +329,29 @@ func TestBackupAutoExportValidateConfigSkipsUnknownScope(t *testing.T) {
 	if resp.Diagnostics.HasError() {
 		t.Errorf("an unknown mode cannot be judged yet: %v", resp.Diagnostics)
 	}
+}
+
+func TestBackupAutoExportResource_DestroyWithIntegration(t *testing.T) {
+	f := startFakeServer(t)
+	tfresource.UnitTest(t, tfresource.TestCase{
+		ProtoV6ProviderFactories: factories(relay.Dial),
+		CheckDestroy: func(*terraform.State) error {
+			f.mu.Lock()
+			defer f.mu.Unlock()
+			if f.autoExport != nil || len(f.cloudIntegrations) != 0 {
+				return fmt.Errorf("one destroy must delete the export and then the integration, got %+v and %d integrations", f.autoExport, len(f.cloudIntegrations))
+			}
+			return nil
+		},
+		Steps: []tfresource.TestStep{{
+			Config: integrationConfig(f, "backups", roleA) + fmt.Sprintf(`
+resource "relay_backup_auto_export" "this" {
+  workspace_id   = %q
+  integration_id = relay_cloud_integration.this.id
+  bucket         = "relay-backups"
+}
+`, ciWorkspace),
+			Check: tfresource.TestCheckResourceAttrPair(exportAddr, "integration_id", integrationAddr, "id"),
+		}},
+	})
 }

@@ -69,6 +69,16 @@ const (
 	ServerService_ListAccessGrants_FullMethodName             = "/relay.server.v1.ServerService/ListAccessGrants"
 	ServerService_CreateAccessGrant_FullMethodName            = "/relay.server.v1.ServerService/CreateAccessGrant"
 	ServerService_DeleteAccessGrant_FullMethodName            = "/relay.server.v1.ServerService/DeleteAccessGrant"
+	ServerService_RequestAccessGrant_FullMethodName           = "/relay.server.v1.ServerService/RequestAccessGrant"
+	ServerService_ListAccessGrantRequests_FullMethodName      = "/relay.server.v1.ServerService/ListAccessGrantRequests"
+	ServerService_GetAccessGrantRequest_FullMethodName        = "/relay.server.v1.ServerService/GetAccessGrantRequest"
+	ServerService_ApproveAccessGrantRequest_FullMethodName    = "/relay.server.v1.ServerService/ApproveAccessGrantRequest"
+	ServerService_DenyAccessGrantRequest_FullMethodName       = "/relay.server.v1.ServerService/DenyAccessGrantRequest"
+	ServerService_CancelAccessGrantRequest_FullMethodName     = "/relay.server.v1.ServerService/CancelAccessGrantRequest"
+	ServerService_RevokeAccessGrantRequest_FullMethodName     = "/relay.server.v1.ServerService/RevokeAccessGrantRequest"
+	ServerService_ListRequestableConnections_FullMethodName   = "/relay.server.v1.ServerService/ListRequestableConnections"
+	ServerService_GetAccessRequestSettings_FullMethodName     = "/relay.server.v1.ServerService/GetAccessRequestSettings"
+	ServerService_UpdateAccessRequestSettings_FullMethodName  = "/relay.server.v1.ServerService/UpdateAccessRequestSettings"
 	ServerService_ListTeams_FullMethodName                    = "/relay.server.v1.ServerService/ListTeams"
 	ServerService_CreateTeam_FullMethodName                   = "/relay.server.v1.ServerService/CreateTeam"
 	ServerService_DeleteTeam_FullMethodName                   = "/relay.server.v1.ServerService/DeleteTeam"
@@ -97,6 +107,7 @@ const (
 	ServerService_DeleteAgentPool_FullMethodName              = "/relay.server.v1.ServerService/DeleteAgentPool"
 	ServerService_UpdateAgentPool_FullMethodName              = "/relay.server.v1.ServerService/UpdateAgentPool"
 	ServerService_SetAgentPoolTeams_FullMethodName            = "/relay.server.v1.ServerService/SetAgentPoolTeams"
+	ServerService_WakeAgentPool_FullMethodName                = "/relay.server.v1.ServerService/WakeAgentPool"
 	ServerService_ResolveConnectionCredential_FullMethodName  = "/relay.server.v1.ServerService/ResolveConnectionCredential"
 	ServerService_ResolveExternalSecretSource_FullMethodName  = "/relay.server.v1.ServerService/ResolveExternalSecretSource"
 	ServerService_ListExternalSecretSources_FullMethodName    = "/relay.server.v1.ServerService/ListExternalSecretSources"
@@ -112,8 +123,10 @@ const (
 	ServerService_TestCloudIntegration_FullMethodName         = "/relay.server.v1.ServerService/TestCloudIntegration"
 	ServerService_GetLogStream_FullMethodName                 = "/relay.server.v1.ServerService/GetLogStream"
 	ServerService_UpsertLogStream_FullMethodName              = "/relay.server.v1.ServerService/UpsertLogStream"
+	ServerService_DeleteLogStream_FullMethodName              = "/relay.server.v1.ServerService/DeleteLogStream"
 	ServerService_GetBackupAutoExport_FullMethodName          = "/relay.server.v1.ServerService/GetBackupAutoExport"
 	ServerService_UpsertBackupAutoExport_FullMethodName       = "/relay.server.v1.ServerService/UpsertBackupAutoExport"
+	ServerService_DeleteBackupAutoExport_FullMethodName       = "/relay.server.v1.ServerService/DeleteBackupAutoExport"
 	ServerService_ExportToCloud_FullMethodName                = "/relay.server.v1.ServerService/ExportToCloud"
 	ServerService_ListLogDestinations_FullMethodName          = "/relay.server.v1.ServerService/ListLogDestinations"
 	ServerService_CreateLogDestination_FullMethodName         = "/relay.server.v1.ServerService/CreateLogDestination"
@@ -160,6 +173,7 @@ const (
 	ServerService_GetDatabase_FullMethodName                  = "/relay.server.v1.ServerService/GetDatabase"
 	ServerService_UpdateDatabase_FullMethodName               = "/relay.server.v1.ServerService/UpdateDatabase"
 	ServerService_ListPostgreSQLParameters_FullMethodName     = "/relay.server.v1.ServerService/ListPostgreSQLParameters"
+	ServerService_ListValkeyParameters_FullMethodName         = "/relay.server.v1.ServerService/ListValkeyParameters"
 	ServerService_WatchDatabase_FullMethodName                = "/relay.server.v1.ServerService/WatchDatabase"
 	ServerService_ListPendingOperations_FullMethodName        = "/relay.server.v1.ServerService/ListPendingOperations"
 	ServerService_DeleteDatabase_FullMethodName               = "/relay.server.v1.ServerService/DeleteDatabase"
@@ -376,6 +390,31 @@ type ServerServiceClient interface {
 	CreateAccessGrant(ctx context.Context, in *CreateAccessGrantRequest, opts ...grpc.CallOption) (*CreateAccessGrantResponse, error)
 	// DeleteAccessGrant removes an access grant by ID.
 	DeleteAccessGrant(ctx context.Context, in *DeleteAccessGrantRequest, opts ...grpc.CallOption) (*DeleteAccessGrantResponse, error)
+	// RequestAccessGrant asks for time-bound access to a connection or connection
+	// group. Approval creates the grant. Needs the access_requests feature flag.
+	RequestAccessGrant(ctx context.Context, in *RequestAccessGrantRequest, opts ...grpc.CallOption) (*RequestAccessGrantResponse, error)
+	// ListAccessGrantRequests returns the access requests the caller may see.
+	ListAccessGrantRequests(ctx context.Context, in *ListAccessGrantRequestsRequest, opts ...grpc.CallOption) (*ListAccessGrantRequestsResponse, error)
+	// GetAccessGrantRequest returns one access request by id.
+	GetAccessGrantRequest(ctx context.Context, in *GetAccessGrantRequestRequest, opts ...grpc.CallOption) (*GetAccessGrantRequestResponse, error)
+	// ApproveAccessGrantRequest approves a pending access request and creates the
+	// time-bound grant. The requester can never decide their own request.
+	ApproveAccessGrantRequest(ctx context.Context, in *ApproveAccessGrantRequestRequest, opts ...grpc.CallOption) (*ApproveAccessGrantRequestResponse, error)
+	// DenyAccessGrantRequest denies a pending access request.
+	DenyAccessGrantRequest(ctx context.Context, in *DenyAccessGrantRequestRequest, opts ...grpc.CallOption) (*DenyAccessGrantRequestResponse, error)
+	// CancelAccessGrantRequest lets the requester withdraw a pending request.
+	CancelAccessGrantRequest(ctx context.Context, in *CancelAccessGrantRequestRequest, opts ...grpc.CallOption) (*CancelAccessGrantRequestResponse, error)
+	// RevokeAccessGrantRequest ends an approved access request's grant now. The
+	// requester and holders of org.access_grants.delete or
+	// org.access_requests.manage may revoke it.
+	RevokeAccessGrantRequest(ctx context.Context, in *RevokeAccessGrantRequestRequest, opts ...grpc.CallOption) (*RevokeAccessGrantRequestResponse, error)
+	// ListRequestableConnections names the workspace's connections the caller
+	// cannot open and so may request access to.
+	ListRequestableConnections(ctx context.Context, in *ListRequestableConnectionsRequest, opts ...grpc.CallOption) (*ListRequestableConnectionsResponse, error)
+	// GetAccessRequestSettings returns the workspace's access request settings.
+	GetAccessRequestSettings(ctx context.Context, in *GetAccessRequestSettingsRequest, opts ...grpc.CallOption) (*GetAccessRequestSettingsResponse, error)
+	// UpdateAccessRequestSettings replaces the workspace's access request settings.
+	UpdateAccessRequestSettings(ctx context.Context, in *UpdateAccessRequestSettingsRequest, opts ...grpc.CallOption) (*UpdateAccessRequestSettingsResponse, error)
 	// ListTeams returns all teams in the user's organization.
 	ListTeams(ctx context.Context, in *ListTeamsRequest, opts ...grpc.CallOption) (*ListTeamsResponse, error)
 	// CreateTeam creates a new team.
@@ -431,6 +470,8 @@ type ServerServiceClient interface {
 	// UpdateAgentPool updates an existing agent pool.
 	UpdateAgentPool(ctx context.Context, in *UpdateAgentPoolRequest, opts ...grpc.CallOption) (*UpdateAgentPoolResponse, error)
 	SetAgentPoolTeams(ctx context.Context, in *SetAgentPoolTeamsRequest, opts ...grpc.CallOption) (*SetAgentPoolTeamsResponse, error)
+	// WakeAgentPool starts a sleeping managed agent pool.
+	WakeAgentPool(ctx context.Context, in *WakeAgentPoolRequest, opts ...grpc.CallOption) (*WakeAgentPoolResponse, error)
 	// ResolveConnectionCredential returns a connection's stored password to the
 	// agent that proxies it (agent-only auth). It exists so the credential can
 	// stop travelling on the user-facing connection read, which reaches the agent
@@ -465,8 +506,10 @@ type ServerServiceClient interface {
 	// Workspace-level destinations that use a connected cloud integration.
 	GetLogStream(ctx context.Context, in *GetLogStreamRequest, opts ...grpc.CallOption) (*GetLogStreamResponse, error)
 	UpsertLogStream(ctx context.Context, in *UpsertLogStreamRequest, opts ...grpc.CallOption) (*UpsertLogStreamResponse, error)
+	DeleteLogStream(ctx context.Context, in *DeleteLogStreamRequest, opts ...grpc.CallOption) (*DeleteLogStreamResponse, error)
 	GetBackupAutoExport(ctx context.Context, in *GetBackupAutoExportRequest, opts ...grpc.CallOption) (*GetBackupAutoExportResponse, error)
 	UpsertBackupAutoExport(ctx context.Context, in *UpsertBackupAutoExportRequest, opts ...grpc.CallOption) (*UpsertBackupAutoExportResponse, error)
+	DeleteBackupAutoExport(ctx context.Context, in *DeleteBackupAutoExportRequest, opts ...grpc.CallOption) (*DeleteBackupAutoExportResponse, error)
 	ExportToCloud(ctx context.Context, in *ExportToCloudRequest, opts ...grpc.CallOption) (*ExportToCloudResponse, error)
 	// Push destinations for the audit and activity streams (webhook, Splunk HEC,
 	// Datadog Logs, syslog over TLS). Secrets are write-only.
@@ -568,6 +611,8 @@ type ServerServiceClient interface {
 	// parameter editor renders. Current values live on the database's
 	// spec.postgresql.parameters (GetDatabase).
 	ListPostgreSQLParameters(ctx context.Context, in *ListPostgreSQLParametersRequest, opts ...grpc.CallOption) (*ListPostgreSQLParametersResponse, error)
+	// ListValkeyParameters returns the Valkey version's catalog that valkey.parameters is validated against.
+	ListValkeyParameters(ctx context.Context, in *ListValkeyParametersRequest, opts ...grpc.CallOption) (*ListValkeyParametersResponse, error)
 	// WatchDatabase streams a cluster's status transitions (snapshot first) so
 	// the dashboard can stop interval-polling. See WatchDatabaseRequest.
 	WatchDatabase(ctx context.Context, in *WatchDatabaseRequest, opts ...grpc.CallOption) (grpc.ServerStreamingClient[WatchDatabaseEvent], error)
@@ -1266,6 +1311,106 @@ func (c *serverServiceClient) DeleteAccessGrant(ctx context.Context, in *DeleteA
 	return out, nil
 }
 
+func (c *serverServiceClient) RequestAccessGrant(ctx context.Context, in *RequestAccessGrantRequest, opts ...grpc.CallOption) (*RequestAccessGrantResponse, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(RequestAccessGrantResponse)
+	err := c.cc.Invoke(ctx, ServerService_RequestAccessGrant_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *serverServiceClient) ListAccessGrantRequests(ctx context.Context, in *ListAccessGrantRequestsRequest, opts ...grpc.CallOption) (*ListAccessGrantRequestsResponse, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(ListAccessGrantRequestsResponse)
+	err := c.cc.Invoke(ctx, ServerService_ListAccessGrantRequests_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *serverServiceClient) GetAccessGrantRequest(ctx context.Context, in *GetAccessGrantRequestRequest, opts ...grpc.CallOption) (*GetAccessGrantRequestResponse, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(GetAccessGrantRequestResponse)
+	err := c.cc.Invoke(ctx, ServerService_GetAccessGrantRequest_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *serverServiceClient) ApproveAccessGrantRequest(ctx context.Context, in *ApproveAccessGrantRequestRequest, opts ...grpc.CallOption) (*ApproveAccessGrantRequestResponse, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(ApproveAccessGrantRequestResponse)
+	err := c.cc.Invoke(ctx, ServerService_ApproveAccessGrantRequest_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *serverServiceClient) DenyAccessGrantRequest(ctx context.Context, in *DenyAccessGrantRequestRequest, opts ...grpc.CallOption) (*DenyAccessGrantRequestResponse, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(DenyAccessGrantRequestResponse)
+	err := c.cc.Invoke(ctx, ServerService_DenyAccessGrantRequest_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *serverServiceClient) CancelAccessGrantRequest(ctx context.Context, in *CancelAccessGrantRequestRequest, opts ...grpc.CallOption) (*CancelAccessGrantRequestResponse, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(CancelAccessGrantRequestResponse)
+	err := c.cc.Invoke(ctx, ServerService_CancelAccessGrantRequest_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *serverServiceClient) RevokeAccessGrantRequest(ctx context.Context, in *RevokeAccessGrantRequestRequest, opts ...grpc.CallOption) (*RevokeAccessGrantRequestResponse, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(RevokeAccessGrantRequestResponse)
+	err := c.cc.Invoke(ctx, ServerService_RevokeAccessGrantRequest_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *serverServiceClient) ListRequestableConnections(ctx context.Context, in *ListRequestableConnectionsRequest, opts ...grpc.CallOption) (*ListRequestableConnectionsResponse, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(ListRequestableConnectionsResponse)
+	err := c.cc.Invoke(ctx, ServerService_ListRequestableConnections_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *serverServiceClient) GetAccessRequestSettings(ctx context.Context, in *GetAccessRequestSettingsRequest, opts ...grpc.CallOption) (*GetAccessRequestSettingsResponse, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(GetAccessRequestSettingsResponse)
+	err := c.cc.Invoke(ctx, ServerService_GetAccessRequestSettings_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *serverServiceClient) UpdateAccessRequestSettings(ctx context.Context, in *UpdateAccessRequestSettingsRequest, opts ...grpc.CallOption) (*UpdateAccessRequestSettingsResponse, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(UpdateAccessRequestSettingsResponse)
+	err := c.cc.Invoke(ctx, ServerService_UpdateAccessRequestSettings_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
 func (c *serverServiceClient) ListTeams(ctx context.Context, in *ListTeamsRequest, opts ...grpc.CallOption) (*ListTeamsResponse, error) {
 	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
 	out := new(ListTeamsResponse)
@@ -1546,6 +1691,16 @@ func (c *serverServiceClient) SetAgentPoolTeams(ctx context.Context, in *SetAgen
 	return out, nil
 }
 
+func (c *serverServiceClient) WakeAgentPool(ctx context.Context, in *WakeAgentPoolRequest, opts ...grpc.CallOption) (*WakeAgentPoolResponse, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(WakeAgentPoolResponse)
+	err := c.cc.Invoke(ctx, ServerService_WakeAgentPool_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
 func (c *serverServiceClient) ResolveConnectionCredential(ctx context.Context, in *ResolveConnectionCredentialRequest, opts ...grpc.CallOption) (*ResolveConnectionCredentialResponse, error) {
 	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
 	out := new(ResolveConnectionCredentialResponse)
@@ -1696,6 +1851,16 @@ func (c *serverServiceClient) UpsertLogStream(ctx context.Context, in *UpsertLog
 	return out, nil
 }
 
+func (c *serverServiceClient) DeleteLogStream(ctx context.Context, in *DeleteLogStreamRequest, opts ...grpc.CallOption) (*DeleteLogStreamResponse, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(DeleteLogStreamResponse)
+	err := c.cc.Invoke(ctx, ServerService_DeleteLogStream_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
 func (c *serverServiceClient) GetBackupAutoExport(ctx context.Context, in *GetBackupAutoExportRequest, opts ...grpc.CallOption) (*GetBackupAutoExportResponse, error) {
 	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
 	out := new(GetBackupAutoExportResponse)
@@ -1710,6 +1875,16 @@ func (c *serverServiceClient) UpsertBackupAutoExport(ctx context.Context, in *Up
 	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
 	out := new(UpsertBackupAutoExportResponse)
 	err := c.cc.Invoke(ctx, ServerService_UpsertBackupAutoExport_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *serverServiceClient) DeleteBackupAutoExport(ctx context.Context, in *DeleteBackupAutoExportRequest, opts ...grpc.CallOption) (*DeleteBackupAutoExportResponse, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(DeleteBackupAutoExportResponse)
+	err := c.cc.Invoke(ctx, ServerService_DeleteBackupAutoExport_FullMethodName, in, out, cOpts...)
 	if err != nil {
 		return nil, err
 	}
@@ -2170,6 +2345,16 @@ func (c *serverServiceClient) ListPostgreSQLParameters(ctx context.Context, in *
 	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
 	out := new(ListPostgreSQLParametersResponse)
 	err := c.cc.Invoke(ctx, ServerService_ListPostgreSQLParameters_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *serverServiceClient) ListValkeyParameters(ctx context.Context, in *ListValkeyParametersRequest, opts ...grpc.CallOption) (*ListValkeyParametersResponse, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(ListValkeyParametersResponse)
+	err := c.cc.Invoke(ctx, ServerService_ListValkeyParameters_FullMethodName, in, out, cOpts...)
 	if err != nil {
 		return nil, err
 	}
@@ -3029,6 +3214,31 @@ type ServerServiceServer interface {
 	CreateAccessGrant(context.Context, *CreateAccessGrantRequest) (*CreateAccessGrantResponse, error)
 	// DeleteAccessGrant removes an access grant by ID.
 	DeleteAccessGrant(context.Context, *DeleteAccessGrantRequest) (*DeleteAccessGrantResponse, error)
+	// RequestAccessGrant asks for time-bound access to a connection or connection
+	// group. Approval creates the grant. Needs the access_requests feature flag.
+	RequestAccessGrant(context.Context, *RequestAccessGrantRequest) (*RequestAccessGrantResponse, error)
+	// ListAccessGrantRequests returns the access requests the caller may see.
+	ListAccessGrantRequests(context.Context, *ListAccessGrantRequestsRequest) (*ListAccessGrantRequestsResponse, error)
+	// GetAccessGrantRequest returns one access request by id.
+	GetAccessGrantRequest(context.Context, *GetAccessGrantRequestRequest) (*GetAccessGrantRequestResponse, error)
+	// ApproveAccessGrantRequest approves a pending access request and creates the
+	// time-bound grant. The requester can never decide their own request.
+	ApproveAccessGrantRequest(context.Context, *ApproveAccessGrantRequestRequest) (*ApproveAccessGrantRequestResponse, error)
+	// DenyAccessGrantRequest denies a pending access request.
+	DenyAccessGrantRequest(context.Context, *DenyAccessGrantRequestRequest) (*DenyAccessGrantRequestResponse, error)
+	// CancelAccessGrantRequest lets the requester withdraw a pending request.
+	CancelAccessGrantRequest(context.Context, *CancelAccessGrantRequestRequest) (*CancelAccessGrantRequestResponse, error)
+	// RevokeAccessGrantRequest ends an approved access request's grant now. The
+	// requester and holders of org.access_grants.delete or
+	// org.access_requests.manage may revoke it.
+	RevokeAccessGrantRequest(context.Context, *RevokeAccessGrantRequestRequest) (*RevokeAccessGrantRequestResponse, error)
+	// ListRequestableConnections names the workspace's connections the caller
+	// cannot open and so may request access to.
+	ListRequestableConnections(context.Context, *ListRequestableConnectionsRequest) (*ListRequestableConnectionsResponse, error)
+	// GetAccessRequestSettings returns the workspace's access request settings.
+	GetAccessRequestSettings(context.Context, *GetAccessRequestSettingsRequest) (*GetAccessRequestSettingsResponse, error)
+	// UpdateAccessRequestSettings replaces the workspace's access request settings.
+	UpdateAccessRequestSettings(context.Context, *UpdateAccessRequestSettingsRequest) (*UpdateAccessRequestSettingsResponse, error)
 	// ListTeams returns all teams in the user's organization.
 	ListTeams(context.Context, *ListTeamsRequest) (*ListTeamsResponse, error)
 	// CreateTeam creates a new team.
@@ -3084,6 +3294,8 @@ type ServerServiceServer interface {
 	// UpdateAgentPool updates an existing agent pool.
 	UpdateAgentPool(context.Context, *UpdateAgentPoolRequest) (*UpdateAgentPoolResponse, error)
 	SetAgentPoolTeams(context.Context, *SetAgentPoolTeamsRequest) (*SetAgentPoolTeamsResponse, error)
+	// WakeAgentPool starts a sleeping managed agent pool.
+	WakeAgentPool(context.Context, *WakeAgentPoolRequest) (*WakeAgentPoolResponse, error)
 	// ResolveConnectionCredential returns a connection's stored password to the
 	// agent that proxies it (agent-only auth). It exists so the credential can
 	// stop travelling on the user-facing connection read, which reaches the agent
@@ -3118,8 +3330,10 @@ type ServerServiceServer interface {
 	// Workspace-level destinations that use a connected cloud integration.
 	GetLogStream(context.Context, *GetLogStreamRequest) (*GetLogStreamResponse, error)
 	UpsertLogStream(context.Context, *UpsertLogStreamRequest) (*UpsertLogStreamResponse, error)
+	DeleteLogStream(context.Context, *DeleteLogStreamRequest) (*DeleteLogStreamResponse, error)
 	GetBackupAutoExport(context.Context, *GetBackupAutoExportRequest) (*GetBackupAutoExportResponse, error)
 	UpsertBackupAutoExport(context.Context, *UpsertBackupAutoExportRequest) (*UpsertBackupAutoExportResponse, error)
+	DeleteBackupAutoExport(context.Context, *DeleteBackupAutoExportRequest) (*DeleteBackupAutoExportResponse, error)
 	ExportToCloud(context.Context, *ExportToCloudRequest) (*ExportToCloudResponse, error)
 	// Push destinations for the audit and activity streams (webhook, Splunk HEC,
 	// Datadog Logs, syslog over TLS). Secrets are write-only.
@@ -3221,6 +3435,8 @@ type ServerServiceServer interface {
 	// parameter editor renders. Current values live on the database's
 	// spec.postgresql.parameters (GetDatabase).
 	ListPostgreSQLParameters(context.Context, *ListPostgreSQLParametersRequest) (*ListPostgreSQLParametersResponse, error)
+	// ListValkeyParameters returns the Valkey version's catalog that valkey.parameters is validated against.
+	ListValkeyParameters(context.Context, *ListValkeyParametersRequest) (*ListValkeyParametersResponse, error)
 	// WatchDatabase streams a cluster's status transitions (snapshot first) so
 	// the dashboard can stop interval-polling. See WatchDatabaseRequest.
 	WatchDatabase(*WatchDatabaseRequest, grpc.ServerStreamingServer[WatchDatabaseEvent]) error
@@ -3569,6 +3785,36 @@ func (UnimplementedServerServiceServer) CreateAccessGrant(context.Context, *Crea
 func (UnimplementedServerServiceServer) DeleteAccessGrant(context.Context, *DeleteAccessGrantRequest) (*DeleteAccessGrantResponse, error) {
 	return nil, status.Error(codes.Unimplemented, "method DeleteAccessGrant not implemented")
 }
+func (UnimplementedServerServiceServer) RequestAccessGrant(context.Context, *RequestAccessGrantRequest) (*RequestAccessGrantResponse, error) {
+	return nil, status.Error(codes.Unimplemented, "method RequestAccessGrant not implemented")
+}
+func (UnimplementedServerServiceServer) ListAccessGrantRequests(context.Context, *ListAccessGrantRequestsRequest) (*ListAccessGrantRequestsResponse, error) {
+	return nil, status.Error(codes.Unimplemented, "method ListAccessGrantRequests not implemented")
+}
+func (UnimplementedServerServiceServer) GetAccessGrantRequest(context.Context, *GetAccessGrantRequestRequest) (*GetAccessGrantRequestResponse, error) {
+	return nil, status.Error(codes.Unimplemented, "method GetAccessGrantRequest not implemented")
+}
+func (UnimplementedServerServiceServer) ApproveAccessGrantRequest(context.Context, *ApproveAccessGrantRequestRequest) (*ApproveAccessGrantRequestResponse, error) {
+	return nil, status.Error(codes.Unimplemented, "method ApproveAccessGrantRequest not implemented")
+}
+func (UnimplementedServerServiceServer) DenyAccessGrantRequest(context.Context, *DenyAccessGrantRequestRequest) (*DenyAccessGrantRequestResponse, error) {
+	return nil, status.Error(codes.Unimplemented, "method DenyAccessGrantRequest not implemented")
+}
+func (UnimplementedServerServiceServer) CancelAccessGrantRequest(context.Context, *CancelAccessGrantRequestRequest) (*CancelAccessGrantRequestResponse, error) {
+	return nil, status.Error(codes.Unimplemented, "method CancelAccessGrantRequest not implemented")
+}
+func (UnimplementedServerServiceServer) RevokeAccessGrantRequest(context.Context, *RevokeAccessGrantRequestRequest) (*RevokeAccessGrantRequestResponse, error) {
+	return nil, status.Error(codes.Unimplemented, "method RevokeAccessGrantRequest not implemented")
+}
+func (UnimplementedServerServiceServer) ListRequestableConnections(context.Context, *ListRequestableConnectionsRequest) (*ListRequestableConnectionsResponse, error) {
+	return nil, status.Error(codes.Unimplemented, "method ListRequestableConnections not implemented")
+}
+func (UnimplementedServerServiceServer) GetAccessRequestSettings(context.Context, *GetAccessRequestSettingsRequest) (*GetAccessRequestSettingsResponse, error) {
+	return nil, status.Error(codes.Unimplemented, "method GetAccessRequestSettings not implemented")
+}
+func (UnimplementedServerServiceServer) UpdateAccessRequestSettings(context.Context, *UpdateAccessRequestSettingsRequest) (*UpdateAccessRequestSettingsResponse, error) {
+	return nil, status.Error(codes.Unimplemented, "method UpdateAccessRequestSettings not implemented")
+}
 func (UnimplementedServerServiceServer) ListTeams(context.Context, *ListTeamsRequest) (*ListTeamsResponse, error) {
 	return nil, status.Error(codes.Unimplemented, "method ListTeams not implemented")
 }
@@ -3653,6 +3899,9 @@ func (UnimplementedServerServiceServer) UpdateAgentPool(context.Context, *Update
 func (UnimplementedServerServiceServer) SetAgentPoolTeams(context.Context, *SetAgentPoolTeamsRequest) (*SetAgentPoolTeamsResponse, error) {
 	return nil, status.Error(codes.Unimplemented, "method SetAgentPoolTeams not implemented")
 }
+func (UnimplementedServerServiceServer) WakeAgentPool(context.Context, *WakeAgentPoolRequest) (*WakeAgentPoolResponse, error) {
+	return nil, status.Error(codes.Unimplemented, "method WakeAgentPool not implemented")
+}
 func (UnimplementedServerServiceServer) ResolveConnectionCredential(context.Context, *ResolveConnectionCredentialRequest) (*ResolveConnectionCredentialResponse, error) {
 	return nil, status.Error(codes.Unimplemented, "method ResolveConnectionCredential not implemented")
 }
@@ -3698,11 +3947,17 @@ func (UnimplementedServerServiceServer) GetLogStream(context.Context, *GetLogStr
 func (UnimplementedServerServiceServer) UpsertLogStream(context.Context, *UpsertLogStreamRequest) (*UpsertLogStreamResponse, error) {
 	return nil, status.Error(codes.Unimplemented, "method UpsertLogStream not implemented")
 }
+func (UnimplementedServerServiceServer) DeleteLogStream(context.Context, *DeleteLogStreamRequest) (*DeleteLogStreamResponse, error) {
+	return nil, status.Error(codes.Unimplemented, "method DeleteLogStream not implemented")
+}
 func (UnimplementedServerServiceServer) GetBackupAutoExport(context.Context, *GetBackupAutoExportRequest) (*GetBackupAutoExportResponse, error) {
 	return nil, status.Error(codes.Unimplemented, "method GetBackupAutoExport not implemented")
 }
 func (UnimplementedServerServiceServer) UpsertBackupAutoExport(context.Context, *UpsertBackupAutoExportRequest) (*UpsertBackupAutoExportResponse, error) {
 	return nil, status.Error(codes.Unimplemented, "method UpsertBackupAutoExport not implemented")
+}
+func (UnimplementedServerServiceServer) DeleteBackupAutoExport(context.Context, *DeleteBackupAutoExportRequest) (*DeleteBackupAutoExportResponse, error) {
+	return nil, status.Error(codes.Unimplemented, "method DeleteBackupAutoExport not implemented")
 }
 func (UnimplementedServerServiceServer) ExportToCloud(context.Context, *ExportToCloudRequest) (*ExportToCloudResponse, error) {
 	return nil, status.Error(codes.Unimplemented, "method ExportToCloud not implemented")
@@ -3841,6 +4096,9 @@ func (UnimplementedServerServiceServer) UpdateDatabase(context.Context, *UpdateD
 }
 func (UnimplementedServerServiceServer) ListPostgreSQLParameters(context.Context, *ListPostgreSQLParametersRequest) (*ListPostgreSQLParametersResponse, error) {
 	return nil, status.Error(codes.Unimplemented, "method ListPostgreSQLParameters not implemented")
+}
+func (UnimplementedServerServiceServer) ListValkeyParameters(context.Context, *ListValkeyParametersRequest) (*ListValkeyParametersResponse, error) {
+	return nil, status.Error(codes.Unimplemented, "method ListValkeyParameters not implemented")
 }
 func (UnimplementedServerServiceServer) WatchDatabase(*WatchDatabaseRequest, grpc.ServerStreamingServer[WatchDatabaseEvent]) error {
 	return status.Error(codes.Unimplemented, "method WatchDatabase not implemented")
@@ -4973,6 +5231,186 @@ func _ServerService_DeleteAccessGrant_Handler(srv interface{}, ctx context.Conte
 	return interceptor(ctx, in, info, handler)
 }
 
+func _ServerService_RequestAccessGrant_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(RequestAccessGrantRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(ServerServiceServer).RequestAccessGrant(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: ServerService_RequestAccessGrant_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(ServerServiceServer).RequestAccessGrant(ctx, req.(*RequestAccessGrantRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _ServerService_ListAccessGrantRequests_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(ListAccessGrantRequestsRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(ServerServiceServer).ListAccessGrantRequests(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: ServerService_ListAccessGrantRequests_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(ServerServiceServer).ListAccessGrantRequests(ctx, req.(*ListAccessGrantRequestsRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _ServerService_GetAccessGrantRequest_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(GetAccessGrantRequestRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(ServerServiceServer).GetAccessGrantRequest(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: ServerService_GetAccessGrantRequest_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(ServerServiceServer).GetAccessGrantRequest(ctx, req.(*GetAccessGrantRequestRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _ServerService_ApproveAccessGrantRequest_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(ApproveAccessGrantRequestRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(ServerServiceServer).ApproveAccessGrantRequest(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: ServerService_ApproveAccessGrantRequest_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(ServerServiceServer).ApproveAccessGrantRequest(ctx, req.(*ApproveAccessGrantRequestRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _ServerService_DenyAccessGrantRequest_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(DenyAccessGrantRequestRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(ServerServiceServer).DenyAccessGrantRequest(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: ServerService_DenyAccessGrantRequest_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(ServerServiceServer).DenyAccessGrantRequest(ctx, req.(*DenyAccessGrantRequestRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _ServerService_CancelAccessGrantRequest_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(CancelAccessGrantRequestRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(ServerServiceServer).CancelAccessGrantRequest(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: ServerService_CancelAccessGrantRequest_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(ServerServiceServer).CancelAccessGrantRequest(ctx, req.(*CancelAccessGrantRequestRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _ServerService_RevokeAccessGrantRequest_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(RevokeAccessGrantRequestRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(ServerServiceServer).RevokeAccessGrantRequest(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: ServerService_RevokeAccessGrantRequest_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(ServerServiceServer).RevokeAccessGrantRequest(ctx, req.(*RevokeAccessGrantRequestRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _ServerService_ListRequestableConnections_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(ListRequestableConnectionsRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(ServerServiceServer).ListRequestableConnections(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: ServerService_ListRequestableConnections_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(ServerServiceServer).ListRequestableConnections(ctx, req.(*ListRequestableConnectionsRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _ServerService_GetAccessRequestSettings_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(GetAccessRequestSettingsRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(ServerServiceServer).GetAccessRequestSettings(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: ServerService_GetAccessRequestSettings_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(ServerServiceServer).GetAccessRequestSettings(ctx, req.(*GetAccessRequestSettingsRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _ServerService_UpdateAccessRequestSettings_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(UpdateAccessRequestSettingsRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(ServerServiceServer).UpdateAccessRequestSettings(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: ServerService_UpdateAccessRequestSettings_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(ServerServiceServer).UpdateAccessRequestSettings(ctx, req.(*UpdateAccessRequestSettingsRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
 func _ServerService_ListTeams_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
 	in := new(ListTeamsRequest)
 	if err := dec(in); err != nil {
@@ -5477,6 +5915,24 @@ func _ServerService_SetAgentPoolTeams_Handler(srv interface{}, ctx context.Conte
 	return interceptor(ctx, in, info, handler)
 }
 
+func _ServerService_WakeAgentPool_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(WakeAgentPoolRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(ServerServiceServer).WakeAgentPool(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: ServerService_WakeAgentPool_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(ServerServiceServer).WakeAgentPool(ctx, req.(*WakeAgentPoolRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
 func _ServerService_ResolveConnectionCredential_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
 	in := new(ResolveConnectionCredentialRequest)
 	if err := dec(in); err != nil {
@@ -5747,6 +6203,24 @@ func _ServerService_UpsertLogStream_Handler(srv interface{}, ctx context.Context
 	return interceptor(ctx, in, info, handler)
 }
 
+func _ServerService_DeleteLogStream_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(DeleteLogStreamRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(ServerServiceServer).DeleteLogStream(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: ServerService_DeleteLogStream_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(ServerServiceServer).DeleteLogStream(ctx, req.(*DeleteLogStreamRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
 func _ServerService_GetBackupAutoExport_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
 	in := new(GetBackupAutoExportRequest)
 	if err := dec(in); err != nil {
@@ -5779,6 +6253,24 @@ func _ServerService_UpsertBackupAutoExport_Handler(srv interface{}, ctx context.
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
 		return srv.(ServerServiceServer).UpsertBackupAutoExport(ctx, req.(*UpsertBackupAutoExportRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _ServerService_DeleteBackupAutoExport_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(DeleteBackupAutoExportRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(ServerServiceServer).DeleteBackupAutoExport(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: ServerService_DeleteBackupAutoExport_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(ServerServiceServer).DeleteBackupAutoExport(ctx, req.(*DeleteBackupAutoExportRequest))
 	}
 	return interceptor(ctx, in, info, handler)
 }
@@ -6607,6 +7099,24 @@ func _ServerService_ListPostgreSQLParameters_Handler(srv interface{}, ctx contex
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
 		return srv.(ServerServiceServer).ListPostgreSQLParameters(ctx, req.(*ListPostgreSQLParametersRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _ServerService_ListValkeyParameters_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(ListValkeyParametersRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(ServerServiceServer).ListValkeyParameters(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: ServerService_ListValkeyParameters_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(ServerServiceServer).ListValkeyParameters(ctx, req.(*ListValkeyParametersRequest))
 	}
 	return interceptor(ctx, in, info, handler)
 }
@@ -8072,6 +8582,46 @@ var ServerService_ServiceDesc = grpc.ServiceDesc{
 			Handler:    _ServerService_DeleteAccessGrant_Handler,
 		},
 		{
+			MethodName: "RequestAccessGrant",
+			Handler:    _ServerService_RequestAccessGrant_Handler,
+		},
+		{
+			MethodName: "ListAccessGrantRequests",
+			Handler:    _ServerService_ListAccessGrantRequests_Handler,
+		},
+		{
+			MethodName: "GetAccessGrantRequest",
+			Handler:    _ServerService_GetAccessGrantRequest_Handler,
+		},
+		{
+			MethodName: "ApproveAccessGrantRequest",
+			Handler:    _ServerService_ApproveAccessGrantRequest_Handler,
+		},
+		{
+			MethodName: "DenyAccessGrantRequest",
+			Handler:    _ServerService_DenyAccessGrantRequest_Handler,
+		},
+		{
+			MethodName: "CancelAccessGrantRequest",
+			Handler:    _ServerService_CancelAccessGrantRequest_Handler,
+		},
+		{
+			MethodName: "RevokeAccessGrantRequest",
+			Handler:    _ServerService_RevokeAccessGrantRequest_Handler,
+		},
+		{
+			MethodName: "ListRequestableConnections",
+			Handler:    _ServerService_ListRequestableConnections_Handler,
+		},
+		{
+			MethodName: "GetAccessRequestSettings",
+			Handler:    _ServerService_GetAccessRequestSettings_Handler,
+		},
+		{
+			MethodName: "UpdateAccessRequestSettings",
+			Handler:    _ServerService_UpdateAccessRequestSettings_Handler,
+		},
+		{
 			MethodName: "ListTeams",
 			Handler:    _ServerService_ListTeams_Handler,
 		},
@@ -8184,6 +8734,10 @@ var ServerService_ServiceDesc = grpc.ServiceDesc{
 			Handler:    _ServerService_SetAgentPoolTeams_Handler,
 		},
 		{
+			MethodName: "WakeAgentPool",
+			Handler:    _ServerService_WakeAgentPool_Handler,
+		},
+		{
 			MethodName: "ResolveConnectionCredential",
 			Handler:    _ServerService_ResolveConnectionCredential_Handler,
 		},
@@ -8244,12 +8798,20 @@ var ServerService_ServiceDesc = grpc.ServiceDesc{
 			Handler:    _ServerService_UpsertLogStream_Handler,
 		},
 		{
+			MethodName: "DeleteLogStream",
+			Handler:    _ServerService_DeleteLogStream_Handler,
+		},
+		{
 			MethodName: "GetBackupAutoExport",
 			Handler:    _ServerService_GetBackupAutoExport_Handler,
 		},
 		{
 			MethodName: "UpsertBackupAutoExport",
 			Handler:    _ServerService_UpsertBackupAutoExport_Handler,
+		},
+		{
+			MethodName: "DeleteBackupAutoExport",
+			Handler:    _ServerService_DeleteBackupAutoExport_Handler,
 		},
 		{
 			MethodName: "ExportToCloud",
@@ -8434,6 +8996,10 @@ var ServerService_ServiceDesc = grpc.ServiceDesc{
 		{
 			MethodName: "ListPostgreSQLParameters",
 			Handler:    _ServerService_ListPostgreSQLParameters_Handler,
+		},
+		{
+			MethodName: "ListValkeyParameters",
+			Handler:    _ServerService_ListValkeyParameters_Handler,
 		},
 		{
 			MethodName: "ListPendingOperations",
@@ -8771,6 +9337,9 @@ const (
 	AdminService_AdminGetMaintenanceBanner_FullMethodName         = "/relay.server.v1.AdminService/AdminGetMaintenanceBanner"
 	AdminService_AdminSetMaintenanceBanner_FullMethodName         = "/relay.server.v1.AdminService/AdminSetMaintenanceBanner"
 	AdminService_AdminClearMaintenanceBanner_FullMethodName       = "/relay.server.v1.AdminService/AdminClearMaintenanceBanner"
+	AdminService_AdminGetFreeCreationPause_FullMethodName         = "/relay.server.v1.AdminService/AdminGetFreeCreationPause"
+	AdminService_AdminPauseFreeCreation_FullMethodName            = "/relay.server.v1.AdminService/AdminPauseFreeCreation"
+	AdminService_AdminResumeFreeCreation_FullMethodName           = "/relay.server.v1.AdminService/AdminResumeFreeCreation"
 	AdminService_AdminListFeatureFlags_FullMethodName             = "/relay.server.v1.AdminService/AdminListFeatureFlags"
 	AdminService_AdminGetFeatureFlag_FullMethodName               = "/relay.server.v1.AdminService/AdminGetFeatureFlag"
 	AdminService_AdminCreateFeatureFlag_FullMethodName            = "/relay.server.v1.AdminService/AdminCreateFeatureFlag"
@@ -8963,6 +9532,21 @@ type AdminServiceClient interface {
 	// AdminClearMaintenanceBanner takes the live banner down. FAILED_PRECONDITION
 	// (code MAINTENANCE_BANNER_NOT_LIVE) when none is live.
 	AdminClearMaintenanceBanner(ctx context.Context, in *AdminClearMaintenanceBannerRequest, opts ...grpc.CallOption) (*AdminClearMaintenanceBannerResponse, error)
+	// AdminGetFreeCreationPause returns the open Free creation pause (unset when
+	// creation is open), up to 20 past pauses, newest first, and how many orgs
+	// are waiting for the "creation is open again" e-mail.
+	AdminGetFreeCreationPause(ctx context.Context, in *AdminGetFreeCreationPauseRequest, opts ...grpc.CallOption) (*AdminGetFreeCreationPauseResponse, error)
+	// AdminPauseFreeCreation stops Free-plan orgs from getting new managed
+	// clusters and managed agents: creates are refused with FAILED_PRECONDITION
+	// (code FREE_CREATION_PAUSED) and new orgs start without the sample database
+	// and the managed default agent. Paid orgs are not affected. The reason is
+	// required and shown to staff only. FAILED_PRECONDITION (code
+	// FREE_CREATION_ALREADY_PAUSED) when creation is already paused.
+	AdminPauseFreeCreation(ctx context.Context, in *AdminPauseFreeCreationRequest, opts ...grpc.CallOption) (*AdminPauseFreeCreationResponse, error)
+	// AdminResumeFreeCreation lets Free orgs create again. The owners of every
+	// org the pause affected are e-mailed in the background, once.
+	// FAILED_PRECONDITION (code FREE_CREATION_NOT_PAUSED) when creation is open.
+	AdminResumeFreeCreation(ctx context.Context, in *AdminResumeFreeCreationRequest, opts ...grpc.CallOption) (*AdminResumeFreeCreationResponse, error)
 	// AdminListFeatureFlags lists flags with the count of orgs each reaches.
 	AdminListFeatureFlags(ctx context.Context, in *AdminListFeatureFlagsRequest, opts ...grpc.CallOption) (*AdminListFeatureFlagsResponse, error)
 	// AdminGetFeatureFlag returns one flag plus its reach count.
@@ -9477,6 +10061,36 @@ func (c *adminServiceClient) AdminClearMaintenanceBanner(ctx context.Context, in
 	return out, nil
 }
 
+func (c *adminServiceClient) AdminGetFreeCreationPause(ctx context.Context, in *AdminGetFreeCreationPauseRequest, opts ...grpc.CallOption) (*AdminGetFreeCreationPauseResponse, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(AdminGetFreeCreationPauseResponse)
+	err := c.cc.Invoke(ctx, AdminService_AdminGetFreeCreationPause_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *adminServiceClient) AdminPauseFreeCreation(ctx context.Context, in *AdminPauseFreeCreationRequest, opts ...grpc.CallOption) (*AdminPauseFreeCreationResponse, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(AdminPauseFreeCreationResponse)
+	err := c.cc.Invoke(ctx, AdminService_AdminPauseFreeCreation_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *adminServiceClient) AdminResumeFreeCreation(ctx context.Context, in *AdminResumeFreeCreationRequest, opts ...grpc.CallOption) (*AdminResumeFreeCreationResponse, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(AdminResumeFreeCreationResponse)
+	err := c.cc.Invoke(ctx, AdminService_AdminResumeFreeCreation_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
 func (c *adminServiceClient) AdminListFeatureFlags(ctx context.Context, in *AdminListFeatureFlagsRequest, opts ...grpc.CallOption) (*AdminListFeatureFlagsResponse, error) {
 	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
 	out := new(AdminListFeatureFlagsResponse)
@@ -9748,6 +10362,21 @@ type AdminServiceServer interface {
 	// AdminClearMaintenanceBanner takes the live banner down. FAILED_PRECONDITION
 	// (code MAINTENANCE_BANNER_NOT_LIVE) when none is live.
 	AdminClearMaintenanceBanner(context.Context, *AdminClearMaintenanceBannerRequest) (*AdminClearMaintenanceBannerResponse, error)
+	// AdminGetFreeCreationPause returns the open Free creation pause (unset when
+	// creation is open), up to 20 past pauses, newest first, and how many orgs
+	// are waiting for the "creation is open again" e-mail.
+	AdminGetFreeCreationPause(context.Context, *AdminGetFreeCreationPauseRequest) (*AdminGetFreeCreationPauseResponse, error)
+	// AdminPauseFreeCreation stops Free-plan orgs from getting new managed
+	// clusters and managed agents: creates are refused with FAILED_PRECONDITION
+	// (code FREE_CREATION_PAUSED) and new orgs start without the sample database
+	// and the managed default agent. Paid orgs are not affected. The reason is
+	// required and shown to staff only. FAILED_PRECONDITION (code
+	// FREE_CREATION_ALREADY_PAUSED) when creation is already paused.
+	AdminPauseFreeCreation(context.Context, *AdminPauseFreeCreationRequest) (*AdminPauseFreeCreationResponse, error)
+	// AdminResumeFreeCreation lets Free orgs create again. The owners of every
+	// org the pause affected are e-mailed in the background, once.
+	// FAILED_PRECONDITION (code FREE_CREATION_NOT_PAUSED) when creation is open.
+	AdminResumeFreeCreation(context.Context, *AdminResumeFreeCreationRequest) (*AdminResumeFreeCreationResponse, error)
 	// AdminListFeatureFlags lists flags with the count of orgs each reaches.
 	AdminListFeatureFlags(context.Context, *AdminListFeatureFlagsRequest) (*AdminListFeatureFlagsResponse, error)
 	// AdminGetFeatureFlag returns one flag plus its reach count.
@@ -9925,6 +10554,15 @@ func (UnimplementedAdminServiceServer) AdminSetMaintenanceBanner(context.Context
 }
 func (UnimplementedAdminServiceServer) AdminClearMaintenanceBanner(context.Context, *AdminClearMaintenanceBannerRequest) (*AdminClearMaintenanceBannerResponse, error) {
 	return nil, status.Error(codes.Unimplemented, "method AdminClearMaintenanceBanner not implemented")
+}
+func (UnimplementedAdminServiceServer) AdminGetFreeCreationPause(context.Context, *AdminGetFreeCreationPauseRequest) (*AdminGetFreeCreationPauseResponse, error) {
+	return nil, status.Error(codes.Unimplemented, "method AdminGetFreeCreationPause not implemented")
+}
+func (UnimplementedAdminServiceServer) AdminPauseFreeCreation(context.Context, *AdminPauseFreeCreationRequest) (*AdminPauseFreeCreationResponse, error) {
+	return nil, status.Error(codes.Unimplemented, "method AdminPauseFreeCreation not implemented")
+}
+func (UnimplementedAdminServiceServer) AdminResumeFreeCreation(context.Context, *AdminResumeFreeCreationRequest) (*AdminResumeFreeCreationResponse, error) {
+	return nil, status.Error(codes.Unimplemented, "method AdminResumeFreeCreation not implemented")
 }
 func (UnimplementedAdminServiceServer) AdminListFeatureFlags(context.Context, *AdminListFeatureFlagsRequest) (*AdminListFeatureFlagsResponse, error) {
 	return nil, status.Error(codes.Unimplemented, "method AdminListFeatureFlags not implemented")
@@ -10838,6 +11476,60 @@ func _AdminService_AdminClearMaintenanceBanner_Handler(srv interface{}, ctx cont
 	return interceptor(ctx, in, info, handler)
 }
 
+func _AdminService_AdminGetFreeCreationPause_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(AdminGetFreeCreationPauseRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(AdminServiceServer).AdminGetFreeCreationPause(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: AdminService_AdminGetFreeCreationPause_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(AdminServiceServer).AdminGetFreeCreationPause(ctx, req.(*AdminGetFreeCreationPauseRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _AdminService_AdminPauseFreeCreation_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(AdminPauseFreeCreationRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(AdminServiceServer).AdminPauseFreeCreation(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: AdminService_AdminPauseFreeCreation_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(AdminServiceServer).AdminPauseFreeCreation(ctx, req.(*AdminPauseFreeCreationRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _AdminService_AdminResumeFreeCreation_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(AdminResumeFreeCreationRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(AdminServiceServer).AdminResumeFreeCreation(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: AdminService_AdminResumeFreeCreation_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(AdminServiceServer).AdminResumeFreeCreation(ctx, req.(*AdminResumeFreeCreationRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
 func _AdminService_AdminListFeatureFlags_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
 	in := new(AdminListFeatureFlagsRequest)
 	if err := dec(in); err != nil {
@@ -11198,6 +11890,18 @@ var AdminService_ServiceDesc = grpc.ServiceDesc{
 		{
 			MethodName: "AdminClearMaintenanceBanner",
 			Handler:    _AdminService_AdminClearMaintenanceBanner_Handler,
+		},
+		{
+			MethodName: "AdminGetFreeCreationPause",
+			Handler:    _AdminService_AdminGetFreeCreationPause_Handler,
+		},
+		{
+			MethodName: "AdminPauseFreeCreation",
+			Handler:    _AdminService_AdminPauseFreeCreation_Handler,
+		},
+		{
+			MethodName: "AdminResumeFreeCreation",
+			Handler:    _AdminService_AdminResumeFreeCreation_Handler,
 		},
 		{
 			MethodName: "AdminListFeatureFlags",
