@@ -108,6 +108,7 @@ func (p *relayProvider) Resources(context.Context) []func() resource.Resource {
 		newValkeyClusterResource,
 		newValkeyUserResource,
 		newBackupScheduleResource,
+		newBackupAutoExportResource,
 		newIPAccessListResource,
 		newPrivateEndpointServiceResource,
 		newPrivateEndpointResource,

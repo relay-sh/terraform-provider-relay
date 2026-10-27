@@ -450,6 +450,53 @@ resource "relay_backup_schedule" "valkey" {
 	})
 }
 
+func TestAccBackupAutoExport(t *testing.T) {
+	workspace, integration := os.Getenv("RELAY_ACC_WORKSPACE_ID"), os.Getenv("RELAY_ACC_CLOUD_INTEGRATION")
+	if os.Getenv("TF_ACC") == "" || workspace == "" || integration == "" {
+		t.Skip("set TF_ACC=1, RELAY_ACC_WORKSPACE_ID and RELAY_ACC_CLOUD_INTEGRATION to export backups through a real integration; it overwrites that workspace's auto-export")
+	}
+	prefix := acceptanceName(t) + "/"
+	config := func(which string) string {
+		return fmt.Sprintf(`
+data "relay_cloud_integration" "this" {
+  workspace_id = %[1]q
+  name         = %[2]q
+}
+
+resource "relay_backup_auto_export" "this" {
+  workspace_id   = %[1]q
+  integration_id = data.relay_cloud_integration.this.id
+  bucket         = %[3]q
+  prefix         = %[4]q
+  which          = %[5]q
+}
+`, workspace, integration, envOr("RELAY_ACC_EXPORT_BUCKET", "relay-tfacc-backups"), prefix, which)
+	}
+	resource.Test(t, resource.TestCase{
+		ProtoV6ProviderFactories: acceptanceFactories(t),
+		Steps: []resource.TestStep{
+			{
+				Config: config("scheduled"),
+				Check: resource.ComposeAggregateTestCheckFunc(
+					resource.TestCheckResourceAttr("relay_backup_auto_export.this", "id", workspace),
+					resource.TestCheckResourceAttr("relay_backup_auto_export.this", "scope.mode", "all"),
+				),
+			},
+			{
+				Config: config("all"),
+				Check:  resource.TestCheckResourceAttr("relay_backup_auto_export.this", "which", "all"),
+			},
+			{
+				ResourceName:            "relay_backup_auto_export.this",
+				ImportState:             true,
+				ImportStateId:           workspace,
+				ImportStateVerify:       true,
+				ImportStateVerifyIgnore: []string{"backfill", "last_error", "last_exported_at"},
+			},
+		},
+	})
+}
+
 func envOr(key, fallback string) string {
 	if v := os.Getenv(key); v != "" {
 		return v
