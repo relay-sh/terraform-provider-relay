@@ -37,7 +37,7 @@ resource "relay_connection" "orders" {
 ### Required
 
 - `agent_pool` (String) The agent (pool) that serves this connection, for example `default`, the workspace's managed agent.
-- `engine` (String) Database engine, for example `postgres` or `mongodb`.
+- `engine` (String) Database engine: `postgres`, `mongodb`, `mysql`, `valkey` (Valkey and Redis), `sqlserver` or `oracle`.
 - `host` (String) Upstream `host:port`. The API does not return it for a connection with `managed_database_id`, so Terraform keeps the configured value, and an import leaves it empty until the next apply.
 - `name` (String) Name, unique in the workspace. Changing it replaces the connection.
 - `workspace_id` (String) Workspace the connection belongs to.
