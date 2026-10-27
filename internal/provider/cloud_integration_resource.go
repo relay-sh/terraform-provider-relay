@@ -58,8 +58,8 @@ func (r *cloudIntegrationResource) Schema(_ context.Context, _ resource.SchemaRe
 		MarkdownDescription: "A cloud integration: an IAM role in the customer's AWS account that Relay assumes, for example to export backups to S3. " +
 			"Build the role from `relay_cloud_integration_setup`. After creating the integration, and after changing `role_arn`, the provider asks Relay to assume the role; " +
 			"while IAM is still propagating that fails with a warning, not an error, and `status` stays `pending` or `error` until the integration is tested again from the dashboard. " +
-			"An integration named by a backup auto-export or log stream cannot be deleted, even after `relay_backup_auto_export` is destroyed, because destroying the export only disables it: " +
-			"point the export's `integration_id` at another integration first. So a configuration holding both cannot be destroyed in one run.",
+			"An integration named by a backup auto-export or log stream cannot be deleted while that export or stream exists; " +
+			"destroying `relay_backup_auto_export` deletes the export, so a configuration holding both is destroyed in one run.",
 		Attributes: map[string]schema.Attribute{
 			"id":           schema.StringAttribute{Computed: true, PlanModifiers: keep, MarkdownDescription: "Integration ID."},
 			"workspace_id": schema.StringAttribute{Required: true, PlanModifiers: replace, MarkdownDescription: "Workspace the integration belongs to."},
@@ -182,8 +182,8 @@ func (r *cloudIntegrationResource) Delete(ctx context.Context, req resource.Dele
 	case status.Code(err) == codes.FailedPrecondition:
 		resp.Diagnostics.AddError("Cloud integration is still in use",
 			status.Convert(err).Message()+".\n\n"+
-				"The workspace's backup auto-export or log stream still names this integration, even when disabled. Destroying relay_backup_auto_export only disables the export and keeps its settings, so it keeps the integration in use. "+
-				"Point the export's integration_id at another integration and apply, then destroy this one.")
+				"A backup auto-export or log stream not managed by this configuration, or one disabled by an earlier version of this provider, still names this integration. "+
+				"Delete it or point its integration_id at another integration, then destroy this one.")
 	default:
 		resp.Diagnostics.AddError("Cannot delete cloud integration", err.Error())
 	}

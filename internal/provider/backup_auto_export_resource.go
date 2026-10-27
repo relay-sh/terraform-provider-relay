@@ -65,7 +65,7 @@ func (r *backupAutoExportResource) Schema(_ context.Context, _ resource.SchemaRe
 	resp.Schema = schema.Schema{
 		MarkdownDescription: "Copies the completed backups of a workspace's clusters to an S3 bucket through a cloud integration. " +
 			"There is one auto-export per workspace: two of these resources on the same workspace overwrite each other. " +
-			"Destroying the resource disables the export and leaves its settings stored, so the cloud integration it names cannot be deleted until the export is pointed at another one. " +
+			"Destroying the resource deletes the export, so the cloud integration it names can be destroyed in the same run. " +
 			"An export disabled outside Terraform is removed from state.",
 		Attributes: map[string]schema.Attribute{
 			"id":           schema.StringAttribute{Computed: true, PlanModifiers: keep, MarkdownDescription: "The workspace ID."},
@@ -177,7 +177,7 @@ func (r *backupAutoExportResource) Update(ctx context.Context, req resource.Upda
 
 func (r *backupAutoExportResource) upsert(ctx context.Context, plan backupAutoExportModel, backfill bool, state *tfsdk.State, diags *diag.Diagnostics) {
 	out, err := r.client.API.UpsertBackupAutoExport(r.client.Workspace(ctx, plan.WorkspaceID.ValueString()), &serverv1.UpsertBackupAutoExportRequest{
-		AutoExport: backupAutoExportToProto(plan, true),
+		AutoExport: backupAutoExportToProto(plan),
 		Backfill:   backfill,
 	})
 	if err != nil {
@@ -197,11 +197,9 @@ func (r *backupAutoExportResource) Delete(ctx context.Context, req resource.Dele
 	if resp.Diagnostics.HasError() {
 		return
 	}
-	_, err := r.client.API.UpsertBackupAutoExport(r.client.Workspace(ctx, state.WorkspaceID.ValueString()), &serverv1.UpsertBackupAutoExportRequest{
-		AutoExport: backupAutoExportToProto(state, false),
-	})
+	_, err := r.client.API.DeleteBackupAutoExport(r.client.Workspace(ctx, state.WorkspaceID.ValueString()), &serverv1.DeleteBackupAutoExportRequest{})
 	if err != nil && !relay.IsNotFound(err) {
-		resp.Diagnostics.AddError("Cannot disable backup auto-export", err.Error())
+		resp.Diagnostics.AddError("Cannot delete backup auto-export", err.Error())
 	}
 }
 
@@ -210,7 +208,7 @@ func (r *backupAutoExportResource) ImportState(ctx context.Context, req resource
 	resp.Diagnostics.Append(resp.State.SetAttribute(ctx, path.Root("id"), req.ID)...)
 }
 
-func backupAutoExportToProto(m backupAutoExportModel, enabled bool) *serverv1.BackupAutoExport {
+func backupAutoExportToProto(m backupAutoExportModel) *serverv1.BackupAutoExport {
 	scope := m.Scope.Attributes()
 	var ids []string
 	for _, id := range scope["ids"].(types.Set).Elements() {
@@ -222,7 +220,7 @@ func backupAutoExportToProto(m backupAutoExportModel, enabled bool) *serverv1.Ba
 		Prefix:        m.Prefix.ValueString(),
 		Which:         m.Which.ValueString(),
 		Scope:         &serverv1.ClusterScope{Mode: scope["mode"].(types.String).ValueString(), Ids: ids},
-		Enabled:       enabled,
+		Enabled:       true,
 	}
 }
 

@@ -3,12 +3,12 @@
 page_title: "relay_backup_auto_export Resource - relay"
 subcategory: ""
 description: |-
-  Copies the completed backups of a workspace's clusters to an S3 bucket through a cloud integration. There is one auto-export per workspace: two of these resources on the same workspace overwrite each other. Destroying the resource disables the export and leaves its settings stored, so the cloud integration it names cannot be deleted until the export is pointed at another one. An export disabled outside Terraform is removed from state.
+  Copies the completed backups of a workspace's clusters to an S3 bucket through a cloud integration. There is one auto-export per workspace: two of these resources on the same workspace overwrite each other. Destroying the resource deletes the export, so the cloud integration it names can be destroyed in the same run. An export disabled outside Terraform is removed from state.
 ---
 
 # relay_backup_auto_export (Resource)
 
-Copies the completed backups of a workspace's clusters to an S3 bucket through a cloud integration. There is one auto-export per workspace: two of these resources on the same workspace overwrite each other. Destroying the resource disables the export and leaves its settings stored, so the cloud integration it names cannot be deleted until the export is pointed at another one. An export disabled outside Terraform is removed from state.
+Copies the completed backups of a workspace's clusters to an S3 bucket through a cloud integration. There is one auto-export per workspace: two of these resources on the same workspace overwrite each other. Destroying the resource deletes the export, so the cloud integration it names can be destroyed in the same run. An export disabled outside Terraform is removed from state.
 
 ## Example Usage
 
