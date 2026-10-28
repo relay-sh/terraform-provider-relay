@@ -11,7 +11,7 @@ permissions:
 
 jobs:
   go:
-    uses: relay-sh/workflows/.github/workflows/go-ci.yaml@main
+    uses: relay-sh/terraform-ci/.github/workflows/go-ci.yaml@main
     with:
       golangci-lint-version: v2.12.2
       test-packages: ./internal/...
