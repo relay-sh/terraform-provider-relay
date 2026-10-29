@@ -268,6 +268,10 @@ func optionalString(v string) types.String {
 	return types.StringValue(v)
 }
 
+func boolPtr(v bool) *bool {
+	return &v
+}
+
 func int32Ptr(v int64) *int32 {
 	out := int32(v)
 	return &out

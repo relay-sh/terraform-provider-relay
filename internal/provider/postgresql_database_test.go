@@ -1,17 +1,21 @@
 package provider
 
 import (
+	"context"
 	"errors"
 	"fmt"
 	"regexp"
 	"slices"
 	"testing"
 
+	"github.com/hashicorp/terraform-plugin-framework/attr"
+	"github.com/hashicorp/terraform-plugin-framework/types"
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
 	"github.com/hashicorp/terraform-plugin-testing/terraform"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
 
+	serverv1 "github.com/relay-sh/relay-go/gen/relay/server/v1"
 	"github.com/relay-sh/relay-go/relay"
 )
 
@@ -280,4 +284,169 @@ func TestPostgreSQLDatabaseResource_DestroyAfterAFailedCreate(t *testing.T) {
 			ExpectError: regexp.MustCompile(`(?s)did not become ready.*owner missing`),
 		}},
 	})
+}
+
+func TestPostgreSQLDatabaseResource_SchemasExtensionsAndLockPublic(t *testing.T) {
+	f := startFakeServer(t)
+	const res = "relay_postgresql_database.this"
+	resource.UnitTest(t, resource.TestCase{
+		ProtoV6ProviderFactories: factories(relay.Dial),
+		CheckDestroy:             noLogicalDatabasesLeft(f),
+		Steps: []resource.TestStep{
+			{
+				Config: logicalDatabaseConfig(f, "balance", `
+  schemas     = ["balance", "audit"]
+  extensions  = [{ name = "pg_trgm", schema = "balance" }, { name = "pgcrypto" }, { name = "citext", schema = "public" }]
+  lock_public = false
+`),
+				Check: resource.ComposeAggregateTestCheckFunc(
+					resource.TestCheckResourceAttr(res, "schemas.#", "2"),
+					resource.TestCheckResourceAttr(res, "schemas.1", "audit"),
+					resource.TestCheckResourceAttr(res, "extensions.#", "3"),
+					resource.TestCheckResourceAttr(res, "extensions.0.schema", "balance"),
+					resource.TestCheckNoResourceAttr(res, "extensions.1.schema"),
+					resource.TestCheckResourceAttr(res, "extensions.2.schema", "public"),
+					resource.TestCheckResourceAttr(res, "lock_public", "false"),
+					func(*terraform.State) error {
+						c := f.lastLDBCreate
+						if len(c.GetSchemas()) != 2 || len(c.GetExtensions()) != 3 || c.GetExtensions()[0].GetSchema() != "balance" || c.GetExtensions()[1].GetSchema() != "" || c.GetLockPublic() {
+							return fmt.Errorf("create request = %+v", c)
+						}
+						return nil
+					},
+				),
+			},
+			{
+				Config: logicalDatabaseConfig(f, "balance", `
+  schemas     = ["balance", "audit"]
+  extensions  = [{ name = "pg_trgm", schema = "balance" }]
+  lock_public = true
+`),
+				Check: resource.ComposeAggregateTestCheckFunc(
+					resource.TestCheckResourceAttr(res, "extensions.#", "1"),
+					resource.TestCheckResourceAttr(res, "lock_public", "true"),
+					func(*terraform.State) error {
+						u := f.lastLDBUpdate
+						if u.Schemas != nil || len(u.GetExtensions().GetItems()) != 1 || !u.GetLockPublic() || u.LockPublic == nil {
+							return fmt.Errorf("only changed fields must be sent, got %+v", u)
+						}
+						return nil
+					},
+				),
+			},
+			{
+				Config: logicalDatabaseConfig(f, "balance", `
+  schemas     = ["balance"]
+  lock_public = true
+`),
+				Check: resource.ComposeAggregateTestCheckFunc(
+					resource.TestCheckResourceAttr(res, "schemas.#", "1"),
+					resource.TestCheckNoResourceAttr(res, "extensions.#"),
+					func(*terraform.State) error {
+						u := f.lastLDBUpdate
+						if len(u.GetSchemas().GetNames()) != 1 || u.Extensions == nil || len(u.GetExtensions().GetItems()) != 0 || u.LockPublic != nil {
+							return fmt.Errorf("removing extensions must send an empty wrapper, got %+v", u)
+						}
+						return nil
+					},
+				),
+			},
+			{
+				Config: logicalDatabaseConfig(f, "balance", ""),
+				Check: resource.ComposeAggregateTestCheckFunc(
+					resource.TestCheckNoResourceAttr(res, "schemas.#"),
+					resource.TestCheckResourceAttr(res, "lock_public", "false"),
+					func(*terraform.State) error {
+						u := f.lastLDBUpdate
+						if u.Schemas == nil || len(u.GetSchemas().GetNames()) != 0 || u.GetLockPublic() {
+							return fmt.Errorf("removing schemas must send an empty wrapper, got %+v", u)
+						}
+						return nil
+					},
+				),
+			},
+			{
+				Config: logicalDatabaseConfig(f, "balance", `
+  schemas    = []
+  extensions = []
+`),
+				Check: resource.TestCheckResourceAttr(res, "schemas.#", "0"),
+			},
+			{
+				ResourceName:            res,
+				ImportState:             true,
+				ImportStateId:           dbWorkspace + "/db-1/balance",
+				ImportStateVerify:       false,
+				ImportStateVerifyIgnore: []string{"timeouts"},
+			},
+		},
+	})
+}
+
+func TestPostgreSQLDatabaseResource_LayoutGuards(t *testing.T) {
+	f := startFakeServer(t)
+	many := `["s1","s2","s3","s4","s5","s6","s7","s8","s9","s10","s11","s12","s13","s14","s15","s16","s17","s18","s19","s20","s21"]`
+	resource.UnitTest(t, resource.TestCase{
+		ProtoV6ProviderFactories: factories(relay.Dial),
+		Steps: []resource.TestStep{
+			{Config: logicalDatabaseConfig(f, "b", `  schemas = ["Bad"]`), ExpectError: regexp.MustCompile("Invalid schema name")},
+			{Config: logicalDatabaseConfig(f, "b", `  schemas = ["public"]`), ExpectError: regexp.MustCompile("reserved by PostgreSQL")},
+			{Config: logicalDatabaseConfig(f, "b", `  schemas = ["pg_extra"]`), ExpectError: regexp.MustCompile("reserved by PostgreSQL")},
+			{Config: logicalDatabaseConfig(f, "b", `  schemas = ["`+fmt.Sprintf("%064d", 0)+`"]`), ExpectError: regexp.MustCompile("Invalid schema name")},
+			{Config: logicalDatabaseConfig(f, "b", `  schemas = `+many), ExpectError: regexp.MustCompile("(?s)at most 20")},
+			{Config: logicalDatabaseConfig(f, "b", `  schemas = ["a", "a"]`), ExpectError: regexp.MustCompile("(?s)duplicate")},
+			{Config: logicalDatabaseConfig(f, "b", `  extensions = [{ name = "pg_trgm", schema = "other" }]`), ExpectError: regexp.MustCompile("Unknown extension schema")},
+			{Config: logicalDatabaseConfig(f, "b", "  lock_public = true\n  extensions = [{ name = \"pg_trgm\" }]"), ExpectError: regexp.MustCompile("Extension needs a schema")},
+			{Config: logicalDatabaseConfig(f, "b", "  lock_public = true\n  schemas = [\"a\"]\n  extensions = [{ name = \"pg_trgm\", schema = \"public\" }]"), ExpectError: regexp.MustCompile("Extension needs a schema")},
+			{Config: logicalDatabaseConfig(f, "b", `  extensions = [{ name = "", schema = "a" }]`), ExpectError: regexp.MustCompile("length must be at least 1")},
+		},
+	})
+}
+
+func TestValidateDatabaseLayoutSkipsUnknowns(t *testing.T) {
+	ctx := context.Background()
+	extType := types.ObjectType{AttrTypes: databaseExtensionAttrTypes}
+	ext := func(name string, schema types.String) attr.Value {
+		return types.ObjectValueMust(databaseExtensionAttrTypes, map[string]attr.Value{"name": types.StringValue(name), "schema": schema})
+	}
+	strs := func(v ...attr.Value) types.List { return types.ListValueMust(types.StringType, v) }
+	exts := func(v ...attr.Value) types.List { return types.ListValueMust(extType, v) }
+	unknown := types.StringUnknown()
+
+	cases := map[string]struct {
+		schemas, extensions types.List
+		lock                types.Bool
+		errors              int
+	}{
+		"unknown extensions":            {strs(), types.ListUnknown(extType), types.BoolNull(), 0},
+		"unknown schemas":               {types.ListUnknown(types.StringType), exts(ext("a", types.StringValue("x"))), types.BoolNull(), 0},
+		"unknown schema element":        {strs(unknown), exts(ext("a", types.StringValue("x"))), types.BoolNull(), 0},
+		"unknown extension schema":      {strs(), exts(ext("a", unknown)), types.BoolValue(true), 0},
+		"unknown lock":                  {strs(), exts(ext("a", types.StringNull())), types.BoolUnknown(), 0},
+		"declared schema":               {strs(types.StringValue("x")), exts(ext("a", types.StringValue("x"))), types.BoolValue(true), 0},
+		"undeclared with known schemas": {strs(types.StringValue("y")), exts(ext("a", types.StringValue("x"))), types.BoolNull(), 1},
+	}
+	for name, tc := range cases {
+		if got := validateDatabaseLayout(ctx, tc.schemas, tc.extensions, tc.lock).ErrorsCount(); got != tc.errors {
+			t.Errorf("%s: %d errors, want %d", name, got, tc.errors)
+		}
+	}
+}
+
+func TestExtensionsFromProtoKeepsExplicitPublic(t *testing.T) {
+	ext := func(name, schema string) attr.Value {
+		return types.ObjectValueMust(databaseExtensionAttrTypes, map[string]attr.Value{"name": types.StringValue(name), "schema": types.StringValue(schema)})
+	}
+	prior := types.ListValueMust(types.ObjectType{AttrTypes: databaseExtensionAttrTypes}, []attr.Value{ext("citext", "public")})
+	got := extensionsFromProto([]*serverv1.LogicalDatabaseExtension{
+		{Name: "citext", Schema: "public"},
+		{Name: "hstore", Schema: "public"},
+	}, prior)
+	schemas := []attr.Value{
+		got.Elements()[0].(types.Object).Attributes()["schema"],
+		got.Elements()[1].(types.Object).Attributes()["schema"],
+	}
+	if !schemas[0].Equal(types.StringValue("public")) || !schemas[1].IsNull() {
+		t.Fatalf("schemas = %v", schemas)
+	}
 }

@@ -1,3 +1,13 @@
+## 0.0.2 (Unreleased)
+
+ENHANCEMENTS:
+
+* resource/relay_postgresql_database: `schemas` creates schemas inside the database, and user roles on the database cover them alongside `public`
+* resource/relay_postgresql_database: `extensions` creates allow-listed extensions, each in `public` or one of `schemas`, with no SQL from the user
+* resource/relay_postgresql_database: `lock_public` revokes the `public` schema from every role, and user roles stop covering it
+* resource/relay_postgresql_user: the `dbAdmin` role runs DDL in its database's `public` and declared schemas and can create trusted extensions, while `readWrite` stays DML-only there
+* resource/relay_postgresql_user: `roles` takes several roles across databases, and `roles[].schema` narrows a role to one schema
+
 ## 0.0.1 (October 28, 2026)
 
 BREAKING CHANGES:

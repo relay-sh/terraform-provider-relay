@@ -305,8 +305,14 @@ func TestForKnownUserRoles(t *testing.T) {
 	unknownDB, _ := types.ObjectValue(userRoleAttrTypes, map[string]attr.Value{
 		"role":     types.StringValue("readWrite"),
 		"database": types.StringUnknown(),
+		"schema":   types.StringNull(),
 	})
-	knownUnknown, _ := types.ListValue(elem, []attr.Value{unknownDB})
+	unknownSchema, _ := types.ObjectValue(userRoleAttrTypes, map[string]attr.Value{
+		"role":     types.StringValue("readWrite"),
+		"database": types.StringValue("app"),
+		"schema":   types.StringUnknown(),
+	})
+	knownUnknown, _ := types.ListValue(elem, []attr.Value{unknownDB, unknownSchema})
 	forKnownUserRoles(ctx, knownUnknown, func(int, userRoleModel) { called++ })
 	if called != 0 {
 		t.Fatal("null, unknown, or unknown fields must be skipped")
@@ -315,6 +321,7 @@ func TestForKnownUserRoles(t *testing.T) {
 	missing, _ := types.ObjectValue(userRoleAttrTypes, map[string]attr.Value{
 		"role":     types.StringValue("readWrite"),
 		"database": types.StringNull(),
+		"schema":   types.StringNull(),
 	})
 	known, _ := types.ListValue(elem, []attr.Value{missing})
 	forKnownUserRoles(ctx, known, func(int, userRoleModel) { called++ })
@@ -486,5 +493,59 @@ func TestPostgreSQLUserResource_DestroyAfterAFailedCreate(t *testing.T) {
 			Config:      userConfig(f, "app", ""),
 			ExpectError: regexp.MustCompile(`(?s)did not become ready.*role missing`),
 		}},
+	})
+}
+
+func TestPostgreSQLUserResource_ScopedRolesAcrossDatabases(t *testing.T) {
+	f := startFakeServer(t)
+	const res = "relay_postgresql_user.this"
+	resource.UnitTest(t, resource.TestCase{
+		ProtoV6ProviderFactories: factories(relay.Dial),
+		CheckDestroy:             noUsersLeft(f),
+		Steps: []resource.TestStep{
+			{
+				Config: providerBlock(f) + fmt.Sprintf(`
+resource "relay_postgresql_user" "this" {
+  workspace_id = %q
+  cluster_id   = "db-1"
+  username     = "migrator"
+  password     = "x"
+  roles = [
+    { role = "dbAdmin", database = "balance" },
+    { role = "readOnly", database = "reports", schema = "public" },
+    { role = "readOnly", database = "reports", schema = "audit" },
+  ]
+}
+`, dbWorkspace),
+				Check: resource.ComposeAggregateTestCheckFunc(
+					resource.TestCheckResourceAttr(res, "roles.#", "3"),
+					resource.TestCheckResourceAttr(res, "roles.0.role", "dbAdmin"),
+					resource.TestCheckResourceAttr(res, "roles.0.schema", ""),
+					resource.TestCheckResourceAttr(res, "roles.2.schema", "audit"),
+					func(*terraform.State) error {
+						roles := f.lastUserCreate.GetRoles()
+						if len(roles) != 3 || roles[1].GetCollection() != "public" || roles[2].GetCollection() != "audit" || roles[2].GetDb() != "reports" {
+							return fmt.Errorf("schema must reach the API as the role's collection, got %+v", roles)
+						}
+						return nil
+					},
+				),
+			},
+			{
+				Config: providerBlock(f) + fmt.Sprintf(`
+resource "relay_postgresql_user" "this" {
+  workspace_id = %q
+  cluster_id   = "db-1"
+  username     = "migrator"
+  password     = "x"
+  roles = [
+    { role = "readWrite", database = "balance" },
+    { role = "readOnly", database = "reports", schema = "audit" },
+  ]
+}
+`, dbWorkspace),
+				Check: resource.TestCheckResourceAttr(res, "roles.#", "2"),
+			},
+		},
 	})
 }
