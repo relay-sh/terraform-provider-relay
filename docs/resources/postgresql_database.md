@@ -3,12 +3,12 @@
 page_title: "relay_postgresql_database Resource - relay"
 subcategory: ""
 description: |-
-  A logical database on a managed PostgreSQL cluster. readOnly and readWrite roles of relay_postgresql_user apply to one, so create it before the user. The name cannot change in place; owner and description can, and removing them clears them. A database the platform adopted rather than created is kept on the cluster when the resource is destroyed.
+  A logical database on a managed PostgreSQL cluster. readOnly, readWrite and dbAdmin roles of relay_postgresql_user apply to one, so create it before the user. The name cannot change in place; owner, description, schemas, extensions and lock_public can, and removing the optional ones clears them. A database the platform adopted rather than created is kept on the cluster when the resource is destroyed.
 ---
 
 # relay_postgresql_database (Resource)
 
-A logical database on a managed PostgreSQL cluster. `readOnly` and `readWrite` roles of `relay_postgresql_user` apply to one, so create it before the user. The name cannot change in place; `owner` and `description` can, and removing them clears them. A database the platform adopted rather than created is kept on the cluster when the resource is destroyed.
+A logical database on a managed PostgreSQL cluster. `readOnly`, `readWrite` and `dbAdmin` roles of `relay_postgresql_user` apply to one, so create it before the user. The name cannot change in place; `owner`, `description`, `schemas`, `extensions` and `lock_public` can, and removing the optional ones clears them. A database the platform adopted rather than created is kept on the cluster when the resource is destroyed.
 
 ## Example Usage
 
@@ -18,6 +18,15 @@ resource "relay_postgresql_database" "billing" {
   cluster_id   = relay_postgresql_cluster.billing.id
   name         = "billing"
   description  = "Invoices and payments"
+}
+
+resource "relay_postgresql_database" "balance" {
+  workspace_id = relay_postgresql_cluster.billing.workspace_id
+  cluster_id   = relay_postgresql_cluster.billing.id
+  name         = "balance"
+  schemas      = ["balance"]
+  extensions   = [{ name = "pg_trgm", schema = "balance" }]
+  lock_public  = true
 }
 ```
 
@@ -33,7 +42,10 @@ resource "relay_postgresql_database" "billing" {
 ### Optional
 
 - `description` (String) Free-text description.
+- `extensions` (Attributes List) Extensions the platform installs. The platform refuses extensions that its PostgreSQL version does not allow (for example `pgaudit`, `pg_stat_statements`, `pgcrypto`, `citext`, `hstore`, `uuid-ossp`, `pg_trgm`, `btree_gin`, `btree_gist`, `unaccent` and `vector`). (see [below for nested schema](#nestedatt--extensions))
+- `lock_public` (Boolean) Revoke the `public` schema from `PUBLIC` and stop user roles from covering it. Every extension then needs a `schema` from `schemas`.
 - `owner` (String) Username of the `relay_postgresql_user` that owns the database. Unset, the platform's superuser owns it.
+- `schemas` (List of String) Schemas the platform creates in the database, at most 20. Lowercase letters, digits and underscores, up to 63 characters, not starting with a digit. `public`, `information_schema` and `pg_*` are reserved. User roles cover `public` and these schemas unless narrowed with `schema`.
 - `timeouts` (Block, Optional) (see [below for nested schema](#nestedblock--timeouts))
 
 ### Read-Only
@@ -43,6 +55,18 @@ resource "relay_postgresql_database" "billing" {
 - `origin` (String) `Created` when the platform created the database, `Adopted` when it took over an existing one.
 - `phase` (String) Reconcile phase.
 - `phase_message` (String) Detail for the phase.
+
+<a id="nestedatt--extensions"></a>
+### Nested Schema for `extensions`
+
+Required:
+
+- `name` (String) Extension name.
+
+Optional:
+
+- `schema` (String) Schema the extension is installed in: `public` or one of `schemas`. Unset, `public`.
+
 
 <a id="nestedblock--timeouts"></a>
 ### Nested Schema for `timeouts`

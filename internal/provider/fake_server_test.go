@@ -853,6 +853,9 @@ func (f *fakeServer) CreateLogicalDatabase(ctx context.Context, req *serverv1.Cr
 		Name:        req.GetName(),
 		Owner:       req.GetOwner(),
 		Description: req.GetDescription(),
+		Schemas:     req.GetSchemas(),
+		Extensions:  req.GetExtensions(),
+		LockPublic:  req.GetLockPublic(),
 		Phase:       "Pending",
 		Origin:      "Created",
 		CreatedAt:   timestamppb.New(time.Unix(1_700_000_000, 0)),
@@ -907,6 +910,15 @@ func (f *fakeServer) UpdateLogicalDatabase(ctx context.Context, req *serverv1.Up
 	}
 	if req.Description != nil {
 		db.Description = req.GetDescription()
+	}
+	if req.Schemas != nil {
+		db.Schemas = req.GetSchemas().GetNames()
+	}
+	if req.Extensions != nil {
+		db.Extensions = req.GetExtensions().GetItems()
+	}
+	if req.LockPublic != nil {
+		db.LockPublic = req.GetLockPublic()
 	}
 	updated := proto.Clone(db).(*serverv1.LogicalDatabase)
 	updated.CreatedAt = nil

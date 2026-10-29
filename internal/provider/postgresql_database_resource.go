@@ -3,14 +3,20 @@ package provider
 import (
 	"context"
 	"errors"
+	"fmt"
+	"regexp"
 	"strings"
 	"time"
 
 	"github.com/hashicorp/terraform-plugin-framework-timeouts/resource/timeouts"
+	"github.com/hashicorp/terraform-plugin-framework-validators/listvalidator"
 	"github.com/hashicorp/terraform-plugin-framework-validators/stringvalidator"
+	"github.com/hashicorp/terraform-plugin-framework/attr"
+	"github.com/hashicorp/terraform-plugin-framework/diag"
 	"github.com/hashicorp/terraform-plugin-framework/path"
 	"github.com/hashicorp/terraform-plugin-framework/resource"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema"
+	"github.com/hashicorp/terraform-plugin-framework/resource/schema/booldefault"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/planmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/stringplanmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/schema/validator"
@@ -33,12 +39,27 @@ type postgresqlDatabaseModel struct {
 	Name         types.String   `tfsdk:"name"`
 	Owner        types.String   `tfsdk:"owner"`
 	Description  types.String   `tfsdk:"description"`
+	Schemas      types.List     `tfsdk:"schemas"`
+	Extensions   types.List     `tfsdk:"extensions"`
+	LockPublic   types.Bool     `tfsdk:"lock_public"`
 	Origin       types.String   `tfsdk:"origin"`
 	Phase        types.String   `tfsdk:"phase"`
 	PhaseMessage types.String   `tfsdk:"phase_message"`
 	CreatedAt    types.String   `tfsdk:"created_at"`
 	Timeouts     timeouts.Value `tfsdk:"timeouts"`
 }
+
+type databaseExtensionModel struct {
+	Name   types.String `tfsdk:"name"`
+	Schema types.String `tfsdk:"schema"`
+}
+
+var databaseExtensionAttrTypes = map[string]attr.Type{
+	"name":   types.StringType,
+	"schema": types.StringType,
+}
+
+var schemaNamePattern = regexp.MustCompile(`^[a-z_][a-z0-9_]*$`)
 
 var errLogicalDatabaseNotFound = errors.New("logical database not found")
 
@@ -56,7 +77,7 @@ func (r *postgresqlDatabaseResource) Schema(ctx context.Context, _ resource.Sche
 	nonEmpty := []validator.String{stringvalidator.LengthAtLeast(1)}
 
 	resp.Schema = schema.Schema{
-		MarkdownDescription: "A logical database on a managed PostgreSQL cluster. `readOnly` and `readWrite` roles of `relay_postgresql_user` apply to one, so create it before the user. The name cannot change in place; `owner` and `description` can, and removing them clears them. A database the platform adopted rather than created is kept on the cluster when the resource is destroyed.",
+		MarkdownDescription: "A logical database on a managed PostgreSQL cluster. `readOnly`, `readWrite` and `dbAdmin` roles of `relay_postgresql_user` apply to one, so create it before the user. The name cannot change in place; `owner`, `description`, `schemas`, `extensions` and `lock_public` can, and removing the optional ones clears them. A database the platform adopted rather than created is kept on the cluster when the resource is destroyed.",
 		Attributes: map[string]schema.Attribute{
 			"id":           schema.StringAttribute{Computed: true, PlanModifiers: keep, MarkdownDescription: "`<cluster_id>/<name>`."},
 			"workspace_id": schema.StringAttribute{Required: true, PlanModifiers: replace, MarkdownDescription: "Workspace of the cluster."},
@@ -66,7 +87,27 @@ func (r *postgresqlDatabaseResource) Schema(ctx context.Context, _ resource.Sche
 				Optional: true, Validators: nonEmpty,
 				MarkdownDescription: "Username of the `relay_postgresql_user` that owns the database. Unset, the platform's superuser owns it.",
 			},
-			"description":   schema.StringAttribute{Optional: true, Validators: nonEmpty, MarkdownDescription: "Free-text description."},
+			"description": schema.StringAttribute{Optional: true, Validators: nonEmpty, MarkdownDescription: "Free-text description."},
+			"schemas": schema.ListAttribute{
+				ElementType: types.StringType, Optional: true,
+				Validators:          []validator.List{listvalidator.SizeAtMost(20), listvalidator.UniqueValues()},
+				MarkdownDescription: "Schemas the platform creates in the database, at most 20. Lowercase letters, digits and underscores, up to 63 characters, not starting with a digit. `public`, `information_schema` and `pg_*` are reserved. User roles cover `public` and these schemas unless narrowed with `schema`.",
+			},
+			"extensions": schema.ListNestedAttribute{
+				Optional:            true,
+				MarkdownDescription: "Extensions the platform installs. The platform refuses extensions that its PostgreSQL version does not allow (for example `pgaudit`, `pg_stat_statements`, `pgcrypto`, `citext`, `hstore`, `uuid-ossp`, `pg_trgm`, `btree_gin`, `btree_gist`, `unaccent` and `vector`).",
+				NestedObject: schema.NestedAttributeObject{Attributes: map[string]schema.Attribute{
+					"name": schema.StringAttribute{Required: true, Validators: nonEmpty, MarkdownDescription: "Extension name."},
+					"schema": schema.StringAttribute{
+						Optional: true, Validators: nonEmpty,
+						MarkdownDescription: "Schema the extension is installed in: `public` or one of `schemas`. Unset, `public`.",
+					},
+				}},
+			},
+			"lock_public": schema.BoolAttribute{
+				Optional: true, Computed: true, Default: booldefault.StaticBool(false),
+				MarkdownDescription: "Revoke the `public` schema from `PUBLIC` and stop user roles from covering it. Every extension then needs a `schema` from `schemas`.",
+			},
 			"origin":        schema.StringAttribute{Computed: true, PlanModifiers: keep, MarkdownDescription: "`Created` when the platform created the database, `Adopted` when it took over an existing one."},
 			"phase":         schema.StringAttribute{Computed: true, MarkdownDescription: "Reconcile phase."},
 			"phase_message": schema.StringAttribute{Computed: true, MarkdownDescription: "Detail for the phase."},
@@ -76,6 +117,63 @@ func (r *postgresqlDatabaseResource) Schema(ctx context.Context, _ resource.Sche
 			"timeouts": timeouts.Block(ctx, timeouts.Opts{Create: true}),
 		},
 	}
+}
+
+func (r *postgresqlDatabaseResource) ValidateConfig(ctx context.Context, req resource.ValidateConfigRequest, resp *resource.ValidateConfigResponse) {
+	var schemas, extensions types.List
+	var lockPublic types.Bool
+	resp.Diagnostics.Append(req.Config.GetAttribute(ctx, path.Root("schemas"), &schemas)...)
+	resp.Diagnostics.Append(req.Config.GetAttribute(ctx, path.Root("extensions"), &extensions)...)
+	resp.Diagnostics.Append(req.Config.GetAttribute(ctx, path.Root("lock_public"), &lockPublic)...)
+
+	resp.Diagnostics.Append(validateDatabaseLayout(ctx, schemas, extensions, lockPublic)...)
+}
+
+func validateDatabaseLayout(ctx context.Context, schemas, extensions types.List, lockPublic types.Bool) diag.Diagnostics {
+	var diags diag.Diagnostics
+	declared := map[string]bool{}
+	complete := !schemas.IsUnknown()
+	for i, e := range schemas.Elements() {
+		name := e.(types.String)
+		if name.IsUnknown() {
+			complete = false
+			continue
+		}
+		declared[name.ValueString()] = true
+		if msg := schemaNameProblem(name.ValueString()); msg != "" {
+			diags.AddAttributeError(path.Root("schemas").AtListIndex(i), "Invalid schema name", msg)
+		}
+	}
+
+	if extensions.IsUnknown() {
+		return diags
+	}
+	var parsed []databaseExtensionModel
+	_ = extensions.ElementsAs(ctx, &parsed, false)
+	for i, ext := range parsed {
+		at := path.Root("extensions").AtListIndex(i).AtName("schema")
+		if ext.Schema.IsUnknown() {
+			continue
+		}
+		inPublic := ext.Schema.IsNull() || ext.Schema.ValueString() == "public"
+		switch {
+		case lockPublic.ValueBool() && inPublic:
+			diags.AddAttributeError(at, "Extension needs a schema", "With lock_public every extension must be installed in one of schemas, not in public.")
+		case !inPublic && complete && !declared[ext.Schema.ValueString()]:
+			diags.AddAttributeError(at, "Unknown extension schema", fmt.Sprintf("Schema %q is neither public nor listed in schemas.", ext.Schema.ValueString()))
+		}
+	}
+	return diags
+}
+
+func schemaNameProblem(name string) string {
+	switch {
+	case len(name) > 63 || !schemaNamePattern.MatchString(name):
+		return fmt.Sprintf("Schema %q must match ^[a-z_][a-z0-9_]*$ and be at most 63 characters.", name)
+	case name == "public" || name == "information_schema" || strings.HasPrefix(name, "pg_"):
+		return fmt.Sprintf("Schema %q is reserved by PostgreSQL.", name)
+	}
+	return ""
 }
 
 func (r *postgresqlDatabaseResource) Configure(_ context.Context, req resource.ConfigureRequest, resp *resource.ConfigureResponse) {
@@ -97,6 +195,9 @@ func (r *postgresqlDatabaseResource) Create(ctx context.Context, req resource.Cr
 		Name:        plan.Name.ValueString(),
 		Owner:       plan.Owner.ValueString(),
 		Description: plan.Description.ValueString(),
+		Schemas:     stringListToGo(plan.Schemas),
+		Extensions:  extensionsToProto(plan.Extensions),
+		LockPublic:  plan.LockPublic.ValueBool(),
 	})
 	if err != nil {
 		resp.Diagnostics.AddError("Cannot create PostgreSQL database", err.Error())
@@ -178,6 +279,15 @@ func (r *postgresqlDatabaseResource) Update(ctx context.Context, req resource.Up
 	if !plan.Description.Equal(prior.Description) {
 		update.Description = stringPtr(plan.Description.ValueString())
 	}
+	if !plan.Schemas.Equal(prior.Schemas) {
+		update.Schemas = &serverv1.LogicalDatabaseSchemas{Names: stringListToGo(plan.Schemas)}
+	}
+	if !plan.Extensions.Equal(prior.Extensions) {
+		update.Extensions = &serverv1.LogicalDatabaseExtensions{Items: extensionsToProto(plan.Extensions)}
+	}
+	if !plan.LockPublic.Equal(prior.LockPublic) {
+		update.LockPublic = boolPtr(plan.LockPublic.ValueBool())
+	}
 	out, err := r.client.API.UpdateLogicalDatabase(r.client.Workspace(ctx, plan.WorkspaceID.ValueString()), update)
 	if err != nil {
 		resp.Diagnostics.AddError("Cannot update PostgreSQL database", err.Error())
@@ -232,6 +342,9 @@ func logicalDatabaseFromProto(db *serverv1.LogicalDatabase, prior postgresqlData
 	out.Name = types.StringValue(db.GetName())
 	out.Owner = optionalString(db.GetOwner())
 	out.Description = optionalString(db.GetDescription())
+	out.Schemas = stringListFromGo(db.GetSchemas(), prior.Schemas)
+	out.Extensions = extensionsFromProto(db.GetExtensions(), prior.Extensions)
+	out.LockPublic = types.BoolValue(db.GetLockPublic())
 	out.Origin = types.StringValue(db.GetOrigin())
 	out.Phase = types.StringValue(db.GetPhase())
 	out.PhaseMessage = types.StringValue(db.GetPhaseMessage())
@@ -239,4 +352,38 @@ func logicalDatabaseFromProto(db *serverv1.LogicalDatabase, prior postgresqlData
 		out.CreatedAt = created
 	}
 	return out
+}
+
+func extensionsToProto(extensions types.List) []*serverv1.LogicalDatabaseExtension {
+	out := make([]*serverv1.LogicalDatabaseExtension, 0, len(extensions.Elements()))
+	for _, e := range extensions.Elements() {
+		attrs := e.(types.Object).Attributes()
+		out = append(out, &serverv1.LogicalDatabaseExtension{
+			Name:   attrs["name"].(types.String).ValueString(),
+			Schema: attrs["schema"].(types.String).ValueString(),
+		})
+	}
+	return out
+}
+
+func extensionsFromProto(extensions []*serverv1.LogicalDatabaseExtension, prior types.List) types.List {
+	elemType := types.ObjectType{AttrTypes: databaseExtensionAttrTypes}
+	if len(extensions) == 0 && prior.IsNull() {
+		return types.ListNull(elemType)
+	}
+	priorElems := prior.Elements()
+	elems := make([]attr.Value, 0, len(extensions))
+	for i, ext := range extensions {
+		schema := types.StringNull()
+		if ext.GetSchema() != "" && ext.GetSchema() != "public" {
+			schema = types.StringValue(ext.GetSchema())
+		} else if i < len(priorElems) && priorElems[i].(types.Object).Attributes()["schema"].Equal(types.StringValue("public")) {
+			schema = types.StringValue("public")
+		}
+		elems = append(elems, types.ObjectValueMust(databaseExtensionAttrTypes, map[string]attr.Value{
+			"name":   types.StringValue(ext.GetName()),
+			"schema": schema,
+		}))
+	}
+	return types.ListValueMust(elemType, elems)
 }

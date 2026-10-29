@@ -59,11 +59,13 @@ type postgresqlUserModel struct {
 type userRoleModel struct {
 	Role     types.String `tfsdk:"role"`
 	Database types.String `tfsdk:"database"`
+	Schema   types.String `tfsdk:"schema"`
 }
 
 var userRoleAttrTypes = map[string]attr.Type{
 	"role":     types.StringType,
 	"database": types.StringType,
+	"schema":   types.StringType,
 }
 
 func newPostgreSQLUserResource() resource.Resource {
@@ -114,16 +116,20 @@ func (r *postgresqlUserResource) Schema(ctx context.Context, _ resource.SchemaRe
 			"roles": schema.ListNestedAttribute{
 				Required:            true,
 				Validators:          []validator.List{listvalidator.SizeAtLeast(1)},
-				MarkdownDescription: "Roles granted to the user. Changing them updates the user in place.",
+				MarkdownDescription: "Roles granted to the user. A user can hold several roles across databases, for example `readOnly` on one and `readWrite` on another. Changing them updates the user in place.",
 				NestedObject: schema.NestedAttributeObject{Attributes: map[string]schema.Attribute{
 					"role": schema.StringAttribute{
 						Required:            true,
-						Validators:          []validator.String{stringvalidator.OneOf("readOnly", "readWrite", "admin")},
-						MarkdownDescription: "`readOnly`, `readWrite` or `admin`.",
+						Validators:          []validator.String{stringvalidator.OneOf("readOnly", "readWrite", "dbAdmin", "admin")},
+						MarkdownDescription: "`readOnly`, `readWrite`, `dbAdmin` or `admin`. `dbAdmin` grants DDL and DML in the database's `public` and declared schemas, plus `CREATE` on the database for trusted extensions and schemas, never `CREATEDB` or `CREATEROLE`. `admin` cannot be combined with other roles.",
 					},
 					"database": schema.StringAttribute{
 						Optional: true, Computed: true, Default: stringdefault.StaticString(""),
-						MarkdownDescription: "Logical database the role applies to. Required for `readOnly` and `readWrite`. It must exist on the cluster: create it with `relay_postgresql_database` and reference its `name`.",
+						MarkdownDescription: "Logical database the role applies to. Required for `readOnly`, `readWrite` and `dbAdmin`. It must exist on the cluster: create it with `relay_postgresql_database` and reference its `name`.",
+					},
+					"schema": schema.StringAttribute{
+						Optional: true, Computed: true, Default: stringdefault.StaticString(""),
+						MarkdownDescription: "Narrows the role to this schema, which must be `public` or one of the database's `schemas`. Several entries with the same `role` and `database` and different schemas narrow to those schemas. Unset, the role covers `public` and every declared schema. Two entries must not reach the same schema of a database.",
 					},
 				}},
 			},
@@ -370,7 +376,7 @@ func forKnownUserRoles(ctx context.Context, roles types.List, fn func(int, userR
 	var parsed []userRoleModel
 	_ = roles.ElementsAs(ctx, &parsed, false)
 	for i, role := range parsed {
-		if role.Role.IsUnknown() || role.Database.IsUnknown() {
+		if role.Role.IsUnknown() || role.Database.IsUnknown() || role.Schema.IsUnknown() {
 			continue
 		}
 		fn(i, role)
@@ -385,8 +391,9 @@ func rolesToProto(roles types.List) []*serverv1.DatabaseUserRole {
 	for _, e := range roles.Elements() {
 		attrs := e.(types.Object).Attributes()
 		out = append(out, &serverv1.DatabaseUserRole{
-			Role: attrs["role"].(types.String).ValueString(),
-			Db:   attrs["database"].(types.String).ValueString(),
+			Role:       attrs["role"].(types.String).ValueString(),
+			Db:         attrs["database"].(types.String).ValueString(),
+			Collection: attrs["schema"].(types.String).ValueString(),
 		})
 	}
 	return out
@@ -399,6 +406,7 @@ func rolesFromProto(roles []*serverv1.DatabaseUserRole) types.List {
 		elems = append(elems, types.ObjectValueMust(userRoleAttrTypes, map[string]attr.Value{
 			"role":     types.StringValue(r.GetRole()),
 			"database": types.StringValue(r.GetDb()),
+			"schema":   types.StringValue(r.GetCollection()),
 		}))
 	}
 	return types.ListValueMust(elemType, elems)

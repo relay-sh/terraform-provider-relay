@@ -228,6 +228,10 @@ const (
 	ServerService_UpsertOrgSSOConnection_FullMethodName       = "/relay.server.v1.ServerService/UpsertOrgSSOConnection"
 	ServerService_DeleteOrgSSOConnection_FullMethodName       = "/relay.server.v1.ServerService/DeleteOrgSSOConnection"
 	ServerService_TestOrgSSOConnection_FullMethodName         = "/relay.server.v1.ServerService/TestOrgSSOConnection"
+	ServerService_ListOrgDomains_FullMethodName               = "/relay.server.v1.ServerService/ListOrgDomains"
+	ServerService_AddOrgDomain_FullMethodName                 = "/relay.server.v1.ServerService/AddOrgDomain"
+	ServerService_VerifyOrgDomain_FullMethodName              = "/relay.server.v1.ServerService/VerifyOrgDomain"
+	ServerService_RemoveOrgDomain_FullMethodName              = "/relay.server.v1.ServerService/RemoveOrgDomain"
 	ServerService_ListPostgreSQLExtensions_FullMethodName     = "/relay.server.v1.ServerService/ListPostgreSQLExtensions"
 	ServerService_GetLicenseStatus_FullMethodName             = "/relay.server.v1.ServerService/GetLicenseStatus"
 	ServerService_ExportLicenseUsageReport_FullMethodName     = "/relay.server.v1.ServerService/ExportLicenseUsageReport"
@@ -759,6 +763,21 @@ type ServerServiceClient interface {
 	// returns the resolved endpoints, so an admin can validate configuration
 	// before enabling it. Does not persist anything.
 	TestOrgSSOConnection(ctx context.Context, in *TestOrgSSOConnectionRequest, opts ...grpc.CallOption) (*TestOrgSSOConnectionResponse, error)
+	// ListOrgDomains returns the email domains the org claims, each with its
+	// verification status. Requires org.sso.manage and is gated by the
+	// enterprise_sso flag.
+	ListOrgDomains(ctx context.Context, in *ListOrgDomainsRequest, opts ...grpc.CallOption) (*ListOrgDomainsResponse, error)
+	// AddOrgDomain claims a domain as pending and returns the DNS TXT record the
+	// org must publish to prove it owns it. Gated by the enterprise_sso flag.
+	AddOrgDomain(ctx context.Context, in *AddOrgDomainRequest, opts ...grpc.CallOption) (*AddOrgDomainResponse, error)
+	// VerifyOrgDomain looks up the TXT record now. A record that is not there is
+	// record_found=false, not an error, and never demotes a verified domain (only
+	// the periodic re-check does, after repeated misses). A domain verified by
+	// another org is AlreadyExists (staff resolve it).
+	VerifyOrgDomain(ctx context.Context, in *VerifyOrgDomainRequest, opts ...grpc.CallOption) (*VerifyOrgDomainResponse, error)
+	// RemoveOrgDomain drops the org's claim on a domain. Not gated, so an org can
+	// clean up after the flag or plan is off.
+	RemoveOrgDomain(ctx context.Context, in *RemoveOrgDomainRequest, opts ...grpc.CallOption) (*RemoveOrgDomainResponse, error)
 	// ListPostgreSQLExtensions returns the curated extension set bundled for a
 	// PostgreSQL major.
 	ListPostgreSQLExtensions(ctx context.Context, in *ListPostgreSQLExtensionsRequest, opts ...grpc.CallOption) (*ListPostgreSQLExtensionsResponse, error)
@@ -2910,6 +2929,46 @@ func (c *serverServiceClient) TestOrgSSOConnection(ctx context.Context, in *Test
 	return out, nil
 }
 
+func (c *serverServiceClient) ListOrgDomains(ctx context.Context, in *ListOrgDomainsRequest, opts ...grpc.CallOption) (*ListOrgDomainsResponse, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(ListOrgDomainsResponse)
+	err := c.cc.Invoke(ctx, ServerService_ListOrgDomains_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *serverServiceClient) AddOrgDomain(ctx context.Context, in *AddOrgDomainRequest, opts ...grpc.CallOption) (*AddOrgDomainResponse, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(AddOrgDomainResponse)
+	err := c.cc.Invoke(ctx, ServerService_AddOrgDomain_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *serverServiceClient) VerifyOrgDomain(ctx context.Context, in *VerifyOrgDomainRequest, opts ...grpc.CallOption) (*VerifyOrgDomainResponse, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(VerifyOrgDomainResponse)
+	err := c.cc.Invoke(ctx, ServerService_VerifyOrgDomain_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *serverServiceClient) RemoveOrgDomain(ctx context.Context, in *RemoveOrgDomainRequest, opts ...grpc.CallOption) (*RemoveOrgDomainResponse, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(RemoveOrgDomainResponse)
+	err := c.cc.Invoke(ctx, ServerService_RemoveOrgDomain_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
 func (c *serverServiceClient) ListPostgreSQLExtensions(ctx context.Context, in *ListPostgreSQLExtensionsRequest, opts ...grpc.CallOption) (*ListPostgreSQLExtensionsResponse, error) {
 	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
 	out := new(ListPostgreSQLExtensionsResponse)
@@ -3583,6 +3642,21 @@ type ServerServiceServer interface {
 	// returns the resolved endpoints, so an admin can validate configuration
 	// before enabling it. Does not persist anything.
 	TestOrgSSOConnection(context.Context, *TestOrgSSOConnectionRequest) (*TestOrgSSOConnectionResponse, error)
+	// ListOrgDomains returns the email domains the org claims, each with its
+	// verification status. Requires org.sso.manage and is gated by the
+	// enterprise_sso flag.
+	ListOrgDomains(context.Context, *ListOrgDomainsRequest) (*ListOrgDomainsResponse, error)
+	// AddOrgDomain claims a domain as pending and returns the DNS TXT record the
+	// org must publish to prove it owns it. Gated by the enterprise_sso flag.
+	AddOrgDomain(context.Context, *AddOrgDomainRequest) (*AddOrgDomainResponse, error)
+	// VerifyOrgDomain looks up the TXT record now. A record that is not there is
+	// record_found=false, not an error, and never demotes a verified domain (only
+	// the periodic re-check does, after repeated misses). A domain verified by
+	// another org is AlreadyExists (staff resolve it).
+	VerifyOrgDomain(context.Context, *VerifyOrgDomainRequest) (*VerifyOrgDomainResponse, error)
+	// RemoveOrgDomain drops the org's claim on a domain. Not gated, so an org can
+	// clean up after the flag or plan is off.
+	RemoveOrgDomain(context.Context, *RemoveOrgDomainRequest) (*RemoveOrgDomainResponse, error)
 	// ListPostgreSQLExtensions returns the curated extension set bundled for a
 	// PostgreSQL major.
 	ListPostgreSQLExtensions(context.Context, *ListPostgreSQLExtensionsRequest) (*ListPostgreSQLExtensionsResponse, error)
@@ -4261,6 +4335,18 @@ func (UnimplementedServerServiceServer) DeleteOrgSSOConnection(context.Context, 
 }
 func (UnimplementedServerServiceServer) TestOrgSSOConnection(context.Context, *TestOrgSSOConnectionRequest) (*TestOrgSSOConnectionResponse, error) {
 	return nil, status.Error(codes.Unimplemented, "method TestOrgSSOConnection not implemented")
+}
+func (UnimplementedServerServiceServer) ListOrgDomains(context.Context, *ListOrgDomainsRequest) (*ListOrgDomainsResponse, error) {
+	return nil, status.Error(codes.Unimplemented, "method ListOrgDomains not implemented")
+}
+func (UnimplementedServerServiceServer) AddOrgDomain(context.Context, *AddOrgDomainRequest) (*AddOrgDomainResponse, error) {
+	return nil, status.Error(codes.Unimplemented, "method AddOrgDomain not implemented")
+}
+func (UnimplementedServerServiceServer) VerifyOrgDomain(context.Context, *VerifyOrgDomainRequest) (*VerifyOrgDomainResponse, error) {
+	return nil, status.Error(codes.Unimplemented, "method VerifyOrgDomain not implemented")
+}
+func (UnimplementedServerServiceServer) RemoveOrgDomain(context.Context, *RemoveOrgDomainRequest) (*RemoveOrgDomainResponse, error) {
+	return nil, status.Error(codes.Unimplemented, "method RemoveOrgDomain not implemented")
 }
 func (UnimplementedServerServiceServer) ListPostgreSQLExtensions(context.Context, *ListPostgreSQLExtensionsRequest) (*ListPostgreSQLExtensionsResponse, error) {
 	return nil, status.Error(codes.Unimplemented, "method ListPostgreSQLExtensions not implemented")
@@ -8086,6 +8172,78 @@ func _ServerService_TestOrgSSOConnection_Handler(srv interface{}, ctx context.Co
 	return interceptor(ctx, in, info, handler)
 }
 
+func _ServerService_ListOrgDomains_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(ListOrgDomainsRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(ServerServiceServer).ListOrgDomains(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: ServerService_ListOrgDomains_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(ServerServiceServer).ListOrgDomains(ctx, req.(*ListOrgDomainsRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _ServerService_AddOrgDomain_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(AddOrgDomainRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(ServerServiceServer).AddOrgDomain(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: ServerService_AddOrgDomain_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(ServerServiceServer).AddOrgDomain(ctx, req.(*AddOrgDomainRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _ServerService_VerifyOrgDomain_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(VerifyOrgDomainRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(ServerServiceServer).VerifyOrgDomain(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: ServerService_VerifyOrgDomain_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(ServerServiceServer).VerifyOrgDomain(ctx, req.(*VerifyOrgDomainRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _ServerService_RemoveOrgDomain_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(RemoveOrgDomainRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(ServerServiceServer).RemoveOrgDomain(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: ServerService_RemoveOrgDomain_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(ServerServiceServer).RemoveOrgDomain(ctx, req.(*RemoveOrgDomainRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
 func _ServerService_ListPostgreSQLExtensions_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
 	in := new(ListPostgreSQLExtensionsRequest)
 	if err := dec(in); err != nil {
@@ -9214,6 +9372,22 @@ var ServerService_ServiceDesc = grpc.ServiceDesc{
 			Handler:    _ServerService_TestOrgSSOConnection_Handler,
 		},
 		{
+			MethodName: "ListOrgDomains",
+			Handler:    _ServerService_ListOrgDomains_Handler,
+		},
+		{
+			MethodName: "AddOrgDomain",
+			Handler:    _ServerService_AddOrgDomain_Handler,
+		},
+		{
+			MethodName: "VerifyOrgDomain",
+			Handler:    _ServerService_VerifyOrgDomain_Handler,
+		},
+		{
+			MethodName: "RemoveOrgDomain",
+			Handler:    _ServerService_RemoveOrgDomain_Handler,
+		},
+		{
 			MethodName: "ListPostgreSQLExtensions",
 			Handler:    _ServerService_ListPostgreSQLExtensions_Handler,
 		},
@@ -9296,6 +9470,8 @@ const (
 	AdminService_AdminSetOrganizationPlan_FullMethodName          = "/relay.server.v1.AdminService/AdminSetOrganizationPlan"
 	AdminService_AdminCreatePriceVersion_FullMethodName           = "/relay.server.v1.AdminService/AdminCreatePriceVersion"
 	AdminService_AdminPinOrganizationPriceVersion_FullMethodName  = "/relay.server.v1.AdminService/AdminPinOrganizationPriceVersion"
+	AdminService_AdminGetEffectivePriceBook_FullMethodName        = "/relay.server.v1.AdminService/AdminGetEffectivePriceBook"
+	AdminService_AdminListPriceVersions_FullMethodName            = "/relay.server.v1.AdminService/AdminListPriceVersions"
 	AdminService_AdminGrantOrganizationComp_FullMethodName        = "/relay.server.v1.AdminService/AdminGrantOrganizationComp"
 	AdminService_AdminRevokeOrganizationComp_FullMethodName       = "/relay.server.v1.AdminService/AdminRevokeOrganizationComp"
 	AdminService_AdminGrantOrganizationCredit_FullMethodName      = "/relay.server.v1.AdminService/AdminGrantOrganizationCredit"
@@ -9328,6 +9504,8 @@ const (
 	AdminService_AdminSearchUsers_FullMethodName                  = "/relay.server.v1.AdminService/AdminSearchUsers"
 	AdminService_AdminGetUser_FullMethodName                      = "/relay.server.v1.AdminService/AdminGetUser"
 	AdminService_AdminRevokeUserSessions_FullMethodName           = "/relay.server.v1.AdminService/AdminRevokeUserSessions"
+	AdminService_AdminSuspendUser_FullMethodName                  = "/relay.server.v1.AdminService/AdminSuspendUser"
+	AdminService_AdminUnsuspendUser_FullMethodName                = "/relay.server.v1.AdminService/AdminUnsuspendUser"
 	AdminService_AdminGetOrganizationActivity_FullMethodName      = "/relay.server.v1.AdminService/AdminGetOrganizationActivity"
 	AdminService_AdminGetOrganizationSecurity_FullMethodName      = "/relay.server.v1.AdminService/AdminGetOrganizationSecurity"
 	AdminService_AdminGetPlatformOverview_FullMethodName          = "/relay.server.v1.AdminService/AdminGetPlatformOverview"
@@ -9340,6 +9518,11 @@ const (
 	AdminService_AdminGetFreeCreationPause_FullMethodName         = "/relay.server.v1.AdminService/AdminGetFreeCreationPause"
 	AdminService_AdminPauseFreeCreation_FullMethodName            = "/relay.server.v1.AdminService/AdminPauseFreeCreation"
 	AdminService_AdminResumeFreeCreation_FullMethodName           = "/relay.server.v1.AdminService/AdminResumeFreeCreation"
+	AdminService_AdminListBillingAttention_FullMethodName         = "/relay.server.v1.AdminService/AdminListBillingAttention"
+	AdminService_AdminPauseBillingProcess_FullMethodName          = "/relay.server.v1.AdminService/AdminPauseBillingProcess"
+	AdminService_AdminResumeBillingProcess_FullMethodName         = "/relay.server.v1.AdminService/AdminResumeBillingProcess"
+	AdminService_AdminExtendBillingDeadline_FullMethodName        = "/relay.server.v1.AdminService/AdminExtendBillingDeadline"
+	AdminService_AdminRunBillingSweep_FullMethodName              = "/relay.server.v1.AdminService/AdminRunBillingSweep"
 	AdminService_AdminListFeatureFlags_FullMethodName             = "/relay.server.v1.AdminService/AdminListFeatureFlags"
 	AdminService_AdminGetFeatureFlag_FullMethodName               = "/relay.server.v1.AdminService/AdminGetFeatureFlag"
 	AdminService_AdminCreateFeatureFlag_FullMethodName            = "/relay.server.v1.AdminService/AdminCreateFeatureFlag"
@@ -9349,6 +9532,8 @@ const (
 	AdminService_AdminClearOrgFeatureOverride_FullMethodName      = "/relay.server.v1.AdminService/AdminClearOrgFeatureOverride"
 	AdminService_AdminListFeatureFlagOrganizations_FullMethodName = "/relay.server.v1.AdminService/AdminListFeatureFlagOrganizations"
 	AdminService_AdminPreviewFeatureFlagRollout_FullMethodName    = "/relay.server.v1.AdminService/AdminPreviewFeatureFlagRollout"
+	AdminService_AdminListOrgDomains_FullMethodName               = "/relay.server.v1.AdminService/AdminListOrgDomains"
+	AdminService_AdminRemoveOrgDomain_FullMethodName              = "/relay.server.v1.AdminService/AdminRemoveOrgDomain"
 )
 
 // AdminServiceClient is the client API for AdminService service.
@@ -9380,15 +9565,19 @@ type AdminServiceClient interface {
 	// platform-admin grant, up or down, no Stripe charge). The change is durable
 	// and takes effect across the platform immediately.
 	AdminSetOrganizationPlan(ctx context.Context, in *AdminSetOrganizationPlanRequest, opts ...grpc.CallOption) (*AdminSetOrganizationPlanResponse, error)
-	// AdminCreatePriceVersion publishes a new price-book version (a full machine-tier
-	// price set plus seat/storage/egress, effective from an instant). It never
-	// reprices a period already underway; unpinned orgs roll onto it next period,
-	// pinned orgs never do. Staff-gated and audit-logged.
+	// AdminCreatePriceVersion publishes a price-book version of one currency: every
+	// machine tier plus seat/storage/egress, effective now or later. Unpinned orgs
+	// move to it at their next period. Staff-gated and audit-logged.
 	AdminCreatePriceVersion(ctx context.Context, in *AdminCreatePriceVersionRequest, opts ...grpc.CallOption) (*AdminCreatePriceVersionResponse, error)
-	// AdminPinOrganizationPriceVersion pins an org to a price-book version
-	// (grandfathering / custom deal), or unpins it (blank version_id). Takes effect
-	// at the org's next period anchor.
+	// AdminPinOrganizationPriceVersion pins an org to a price-book version of its
+	// billing currency, or unpins it (blank version_id), from its next period.
 	AdminPinOrganizationPriceVersion(ctx context.Context, in *AdminPinOrganizationPriceVersionRequest, opts ...grpc.CallOption) (*AdminPinOrganizationPriceVersionResponse, error)
+	// AdminGetEffectivePriceBook returns the price book pricing an org's current
+	// period (and why) and the next period's; without org_id, the active version
+	// of a currency.
+	AdminGetEffectivePriceBook(ctx context.Context, in *AdminGetEffectivePriceBookRequest, opts ...grpc.CallOption) (*AdminGetEffectivePriceBookResponse, error)
+	// AdminListPriceVersions lists the published price-book versions.
+	AdminListPriceVersions(ctx context.Context, in *AdminListPriceVersionsRequest, opts ...grpc.CallOption) (*AdminListPriceVersionsResponse, error)
 	// AdminGrantOrganizationComp gives an organization a complimentary allowance:
 	// no monthly platform fee and usage waived up to an optional cap, with overage
 	// billed. Applies from the current month for an org that is not yet paying and
@@ -9501,6 +9690,13 @@ type AdminServiceClient interface {
 	// across every organization (or one), signing them out everywhere. The
 	// caller's own backoffice session is never revoked.
 	AdminRevokeUserSessions(ctx context.Context, in *AdminRevokeUserSessionsRequest, opts ...grpc.CallOption) (*AdminRevokeUserSessionsResponse, error)
+	// AdminSuspendUser suspends an account: no sign-in, all tokens revoked in every
+	// org, personal keys stop, tunnels close. Idempotent: an already suspended
+	// account answers changed=false. The reason is required.
+	AdminSuspendUser(ctx context.Context, in *AdminSuspendUserRequest, opts ...grpc.CallOption) (*AdminSuspendUserResponse, error)
+	// AdminUnsuspendUser lifts a suspension and deletes tokens minted during it.
+	// Idempotent like AdminSuspendUser. The reason is required.
+	AdminUnsuspendUser(ctx context.Context, in *AdminUnsuspendUserRequest, opts ...grpc.CallOption) (*AdminUnsuspendUserResponse, error)
 	// AdminGetOrganizationActivity returns an organization's recent activity
 	// log (customer-side actions), newest first.
 	AdminGetOrganizationActivity(ctx context.Context, in *AdminGetOrganizationActivityRequest, opts ...grpc.CallOption) (*AdminGetOrganizationActivityResponse, error)
@@ -9547,6 +9743,25 @@ type AdminServiceClient interface {
 	// org the pause affected are e-mailed in the background, once.
 	// FAILED_PRECONDITION (code FREE_CREATION_NOT_PAUSED) when creation is open.
 	AdminResumeFreeCreation(ctx context.Context, in *AdminResumeFreeCreationRequest, opts ...grpc.CallOption) (*AdminResumeFreeCreationResponse, error)
+	// AdminListBillingAttention lists every organization in dunning, with an
+	// unresolved free-plan overage, or with a process paused by staff: one entry
+	// per organization and process, soonest deadline first.
+	AdminListBillingAttention(ctx context.Context, in *AdminListBillingAttentionRequest, opts ...grpc.CallOption) (*AdminListBillingAttentionResponse, error)
+	// AdminPauseBillingProcess stops one process for one org until `until` or a
+	// resume: lifts only its own suspension and read-only, clears its state.
+	// Re-pausing replaces the pause (docs/billing-staff-controls.md).
+	AdminPauseBillingProcess(ctx context.Context, in *AdminPauseBillingProcessRequest, opts ...grpc.CallOption) (*AdminPauseBillingProcessResponse, error)
+	// AdminResumeBillingProcess ends a pause; the next sweep restarts the process
+	// with a new warning and full grace if it still applies. FAILED_PRECONDITION
+	// when the process is not paused.
+	AdminResumeBillingProcess(ctx context.Context, in *AdminResumeBillingProcessRequest, opts ...grpc.CallOption) (*AdminResumeBillingProcessResponse, error)
+	// AdminExtendBillingDeadline pushes the stages not reached yet back by `days`
+	// (1-60, cumulative); reached stages stay. FAILED_PRECONDITION when the org
+	// is not in the process, is exempt, or is already suspended by it.
+	AdminExtendBillingDeadline(ctx context.Context, in *AdminExtendBillingDeadlineRequest, opts ...grpc.CallOption) (*AdminExtendBillingDeadlineResponse, error)
+	// AdminRunBillingSweep runs one dunning pass and one overage pass now, on
+	// the replica that handles the call, and returns what each did.
+	AdminRunBillingSweep(ctx context.Context, in *AdminRunBillingSweepRequest, opts ...grpc.CallOption) (*AdminRunBillingSweepResponse, error)
 	// AdminListFeatureFlags lists flags with the count of orgs each reaches.
 	AdminListFeatureFlags(ctx context.Context, in *AdminListFeatureFlagsRequest, opts ...grpc.CallOption) (*AdminListFeatureFlagsResponse, error)
 	// AdminGetFeatureFlag returns one flag plus its reach count.
@@ -9571,6 +9786,13 @@ type AdminServiceClient interface {
 	// AdminPreviewFeatureFlagRollout dry-runs a strategy and returns how many orgs
 	// it would reach, without applying it.
 	AdminPreviewFeatureFlagRollout(ctx context.Context, in *AdminPreviewFeatureFlagRolloutRequest, opts ...grpc.CallOption) (*AdminPreviewFeatureFlagRolloutResponse, error)
+	// ─── Org domains ───
+	// AdminListOrgDomains lists every org's claim on one email domain, the
+	// verified one first, so staff can see who holds a contested domain.
+	AdminListOrgDomains(ctx context.Context, in *AdminListOrgDomainsRequest, opts ...grpc.CallOption) (*AdminListOrgDomainsResponse, error)
+	// AdminRemoveOrgDomain drops one org's claim on a domain, freeing it for the
+	// other org to verify.
+	AdminRemoveOrgDomain(ctx context.Context, in *AdminRemoveOrgDomainRequest, opts ...grpc.CallOption) (*AdminRemoveOrgDomainResponse, error)
 }
 
 type adminServiceClient struct {
@@ -9645,6 +9867,26 @@ func (c *adminServiceClient) AdminPinOrganizationPriceVersion(ctx context.Contex
 	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
 	out := new(AdminPinOrganizationPriceVersionResponse)
 	err := c.cc.Invoke(ctx, AdminService_AdminPinOrganizationPriceVersion_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *adminServiceClient) AdminGetEffectivePriceBook(ctx context.Context, in *AdminGetEffectivePriceBookRequest, opts ...grpc.CallOption) (*AdminGetEffectivePriceBookResponse, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(AdminGetEffectivePriceBookResponse)
+	err := c.cc.Invoke(ctx, AdminService_AdminGetEffectivePriceBook_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *adminServiceClient) AdminListPriceVersions(ctx context.Context, in *AdminListPriceVersionsRequest, opts ...grpc.CallOption) (*AdminListPriceVersionsResponse, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(AdminListPriceVersionsResponse)
+	err := c.cc.Invoke(ctx, AdminService_AdminListPriceVersions_FullMethodName, in, out, cOpts...)
 	if err != nil {
 		return nil, err
 	}
@@ -9971,6 +10213,26 @@ func (c *adminServiceClient) AdminRevokeUserSessions(ctx context.Context, in *Ad
 	return out, nil
 }
 
+func (c *adminServiceClient) AdminSuspendUser(ctx context.Context, in *AdminSuspendUserRequest, opts ...grpc.CallOption) (*AdminSuspendUserResponse, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(AdminSuspendUserResponse)
+	err := c.cc.Invoke(ctx, AdminService_AdminSuspendUser_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *adminServiceClient) AdminUnsuspendUser(ctx context.Context, in *AdminUnsuspendUserRequest, opts ...grpc.CallOption) (*AdminUnsuspendUserResponse, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(AdminUnsuspendUserResponse)
+	err := c.cc.Invoke(ctx, AdminService_AdminUnsuspendUser_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
 func (c *adminServiceClient) AdminGetOrganizationActivity(ctx context.Context, in *AdminGetOrganizationActivityRequest, opts ...grpc.CallOption) (*AdminGetOrganizationActivityResponse, error) {
 	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
 	out := new(AdminGetOrganizationActivityResponse)
@@ -10091,6 +10353,56 @@ func (c *adminServiceClient) AdminResumeFreeCreation(ctx context.Context, in *Ad
 	return out, nil
 }
 
+func (c *adminServiceClient) AdminListBillingAttention(ctx context.Context, in *AdminListBillingAttentionRequest, opts ...grpc.CallOption) (*AdminListBillingAttentionResponse, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(AdminListBillingAttentionResponse)
+	err := c.cc.Invoke(ctx, AdminService_AdminListBillingAttention_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *adminServiceClient) AdminPauseBillingProcess(ctx context.Context, in *AdminPauseBillingProcessRequest, opts ...grpc.CallOption) (*AdminPauseBillingProcessResponse, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(AdminPauseBillingProcessResponse)
+	err := c.cc.Invoke(ctx, AdminService_AdminPauseBillingProcess_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *adminServiceClient) AdminResumeBillingProcess(ctx context.Context, in *AdminResumeBillingProcessRequest, opts ...grpc.CallOption) (*AdminResumeBillingProcessResponse, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(AdminResumeBillingProcessResponse)
+	err := c.cc.Invoke(ctx, AdminService_AdminResumeBillingProcess_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *adminServiceClient) AdminExtendBillingDeadline(ctx context.Context, in *AdminExtendBillingDeadlineRequest, opts ...grpc.CallOption) (*AdminExtendBillingDeadlineResponse, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(AdminExtendBillingDeadlineResponse)
+	err := c.cc.Invoke(ctx, AdminService_AdminExtendBillingDeadline_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *adminServiceClient) AdminRunBillingSweep(ctx context.Context, in *AdminRunBillingSweepRequest, opts ...grpc.CallOption) (*AdminRunBillingSweepResponse, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(AdminRunBillingSweepResponse)
+	err := c.cc.Invoke(ctx, AdminService_AdminRunBillingSweep_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
 func (c *adminServiceClient) AdminListFeatureFlags(ctx context.Context, in *AdminListFeatureFlagsRequest, opts ...grpc.CallOption) (*AdminListFeatureFlagsResponse, error) {
 	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
 	out := new(AdminListFeatureFlagsResponse)
@@ -10181,6 +10493,26 @@ func (c *adminServiceClient) AdminPreviewFeatureFlagRollout(ctx context.Context,
 	return out, nil
 }
 
+func (c *adminServiceClient) AdminListOrgDomains(ctx context.Context, in *AdminListOrgDomainsRequest, opts ...grpc.CallOption) (*AdminListOrgDomainsResponse, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(AdminListOrgDomainsResponse)
+	err := c.cc.Invoke(ctx, AdminService_AdminListOrgDomains_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *adminServiceClient) AdminRemoveOrgDomain(ctx context.Context, in *AdminRemoveOrgDomainRequest, opts ...grpc.CallOption) (*AdminRemoveOrgDomainResponse, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(AdminRemoveOrgDomainResponse)
+	err := c.cc.Invoke(ctx, AdminService_AdminRemoveOrgDomain_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
 // AdminServiceServer is the server API for AdminService service.
 // All implementations must embed UnimplementedAdminServiceServer
 // for forward compatibility.
@@ -10210,15 +10542,19 @@ type AdminServiceServer interface {
 	// platform-admin grant, up or down, no Stripe charge). The change is durable
 	// and takes effect across the platform immediately.
 	AdminSetOrganizationPlan(context.Context, *AdminSetOrganizationPlanRequest) (*AdminSetOrganizationPlanResponse, error)
-	// AdminCreatePriceVersion publishes a new price-book version (a full machine-tier
-	// price set plus seat/storage/egress, effective from an instant). It never
-	// reprices a period already underway; unpinned orgs roll onto it next period,
-	// pinned orgs never do. Staff-gated and audit-logged.
+	// AdminCreatePriceVersion publishes a price-book version of one currency: every
+	// machine tier plus seat/storage/egress, effective now or later. Unpinned orgs
+	// move to it at their next period. Staff-gated and audit-logged.
 	AdminCreatePriceVersion(context.Context, *AdminCreatePriceVersionRequest) (*AdminCreatePriceVersionResponse, error)
-	// AdminPinOrganizationPriceVersion pins an org to a price-book version
-	// (grandfathering / custom deal), or unpins it (blank version_id). Takes effect
-	// at the org's next period anchor.
+	// AdminPinOrganizationPriceVersion pins an org to a price-book version of its
+	// billing currency, or unpins it (blank version_id), from its next period.
 	AdminPinOrganizationPriceVersion(context.Context, *AdminPinOrganizationPriceVersionRequest) (*AdminPinOrganizationPriceVersionResponse, error)
+	// AdminGetEffectivePriceBook returns the price book pricing an org's current
+	// period (and why) and the next period's; without org_id, the active version
+	// of a currency.
+	AdminGetEffectivePriceBook(context.Context, *AdminGetEffectivePriceBookRequest) (*AdminGetEffectivePriceBookResponse, error)
+	// AdminListPriceVersions lists the published price-book versions.
+	AdminListPriceVersions(context.Context, *AdminListPriceVersionsRequest) (*AdminListPriceVersionsResponse, error)
 	// AdminGrantOrganizationComp gives an organization a complimentary allowance:
 	// no monthly platform fee and usage waived up to an optional cap, with overage
 	// billed. Applies from the current month for an org that is not yet paying and
@@ -10331,6 +10667,13 @@ type AdminServiceServer interface {
 	// across every organization (or one), signing them out everywhere. The
 	// caller's own backoffice session is never revoked.
 	AdminRevokeUserSessions(context.Context, *AdminRevokeUserSessionsRequest) (*AdminRevokeUserSessionsResponse, error)
+	// AdminSuspendUser suspends an account: no sign-in, all tokens revoked in every
+	// org, personal keys stop, tunnels close. Idempotent: an already suspended
+	// account answers changed=false. The reason is required.
+	AdminSuspendUser(context.Context, *AdminSuspendUserRequest) (*AdminSuspendUserResponse, error)
+	// AdminUnsuspendUser lifts a suspension and deletes tokens minted during it.
+	// Idempotent like AdminSuspendUser. The reason is required.
+	AdminUnsuspendUser(context.Context, *AdminUnsuspendUserRequest) (*AdminUnsuspendUserResponse, error)
 	// AdminGetOrganizationActivity returns an organization's recent activity
 	// log (customer-side actions), newest first.
 	AdminGetOrganizationActivity(context.Context, *AdminGetOrganizationActivityRequest) (*AdminGetOrganizationActivityResponse, error)
@@ -10377,6 +10720,25 @@ type AdminServiceServer interface {
 	// org the pause affected are e-mailed in the background, once.
 	// FAILED_PRECONDITION (code FREE_CREATION_NOT_PAUSED) when creation is open.
 	AdminResumeFreeCreation(context.Context, *AdminResumeFreeCreationRequest) (*AdminResumeFreeCreationResponse, error)
+	// AdminListBillingAttention lists every organization in dunning, with an
+	// unresolved free-plan overage, or with a process paused by staff: one entry
+	// per organization and process, soonest deadline first.
+	AdminListBillingAttention(context.Context, *AdminListBillingAttentionRequest) (*AdminListBillingAttentionResponse, error)
+	// AdminPauseBillingProcess stops one process for one org until `until` or a
+	// resume: lifts only its own suspension and read-only, clears its state.
+	// Re-pausing replaces the pause (docs/billing-staff-controls.md).
+	AdminPauseBillingProcess(context.Context, *AdminPauseBillingProcessRequest) (*AdminPauseBillingProcessResponse, error)
+	// AdminResumeBillingProcess ends a pause; the next sweep restarts the process
+	// with a new warning and full grace if it still applies. FAILED_PRECONDITION
+	// when the process is not paused.
+	AdminResumeBillingProcess(context.Context, *AdminResumeBillingProcessRequest) (*AdminResumeBillingProcessResponse, error)
+	// AdminExtendBillingDeadline pushes the stages not reached yet back by `days`
+	// (1-60, cumulative); reached stages stay. FAILED_PRECONDITION when the org
+	// is not in the process, is exempt, or is already suspended by it.
+	AdminExtendBillingDeadline(context.Context, *AdminExtendBillingDeadlineRequest) (*AdminExtendBillingDeadlineResponse, error)
+	// AdminRunBillingSweep runs one dunning pass and one overage pass now, on
+	// the replica that handles the call, and returns what each did.
+	AdminRunBillingSweep(context.Context, *AdminRunBillingSweepRequest) (*AdminRunBillingSweepResponse, error)
 	// AdminListFeatureFlags lists flags with the count of orgs each reaches.
 	AdminListFeatureFlags(context.Context, *AdminListFeatureFlagsRequest) (*AdminListFeatureFlagsResponse, error)
 	// AdminGetFeatureFlag returns one flag plus its reach count.
@@ -10401,6 +10763,13 @@ type AdminServiceServer interface {
 	// AdminPreviewFeatureFlagRollout dry-runs a strategy and returns how many orgs
 	// it would reach, without applying it.
 	AdminPreviewFeatureFlagRollout(context.Context, *AdminPreviewFeatureFlagRolloutRequest) (*AdminPreviewFeatureFlagRolloutResponse, error)
+	// ─── Org domains ───
+	// AdminListOrgDomains lists every org's claim on one email domain, the
+	// verified one first, so staff can see who holds a contested domain.
+	AdminListOrgDomains(context.Context, *AdminListOrgDomainsRequest) (*AdminListOrgDomainsResponse, error)
+	// AdminRemoveOrgDomain drops one org's claim on a domain, freeing it for the
+	// other org to verify.
+	AdminRemoveOrgDomain(context.Context, *AdminRemoveOrgDomainRequest) (*AdminRemoveOrgDomainResponse, error)
 	mustEmbedUnimplementedAdminServiceServer()
 }
 
@@ -10431,6 +10800,12 @@ func (UnimplementedAdminServiceServer) AdminCreatePriceVersion(context.Context, 
 }
 func (UnimplementedAdminServiceServer) AdminPinOrganizationPriceVersion(context.Context, *AdminPinOrganizationPriceVersionRequest) (*AdminPinOrganizationPriceVersionResponse, error) {
 	return nil, status.Error(codes.Unimplemented, "method AdminPinOrganizationPriceVersion not implemented")
+}
+func (UnimplementedAdminServiceServer) AdminGetEffectivePriceBook(context.Context, *AdminGetEffectivePriceBookRequest) (*AdminGetEffectivePriceBookResponse, error) {
+	return nil, status.Error(codes.Unimplemented, "method AdminGetEffectivePriceBook not implemented")
+}
+func (UnimplementedAdminServiceServer) AdminListPriceVersions(context.Context, *AdminListPriceVersionsRequest) (*AdminListPriceVersionsResponse, error) {
+	return nil, status.Error(codes.Unimplemented, "method AdminListPriceVersions not implemented")
 }
 func (UnimplementedAdminServiceServer) AdminGrantOrganizationComp(context.Context, *AdminGrantOrganizationCompRequest) (*AdminGrantOrganizationCompResponse, error) {
 	return nil, status.Error(codes.Unimplemented, "method AdminGrantOrganizationComp not implemented")
@@ -10528,6 +10903,12 @@ func (UnimplementedAdminServiceServer) AdminGetUser(context.Context, *AdminGetUs
 func (UnimplementedAdminServiceServer) AdminRevokeUserSessions(context.Context, *AdminRevokeUserSessionsRequest) (*AdminRevokeUserSessionsResponse, error) {
 	return nil, status.Error(codes.Unimplemented, "method AdminRevokeUserSessions not implemented")
 }
+func (UnimplementedAdminServiceServer) AdminSuspendUser(context.Context, *AdminSuspendUserRequest) (*AdminSuspendUserResponse, error) {
+	return nil, status.Error(codes.Unimplemented, "method AdminSuspendUser not implemented")
+}
+func (UnimplementedAdminServiceServer) AdminUnsuspendUser(context.Context, *AdminUnsuspendUserRequest) (*AdminUnsuspendUserResponse, error) {
+	return nil, status.Error(codes.Unimplemented, "method AdminUnsuspendUser not implemented")
+}
 func (UnimplementedAdminServiceServer) AdminGetOrganizationActivity(context.Context, *AdminGetOrganizationActivityRequest) (*AdminGetOrganizationActivityResponse, error) {
 	return nil, status.Error(codes.Unimplemented, "method AdminGetOrganizationActivity not implemented")
 }
@@ -10564,6 +10945,21 @@ func (UnimplementedAdminServiceServer) AdminPauseFreeCreation(context.Context, *
 func (UnimplementedAdminServiceServer) AdminResumeFreeCreation(context.Context, *AdminResumeFreeCreationRequest) (*AdminResumeFreeCreationResponse, error) {
 	return nil, status.Error(codes.Unimplemented, "method AdminResumeFreeCreation not implemented")
 }
+func (UnimplementedAdminServiceServer) AdminListBillingAttention(context.Context, *AdminListBillingAttentionRequest) (*AdminListBillingAttentionResponse, error) {
+	return nil, status.Error(codes.Unimplemented, "method AdminListBillingAttention not implemented")
+}
+func (UnimplementedAdminServiceServer) AdminPauseBillingProcess(context.Context, *AdminPauseBillingProcessRequest) (*AdminPauseBillingProcessResponse, error) {
+	return nil, status.Error(codes.Unimplemented, "method AdminPauseBillingProcess not implemented")
+}
+func (UnimplementedAdminServiceServer) AdminResumeBillingProcess(context.Context, *AdminResumeBillingProcessRequest) (*AdminResumeBillingProcessResponse, error) {
+	return nil, status.Error(codes.Unimplemented, "method AdminResumeBillingProcess not implemented")
+}
+func (UnimplementedAdminServiceServer) AdminExtendBillingDeadline(context.Context, *AdminExtendBillingDeadlineRequest) (*AdminExtendBillingDeadlineResponse, error) {
+	return nil, status.Error(codes.Unimplemented, "method AdminExtendBillingDeadline not implemented")
+}
+func (UnimplementedAdminServiceServer) AdminRunBillingSweep(context.Context, *AdminRunBillingSweepRequest) (*AdminRunBillingSweepResponse, error) {
+	return nil, status.Error(codes.Unimplemented, "method AdminRunBillingSweep not implemented")
+}
 func (UnimplementedAdminServiceServer) AdminListFeatureFlags(context.Context, *AdminListFeatureFlagsRequest) (*AdminListFeatureFlagsResponse, error) {
 	return nil, status.Error(codes.Unimplemented, "method AdminListFeatureFlags not implemented")
 }
@@ -10590,6 +10986,12 @@ func (UnimplementedAdminServiceServer) AdminListFeatureFlagOrganizations(context
 }
 func (UnimplementedAdminServiceServer) AdminPreviewFeatureFlagRollout(context.Context, *AdminPreviewFeatureFlagRolloutRequest) (*AdminPreviewFeatureFlagRolloutResponse, error) {
 	return nil, status.Error(codes.Unimplemented, "method AdminPreviewFeatureFlagRollout not implemented")
+}
+func (UnimplementedAdminServiceServer) AdminListOrgDomains(context.Context, *AdminListOrgDomainsRequest) (*AdminListOrgDomainsResponse, error) {
+	return nil, status.Error(codes.Unimplemented, "method AdminListOrgDomains not implemented")
+}
+func (UnimplementedAdminServiceServer) AdminRemoveOrgDomain(context.Context, *AdminRemoveOrgDomainRequest) (*AdminRemoveOrgDomainResponse, error) {
+	return nil, status.Error(codes.Unimplemented, "method AdminRemoveOrgDomain not implemented")
 }
 func (UnimplementedAdminServiceServer) mustEmbedUnimplementedAdminServiceServer() {}
 func (UnimplementedAdminServiceServer) testEmbeddedByValue()                      {}
@@ -10734,6 +11136,42 @@ func _AdminService_AdminPinOrganizationPriceVersion_Handler(srv interface{}, ctx
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
 		return srv.(AdminServiceServer).AdminPinOrganizationPriceVersion(ctx, req.(*AdminPinOrganizationPriceVersionRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _AdminService_AdminGetEffectivePriceBook_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(AdminGetEffectivePriceBookRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(AdminServiceServer).AdminGetEffectivePriceBook(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: AdminService_AdminGetEffectivePriceBook_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(AdminServiceServer).AdminGetEffectivePriceBook(ctx, req.(*AdminGetEffectivePriceBookRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _AdminService_AdminListPriceVersions_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(AdminListPriceVersionsRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(AdminServiceServer).AdminListPriceVersions(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: AdminService_AdminListPriceVersions_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(AdminServiceServer).AdminListPriceVersions(ctx, req.(*AdminListPriceVersionsRequest))
 	}
 	return interceptor(ctx, in, info, handler)
 }
@@ -11314,6 +11752,42 @@ func _AdminService_AdminRevokeUserSessions_Handler(srv interface{}, ctx context.
 	return interceptor(ctx, in, info, handler)
 }
 
+func _AdminService_AdminSuspendUser_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(AdminSuspendUserRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(AdminServiceServer).AdminSuspendUser(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: AdminService_AdminSuspendUser_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(AdminServiceServer).AdminSuspendUser(ctx, req.(*AdminSuspendUserRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _AdminService_AdminUnsuspendUser_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(AdminUnsuspendUserRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(AdminServiceServer).AdminUnsuspendUser(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: AdminService_AdminUnsuspendUser_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(AdminServiceServer).AdminUnsuspendUser(ctx, req.(*AdminUnsuspendUserRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
 func _AdminService_AdminGetOrganizationActivity_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
 	in := new(AdminGetOrganizationActivityRequest)
 	if err := dec(in); err != nil {
@@ -11530,6 +12004,96 @@ func _AdminService_AdminResumeFreeCreation_Handler(srv interface{}, ctx context.
 	return interceptor(ctx, in, info, handler)
 }
 
+func _AdminService_AdminListBillingAttention_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(AdminListBillingAttentionRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(AdminServiceServer).AdminListBillingAttention(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: AdminService_AdminListBillingAttention_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(AdminServiceServer).AdminListBillingAttention(ctx, req.(*AdminListBillingAttentionRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _AdminService_AdminPauseBillingProcess_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(AdminPauseBillingProcessRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(AdminServiceServer).AdminPauseBillingProcess(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: AdminService_AdminPauseBillingProcess_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(AdminServiceServer).AdminPauseBillingProcess(ctx, req.(*AdminPauseBillingProcessRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _AdminService_AdminResumeBillingProcess_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(AdminResumeBillingProcessRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(AdminServiceServer).AdminResumeBillingProcess(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: AdminService_AdminResumeBillingProcess_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(AdminServiceServer).AdminResumeBillingProcess(ctx, req.(*AdminResumeBillingProcessRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _AdminService_AdminExtendBillingDeadline_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(AdminExtendBillingDeadlineRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(AdminServiceServer).AdminExtendBillingDeadline(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: AdminService_AdminExtendBillingDeadline_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(AdminServiceServer).AdminExtendBillingDeadline(ctx, req.(*AdminExtendBillingDeadlineRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _AdminService_AdminRunBillingSweep_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(AdminRunBillingSweepRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(AdminServiceServer).AdminRunBillingSweep(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: AdminService_AdminRunBillingSweep_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(AdminServiceServer).AdminRunBillingSweep(ctx, req.(*AdminRunBillingSweepRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
 func _AdminService_AdminListFeatureFlags_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
 	in := new(AdminListFeatureFlagsRequest)
 	if err := dec(in); err != nil {
@@ -11692,6 +12256,42 @@ func _AdminService_AdminPreviewFeatureFlagRollout_Handler(srv interface{}, ctx c
 	return interceptor(ctx, in, info, handler)
 }
 
+func _AdminService_AdminListOrgDomains_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(AdminListOrgDomainsRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(AdminServiceServer).AdminListOrgDomains(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: AdminService_AdminListOrgDomains_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(AdminServiceServer).AdminListOrgDomains(ctx, req.(*AdminListOrgDomainsRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _AdminService_AdminRemoveOrgDomain_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(AdminRemoveOrgDomainRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(AdminServiceServer).AdminRemoveOrgDomain(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: AdminService_AdminRemoveOrgDomain_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(AdminServiceServer).AdminRemoveOrgDomain(ctx, req.(*AdminRemoveOrgDomainRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
 // AdminService_ServiceDesc is the grpc.ServiceDesc for AdminService service.
 // It's only intended for direct use with grpc.RegisterService,
 // and not to be introspected or modified (even as a copy)
@@ -11726,6 +12326,14 @@ var AdminService_ServiceDesc = grpc.ServiceDesc{
 		{
 			MethodName: "AdminPinOrganizationPriceVersion",
 			Handler:    _AdminService_AdminPinOrganizationPriceVersion_Handler,
+		},
+		{
+			MethodName: "AdminGetEffectivePriceBook",
+			Handler:    _AdminService_AdminGetEffectivePriceBook_Handler,
+		},
+		{
+			MethodName: "AdminListPriceVersions",
+			Handler:    _AdminService_AdminListPriceVersions_Handler,
 		},
 		{
 			MethodName: "AdminGrantOrganizationComp",
@@ -11856,6 +12464,14 @@ var AdminService_ServiceDesc = grpc.ServiceDesc{
 			Handler:    _AdminService_AdminRevokeUserSessions_Handler,
 		},
 		{
+			MethodName: "AdminSuspendUser",
+			Handler:    _AdminService_AdminSuspendUser_Handler,
+		},
+		{
+			MethodName: "AdminUnsuspendUser",
+			Handler:    _AdminService_AdminUnsuspendUser_Handler,
+		},
+		{
 			MethodName: "AdminGetOrganizationActivity",
 			Handler:    _AdminService_AdminGetOrganizationActivity_Handler,
 		},
@@ -11904,6 +12520,26 @@ var AdminService_ServiceDesc = grpc.ServiceDesc{
 			Handler:    _AdminService_AdminResumeFreeCreation_Handler,
 		},
 		{
+			MethodName: "AdminListBillingAttention",
+			Handler:    _AdminService_AdminListBillingAttention_Handler,
+		},
+		{
+			MethodName: "AdminPauseBillingProcess",
+			Handler:    _AdminService_AdminPauseBillingProcess_Handler,
+		},
+		{
+			MethodName: "AdminResumeBillingProcess",
+			Handler:    _AdminService_AdminResumeBillingProcess_Handler,
+		},
+		{
+			MethodName: "AdminExtendBillingDeadline",
+			Handler:    _AdminService_AdminExtendBillingDeadline_Handler,
+		},
+		{
+			MethodName: "AdminRunBillingSweep",
+			Handler:    _AdminService_AdminRunBillingSweep_Handler,
+		},
+		{
 			MethodName: "AdminListFeatureFlags",
 			Handler:    _AdminService_AdminListFeatureFlags_Handler,
 		},
@@ -11938,6 +12574,264 @@ var AdminService_ServiceDesc = grpc.ServiceDesc{
 		{
 			MethodName: "AdminPreviewFeatureFlagRollout",
 			Handler:    _AdminService_AdminPreviewFeatureFlagRollout_Handler,
+		},
+		{
+			MethodName: "AdminListOrgDomains",
+			Handler:    _AdminService_AdminListOrgDomains_Handler,
+		},
+		{
+			MethodName: "AdminRemoveOrgDomain",
+			Handler:    _AdminService_AdminRemoveOrgDomain_Handler,
+		},
+	},
+	Streams:  []grpc.StreamDesc{},
+	Metadata: "relay/server/v1/server.proto",
+}
+
+const (
+	BackofficeMCPService_CreateMCPGrant_FullMethodName  = "/relay.server.v1.BackofficeMCPService/CreateMCPGrant"
+	BackofficeMCPService_RotateMCPGrant_FullMethodName  = "/relay.server.v1.BackofficeMCPService/RotateMCPGrant"
+	BackofficeMCPService_ResolveMCPGrant_FullMethodName = "/relay.server.v1.BackofficeMCPService/ResolveMCPGrant"
+	BackofficeMCPService_RevokeMCPGrant_FullMethodName  = "/relay.server.v1.BackofficeMCPService/RevokeMCPGrant"
+)
+
+// BackofficeMCPServiceClient is the client API for BackofficeMCPService service.
+//
+// For semantics around ctx use and closing/ending streaming RPCs, please refer to https://pkg.go.dev/google.golang.org/grpc/?tab=doc#ClientConn.NewStream.
+//
+// BackofficeMCPService stores the grants behind the backoffice's MCP server.
+// Only the backoffice may call it: every method requires the internal caller
+// credential (BACKOFFICE_CALLER_TOKEN) as the bearer, and no other credential
+// (user session, API key, agent or system token) is accepted. It is not part
+// of ServerService or AdminService and is not reachable from any customer
+// path.
+type BackofficeMCPServiceClient interface {
+	// CreateMCPGrant stores a grant for a freshly minted "backoffice-mcp"
+	// session whose user is backoffice staff, and returns its first refresh
+	// token.
+	CreateMCPGrant(ctx context.Context, in *CreateMCPGrantRequest, opts ...grpc.CallOption) (*CreateMCPGrantResponse, error)
+	// RotateMCPGrant exchanges a refresh token for the next one. It re-checks
+	// that the user is still staff; reuse of an old token or a user who lost
+	// staff status revokes the grant and its session.
+	RotateMCPGrant(ctx context.Context, in *RotateMCPGrantRequest, opts ...grpc.CallOption) (*RotateMCPGrantResponse, error)
+	// ResolveMCPGrant returns the sealed session token of an active grant. The
+	// backoffice calls it on every tool call.
+	ResolveMCPGrant(ctx context.Context, in *ResolveMCPGrantRequest, opts ...grpc.CallOption) (*ResolveMCPGrantResponse, error)
+	// RevokeMCPGrant revokes a grant by id or by any refresh token of its
+	// family, and deletes its session. Idempotent.
+	RevokeMCPGrant(ctx context.Context, in *RevokeMCPGrantRequest, opts ...grpc.CallOption) (*RevokeMCPGrantResponse, error)
+}
+
+type backofficeMCPServiceClient struct {
+	cc grpc.ClientConnInterface
+}
+
+func NewBackofficeMCPServiceClient(cc grpc.ClientConnInterface) BackofficeMCPServiceClient {
+	return &backofficeMCPServiceClient{cc}
+}
+
+func (c *backofficeMCPServiceClient) CreateMCPGrant(ctx context.Context, in *CreateMCPGrantRequest, opts ...grpc.CallOption) (*CreateMCPGrantResponse, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(CreateMCPGrantResponse)
+	err := c.cc.Invoke(ctx, BackofficeMCPService_CreateMCPGrant_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *backofficeMCPServiceClient) RotateMCPGrant(ctx context.Context, in *RotateMCPGrantRequest, opts ...grpc.CallOption) (*RotateMCPGrantResponse, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(RotateMCPGrantResponse)
+	err := c.cc.Invoke(ctx, BackofficeMCPService_RotateMCPGrant_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *backofficeMCPServiceClient) ResolveMCPGrant(ctx context.Context, in *ResolveMCPGrantRequest, opts ...grpc.CallOption) (*ResolveMCPGrantResponse, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(ResolveMCPGrantResponse)
+	err := c.cc.Invoke(ctx, BackofficeMCPService_ResolveMCPGrant_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *backofficeMCPServiceClient) RevokeMCPGrant(ctx context.Context, in *RevokeMCPGrantRequest, opts ...grpc.CallOption) (*RevokeMCPGrantResponse, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(RevokeMCPGrantResponse)
+	err := c.cc.Invoke(ctx, BackofficeMCPService_RevokeMCPGrant_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+// BackofficeMCPServiceServer is the server API for BackofficeMCPService service.
+// All implementations must embed UnimplementedBackofficeMCPServiceServer
+// for forward compatibility.
+//
+// BackofficeMCPService stores the grants behind the backoffice's MCP server.
+// Only the backoffice may call it: every method requires the internal caller
+// credential (BACKOFFICE_CALLER_TOKEN) as the bearer, and no other credential
+// (user session, API key, agent or system token) is accepted. It is not part
+// of ServerService or AdminService and is not reachable from any customer
+// path.
+type BackofficeMCPServiceServer interface {
+	// CreateMCPGrant stores a grant for a freshly minted "backoffice-mcp"
+	// session whose user is backoffice staff, and returns its first refresh
+	// token.
+	CreateMCPGrant(context.Context, *CreateMCPGrantRequest) (*CreateMCPGrantResponse, error)
+	// RotateMCPGrant exchanges a refresh token for the next one. It re-checks
+	// that the user is still staff; reuse of an old token or a user who lost
+	// staff status revokes the grant and its session.
+	RotateMCPGrant(context.Context, *RotateMCPGrantRequest) (*RotateMCPGrantResponse, error)
+	// ResolveMCPGrant returns the sealed session token of an active grant. The
+	// backoffice calls it on every tool call.
+	ResolveMCPGrant(context.Context, *ResolveMCPGrantRequest) (*ResolveMCPGrantResponse, error)
+	// RevokeMCPGrant revokes a grant by id or by any refresh token of its
+	// family, and deletes its session. Idempotent.
+	RevokeMCPGrant(context.Context, *RevokeMCPGrantRequest) (*RevokeMCPGrantResponse, error)
+	mustEmbedUnimplementedBackofficeMCPServiceServer()
+}
+
+// UnimplementedBackofficeMCPServiceServer must be embedded to have
+// forward compatible implementations.
+//
+// NOTE: this should be embedded by value instead of pointer to avoid a nil
+// pointer dereference when methods are called.
+type UnimplementedBackofficeMCPServiceServer struct{}
+
+func (UnimplementedBackofficeMCPServiceServer) CreateMCPGrant(context.Context, *CreateMCPGrantRequest) (*CreateMCPGrantResponse, error) {
+	return nil, status.Error(codes.Unimplemented, "method CreateMCPGrant not implemented")
+}
+func (UnimplementedBackofficeMCPServiceServer) RotateMCPGrant(context.Context, *RotateMCPGrantRequest) (*RotateMCPGrantResponse, error) {
+	return nil, status.Error(codes.Unimplemented, "method RotateMCPGrant not implemented")
+}
+func (UnimplementedBackofficeMCPServiceServer) ResolveMCPGrant(context.Context, *ResolveMCPGrantRequest) (*ResolveMCPGrantResponse, error) {
+	return nil, status.Error(codes.Unimplemented, "method ResolveMCPGrant not implemented")
+}
+func (UnimplementedBackofficeMCPServiceServer) RevokeMCPGrant(context.Context, *RevokeMCPGrantRequest) (*RevokeMCPGrantResponse, error) {
+	return nil, status.Error(codes.Unimplemented, "method RevokeMCPGrant not implemented")
+}
+func (UnimplementedBackofficeMCPServiceServer) mustEmbedUnimplementedBackofficeMCPServiceServer() {}
+func (UnimplementedBackofficeMCPServiceServer) testEmbeddedByValue()                              {}
+
+// UnsafeBackofficeMCPServiceServer may be embedded to opt out of forward compatibility for this service.
+// Use of this interface is not recommended, as added methods to BackofficeMCPServiceServer will
+// result in compilation errors.
+type UnsafeBackofficeMCPServiceServer interface {
+	mustEmbedUnimplementedBackofficeMCPServiceServer()
+}
+
+func RegisterBackofficeMCPServiceServer(s grpc.ServiceRegistrar, srv BackofficeMCPServiceServer) {
+	// If the following call panics, it indicates UnimplementedBackofficeMCPServiceServer was
+	// embedded by pointer and is nil.  This will cause panics if an
+	// unimplemented method is ever invoked, so we test this at initialization
+	// time to prevent it from happening at runtime later due to I/O.
+	if t, ok := srv.(interface{ testEmbeddedByValue() }); ok {
+		t.testEmbeddedByValue()
+	}
+	s.RegisterService(&BackofficeMCPService_ServiceDesc, srv)
+}
+
+func _BackofficeMCPService_CreateMCPGrant_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(CreateMCPGrantRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(BackofficeMCPServiceServer).CreateMCPGrant(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: BackofficeMCPService_CreateMCPGrant_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(BackofficeMCPServiceServer).CreateMCPGrant(ctx, req.(*CreateMCPGrantRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _BackofficeMCPService_RotateMCPGrant_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(RotateMCPGrantRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(BackofficeMCPServiceServer).RotateMCPGrant(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: BackofficeMCPService_RotateMCPGrant_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(BackofficeMCPServiceServer).RotateMCPGrant(ctx, req.(*RotateMCPGrantRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _BackofficeMCPService_ResolveMCPGrant_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(ResolveMCPGrantRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(BackofficeMCPServiceServer).ResolveMCPGrant(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: BackofficeMCPService_ResolveMCPGrant_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(BackofficeMCPServiceServer).ResolveMCPGrant(ctx, req.(*ResolveMCPGrantRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _BackofficeMCPService_RevokeMCPGrant_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(RevokeMCPGrantRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(BackofficeMCPServiceServer).RevokeMCPGrant(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: BackofficeMCPService_RevokeMCPGrant_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(BackofficeMCPServiceServer).RevokeMCPGrant(ctx, req.(*RevokeMCPGrantRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+// BackofficeMCPService_ServiceDesc is the grpc.ServiceDesc for BackofficeMCPService service.
+// It's only intended for direct use with grpc.RegisterService,
+// and not to be introspected or modified (even as a copy)
+var BackofficeMCPService_ServiceDesc = grpc.ServiceDesc{
+	ServiceName: "relay.server.v1.BackofficeMCPService",
+	HandlerType: (*BackofficeMCPServiceServer)(nil),
+	Methods: []grpc.MethodDesc{
+		{
+			MethodName: "CreateMCPGrant",
+			Handler:    _BackofficeMCPService_CreateMCPGrant_Handler,
+		},
+		{
+			MethodName: "RotateMCPGrant",
+			Handler:    _BackofficeMCPService_RotateMCPGrant_Handler,
+		},
+		{
+			MethodName: "ResolveMCPGrant",
+			Handler:    _BackofficeMCPService_ResolveMCPGrant_Handler,
+		},
+		{
+			MethodName: "RevokeMCPGrant",
+			Handler:    _BackofficeMCPService_RevokeMCPGrant_Handler,
 		},
 	},
 	Streams:  []grpc.StreamDesc{},
