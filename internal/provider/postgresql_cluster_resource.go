@@ -53,6 +53,7 @@ type postgresqlClusterModel struct {
 	PhaseMessage         types.String              `tfsdk:"phase_message"`
 	EndpointHost         types.String              `tfsdk:"endpoint_host"`
 	EndpointPort         types.Int64               `tfsdk:"endpoint_port"`
+	SharedHost           types.String              `tfsdk:"shared_host"`
 	PublicEndpoints      types.List                `tfsdk:"public_endpoints"`
 	PrivateEndpoints     types.List                `tfsdk:"private_endpoints"`
 	StorageStatus        types.List                `tfsdk:"storage_status"`
@@ -208,11 +209,16 @@ func (r *postgresqlClusterResource) Schema(ctx context.Context, _ resource.Schem
 				Optional: true, Computed: true, Default: booldefault.StaticBool(false),
 				MarkdownDescription: "Keep the cluster's backups when it is destroyed.",
 			},
-			"phase":             schema.StringAttribute{Computed: true, MarkdownDescription: "Lifecycle phase after the last apply."},
-			"phase_message":     schema.StringAttribute{Computed: true, MarkdownDescription: "Detail for the phase."},
-			"endpoint_host":     schema.StringAttribute{Computed: true, MarkdownDescription: "Public read-write endpoint host, the same as the `rw` entry of `public_endpoints`. Empty until the platform publishes it."},
-			"endpoint_port":     schema.Int64Attribute{Computed: true, MarkdownDescription: "Public read-write endpoint port."},
-			"public_endpoints":  schema.ListNestedAttribute{Computed: true, NestedObject: endpoint, MarkdownDescription: "Public endpoints by role."},
+			"phase":         schema.StringAttribute{Computed: true, MarkdownDescription: "Lifecycle phase after the last apply."},
+			"phase_message": schema.StringAttribute{Computed: true, MarkdownDescription: "Detail for the phase."},
+			"endpoint_host": schema.StringAttribute{Computed: true, MarkdownDescription: "Public read-write endpoint host, the same as the `rw` entry of `public_endpoints`. Empty until the platform publishes it. Never an alias."},
+			"endpoint_port": schema.Int64Attribute{Computed: true, MarkdownDescription: "Public read-write endpoint port."},
+			"shared_host": schema.StringAttribute{
+				Computed: true,
+				MarkdownDescription: "The previous shared read-write address of a database upgraded from the Free plan. It keeps working next to the new names, but is never `endpoint_host` " +
+					"or an entry of `public_endpoints`. Empty when the database has no such alias.",
+			},
+			"public_endpoints":  schema.ListNestedAttribute{Computed: true, NestedObject: endpoint, MarkdownDescription: "Public endpoints by role, without aliases: see `shared_host`."},
 			"private_endpoints": schema.ListNestedAttribute{Computed: true, NestedObject: endpoint, MarkdownDescription: "Private endpoints by role, when private access is enabled."},
 			"storage_status": schema.ListNestedAttribute{
 				Computed: true,
@@ -352,6 +358,12 @@ func (r *postgresqlClusterResource) ModifyPlan(ctx context.Context, req resource
 		if !planned.Count.IsUnknown() && planned.Count.ValueInt64() < current.Count.ValueInt64() {
 			resp.Diagnostics.AddAttributeWarning(group.AtName("count"), "Removed nodes lose their volumes",
 				"Group "+name+" goes from "+current.Count.String()+" to "+planned.Count.String()+" nodes. Relay deletes the removed nodes and their volumes without draining them first.")
+		}
+		if !planned.Tier.IsUnknown() && !planned.Tier.Equal(current.Tier) {
+			planned.Resources.CPU = types.StringUnknown()
+			planned.Resources.Memory = types.StringUnknown()
+			plan.Nodes[name] = planned
+			changed = true
 		}
 		if current.Resources.StorageAutoscale.IsNull() && !planned.Resources.StorageAutoscale.IsNull() && !planned.Resources.StorageAutoscale.IsUnknown() {
 			planned.Resources.StorageAutoscale = unknownComputedStorageAutoscale(planned.Resources.StorageAutoscale)
@@ -589,6 +601,7 @@ func clusterUpdateMask(plan, prior postgresqlClusterModel) []string {
 
 func clusterFromProto(db *serverv1.Database, prior postgresqlClusterModel) postgresqlClusterModel {
 	spec, st := db.GetSpec(), db.GetStatus()
+	endpointHost, endpointPort := primaryEndpointFromProto(st)
 	return postgresqlClusterModel{
 		ID:                   types.StringValue(db.GetId()),
 		WorkspaceID:          prior.WorkspaceID,
@@ -601,8 +614,9 @@ func clusterFromProto(db *serverv1.Database, prior postgresqlClusterModel) postg
 		KeepBackupsOnDestroy: prior.KeepBackupsOnDestroy,
 		Phase:                types.StringValue(st.GetPhase()),
 		PhaseMessage:         types.StringValue(st.GetMessage()),
-		EndpointHost:         types.StringValue(st.GetEndpoint().GetHost()),
-		EndpointPort:         types.Int64Value(int64(st.GetEndpoint().GetPort())),
+		EndpointHost:         endpointHost,
+		EndpointPort:         endpointPort,
+		SharedHost:           sharedHostFromProto(st.GetPublicEndpoints()),
 		PublicEndpoints:      endpointsFromProto(st.GetPublicEndpoints()),
 		PrivateEndpoints:     endpointsFromProto(st.GetPrivateEndpoints()),
 		StorageStatus:        storageStatusFromProto(st.GetStorage()),

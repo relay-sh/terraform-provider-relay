@@ -1,3 +1,13 @@
+## Unreleased
+
+ENHANCEMENTS:
+
+* resource/relay_postgresql_cluster, data-source/relay_postgresql_cluster: `shared_host` is the previous shared address of a database upgraded from the Free plan, which keeps working next to the new names; `endpoint_host`, `endpoint_port` and `public_endpoints` keep only the primary names and never an alias
+
+BUG FIXES:
+
+* resource/relay_postgresql_cluster: resizing a node group's `tier` no longer fails with "Provider produced inconsistent result after apply"; `cpu` and `memory` are recomputed from the new tier
+
 ## 0.0.2 (October 29, 2026)
 
 ENHANCEMENTS:

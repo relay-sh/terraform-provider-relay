@@ -1,6 +1,7 @@
 package provider
 
 import (
+	"slices"
 	"sort"
 	"strconv"
 	"strings"
@@ -226,6 +227,9 @@ func endpointsFromProto(eps []*serverv1.PublicEndpoint) types.List {
 	elemType := types.ObjectType{AttrTypes: endpointAttrTypes}
 	elems := make([]attr.Value, 0, len(eps))
 	for _, e := range eps {
+		if e.GetAlias() {
+			continue
+		}
 		elems = append(elems, types.ObjectValueMust(endpointAttrTypes, map[string]attr.Value{
 			"role": types.StringValue(e.GetRole()),
 			"host": types.StringValue(e.GetHost()),
@@ -233,6 +237,30 @@ func endpointsFromProto(eps []*serverv1.PublicEndpoint) types.List {
 		}))
 	}
 	return types.ListValueMust(elemType, elems)
+}
+
+func sharedHostFromProto(eps []*serverv1.PublicEndpoint) types.String {
+	for _, e := range eps {
+		if e.GetAlias() && e.GetRole() == "rw" {
+			return types.StringValue(e.GetHost())
+		}
+	}
+	return types.StringValue("")
+}
+
+func primaryEndpointFromProto(st *serverv1.DatabaseStatus) (types.String, types.Int64) {
+	host, port := st.GetEndpoint().GetHost(), st.GetEndpoint().GetPort()
+	if !slices.ContainsFunc(st.GetPublicEndpoints(), func(e *serverv1.PublicEndpoint) bool { return e.GetAlias() && e.GetHost() == host }) {
+		return types.StringValue(host), types.Int64Value(int64(port))
+	}
+	host, port = "", 0
+	for _, e := range st.GetPublicEndpoints() {
+		if !e.GetAlias() && e.GetRole() == "rw" {
+			host, port = e.GetHost(), e.GetPort()
+			break
+		}
+	}
+	return types.StringValue(host), types.Int64Value(int64(port))
 }
 
 func stringMapToGo(m types.Map) map[string]string {

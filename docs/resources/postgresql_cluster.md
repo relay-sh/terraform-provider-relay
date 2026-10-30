@@ -87,15 +87,16 @@ resource "relay_postgresql_cluster" "billing" {
 ### Read-Only
 
 - `created_at` (String) Creation time, RFC 3339.
-- `endpoint_host` (String) Public read-write endpoint host, the same as the `rw` entry of `public_endpoints`. Empty until the platform publishes it.
+- `endpoint_host` (String) Public read-write endpoint host, the same as the `rw` entry of `public_endpoints`. Empty until the platform publishes it. Never an alias.
 - `endpoint_port` (Number) Public read-write endpoint port.
 - `id` (String) Cluster ID.
 - `phase` (String) Lifecycle phase after the last apply.
 - `phase_message` (String) Detail for the phase.
 - `primary_node_group` (String) Label of the group holding the primary. The platform picks an `electable` group and keeps it, so adding a group never moves the primary.
 - `private_endpoints` (Attributes List) Private endpoints by role, when private access is enabled. (see [below for nested schema](#nestedatt--private_endpoints))
-- `public_endpoints` (Attributes List) Public endpoints by role. (see [below for nested schema](#nestedatt--public_endpoints))
+- `public_endpoints` (Attributes List) Public endpoints by role, without aliases: see `shared_host`. (see [below for nested schema](#nestedatt--public_endpoints))
 - `ready_nodes` (Number) Nodes ready.
+- `shared_host` (String) The previous shared read-write address of a database upgraded from the Free plan. It keeps working next to the new names, but is never `endpoint_host` or an entry of `public_endpoints`. Empty when the database has no such alias.
 - `storage_status` (Attributes List) Per-group volume size the platform has grown to via `storage_autoscale`, when above the group's `storage` floor. (see [below for nested schema](#nestedatt--storage_status))
 - `total_nodes` (Number) Nodes expected.
 - `updated_at` (String) Last change time, RFC 3339.

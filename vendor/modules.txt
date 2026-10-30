@@ -304,7 +304,7 @@ github.com/mitchellh/reflectwalk
 # github.com/oklog/run v1.2.0
 ## explicit; go 1.20
 github.com/oklog/run
-# github.com/relay-sh/relay-go v0.0.2-0.20261029182919-e742989d7a2c
+# github.com/relay-sh/relay-go v0.0.2-0.20261030123612-de2692129630
 ## explicit; go 1.25.7
 github.com/relay-sh/relay-go/gen/relay/server/v1
 github.com/relay-sh/relay-go/relay

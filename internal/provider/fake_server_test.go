@@ -69,6 +69,7 @@ type fakeServer struct {
 	lastDBCreate      *serverv1.CreateDatabaseRequest
 	lastDBUpdate      *serverv1.UpdateDatabaseRequest
 	lastDBDelete      *serverv1.DeleteDatabaseRequest
+	afterUpdate       func(*serverv1.Database)
 	apiKeys           map[string]*serverv1.APIKey
 	callerKey         *serverv1.APIKey
 	lastKeyCreate     *serverv1.CreateAPIKeyRequest
@@ -533,6 +534,22 @@ func (f *fakeServer) bindPlacement(nodes []*serverv1.NodeSpec) error {
 	return nil
 }
 
+var tierResources = map[string][2]string{
+	"R5":  {"1", "2Gi"},
+	"R10": {"2", "4Gi"},
+	"R20": {"4", "8Gi"},
+}
+
+func deriveTierResources(spec *serverv1.DatabaseSpec) {
+	for _, n := range spec.GetNodes() {
+		size, ok := tierResources[n.GetTier()]
+		if !ok || n.GetResources() == nil {
+			continue
+		}
+		n.Resources.Cpu, n.Resources.Memory = size[0], size[1]
+	}
+}
+
 func (f *fakeServer) settle(id, phase string) {
 	f.databases[id].Status.Phase = phase
 	f.dbCountdown[id] = f.readyAfter
@@ -559,6 +576,7 @@ func (f *fakeServer) CreateDatabase(ctx context.Context, req *serverv1.CreateDat
 	spec := proto.Clone(req.GetSpec()).(*serverv1.DatabaseSpec)
 	canonicalizeValkeyParameters(spec)
 	f.raiseValkeyStorage(spec, nil)
+	deriveTierResources(spec)
 	if err := f.bindPlacement(spec.GetNodes()); err != nil {
 		return nil, err
 	}
@@ -665,7 +683,11 @@ func (f *fakeServer) UpdateDatabase(ctx context.Context, req *serverv1.UpdateDat
 		return nil, err
 	}
 	f.raiseValkeyStorage(merged, db.GetSpec())
+	deriveTierResources(merged)
 	db.Spec = merged
+	if f.afterUpdate != nil {
+		f.afterUpdate(db)
+	}
 	f.settle(db.Id, "provisioning")
 	return &serverv1.UpdateDatabaseResponse{Database: db}, nil
 }
