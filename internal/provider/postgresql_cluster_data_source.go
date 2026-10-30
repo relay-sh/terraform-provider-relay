@@ -25,6 +25,7 @@ type postgresqlClusterDataModel struct {
 	Phase            types.String `tfsdk:"phase"`
 	EndpointHost     types.String `tfsdk:"endpoint_host"`
 	EndpointPort     types.Int64  `tfsdk:"endpoint_port"`
+	SharedHost       types.String `tfsdk:"shared_host"`
 	PublicEndpoints  types.List   `tfsdk:"public_endpoints"`
 	PrivateEndpoints types.List   `tfsdk:"private_endpoints"`
 	StorageStatus    types.List   `tfsdk:"storage_status"`
@@ -56,6 +57,7 @@ func (d *postgresqlClusterDataSource) Schema(_ context.Context, _ datasource.Sch
 			"phase":             schema.StringAttribute{Computed: true},
 			"endpoint_host":     schema.StringAttribute{Computed: true, MarkdownDescription: "Public read-write endpoint host. Empty until the platform publishes it."},
 			"endpoint_port":     schema.Int64Attribute{Computed: true, MarkdownDescription: "Public read-write endpoint port."},
+			"shared_host":       schema.StringAttribute{Computed: true, MarkdownDescription: "The previous shared read-write address of a database upgraded from the Free plan. It keeps working, but is never `endpoint_host`. Empty when there is no such alias."},
 			"public_endpoints":  schema.ListNestedAttribute{Computed: true, NestedObject: endpoint},
 			"private_endpoints": schema.ListNestedAttribute{Computed: true, NestedObject: endpoint},
 			"storage_status": schema.ListNestedAttribute{
@@ -109,14 +111,16 @@ func (d *postgresqlClusterDataSource) Read(ctx context.Context, req datasource.R
 	}
 
 	spec, st := db.GetSpec(), db.GetStatus()
+	endpointHost, endpointPort := primaryEndpointFromProto(st)
 	state := postgresqlClusterDataModel{
 		ID:               types.StringValue(db.GetId()),
 		WorkspaceID:      config.WorkspaceID,
 		Name:             types.StringValue(db.GetName()),
 		Version:          types.StringValue(spec.GetVersion()),
 		Phase:            types.StringValue(st.GetPhase()),
-		EndpointHost:     types.StringValue(st.GetEndpoint().GetHost()),
-		EndpointPort:     types.Int64Value(int64(st.GetEndpoint().GetPort())),
+		EndpointHost:     endpointHost,
+		EndpointPort:     endpointPort,
+		SharedHost:       sharedHostFromProto(st.GetPublicEndpoints()),
 		PublicEndpoints:  endpointsFromProto(st.GetPublicEndpoints()),
 		PrivateEndpoints: endpointsFromProto(st.GetPrivateEndpoints()),
 		StorageStatus:    storageStatusFromProto(st.GetStorage()),

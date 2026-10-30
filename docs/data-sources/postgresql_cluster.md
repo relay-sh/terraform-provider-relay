@@ -39,6 +39,7 @@ data "relay_postgresql_cluster" "billing" {
 - `private_endpoints` (Attributes List) (see [below for nested schema](#nestedatt--private_endpoints))
 - `public_endpoints` (Attributes List) (see [below for nested schema](#nestedatt--public_endpoints))
 - `ready_nodes` (Number)
+- `shared_host` (String) The previous shared read-write address of a database upgraded from the Free plan. It keeps working, but is never `endpoint_host`. Empty when there is no such alias.
 - `storage_status` (Attributes List) (see [below for nested schema](#nestedatt--storage_status))
 - `total_nodes` (Number)
 - `version` (String)

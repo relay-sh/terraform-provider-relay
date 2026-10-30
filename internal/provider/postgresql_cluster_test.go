@@ -1160,3 +1160,159 @@ func TestPostgreSQLClusterResource_ImportRejectsOtherEngine(t *testing.T) {
 		},
 	})
 }
+
+func resizeConfig(f *fakeServer, tier string) string {
+	return providerBlock(f) + fmt.Sprintf(`
+resource "relay_postgresql_cluster" "this" {
+  workspace_id = %q
+  name         = "billing"
+
+  nodes = {
+    main = {
+      role   = "electable"
+      cloud  = "aws"
+      region = "us-east-1"
+      tier   = %q
+      resources = {
+        storage = "10Gi"
+      }
+    }
+  }
+}
+`, dbWorkspace, tier)
+}
+
+func upgradeEndpoints(db *serverv1.Database) {
+	db.Status.Endpoint = &serverv1.Endpoint{Host: db.GetName() + ".paid", Port: 5432}
+	db.Status.PublicEndpoints = []*serverv1.PublicEndpoint{
+		{Role: "rw", Host: db.GetName() + ".shared", Port: 5432, Alias: true},
+		{Role: "rw", Host: db.GetName() + ".paid", Port: 5432},
+		{Role: "ro", Host: db.GetName() + ".ro.paid", Port: 5432},
+	}
+}
+
+func TestPostgreSQLClusterResource_ResizeRecomputesAttributes(t *testing.T) {
+	f := startFakeServer(t)
+	f.set(func() {
+		f.afterUpdate = func(db *serverv1.Database) {
+			db.Status.Endpoint = &serverv1.Endpoint{Host: db.GetName() + ".r20", Port: 5432}
+			db.Status.PublicEndpoints = []*serverv1.PublicEndpoint{{Role: "rw", Host: db.GetName() + ".r20", Port: 5432}}
+		}
+	})
+	resource.UnitTest(t, resource.TestCase{
+		ProtoV6ProviderFactories: factories(relay.Dial),
+		Steps: []resource.TestStep{
+			{
+				Config: resizeConfig(f, "R5"),
+				Check: resource.ComposeAggregateTestCheckFunc(
+					resource.TestCheckResourceAttr("relay_postgresql_cluster.this", "nodes.main.resources.cpu", "1"),
+					resource.TestCheckResourceAttr("relay_postgresql_cluster.this", "nodes.main.resources.memory", "2Gi"),
+					resource.TestCheckResourceAttr("relay_postgresql_cluster.this", "endpoint_host", "billing.public"),
+				),
+			},
+			{
+				Config: resizeConfig(f, "R20"),
+				Check: resource.ComposeAggregateTestCheckFunc(
+					resource.TestCheckResourceAttr("relay_postgresql_cluster.this", "nodes.main.tier", "R20"),
+					resource.TestCheckResourceAttr("relay_postgresql_cluster.this", "nodes.main.resources.cpu", "4"),
+					resource.TestCheckResourceAttr("relay_postgresql_cluster.this", "nodes.main.resources.memory", "8Gi"),
+					resource.TestCheckResourceAttr("relay_postgresql_cluster.this", "endpoint_host", "billing.r20"),
+					resource.TestCheckResourceAttr("relay_postgresql_cluster.this", "public_endpoints.0.host", "billing.r20"),
+				),
+			},
+			{Config: resizeConfig(f, "R20"), PlanOnly: true},
+			{
+				Config: resizeConfig(f, "R10"),
+				Check:  resource.TestCheckResourceAttr("relay_postgresql_cluster.this", "nodes.main.resources.cpu", "2"),
+			},
+			{Config: resizeConfig(f, "R10"), PlanOnly: true},
+		},
+	})
+}
+
+func TestPostgreSQLClusterResource_UpgradeAliasEndpoint(t *testing.T) {
+	f := startFakeServer(t)
+	resource.UnitTest(t, resource.TestCase{
+		ProtoV6ProviderFactories: factories(relay.Dial),
+		Steps: []resource.TestStep{
+			{
+				Config: resizeConfig(f, "R5"),
+				Check: resource.ComposeAggregateTestCheckFunc(
+					resource.TestCheckResourceAttr("relay_postgresql_cluster.this", "endpoint_host", "billing.public"),
+					resource.TestCheckResourceAttr("relay_postgresql_cluster.this", "shared_host", ""),
+					resource.TestCheckResourceAttr("relay_postgresql_cluster.this", "public_endpoints.#", "1"),
+				),
+			},
+			{
+				PreConfig: func() {
+					f.set(func() {
+						for _, db := range f.databases {
+							upgradeEndpoints(db)
+							db.Status.Endpoint.Host = db.GetName() + ".shared"
+						}
+					})
+				},
+				Config: resizeConfig(f, "R5"),
+				Check: resource.ComposeAggregateTestCheckFunc(
+					resource.TestCheckResourceAttr("relay_postgresql_cluster.this", "endpoint_host", "billing.paid"),
+					resource.TestCheckResourceAttr("relay_postgresql_cluster.this", "shared_host", "billing.shared"),
+					resource.TestCheckResourceAttr("relay_postgresql_cluster.this", "public_endpoints.#", "2"),
+					resource.TestCheckResourceAttr("relay_postgresql_cluster.this", "public_endpoints.0.host", "billing.paid"),
+					resource.TestCheckResourceAttr("relay_postgresql_cluster.this", "public_endpoints.1.role", "ro"),
+				),
+			},
+			{Config: resizeConfig(f, "R5"), PlanOnly: true},
+			{
+				Config: resizeConfig(f, "R20"),
+				Check: resource.ComposeAggregateTestCheckFunc(
+					resource.TestCheckResourceAttr("relay_postgresql_cluster.this", "shared_host", "billing.shared"),
+					resource.TestCheckResourceAttr("relay_postgresql_cluster.this", "endpoint_host", "billing.paid"),
+				),
+			},
+			{Config: resizeConfig(f, "R20"), PlanOnly: true},
+		},
+	})
+}
+
+func TestPostgreSQLClusterDataSource_AliasEndpoint(t *testing.T) {
+	f := startFakeServer(t)
+	f.databases["db-billing"] = &serverv1.Database{
+		Id: "db-billing", Name: "billing", WorkspaceId: dbWorkspace,
+		Spec:   &serverv1.DatabaseSpec{Engine: "postgresql", Version: "18"},
+		Status: &serverv1.DatabaseStatus{Phase: "running"},
+	}
+	upgradeEndpoints(f.databases["db-billing"])
+	f.databases["db-solo"] = &serverv1.Database{
+		Id: "db-solo", Name: "solo", WorkspaceId: dbWorkspace,
+		Spec: &serverv1.DatabaseSpec{Engine: "postgresql", Version: "18"},
+		Status: &serverv1.DatabaseStatus{
+			Phase:           "running",
+			Endpoint:        &serverv1.Endpoint{Host: "solo.shared", Port: 5432},
+			PublicEndpoints: []*serverv1.PublicEndpoint{{Role: "rw", Host: "solo.shared", Port: 5432, Alias: true}},
+		},
+	}
+	resource.UnitTest(t, resource.TestCase{
+		ProtoV6ProviderFactories: factories(relay.Dial),
+		Steps: []resource.TestStep{{
+			Config: providerBlock(f) + fmt.Sprintf(`
+data "relay_postgresql_cluster" "this" {
+  workspace_id = %[1]q
+  id           = "db-billing"
+}
+
+data "relay_postgresql_cluster" "solo" {
+  workspace_id = %[1]q
+  id           = "db-solo"
+}
+`, dbWorkspace),
+			Check: resource.ComposeAggregateTestCheckFunc(
+				resource.TestCheckResourceAttr("data.relay_postgresql_cluster.solo", "endpoint_host", ""),
+				resource.TestCheckResourceAttr("data.relay_postgresql_cluster.solo", "endpoint_port", "0"),
+				resource.TestCheckResourceAttr("data.relay_postgresql_cluster.solo", "shared_host", "solo.shared"),
+				resource.TestCheckResourceAttr("data.relay_postgresql_cluster.this", "endpoint_host", "billing.paid"),
+				resource.TestCheckResourceAttr("data.relay_postgresql_cluster.this", "shared_host", "billing.shared"),
+				resource.TestCheckResourceAttr("data.relay_postgresql_cluster.this", "public_endpoints.#", "2"),
+			),
+		}},
+	})
+}

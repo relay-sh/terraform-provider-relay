@@ -1362,10 +1362,13 @@ func (x *VolumeUsage) GetObservedAt() *timestamppb.Timestamp {
 }
 
 type PublicEndpoint struct {
-	state         protoimpl.MessageState `protogen:"open.v1"`
-	Role          string                 `protobuf:"bytes,1,opt,name=role,proto3" json:"role,omitempty"`
-	Host          string                 `protobuf:"bytes,2,opt,name=host,proto3" json:"host,omitempty"`
-	Port          int32                  `protobuf:"varint,3,opt,name=port,proto3" json:"port,omitempty"`
+	state protoimpl.MessageState `protogen:"open.v1"`
+	Role  string                 `protobuf:"bytes,1,opt,name=role,proto3" json:"role,omitempty"`
+	Host  string                 `protobuf:"bytes,2,opt,name=host,proto3" json:"host,omitempty"`
+	Port  int32                  `protobuf:"varint,3,opt,name=port,proto3" json:"port,omitempty"`
+	// True for a name that still routes to the database but is not its primary
+	// name. Always false until relay-sh/maestro#338 reports it.
+	Alias         bool `protobuf:"varint,4,opt,name=alias,proto3" json:"alias,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
@@ -1419,6 +1422,13 @@ func (x *PublicEndpoint) GetPort() int32 {
 		return x.Port
 	}
 	return 0
+}
+
+func (x *PublicEndpoint) GetAlias() bool {
+	if x != nil {
+		return x.Alias
+	}
+	return false
 }
 
 type GetDatabaseConnectionRequest struct {
@@ -1492,7 +1502,10 @@ type DatabaseConnectionEndpoint struct {
 	// A ready-to-use URI. Deliberately PASSWORD-LESS: the password belongs in
 	// PGPASSWORD/.pgpass, never in a string that gets pasted into shell history,
 	// logs or a ticket.
-	Uri           string `protobuf:"bytes,4,opt,name=uri,proto3" json:"uri,omitempty"`
+	Uri string `protobuf:"bytes,4,opt,name=uri,proto3" json:"uri,omitempty"`
+	// True for a name that still routes to the database but is not its primary
+	// name. Always false until relay-sh/maestro#338 reports it.
+	Alias         bool `protobuf:"varint,5,opt,name=alias,proto3" json:"alias,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
@@ -1555,6 +1568,13 @@ func (x *DatabaseConnectionEndpoint) GetUri() string {
 	return ""
 }
 
+func (x *DatabaseConnectionEndpoint) GetAlias() bool {
+	if x != nil {
+		return x.Alias
+	}
+	return false
+}
+
 type GetDatabaseConnectionResponse struct {
 	state     protoimpl.MessageState        `protogen:"open.v1"`
 	Endpoints []*DatabaseConnectionEndpoint `protobuf:"bytes,1,rep,name=endpoints,proto3" json:"endpoints,omitempty"`
@@ -1573,6 +1593,9 @@ type GetDatabaseConnectionResponse struct {
 	// PrivateLink / PSC). Same URI rules as endpoints; empty when the
 	// cluster has not published a private surface.
 	PrivateEndpoints []*DatabaseConnectionEndpoint `protobuf:"bytes,6,rep,name=private_endpoints,json=privateEndpoints,proto3" json:"private_endpoints,omitempty"`
+	// "shared" or "dedicated". PostgreSQL takes its workspace's stored scheme;
+	// maestro puts no other engine on the shared scheme (#607), so they are dedicated.
+	NetworkingScheme string `protobuf:"bytes,7,opt,name=networking_scheme,json=networkingScheme,proto3" json:"networking_scheme,omitempty"`
 	unknownFields    protoimpl.UnknownFields
 	sizeCache        protoimpl.SizeCache
 }
@@ -1647,6 +1670,13 @@ func (x *GetDatabaseConnectionResponse) GetPrivateEndpoints() []*DatabaseConnect
 		return x.PrivateEndpoints
 	}
 	return nil
+}
+
+func (x *GetDatabaseConnectionResponse) GetNetworkingScheme() string {
+	if x != nil {
+		return x.NetworkingScheme
+	}
+	return ""
 }
 
 // IPAllowlistEntry is one authorized source range for the workspace's public
@@ -32240,8 +32270,11 @@ type Workspace struct {
 	Slug            string                 `protobuf:"bytes,5,opt,name=slug,proto3" json:"slug,omitempty"`
 	ConnectionCount int32                  `protobuf:"varint,6,opt,name=connection_count,json=connectionCount,proto3" json:"connection_count,omitempty"`
 	ManagedBy       string                 `protobuf:"bytes,7,opt,name=managed_by,json=managedBy,proto3" json:"managed_by,omitempty"`
-	unknownFields   protoimpl.UnknownFields
-	sizeCache       protoimpl.SizeCache
+	// "shared" or "dedicated", from the stored scheme (unset counts as dedicated).
+	// Empty only in CreateWorkspace's reply, as the scheme is recorded later.
+	NetworkingScheme string `protobuf:"bytes,8,opt,name=networking_scheme,json=networkingScheme,proto3" json:"networking_scheme,omitempty"`
+	unknownFields    protoimpl.UnknownFields
+	sizeCache        protoimpl.SizeCache
 }
 
 func (x *Workspace) Reset() {
@@ -32319,6 +32352,13 @@ func (x *Workspace) GetConnectionCount() int32 {
 func (x *Workspace) GetManagedBy() string {
 	if x != nil {
 		return x.ManagedBy
+	}
+	return ""
+}
+
+func (x *Workspace) GetNetworkingScheme() string {
+	if x != nil {
+		return x.NetworkingScheme
 	}
 	return ""
 }
@@ -48424,28 +48464,31 @@ const file_relay_server_v1_server_proto_rawDesc = "" +
 	"used_bytes\x18\x04 \x01(\x03R\tusedBytes\x12%\n" +
 	"\x0ecapacity_bytes\x18\x05 \x01(\x03R\rcapacityBytes\x12;\n" +
 	"\vobserved_at\x18\x06 \x01(\v2\x1a.google.protobuf.TimestampR\n" +
-	"observedAt\"L\n" +
+	"observedAt\"b\n" +
 	"\x0ePublicEndpoint\x12\x12\n" +
 	"\x04role\x18\x01 \x01(\tR\x04role\x12\x12\n" +
 	"\x04host\x18\x02 \x01(\tR\x04host\x12\x12\n" +
-	"\x04port\x18\x03 \x01(\x05R\x04port\"w\n" +
+	"\x04port\x18\x03 \x01(\x05R\x04port\x12\x14\n" +
+	"\x05alias\x18\x04 \x01(\bR\x05alias\"w\n" +
 	"\x1cGetDatabaseConnectionRequest\x12\x1f\n" +
 	"\vdatabase_id\x18\x01 \x01(\tR\n" +
 	"databaseId\x12\x1a\n" +
 	"\busername\x18\x02 \x01(\tR\busername\x12\x1a\n" +
-	"\bdatabase\x18\x03 \x01(\tR\bdatabase\"j\n" +
+	"\bdatabase\x18\x03 \x01(\tR\bdatabase\"\x80\x01\n" +
 	"\x1aDatabaseConnectionEndpoint\x12\x12\n" +
 	"\x04role\x18\x01 \x01(\tR\x04role\x12\x12\n" +
 	"\x04host\x18\x02 \x01(\tR\x04host\x12\x12\n" +
 	"\x04port\x18\x03 \x01(\x05R\x04port\x12\x10\n" +
-	"\x03uri\x18\x04 \x01(\tR\x03uri\"\xd4\x02\n" +
+	"\x03uri\x18\x04 \x01(\tR\x03uri\x12\x14\n" +
+	"\x05alias\x18\x05 \x01(\bR\x05alias\"\x81\x03\n" +
 	"\x1dGetDatabaseConnectionResponse\x12I\n" +
 	"\tendpoints\x18\x01 \x03(\v2+.relay.server.v1.DatabaseConnectionEndpointR\tendpoints\x12)\n" +
 	"\x10default_database\x18\x02 \x01(\tR\x0fdefaultDatabase\x12\x19\n" +
 	"\bssl_mode\x18\x03 \x01(\tR\asslMode\x120\n" +
 	"\x14requires_ca_download\x18\x04 \x01(\bR\x12requiresCaDownload\x12\x16\n" +
 	"\x06public\x18\x05 \x01(\bR\x06public\x12X\n" +
-	"\x11private_endpoints\x18\x06 \x03(\v2+.relay.server.v1.DatabaseConnectionEndpointR\x10privateEndpoints\"\xed\x01\n" +
+	"\x11private_endpoints\x18\x06 \x03(\v2+.relay.server.v1.DatabaseConnectionEndpointR\x10privateEndpoints\x12+\n" +
+	"\x11networking_scheme\x18\a \x01(\tR\x10networkingScheme\"\xed\x01\n" +
 	"\x10IPAllowlistEntry\x12\x0e\n" +
 	"\x02id\x18\x01 \x01(\tR\x02id\x12\x12\n" +
 	"\x04cidr\x18\x02 \x01(\tR\x04cidr\x12 \n" +
@@ -50924,7 +50967,7 @@ const file_relay_server_v1_server_proto_rawDesc = "" +
 	"\"UpdateOrganizationSettingsResponse\x12A\n" +
 	"\forganization\x18\x01 \x01(\v2\x1d.relay.server.v1.OrganizationR\forganization\"\x1b\n" +
 	"\x19DeleteOrganizationRequest\"\x1c\n" +
-	"\x1aDeleteOrganizationResponse\"\xce\x01\n" +
+	"\x1aDeleteOrganizationResponse\"\xfb\x01\n" +
 	"\tWorkspace\x12\x0e\n" +
 	"\x02id\x18\x01 \x01(\tR\x02id\x12\x12\n" +
 	"\x04name\x18\x02 \x01(\tR\x04name\x12 \n" +
@@ -50934,7 +50977,8 @@ const file_relay_server_v1_server_proto_rawDesc = "" +
 	"\x04slug\x18\x05 \x01(\tR\x04slug\x12)\n" +
 	"\x10connection_count\x18\x06 \x01(\x05R\x0fconnectionCount\x12\x1d\n" +
 	"\n" +
-	"managed_by\x18\a \x01(\tR\tmanagedBy\"\x17\n" +
+	"managed_by\x18\a \x01(\tR\tmanagedBy\x12+\n" +
+	"\x11networking_scheme\x18\b \x01(\tR\x10networkingScheme\"\x17\n" +
 	"\x15ListWorkspacesRequest\"T\n" +
 	"\x16ListWorkspacesResponse\x12:\n" +
 	"\n" +
