@@ -395,7 +395,7 @@ func TestPostgreSQLDatabaseResource_LayoutGuards(t *testing.T) {
 			{Config: logicalDatabaseConfig(f, "b", `  schemas = ["`+fmt.Sprintf("%064d", 0)+`"]`), ExpectError: regexp.MustCompile("Invalid schema name")},
 			{Config: logicalDatabaseConfig(f, "b", `  schemas = `+many), ExpectError: regexp.MustCompile("(?s)at most 20")},
 			{Config: logicalDatabaseConfig(f, "b", `  schemas = ["a", "a"]`), ExpectError: regexp.MustCompile("(?s)duplicate")},
-			{Config: logicalDatabaseConfig(f, "b", `  extensions = [{ name = "pg_trgm", schema = "other" }]`), ExpectError: regexp.MustCompile("Unknown extension schema")},
+			{Config: logicalDatabaseConfig(f, "b", `  extensions = [{ name = "pg_trgm", schema = "pg_ext" }]`), ExpectError: regexp.MustCompile("Invalid extension schema")},
 			{Config: logicalDatabaseConfig(f, "b", "  lock_public = true\n  extensions = [{ name = \"pg_trgm\" }]"), ExpectError: regexp.MustCompile("Extension needs a schema")},
 			{Config: logicalDatabaseConfig(f, "b", "  lock_public = true\n  schemas = [\"a\"]\n  extensions = [{ name = \"pg_trgm\", schema = \"public\" }]"), ExpectError: regexp.MustCompile("Extension needs a schema")},
 			{Config: logicalDatabaseConfig(f, "b", `  extensions = [{ name = "", schema = "a" }]`), ExpectError: regexp.MustCompile("length must be at least 1")},
@@ -418,13 +418,14 @@ func TestValidateDatabaseLayoutSkipsUnknowns(t *testing.T) {
 		lock                types.Bool
 		errors              int
 	}{
-		"unknown extensions":            {strs(), types.ListUnknown(extType), types.BoolNull(), 0},
-		"unknown schemas":               {types.ListUnknown(types.StringType), exts(ext("a", types.StringValue("x"))), types.BoolNull(), 0},
-		"unknown schema element":        {strs(unknown), exts(ext("a", types.StringValue("x"))), types.BoolNull(), 0},
-		"unknown extension schema":      {strs(), exts(ext("a", unknown)), types.BoolValue(true), 0},
-		"unknown lock":                  {strs(), exts(ext("a", types.StringNull())), types.BoolUnknown(), 0},
-		"declared schema":               {strs(types.StringValue("x")), exts(ext("a", types.StringValue("x"))), types.BoolValue(true), 0},
-		"undeclared with known schemas": {strs(types.StringValue("y")), exts(ext("a", types.StringValue("x"))), types.BoolNull(), 1},
+		"unknown extensions":        {strs(), types.ListUnknown(extType), types.BoolNull(), 0},
+		"unknown schemas":           {types.ListUnknown(types.StringType), exts(ext("a", types.StringValue("x"))), types.BoolNull(), 0},
+		"unknown schema element":    {strs(unknown), exts(ext("a", types.StringValue("x"))), types.BoolNull(), 0},
+		"unknown extension schema":  {strs(), exts(ext("a", unknown)), types.BoolValue(true), 0},
+		"unknown lock":              {strs(), exts(ext("a", types.StringNull())), types.BoolUnknown(), 0},
+		"declared schema":           {strs(types.StringValue("x")), exts(ext("a", types.StringValue("x"))), types.BoolValue(true), 0},
+		"undeclared schema":         {strs(types.StringValue("y")), exts(ext("a", types.StringValue("x"))), types.BoolValue(true), 0},
+		"reserved extension schema": {strs(), exts(ext("a", types.StringValue("pg_x"))), types.BoolNull(), 1},
 	}
 	for name, tc := range cases {
 		if got := validateDatabaseLayout(ctx, tc.schemas, tc.extensions, tc.lock).ErrorsCount(); got != tc.errors {

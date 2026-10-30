@@ -100,13 +100,13 @@ func (r *postgresqlDatabaseResource) Schema(ctx context.Context, _ resource.Sche
 					"name": schema.StringAttribute{Required: true, Validators: nonEmpty, MarkdownDescription: "Extension name."},
 					"schema": schema.StringAttribute{
 						Optional: true, Validators: nonEmpty,
-						MarkdownDescription: "Schema the extension is installed in: `public` or one of `schemas`. Unset, `public`.",
+						MarkdownDescription: "Schema the extension is installed in. `public`, one of `schemas`, or another name: the platform then creates that schema itself, readable by every role and writable by none of them, and puts it last on user roles' `search_path`. Unset, `public`.",
 					},
 				}},
 			},
 			"lock_public": schema.BoolAttribute{
 				Optional: true, Computed: true, Default: booldefault.StaticBool(false),
-				MarkdownDescription: "Revoke the `public` schema from `PUBLIC` and stop user roles from covering it. Every extension then needs a `schema` from `schemas`.",
+				MarkdownDescription: "Revoke the `public` schema from `PUBLIC` and stop user roles from covering it. Every extension then needs a `schema` other than `public`.",
 			},
 			"origin":        schema.StringAttribute{Computed: true, PlanModifiers: keep, MarkdownDescription: "`Created` when the platform created the database, `Adopted` when it took over an existing one."},
 			"phase":         schema.StringAttribute{Computed: true, MarkdownDescription: "Reconcile phase."},
@@ -131,15 +131,11 @@ func (r *postgresqlDatabaseResource) ValidateConfig(ctx context.Context, req res
 
 func validateDatabaseLayout(ctx context.Context, schemas, extensions types.List, lockPublic types.Bool) diag.Diagnostics {
 	var diags diag.Diagnostics
-	declared := map[string]bool{}
-	complete := !schemas.IsUnknown()
 	for i, e := range schemas.Elements() {
 		name := e.(types.String)
 		if name.IsUnknown() {
-			complete = false
 			continue
 		}
-		declared[name.ValueString()] = true
 		if msg := schemaNameProblem(name.ValueString()); msg != "" {
 			diags.AddAttributeError(path.Root("schemas").AtListIndex(i), "Invalid schema name", msg)
 		}
@@ -158,9 +154,9 @@ func validateDatabaseLayout(ctx context.Context, schemas, extensions types.List,
 		inPublic := ext.Schema.IsNull() || ext.Schema.ValueString() == "public"
 		switch {
 		case lockPublic.ValueBool() && inPublic:
-			diags.AddAttributeError(at, "Extension needs a schema", "With lock_public every extension must be installed in one of schemas, not in public.")
-		case !inPublic && complete && !declared[ext.Schema.ValueString()]:
-			diags.AddAttributeError(at, "Unknown extension schema", fmt.Sprintf("Schema %q is neither public nor listed in schemas.", ext.Schema.ValueString()))
+			diags.AddAttributeError(at, "Extension needs a schema", "With lock_public every extension must be installed in a schema other than public.")
+		case !inPublic && schemaNameProblem(ext.Schema.ValueString()) != "":
+			diags.AddAttributeError(at, "Invalid extension schema", schemaNameProblem(ext.Schema.ValueString()))
 		}
 	}
 	return diags

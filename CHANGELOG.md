@@ -2,6 +2,7 @@
 
 ENHANCEMENTS:
 
+* resource/relay_postgresql_database: `extensions[].schema` may name a schema outside `schemas`; the platform creates it readable by every role and writable by none, and user roles find its operators and functions without qualifying them
 * resource/relay_postgresql_cluster, data-source/relay_postgresql_cluster: `shared_host` is the previous shared address of a database upgraded from the Free plan, which keeps working next to the new names; `endpoint_host`, `endpoint_port` and `public_endpoints` keep only the primary names and never an alias
 
 BUG FIXES:

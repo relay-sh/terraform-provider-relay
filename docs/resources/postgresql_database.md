@@ -43,7 +43,7 @@ resource "relay_postgresql_database" "balance" {
 
 - `description` (String) Free-text description.
 - `extensions` (Attributes List) Extensions the platform installs. The platform refuses extensions that its PostgreSQL version does not allow (for example `pgaudit`, `pg_stat_statements`, `pgcrypto`, `citext`, `hstore`, `uuid-ossp`, `pg_trgm`, `btree_gin`, `btree_gist`, `unaccent` and `vector`). (see [below for nested schema](#nestedatt--extensions))
-- `lock_public` (Boolean) Revoke the `public` schema from `PUBLIC` and stop user roles from covering it. Every extension then needs a `schema` from `schemas`.
+- `lock_public` (Boolean) Revoke the `public` schema from `PUBLIC` and stop user roles from covering it. Every extension then needs a `schema` other than `public`.
 - `owner` (String) Username of the `relay_postgresql_user` that owns the database. Unset, the platform's superuser owns it.
 - `schemas` (List of String) Schemas the platform creates in the database, at most 20. Lowercase letters, digits and underscores, up to 63 characters, not starting with a digit. `public`, `information_schema` and `pg_*` are reserved. User roles cover `public` and these schemas unless narrowed with `schema`.
 - `timeouts` (Block, Optional) (see [below for nested schema](#nestedblock--timeouts))
@@ -65,7 +65,7 @@ Required:
 
 Optional:
 
-- `schema` (String) Schema the extension is installed in: `public` or one of `schemas`. Unset, `public`.
+- `schema` (String) Schema the extension is installed in. `public`, one of `schemas`, or another name: the platform then creates that schema itself, readable by every role and writable by none of them, and puts it last on user roles' `search_path`. Unset, `public`.
 
 
 <a id="nestedblock--timeouts"></a>
