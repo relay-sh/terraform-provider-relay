@@ -46,7 +46,7 @@ resource "relay_backup_schedule" "sessions" {
 ### Optional
 
 - `max_backups` (Number) Full backups kept when `tiers` is not set; the platform default is 4. With tiers, the weekly tier's retention decides and the API ignores this value, so the two conflict.
-- `pitr_window_days` (Number) Requested point-in-time-restore window in days, PostgreSQL only; the platform default is 7. Valkey restores are snapshot-only, so a Valkey cluster rejects it.
+- `pitr_window_days` (Number) Requested point-in-time-restore window in days. PostgreSQL defaults to 7. Valkey has no window unless set, accepts 1-35 days in `replication` mode only, and needs a disk at least twice its memory while the window is on.
 - `snapshot_time` (Attributes) UTC wall-clock time the daily, weekly and monthly tiers fire at. Defaults to 02:00. (see [below for nested schema](#nestedatt--snapshot_time))
 - `tiers` (Attributes List) Retention ladder, at most one tier per frequency. Every enabled tier is rendered into the cluster's backup crons and retention counts; the weekly tier takes the full backup and the daily tier the incremental one. Left out, the cluster takes a weekly full and a daily incremental backup, each kept `max_backups` times. (see [below for nested schema](#nestedatt--tiers))
 
