@@ -1,3 +1,9 @@
+## 0.0.5 (November 1, 2026)
+
+ENHANCEMENTS:
+
+* resource/relay_postgresql_cluster, resource/relay_valkey_cluster: `restore` creates the cluster from another cluster's backups, the latest one or a point in time with `target_time`; a Valkey `target_time` needs `replication` mode. The provider applies the configured nodes and settings over the source's after the restore; changing `restore` replaces the cluster
+
 ## 0.0.4 (October 31, 2026)
 
 ENHANCEMENTS:
