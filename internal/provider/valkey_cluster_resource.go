@@ -310,6 +310,9 @@ func (r *valkeyClusterResource) ModifyPlan(ctx context.Context, req resource.Mod
 	if resp.Diagnostics.HasError() {
 		return
 	}
+	equivalent := keepEquivalentRestore(plan.Restore, prior.Restore)
+	changed := !equivalent.Equal(plan.Restore)
+	plan.Restore = equivalent
 	if restoreChanged(plan.Restore, prior.Restore) {
 		resp.RequiresReplace = append(resp.RequiresReplace, path.Root("restore"))
 	}
@@ -317,7 +320,6 @@ func (r *valkeyClusterResource) ModifyPlan(ctx context.Context, req resource.Mod
 		resp.Diagnostics.AddAttributeError(path.Root("version"), "Version cannot change here",
 			"Upgrading from "+prior.Version.ValueString()+" to "+plan.Version.ValueString()+" goes through Relay's upgrade flow. Run the upgrade, then set version to the new value.")
 	}
-	changed := false
 	for name, planned := range plan.Nodes {
 		current, ok := prior.Nodes[name]
 		if !ok {

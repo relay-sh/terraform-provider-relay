@@ -39,6 +39,18 @@ func restoreChanged(plan, prior types.Object) bool {
 	return !plan.IsNull() && !prior.IsNull() && !plan.Equal(prior)
 }
 
+func keepEquivalentRestore(plan, prior types.Object) types.Object {
+	if !known(plan) || !known(prior) || !plan.Attributes()["source_database_id"].Equal(prior.Attributes()["source_database_id"]) {
+		return plan
+	}
+	planned, perr := time.Parse(time.RFC3339, restoreTargetTime(plan).ValueString())
+	stored, serr := time.Parse(time.RFC3339, restoreTargetTime(prior).ValueString())
+	if perr != nil || serr != nil || !planned.Equal(stored) {
+		return plan
+	}
+	return prior
+}
+
 func restoreTargetTime(restore types.Object) types.String {
 	if !known(restore) {
 		return types.StringNull()

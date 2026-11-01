@@ -8,6 +8,8 @@ import (
 	"testing"
 	"time"
 
+	"github.com/hashicorp/terraform-plugin-framework/attr"
+	"github.com/hashicorp/terraform-plugin-framework/types"
 	"github.com/hashicorp/terraform-plugin-go/tftypes"
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
 	"github.com/hashicorp/terraform-plugin-testing/plancheck"
@@ -122,6 +124,14 @@ func TestValkeyClusterResource_Restore(t *testing.T) {
 						}
 						return nil
 					},
+				),
+			},
+			{
+				Config:           valkeyConfig(f, restoreBlock("db-src", "2026-10-31T09:00:00-03:00")+valkeyGroup("cache", 2, "8Gi", "")),
+				ConfigPlanChecks: resource.ConfigPlanChecks{PreApply: []plancheck.PlanCheck{plancheck.ExpectEmptyPlan()}},
+				Check: resource.ComposeAggregateTestCheckFunc(
+					resource.TestCheckResourceAttr(valkeyAddr, "restore.target_time", pastInstant),
+					callCount(f, "RestoreDatabase", 1),
 				),
 			},
 			{
@@ -306,7 +316,22 @@ func TestPostgreSQLClusterResource_Restore(t *testing.T) {
 				),
 			},
 			{
-				Config: postgresRestoreConfig(f, restoreBlock("db-src", pastInstant), `
+				Config:           postgresRestoreConfig(f, restoreBlock("db-src", ""), "", 1),
+				ConfigPlanChecks: resource.ConfigPlanChecks{PreApply: []plancheck.PlanCheck{plancheck.ExpectEmptyPlan()}},
+			},
+			{
+				Config: postgresRestoreConfig(f, restoreBlock("db-src", "2026-10-31T12:00:00+00:00"), "", 1),
+				ConfigPlanChecks: resource.ConfigPlanChecks{PreApply: []plancheck.PlanCheck{
+					plancheck.ExpectResourceAction(postgresAddr, plancheck.ResourceActionDestroyBeforeCreate),
+				}},
+			},
+			{
+				Config:           postgresRestoreConfig(f, restoreBlock("db-src", pastInstant), "", 1),
+				ConfigPlanChecks: resource.ConfigPlanChecks{PreApply: []plancheck.PlanCheck{plancheck.ExpectEmptyPlan()}},
+				Check:            resource.TestCheckResourceAttr(postgresAddr, "restore.target_time", "2026-10-31T12:00:00+00:00"),
+			},
+			{
+				Config: postgresRestoreConfig(f, restoreBlock("db-src", "2026-10-30T12:00:00Z"), `
   parameters  = { work_mem = "8MB" }
   replication = {
     mode                 = "synchronous"
@@ -428,6 +453,34 @@ func TestSatisfies(t *testing.T) {
 	for name, tc := range cases {
 		if got := satisfies(tc.planned, tc.got); got != tc.want {
 			t.Errorf("%s: satisfies = %v, want %v", name, got, tc.want)
+		}
+	}
+}
+
+func TestKeepEquivalentRestore(t *testing.T) {
+	restore := func(source, target string) types.Object {
+		tt := types.StringNull()
+		if target != "" {
+			tt = types.StringValue(target)
+		}
+		return types.ObjectValueMust(map[string]attr.Type{"source_database_id": types.StringType, "target_time": types.StringType},
+			map[string]attr.Value{"source_database_id": types.StringValue(source), "target_time": tt})
+	}
+	null := types.ObjectNull(map[string]attr.Type{"source_database_id": types.StringType, "target_time": types.StringType})
+	cases := map[string]struct {
+		plan, prior, want types.Object
+	}{
+		"same instant, other offset": {restore("a", "2026-10-31T09:00:00-03:00"), restore("a", pastInstant), restore("a", pastInstant)},
+		"other instant":              {restore("a", "2026-10-30T12:00:00Z"), restore("a", pastInstant), restore("a", "2026-10-30T12:00:00Z")},
+		"other source":               {restore("b", pastInstant), restore("a", pastInstant), restore("b", pastInstant)},
+		"target added":               {restore("a", pastInstant), restore("a", ""), restore("a", pastInstant)},
+		"target removed":             {restore("a", ""), restore("a", pastInstant), restore("a", "")},
+		"no prior":                   {restore("a", pastInstant), null, restore("a", pastInstant)},
+		"removed":                    {null, restore("a", pastInstant), null},
+	}
+	for name, tc := range cases {
+		if got := keepEquivalentRestore(tc.plan, tc.prior); !got.Equal(tc.want) {
+			t.Errorf("%s: got %v, want %v", name, got, tc.want)
 		}
 	}
 }
