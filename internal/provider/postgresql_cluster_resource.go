@@ -26,6 +26,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/stringdefault"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/stringplanmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/schema/validator"
+	"github.com/hashicorp/terraform-plugin-framework/tfsdk"
 	"github.com/hashicorp/terraform-plugin-framework/types"
 	"google.golang.org/protobuf/types/known/fieldmaskpb"
 
@@ -49,6 +50,7 @@ type postgresqlClusterModel struct {
 	Parameters           types.Map                 `tfsdk:"parameters"`
 	Replication          types.Object              `tfsdk:"replication"`
 	KeepBackupsOnDestroy types.Bool                `tfsdk:"keep_backups_on_destroy"`
+	Restore              types.Object              `tfsdk:"restore"`
 	Phase                types.String              `tfsdk:"phase"`
 	PhaseMessage         types.String              `tfsdk:"phase_message"`
 	EndpointHost         types.String              `tfsdk:"endpoint_host"`
@@ -209,6 +211,9 @@ func (r *postgresqlClusterResource) Schema(ctx context.Context, _ resource.Schem
 				Optional: true, Computed: true, Default: booldefault.StaticBool(false),
 				MarkdownDescription: "Keep the cluster's backups when it is destroyed.",
 			},
+			"restore": restoreAttribute("`version`, when set, must match the source's, and `nodes` must keep the label of the source's primary group.",
+				"Recover up to this instant, RFC 3339, for example `2026-10-31T12:00:00Z`, by replaying the source's archived WAL; "+
+					"the platform rejects an instant outside the source's backups. Omit it to restore the latest backup and replay all archived WAL."),
 			"phase":         schema.StringAttribute{Computed: true, MarkdownDescription: "Lifecycle phase after the last apply."},
 			"phase_message": schema.StringAttribute{Computed: true, MarkdownDescription: "Detail for the phase."},
 			"endpoint_host": schema.StringAttribute{Computed: true, MarkdownDescription: "Public read-write endpoint host, the same as the `rw` entry of `public_endpoints`. Empty until the platform publishes it. Never an alias."},
@@ -328,7 +333,11 @@ func describePlacements(placements map[string][]string) string {
 }
 
 func (r *postgresqlClusterResource) ModifyPlan(ctx context.Context, req resource.ModifyPlanRequest, resp *resource.ModifyPlanResponse) {
-	if req.State.Raw.IsNull() || req.Plan.Raw.IsNull() {
+	if req.Plan.Raw.IsNull() {
+		return
+	}
+	if req.State.Raw.IsNull() {
+		r.planRestore(ctx, req, resp)
 		return
 	}
 	var plan, prior postgresqlClusterModel
@@ -336,6 +345,9 @@ func (r *postgresqlClusterResource) ModifyPlan(ctx context.Context, req resource
 	resp.Diagnostics.Append(req.State.Get(ctx, &prior)...)
 	if resp.Diagnostics.HasError() {
 		return
+	}
+	if restoreChanged(plan.Restore, prior.Restore) {
+		resp.RequiresReplace = append(resp.RequiresReplace, path.Root("restore"))
 	}
 	if !plan.Version.IsUnknown() && !plan.Version.Equal(prior.Version) {
 		resp.Diagnostics.AddAttributeError(path.Root("version"), "Version cannot change here",
@@ -373,6 +385,19 @@ func (r *postgresqlClusterResource) ModifyPlan(ctx context.Context, req resource
 	}
 	if changed {
 		resp.Diagnostics.Append(resp.Plan.Set(ctx, &plan)...)
+	}
+}
+
+func (r *postgresqlClusterResource) planRestore(ctx context.Context, req resource.ModifyPlanRequest, resp *resource.ModifyPlanResponse) {
+	var restore types.Object
+	var workspaceID, version types.String
+	var nodes types.Map
+	resp.Diagnostics.Append(req.Plan.GetAttribute(ctx, path.Root("restore"), &restore)...)
+	resp.Diagnostics.Append(req.Plan.GetAttribute(ctx, path.Root("workspace_id"), &workspaceID)...)
+	resp.Diagnostics.Append(req.Plan.GetAttribute(ctx, path.Root("version"), &version)...)
+	resp.Diagnostics.Append(req.Plan.GetAttribute(ctx, path.Root("nodes"), &nodes)...)
+	if src := checkRestorePlan(ctx, r.client, workspaceID, version, restore, enginePostgreSQL, &resp.Diagnostics); src != nil {
+		checkRestoreLabel(nodes, src.GetPrimaryNodeGroup(), &resp.Diagnostics)
 	}
 }
 
@@ -423,12 +448,23 @@ func (r *postgresqlClusterResource) Create(ctx context.Context, req resource.Cre
 	}
 
 	scoped := r.client.Workspace(ctx, plan.WorkspaceID.ValueString())
-	out, err := r.client.API.CreateDatabase(scoped, &serverv1.CreateDatabaseRequest{Name: plan.Name.ValueString(), Spec: clusterSpecToProto(plan)})
-	if err != nil {
-		resp.Diagnostics.AddError("Cannot create cluster", err.Error())
-		return
+	var created *serverv1.Database
+	if plan.Restore.IsNull() {
+		out, err := r.client.API.CreateDatabase(scoped, &serverv1.CreateDatabaseRequest{Name: plan.Name.ValueString(), Spec: clusterSpecToProto(plan)})
+		if err != nil {
+			resp.Diagnostics.AddError("Cannot create cluster", err.Error())
+			return
+		}
+		created = out.GetDatabase()
+	} else {
+		out, err := r.client.API.RestoreDatabase(scoped, restoreRequest(plan.Name.ValueString(), plan.Restore))
+		if err != nil {
+			resp.Diagnostics.AddError("Cannot restore cluster", err.Error())
+			return
+		}
+		created = out.GetDatabase()
 	}
-	id := out.GetDatabase().GetId()
+	id := created.GetId()
 	// The cluster exists from here on, so its identity goes to state before the wait:
 	// a wait that fails leaves a tainted resource, and a destroy has to be able to
 	// address it — including the workspace the delete is scoped to.
@@ -441,8 +477,47 @@ func (r *postgresqlClusterResource) Create(ctx context.Context, req resource.Cre
 		resp.Diagnostics.AddError("Cluster did not become ready", err.Error())
 		return
 	}
+	if !plan.Restore.IsNull() {
+		if db = r.convergeRestore(scoped, req.Plan, plan, db, timeout, resp); db == nil {
+			return
+		}
+	}
 	state := clusterFromProto(db, plan)
 	resp.Diagnostics.Append(resp.State.Set(ctx, &state)...)
+}
+
+func (r *postgresqlClusterResource) convergeRestore(ctx context.Context, config tfsdk.Plan, plan postgresqlClusterModel, db *serverv1.Database, timeout time.Duration, resp *resource.CreateResponse) *serverv1.Database {
+	restored := clusterFromProto(db, plan)
+	resp.Diagnostics.Append(resp.State.Set(ctx, &restored)...)
+	if fixed := driftedRoots(config, resp.State, []string{"version"}); len(fixed) > 0 {
+		resp.Diagnostics.AddError("Restored cluster does not match the configuration",
+			"The source's version differs from the configuration and cannot change here. Set version to the value in state, then apply again.")
+		return nil
+	}
+	var paths []string
+	for _, root := range driftedRoots(config, resp.State, []string{"nodes", "replication", "parameters"}) {
+		paths = append(paths, map[string]string{"nodes": "nodes", "replication": "replication", "parameters": "postgresql"}[root])
+	}
+	if len(paths) == 0 {
+		return db
+	}
+	desired := plan
+	desired.Version = restored.Version
+	desired.PrimaryNodeGroup = restored.PrimaryNodeGroup
+	if _, err := r.client.API.UpdateDatabase(ctx, &serverv1.UpdateDatabaseRequest{
+		Id:         db.GetId(),
+		Spec:       clusterSpecToProto(desired),
+		UpdateMask: &fieldmaskpb.FieldMask{Paths: paths},
+	}); err != nil {
+		resp.Diagnostics.AddError("Cannot apply the configuration to the restored cluster", err.Error())
+		return nil
+	}
+	db, err := r.waitRunning(ctx, db.GetId(), timeout)
+	if err != nil {
+		resp.Diagnostics.AddError("Restored cluster did not settle after update", err.Error())
+		return nil
+	}
+	return db
 }
 
 func (r *postgresqlClusterResource) Read(ctx context.Context, req resource.ReadRequest, resp *resource.ReadResponse) {
@@ -612,6 +687,7 @@ func clusterFromProto(db *serverv1.Database, prior postgresqlClusterModel) postg
 		Parameters:           stringMapFromGo(spec.GetPostgresql().GetParameters()),
 		Replication:          replicationFromProto(spec.GetReplication()),
 		KeepBackupsOnDestroy: prior.KeepBackupsOnDestroy,
+		Restore:              prior.Restore,
 		Phase:                types.StringValue(st.GetPhase()),
 		PhaseMessage:         types.StringValue(st.GetMessage()),
 		EndpointHost:         endpointHost,

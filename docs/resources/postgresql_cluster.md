@@ -81,6 +81,7 @@ resource "relay_postgresql_cluster" "billing" {
 - `keep_backups_on_destroy` (Boolean) Keep the cluster's backups when it is destroyed.
 - `parameters` (Map of String) PostgreSQL settings (GUCs). An empty map resets them to defaults; omitting the attribute leaves them unmanaged. Some need a restart, which Relay orchestrates with a switchover.
 - `replication` (Attributes) Commit replication for the cluster. Patroni configures synchronous mode per cluster, not per node. (see [below for nested schema](#nestedatt--replication))
+- `restore` (Attributes) Creates the cluster from another cluster's backups instead of empty. The platform picks the backup and starts the cluster with the source's settings; the provider then applies the configured nodes and settings. `version`, when set, must match the source's, and `nodes` must keep the label of the source's primary group. Only read on create: changing it replaces the cluster, while adding it to or removing it from an existing cluster changes nothing. (see [below for nested schema](#nestedatt--restore))
 - `timeouts` (Block, Optional) (see [below for nested schema](#nestedblock--timeouts))
 - `version` (String) Major PostgreSQL version. Omit it and the platform picks one, which the next read reports. It cannot change here: major upgrades go through Relay's upgrade flow, and a plan that changes it fails.
 
@@ -158,6 +159,18 @@ Optional:
 
 - `mode` (String) `async` or `synchronous`.
 - `synchronous_replicas` (Number) Replicas that must acknowledge a commit. Required when `mode` is `synchronous`, and the groups that can acknowledge must hold at least this many nodes.
+
+
+<a id="nestedatt--restore"></a>
+### Nested Schema for `restore`
+
+Required:
+
+- `source_database_id` (String) ID of the cluster to restore from, in the same workspace and with backups. For a destroyed cluster whose backups were kept, the ID it had.
+
+Optional:
+
+- `target_time` (String) Recover up to this instant, RFC 3339, for example `2026-10-31T12:00:00Z`, by replaying the source's archived WAL; the platform rejects an instant outside the source's backups. Omit it to restore the latest backup and replay all archived WAL.
 
 
 <a id="nestedblock--timeouts"></a>
