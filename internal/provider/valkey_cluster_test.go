@@ -1049,3 +1049,69 @@ func TestValkeyClusterResource_TierChange(t *testing.T) {
 		},
 	})
 }
+
+func TestValkeyClusterResource_UpdateWaitsForTheChangeToApply(t *testing.T) {
+	cases := map[string]struct {
+		setup func(f *fakeServer)
+		want  string
+	}{
+		"settles": {},
+		"backup does not block": {setup: func(f *fakeServer) {
+			f.afterUpdate = func(db *serverv1.Database) { db.Status.ActiveOps = []*serverv1.ActiveOp{{Type: "backup"}} }
+		}},
+		"operator never catches up": {setup: func(f *fakeServer) {
+			f.afterUpdate = func(db *serverv1.Database) { db.Status.ActiveOps = []*serverv1.ActiveOp{{Type: "RollingRestart"}} }
+		}, want: "Cluster did not settle after update"},
+	}
+	for name, tc := range cases {
+		t.Run(name, func(t *testing.T) {
+			f := startFakeServer(t)
+			step2 := resource.TestStep{
+				Config: valkeyConfig(f, valkeyGroup("cache", 2, "8Gi", "")+"\n  timeouts {\n    update = \"2s\"\n  }\n"),
+				PreConfig: func() {
+					if tc.setup != nil {
+						f.set(func() { tc.setup(f) })
+					}
+				},
+				Check: func(*terraform.State) error {
+					f.mu.Lock()
+					defer f.mu.Unlock()
+					for _, db := range f.databases {
+						if slices.ContainsFunc(db.GetStatus().GetActiveOps(), func(op *serverv1.ActiveOp) bool { return op.GetType() == "reconciling" }) {
+							return errors.New("the apply returned while the change was still reconciling")
+						}
+					}
+					return nil
+				},
+			}
+			if tc.want != "" {
+				step2.Check, step2.ExpectError = nil, regexp.MustCompile(tc.want)
+			}
+			resource.UnitTest(t, resource.TestCase{
+				ProtoV6ProviderFactories: factories(relay.Dial),
+				Steps: []resource.TestStep{
+					{Config: valkeyConfig(f, valkeyGroup("cache", 1, "8Gi", "")+"\n  timeouts {\n    update = \"2s\"\n  }\n")},
+					step2,
+				},
+			})
+		})
+	}
+}
+
+func TestChanging(t *testing.T) {
+	cases := map[string]struct {
+		ops  []*serverv1.ActiveOp
+		want bool
+	}{
+		"none":        {nil, false},
+		"backup":      {[]*serverv1.ActiveOp{{Type: "backup"}}, false},
+		"wal warning": {[]*serverv1.ActiveOp{{Type: "wal_archiving_failed"}}, false},
+		"reconciling": {[]*serverv1.ActiveOp{{Type: "backup"}, {Type: "reconciling"}}, true},
+		"rolling":     {[]*serverv1.ActiveOp{{Type: "RollingRestart"}}, true},
+	}
+	for name, tc := range cases {
+		if got := changing(&serverv1.DatabaseStatus{ActiveOps: tc.ops}); got != tc.want {
+			t.Errorf("%s: changing = %v, want %v", name, got, tc.want)
+		}
+	}
+}

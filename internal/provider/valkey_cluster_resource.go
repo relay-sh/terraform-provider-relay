@@ -620,7 +620,7 @@ func (r *valkeyClusterResource) waitRunning(ctx context.Context, id string, time
 		db = out.GetDatabase()
 		switch db.GetStatus().GetPhase() {
 		case phaseRunning:
-			return true, nil
+			return !changing(db.GetStatus()), nil
 		case phaseFailed:
 			return false, errors.New("provisioning failed: " + db.GetStatus().GetMessage())
 		}
