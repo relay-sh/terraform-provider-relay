@@ -1,3 +1,10 @@
+## 0.0.6 (November 1, 2026)
+
+BUG FIXES:
+
+* resource/relay_postgresql_cluster, resource/relay_valkey_cluster: `restore.target_time` written with another offset for the same instant no longer replaces the cluster; the plan keeps the stored value
+* resource/relay_valkey_cluster: a restore whose configuration changes the nodes no longer fails with "node resources.storage is required" when `storage` is not set
+
 ## 0.0.5 (November 1, 2026)
 
 ENHANCEMENTS:
