@@ -1,3 +1,9 @@
+## 0.0.8 (November 1, 2026)
+
+BUG FIXES:
+
+* resource/relay_postgresql_cluster, resource/relay_valkey_cluster: an apply waits for the platform's in-flight operations, such as a rolling restart, instead of returning while the cluster still runs the old spec; a running backup does not hold it
+
 ## 0.0.7 (November 1, 2026)
 
 BUG FIXES:
