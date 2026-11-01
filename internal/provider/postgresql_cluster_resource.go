@@ -642,7 +642,7 @@ func (r *postgresqlClusterResource) waitRunning(ctx context.Context, id string, 
 		db = out.GetDatabase()
 		switch db.GetStatus().GetPhase() {
 		case phaseRunning:
-			return true, nil
+			return !changing(db.GetStatus()), nil
 		case phaseFailed:
 			return false, errors.New("provisioning failed: " + db.GetStatus().GetMessage())
 		}

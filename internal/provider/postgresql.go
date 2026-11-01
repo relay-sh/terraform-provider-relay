@@ -55,6 +55,12 @@ var (
 	storageStatusAttrTypes = map[string]attr.Type{"node_group": types.StringType, "size": types.StringType}
 )
 
+func changing(st *serverv1.DatabaseStatus) bool {
+	return slices.ContainsFunc(st.GetActiveOps(), func(op *serverv1.ActiveOp) bool {
+		return op.GetType() != "backup" && op.GetType() != "wal_archiving_failed"
+	})
+}
+
 func nodesToProto(nodes map[string]nodeGroupModel) []*serverv1.NodeSpec {
 	names := make([]string, 0, len(nodes))
 	for name := range nodes {

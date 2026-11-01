@@ -663,8 +663,8 @@ func (f *fakeServer) GetDatabase(ctx context.Context, req *serverv1.GetDatabaseR
 		f.dbCountdown[db.Id]--
 		if f.dbCountdown[db.Id] == 0 {
 			switch db.Status.Phase {
-			case "provisioning":
-				db.Status.Phase, db.Status.ReadyNodes = "running", 1
+			case "provisioning", "running":
+				db.Status.Phase, db.Status.ReadyNodes, db.Status.ActiveOps = "running", 1, slices.DeleteFunc(db.Status.ActiveOps, func(op *serverv1.ActiveOp) bool { return op.GetType() == "reconciling" })
 				if f.failProvision != "" {
 					db.Status.Phase, db.Status.Message = "failed", f.failProvision
 				}
@@ -731,7 +731,8 @@ func (f *fakeServer) UpdateDatabase(ctx context.Context, req *serverv1.UpdateDat
 	if f.afterUpdate != nil {
 		f.afterUpdate(db)
 	}
-	f.settle(db.Id, "provisioning")
+	db.Status.ActiveOps = append(db.Status.ActiveOps, &serverv1.ActiveOp{Type: "reconciling", Resource: "spec"})
+	f.dbCountdown[db.Id] = f.readyAfter
 	return &serverv1.UpdateDatabaseResponse{Database: db}, nil
 }
 
