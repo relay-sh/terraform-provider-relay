@@ -474,6 +474,13 @@ func (r *valkeyClusterResource) convergeRestore(ctx context.Context, config tfsd
 	if desired.Parameters.IsUnknown() {
 		desired.Parameters = restored.Parameters
 	}
+	desired.Nodes = make(map[string]valkeyNodeGroupModel, len(plan.Nodes))
+	for name, planned := range plan.Nodes {
+		if got, ok := restored.Nodes[name]; ok && planned.Resources.Storage.IsUnknown() {
+			planned.Resources.Storage = got.Resources.Storage
+		}
+		desired.Nodes[name] = planned
+	}
 	if _, err := r.client.API.UpdateDatabase(ctx, &serverv1.UpdateDatabaseRequest{
 		Id:         db.GetId(),
 		Spec:       valkeySpecToProto(desired),

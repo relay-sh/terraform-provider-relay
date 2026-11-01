@@ -166,6 +166,11 @@ func TestValkeyClusterResource_RestoreConverges(t *testing.T) {
 			source: valkeySource("db-src", "9.1", valkeyModeReplication, "cache", true),
 			body:   restoreBlock("db-src", "") + valkeyGroup("cache", 1, "4Gi", ""),
 		},
+		"omitted storage": {
+			source: valkeySource("db-src", "9.1", valkeyModeReplication, "cache", true),
+			body:   restoreBlock("db-src", "") + valkeyGroup("cache", 2, "", ""),
+			mask:   []string{"nodes"},
+		},
 		"larger storage": {
 			source: valkeySource("db-src", "9.1", valkeyModeReplication, "cache", true),
 			body:   restoreBlock("db-src", "") + valkeyGroup("cache", 1, "16Gi", ""),
@@ -193,6 +198,11 @@ func TestValkeyClusterResource_RestoreConverges(t *testing.T) {
 						}
 						if !slices.Equal(mask, tc.mask) {
 							return fmt.Errorf("mask %v, want %v", mask, tc.mask)
+						}
+						for _, n := range f.lastDBUpdate.GetSpec().GetNodes() {
+							if n.GetResources().GetStorage() == "" {
+								return fmt.Errorf("an update must send the restored storage when none is configured, got %v", n)
+							}
 						}
 						return nil
 					},

@@ -700,6 +700,11 @@ func (f *fakeServer) UpdateDatabase(ctx context.Context, req *serverv1.UpdateDat
 			if err := f.bindPlacement(in.GetNodes()); err != nil {
 				return nil, err
 			}
+			for _, n := range in.GetNodes() {
+				if merged.GetEngine() == engineValkey && n.GetResources().GetStorage() == "" {
+					return nil, status.Error(codes.InvalidArgument, "node resources.storage is required")
+				}
+			}
 			merged.Nodes = in.GetNodes()
 		case "replication":
 			merged.Replication = in.GetReplication()
