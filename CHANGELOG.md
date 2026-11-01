@@ -1,3 +1,9 @@
+## 0.0.7 (November 1, 2026)
+
+BUG FIXES:
+
+* resource/relay_valkey_cluster: changing a node group's `tier` no longer fails with "Provider produced inconsistent result after apply"; `cpu` and `memory` are recomputed from the new tier
+
 ## 0.0.6 (November 1, 2026)
 
 BUG FIXES:
