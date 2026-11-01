@@ -1,3 +1,9 @@
+## 0.0.4 (October 31, 2026)
+
+ENHANCEMENTS:
+
+* resource/relay_backup_schedule: `pitr_window_days` turns on point-in-time restore for a Valkey cluster in `replication` mode, 1-35 days; a cluster-mode cluster still rejects it
+
 ## 0.0.3 (October 30, 2026)
 
 ENHANCEMENTS:
