@@ -123,8 +123,8 @@ func validateSchedule(engine string, spec *serverv1.BackupScheduleSpec) error {
 		return fmt.Errorf("retention.max_days is not supported for %s schedules", engine)
 	case spec.GetRetention() != nil && spec.GetRetention().GetMaxBackups() < 1:
 		return fmt.Errorf("retention.max_backups must be at least 1")
-	case engine == engineValkey && spec.GetPitrWindowDays() != 0:
-		return fmt.Errorf("pitr_window_days is not supported for Valkey; restores are snapshot-only")
+	case engine == engineValkey && spec.GetPitrWindowDays() > maxValkeyPITRWindowDays:
+		return fmt.Errorf("pitr_window_days must be 1-%d for Valkey, got %d", maxValkeyPITRWindowDays, spec.GetPitrWindowDays())
 	case t != nil && (t.GetHour() < 0 || t.GetHour() > 23 || t.GetMinute() < 0 || t.GetMinute() > 59):
 		return fmt.Errorf("snapshot_time must be a UTC wall-clock time (hour 0-23, minute 0-59)")
 	}
@@ -189,9 +189,9 @@ func synthesizedSchedule(db *serverv1.Database, stored *serverv1.BackupScheduleS
 	spec.Retention = &serverv1.RetentionPolicy{MaxBackups: retained}
 	if db.GetSpec().GetEngine() == enginePostgreSQL {
 		spec.PitrWindowDays = 7
-		if stored.GetPitrWindowDays() > 0 {
-			spec.PitrWindowDays = stored.GetPitrWindowDays()
-		}
+	}
+	if stored.GetPitrWindowDays() > 0 {
+		spec.PitrWindowDays = stored.GetPitrWindowDays()
 	}
 	return &serverv1.BackupSchedule{
 		Id:              "sched-" + db.GetId(),

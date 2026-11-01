@@ -171,26 +171,38 @@ func TestBackupScheduleResource_Valkey(t *testing.T) {
 				),
 			},
 			{
-				Config:      scheduleConfig(f, "db-1", "  pitr_window_days = 3"),
-				ExpectError: regexp.MustCompile("No point-in-time restore on Valkey"),
+				Config: scheduleConfig(f, "db-1", "  pitr_window_days = 3"),
+				Check: tfresource.ComposeAggregateTestCheckFunc(
+					tfresource.TestCheckResourceAttr(scheduleAddr, "pitr_window_days", "3"),
+					func(*terraform.State) error {
+						if d := f.lastScheduleSpec.GetPitrWindowDays(); d != 3 {
+							return fmt.Errorf("pitr_window_days sent = %d", d)
+						}
+						return nil
+					},
+				),
+			},
+			{
+				Config:      scheduleConfig(f, "db-1", "  pitr_window_days = 36"),
+				ExpectError: regexp.MustCompile(`(?s)Valkey point-in-time window too long.*at most 35 days, got 36`),
 			},
 		},
 	})
 }
 
-func TestBackupScheduleResource_ValkeyPITRAtApply(t *testing.T) {
+func TestBackupScheduleResource_ValkeyClusterModePITRAtApply(t *testing.T) {
 	f := startFakeServer(t)
 	tfresource.UnitTest(t, tfresource.TestCase{
 		ProtoV6ProviderFactories: factories(relay.Dial),
 		Steps: []tfresource.TestStep{{
-			Config: valkeyConfig(f, valkeyGroup("cache", 1, "1Gi", "")) + fmt.Sprintf(`
+			Config: clusterModeConfig(f, "3", "", 3) + fmt.Sprintf(`
 resource "relay_backup_schedule" "this" {
   workspace_id     = %q
   cluster_id       = relay_valkey_cluster.this.id
   pitr_window_days = 3
 }
 `, dbWorkspace),
-			ExpectError: regexp.MustCompile("No point-in-time restore on Valkey"),
+			ExpectError: regexp.MustCompile("No point-in-time restore in Valkey cluster mode"),
 		}},
 	})
 }

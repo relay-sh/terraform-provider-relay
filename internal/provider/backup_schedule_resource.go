@@ -34,6 +34,8 @@ import (
 const (
 	errorCodeTrailer = "x-relay-error-code"
 	planLimitReached = "PLAN_LIMIT_REACHED"
+
+	maxValkeyPITRWindowDays = 35
 )
 
 type backupScheduleResource struct {
@@ -147,7 +149,7 @@ func (r *backupScheduleResource) Schema(_ context.Context, _ resource.SchemaRequ
 			"pitr_window_days": schema.Int64Attribute{
 				Optional:            true,
 				Validators:          []validator.Int64{int64validator.AtLeast(1)},
-				MarkdownDescription: "Requested point-in-time-restore window in days, PostgreSQL only; the platform default is 7. Valkey restores are snapshot-only, so a Valkey cluster rejects it.",
+				MarkdownDescription: "Requested point-in-time-restore window in days. PostgreSQL defaults to 7. Valkey has no window unless set, accepts 1-35 days in `replication` mode only, and needs a disk at least twice its memory while the window is on.",
 			},
 			"platform_default": schema.BoolAttribute{
 				Computed: true, PlanModifiers: []planmodifier.Bool{boolplanmodifier.UseStateForUnknown()},
@@ -215,9 +217,17 @@ func (r *backupScheduleResource) ModifyPlan(ctx context.Context, req resource.Mo
 	if err != nil {
 		return
 	}
-	if strings.EqualFold(out.GetDatabase().GetSpec().GetEngine(), engineValkey) {
-		resp.Diagnostics.AddAttributeError(path.Root("pitr_window_days"), "No point-in-time restore on Valkey",
-			"Cluster "+clusterID.ValueString()+" is a Valkey cluster, whose restores are snapshot-only. Remove pitr_window_days.")
+	spec := out.GetDatabase().GetSpec()
+	if !strings.EqualFold(spec.GetEngine(), engineValkey) {
+		return
+	}
+	switch {
+	case spec.GetValkey().GetMode() == valkeyModeCluster:
+		resp.Diagnostics.AddAttributeError(path.Root("pitr_window_days"), "No point-in-time restore in Valkey cluster mode",
+			"Cluster "+clusterID.ValueString()+" runs in cluster mode; point-in-time restore needs replication mode. Remove pitr_window_days.")
+	case pitr.ValueInt64() > maxValkeyPITRWindowDays:
+		resp.Diagnostics.AddAttributeError(path.Root("pitr_window_days"), "Valkey point-in-time window too long",
+			fmt.Sprintf("A Valkey window is at most %d days, got %d.", maxValkeyPITRWindowDays, pitr.ValueInt64()))
 	}
 }
 
