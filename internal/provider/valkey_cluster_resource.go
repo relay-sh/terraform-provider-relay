@@ -331,6 +331,12 @@ func (r *valkeyClusterResource) ModifyPlan(ctx context.Context, req resource.Mod
 			changed = true
 			continue
 		}
+		if !planned.Tier.IsUnknown() && !planned.Tier.Equal(current.Tier) {
+			planned.Resources.CPU = types.StringUnknown()
+			planned.Resources.Memory = types.StringUnknown()
+			plan.Nodes[name] = planned
+			changed = true
+		}
 		if order, ok := compareQuantity(planned.Resources.Storage, current.Resources.Storage); ok && order <= 0 {
 			planned.Resources.Storage = current.Resources.Storage
 			plan.Nodes[name] = planned

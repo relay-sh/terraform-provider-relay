@@ -538,9 +538,12 @@ func (f *fakeServer) bindPlacement(nodes []*serverv1.NodeSpec) error {
 }
 
 var tierResources = map[string][2]string{
-	"R5":  {"1", "2Gi"},
-	"R10": {"2", "4Gi"},
-	"R20": {"4", "8Gi"},
+	"R5":   {"1", "2Gi"},
+	"R10":  {"2", "4Gi"},
+	"R20":  {"4", "8Gi"},
+	"RC5":  {"250m", "512Mi"},
+	"RC10": {"500m", "2Gi"},
+	"RC20": {"1", "4Gi"},
 }
 
 func deriveTierResources(spec *serverv1.DatabaseSpec) {

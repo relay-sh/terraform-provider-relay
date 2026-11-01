@@ -1017,3 +1017,35 @@ func TestCompareQuantity(t *testing.T) {
 		}
 	}
 }
+
+func TestValkeyClusterResource_TierChange(t *testing.T) {
+	f := startFakeServer(t)
+	group := func(tier string) string {
+		return `
+  nodes = {
+    cache = {
+      cloud     = "aws"
+      region    = "us-east-1"
+      tier      = "` + tier + `"
+      resources = { storage = "8Gi" }
+    }
+  }
+`
+	}
+	resource.UnitTest(t, resource.TestCase{
+		ProtoV6ProviderFactories: factories(relay.Dial),
+		Steps: []resource.TestStep{
+			{
+				Config: valkeyConfig(f, group("RC5")),
+				Check:  resource.TestCheckResourceAttr(valkeyAddr, "nodes.cache.resources.memory", "512Mi"),
+			},
+			{
+				Config: valkeyConfig(f, group("RC10")),
+				Check: resource.ComposeAggregateTestCheckFunc(
+					resource.TestCheckResourceAttr(valkeyAddr, "nodes.cache.resources.cpu", "500m"),
+					resource.TestCheckResourceAttr(valkeyAddr, "nodes.cache.resources.memory", "2Gi"),
+				),
+			},
+		},
+	})
+}
