@@ -67,6 +67,8 @@ type fakeServer struct {
 	lastLDBUpdate     *serverv1.UpdateLogicalDatabaseRequest
 	providers         []*serverv1.DatabaseProvider
 	lastDBCreate      *serverv1.CreateDatabaseRequest
+	lastRestore       *serverv1.RestoreDatabaseRequest
+	keptSources       map[string]*serverv1.Database
 	lastDBUpdate      *serverv1.UpdateDatabaseRequest
 	lastDBDelete      *serverv1.DeleteDatabaseRequest
 	afterUpdate       func(*serverv1.Database)
@@ -115,6 +117,7 @@ func startFakeServer(t *testing.T) *fakeServer {
 		workspaces:        map[string]*serverv1.Workspace{},
 		connections:       map[string]*serverv1.Connection{},
 		databases:         map[string]*serverv1.Database{},
+		keptSources:       map[string]*serverv1.Database{},
 		dbCountdown:       map[string]int{},
 		readyAfter:        2,
 		users:             map[string]*serverv1.DatabaseUser{},
@@ -585,6 +588,10 @@ func (f *fakeServer) CreateDatabase(ctx context.Context, req *serverv1.CreateDat
 			n.Resources.StorageClass = "standard"
 		}
 	}
+	return &serverv1.CreateDatabaseResponse{Database: f.storeDatabase(ctx, req.GetName(), spec)}, nil
+}
+
+func (f *fakeServer) storeDatabase(ctx context.Context, name string, spec *serverv1.DatabaseSpec) *serverv1.Database {
 	port := int32(5432)
 	if spec.GetEngine() == engineValkey {
 		port = 6379
@@ -593,19 +600,47 @@ func (f *fakeServer) CreateDatabase(ctx context.Context, req *serverv1.CreateDat
 	}
 	db := &serverv1.Database{
 		Id:          f.newID("db"),
-		Name:        req.GetName(),
+		Name:        name,
 		OrgId:       testOrgID,
 		WorkspaceId: workspaceOf(ctx),
 		Spec:        spec,
 		Status: &serverv1.DatabaseStatus{
-			Endpoint:        &serverv1.Endpoint{Host: req.GetName() + ".public", Port: port},
-			PublicEndpoints: []*serverv1.PublicEndpoint{{Role: "rw", Host: req.GetName() + ".public", Port: port}},
+			Endpoint:        &serverv1.Endpoint{Host: name + ".public", Port: port},
+			PublicEndpoints: []*serverv1.PublicEndpoint{{Role: "rw", Host: name + ".public", Port: port}},
 			TotalNodes:      1,
 		},
 	}
 	f.databases[db.Id] = db
 	f.settle(db.Id, "provisioning")
-	return &serverv1.CreateDatabaseResponse{Database: db}, nil
+	return db
+}
+
+func (f *fakeServer) RestoreDatabase(ctx context.Context, req *serverv1.RestoreDatabaseRequest) (*serverv1.RestoreDatabaseResponse, error) {
+	f.mu.Lock()
+	defer f.mu.Unlock()
+	if err := f.record(ctx, "RestoreDatabase"); err != nil {
+		return nil, err
+	}
+	f.lastRestore = req
+	src, ok := f.databases[req.GetSourceDatabaseId()]
+	if !ok {
+		src, ok = f.keptSources[req.GetSourceDatabaseId()]
+	}
+	switch {
+	case !ok:
+		return nil, status.Error(codes.NotFound, "source database not found")
+	case src.GetWorkspaceId() != workspaceOf(ctx):
+		return nil, status.Error(codes.FailedPrecondition, "source database is in a different workspace")
+	case !src.GetSpec().GetBackupsEnabled():
+		return nil, status.Error(codes.FailedPrecondition, "source database does not have backups enabled")
+	case req.GetTargetTime().AsTime().After(time.Now()):
+		return nil, status.Error(codes.InvalidArgument, "restore.target_time must not be in the future")
+	case req.GetTargetTime() != nil && src.GetSpec().GetValkey().GetMode() == valkeyModeCluster:
+		return nil, status.Error(codes.InvalidArgument, "point-in-time restore (pitr_window_days, restore.target_time) is supported in replication mode only")
+	}
+	spec := proto.Clone(src.GetSpec()).(*serverv1.DatabaseSpec)
+	spec.BackupsEnabled = true
+	return &serverv1.RestoreDatabaseResponse{Database: f.storeDatabase(ctx, req.GetName(), spec)}, nil
 }
 
 func (f *fakeServer) GetDatabase(ctx context.Context, req *serverv1.GetDatabaseRequest) (*serverv1.GetDatabaseResponse, error) {

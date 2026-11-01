@@ -79,6 +79,7 @@ resource "relay_valkey_cluster" "leaderboard" {
 - `mode` (String) `replication` runs one primary and its replicas. `cluster` shards the keyspace across `shards` primaries, each with `replicas_per_shard` replicas. Changing it replaces the cluster.
 - `parameters` (Map of String) Valkey settings, for example `maxmemory-policy`. An empty map resets them to defaults; omitting the attribute leaves them unmanaged. Settings the platform manages, such as `maxmemory` or `port`, are rejected. The platform stores canonical names (lower case, aliases resolved); the spelling you configure is kept in state when it maps to the stored name.
 - `replicas_per_shard` (Number) Replicas behind each shard's primary, 0-4. Only in `cluster` mode; omitted means 0.
+- `restore` (Attributes) Creates the cluster from another cluster's backups instead of empty. The platform picks the backup and starts the cluster with the source's settings; the provider then applies the configured nodes and settings. `mode`, `version` when set, and the node group label must match the source's. Only read on create: changing it replaces the cluster, while adding it to or removing it from an existing cluster changes nothing. (see [below for nested schema](#nestedatt--restore))
 - `shards` (Number) Primaries the keyspace is split across, 3-100. Required in `cluster` mode and not allowed in `replication` mode. Changing it reshards in place, together with the node group's `count`.
 - `timeouts` (Block, Optional) (see [below for nested schema](#nestedblock--timeouts))
 - `version` (String) Valkey version, for example `9.1`. Omit it and the platform picks one, which the next read reports. It cannot change here: upgrades go through Relay's upgrade flow, and a plan that changes it fails.
@@ -139,6 +140,18 @@ Optional:
 - `threshold_percent` (Number) Disk-usage percent that triggers a grow. `0` or omitted uses the platform default of 80; otherwise 50-95.
 
 
+
+
+<a id="nestedatt--restore"></a>
+### Nested Schema for `restore`
+
+Required:
+
+- `source_database_id` (String) ID of the cluster to restore from, in the same workspace and with backups. For a destroyed cluster whose backups were kept, the ID it had.
+
+Optional:
+
+- `target_time` (String) Recover up to this instant, RFC 3339, for example `2026-10-31T12:00:00Z`. It replays the source's AOF archive, so it needs `mode = "replication"`, a source that still exists with `pitr_window_days` on its backup schedule, and an instant inside that window. Omit it to restore the latest backup.
 
 
 <a id="nestedblock--timeouts"></a>

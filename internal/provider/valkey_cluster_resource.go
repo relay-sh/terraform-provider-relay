@@ -27,6 +27,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/stringdefault"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/stringplanmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/schema/validator"
+	"github.com/hashicorp/terraform-plugin-framework/tfsdk"
 	"github.com/hashicorp/terraform-plugin-framework/types"
 	"google.golang.org/protobuf/types/known/fieldmaskpb"
 
@@ -72,6 +73,7 @@ type valkeyClusterModel struct {
 	Nodes                map[string]valkeyNodeGroupModel `tfsdk:"nodes"`
 	Parameters           types.Map                       `tfsdk:"parameters"`
 	KeepBackupsOnDestroy types.Bool                      `tfsdk:"keep_backups_on_destroy"`
+	Restore              types.Object                    `tfsdk:"restore"`
 	Phase                types.String                    `tfsdk:"phase"`
 	PhaseMessage         types.String                    `tfsdk:"phase_message"`
 	EndpointHost         types.String                    `tfsdk:"endpoint_host"`
@@ -212,6 +214,9 @@ func (r *valkeyClusterResource) Schema(ctx context.Context, _ resource.SchemaReq
 				Optional: true, Computed: true, Default: booldefault.StaticBool(false),
 				MarkdownDescription: "Keep the cluster's backups when it is destroyed.",
 			},
+			"restore": restoreAttribute("`mode`, `version` when set, and the node group label must match the source's.",
+				"Recover up to this instant, RFC 3339, for example `2026-10-31T12:00:00Z`. It replays the source's AOF archive, so it needs `mode = \"replication\"`, "+
+					"a source that still exists with `pitr_window_days` on its backup schedule, and an instant inside that window. Omit it to restore the latest backup."),
 			"phase":             schema.StringAttribute{Computed: true, MarkdownDescription: "Lifecycle phase after the last apply."},
 			"phase_message":     schema.StringAttribute{Computed: true, MarkdownDescription: "Detail for the phase."},
 			"endpoint_host":     schema.StringAttribute{Computed: true, MarkdownDescription: "Public read-write endpoint host. Empty until the platform publishes it."},
@@ -292,7 +297,11 @@ func (r *valkeyClusterResource) ValidateConfig(ctx context.Context, req resource
 }
 
 func (r *valkeyClusterResource) ModifyPlan(ctx context.Context, req resource.ModifyPlanRequest, resp *resource.ModifyPlanResponse) {
-	if req.State.Raw.IsNull() || req.Plan.Raw.IsNull() {
+	if req.Plan.Raw.IsNull() {
+		return
+	}
+	if req.State.Raw.IsNull() {
+		r.planRestore(ctx, req, resp)
 		return
 	}
 	var plan, prior valkeyClusterModel
@@ -300,6 +309,9 @@ func (r *valkeyClusterResource) ModifyPlan(ctx context.Context, req resource.Mod
 	resp.Diagnostics.Append(req.State.Get(ctx, &prior)...)
 	if resp.Diagnostics.HasError() {
 		return
+	}
+	if restoreChanged(plan.Restore, prior.Restore) {
+		resp.RequiresReplace = append(resp.RequiresReplace, path.Root("restore"))
 	}
 	if !plan.Version.IsUnknown() && !plan.Version.Equal(prior.Version) {
 		resp.Diagnostics.AddAttributeError(path.Root("version"), "Version cannot change here",
@@ -346,7 +358,38 @@ func (r *valkeyClusterResource) ModifyPlan(ctx context.Context, req resource.Mod
 func sameSettings(a, b valkeyClusterModel) bool {
 	return a.Name.Equal(b.Name) && a.WorkspaceID.Equal(b.WorkspaceID) && a.Version.Equal(b.Version) && a.Mode.Equal(b.Mode) &&
 		a.Shards.Equal(b.Shards) && a.ReplicasPerShard.Equal(b.ReplicasPerShard) && a.Parameters.Equal(b.Parameters) &&
-		a.KeepBackupsOnDestroy.Equal(b.KeepBackupsOnDestroy) && a.Timeouts.Equal(b.Timeouts)
+		a.KeepBackupsOnDestroy.Equal(b.KeepBackupsOnDestroy) && a.Restore.Equal(b.Restore) && a.Timeouts.Equal(b.Timeouts)
+}
+
+func (r *valkeyClusterResource) planRestore(ctx context.Context, req resource.ModifyPlanRequest, resp *resource.ModifyPlanResponse) {
+	var restore types.Object
+	var workspaceID, version, mode types.String
+	var nodes types.Map
+	resp.Diagnostics.Append(req.Plan.GetAttribute(ctx, path.Root("restore"), &restore)...)
+	resp.Diagnostics.Append(req.Plan.GetAttribute(ctx, path.Root("workspace_id"), &workspaceID)...)
+	resp.Diagnostics.Append(req.Plan.GetAttribute(ctx, path.Root("version"), &version)...)
+	resp.Diagnostics.Append(req.Plan.GetAttribute(ctx, path.Root("mode"), &mode)...)
+	resp.Diagnostics.Append(req.Plan.GetAttribute(ctx, path.Root("nodes"), &nodes)...)
+	if known(restoreTargetTime(restore)) && mode.ValueString() == valkeyModeCluster {
+		resp.Diagnostics.AddAttributeError(path.Root("restore").AtName("target_time"), "No point-in-time restore in Valkey cluster mode",
+			"A point-in-time restore replays the AOF archive, which only mode \"replication\" keeps. Remove target_time to restore the latest backup.")
+	}
+	src := checkRestorePlan(ctx, r.client, workspaceID, version, restore, engineValkey, &resp.Diagnostics)
+	if src == nil {
+		return
+	}
+	if srcMode := valkeyModeOf(src); known(mode) && mode.ValueString() != srcMode {
+		resp.Diagnostics.AddAttributeError(path.Root("mode"), "Mode differs from the source",
+			"The source runs in "+srcMode+" mode, and a backup restores only into the same mode. Set mode = \""+srcMode+"\".")
+	}
+	checkRestoreLabel(nodes, src.GetPrimaryNodeGroup(), &resp.Diagnostics)
+}
+
+func valkeyModeOf(spec *serverv1.DatabaseSpec) string {
+	if mode := spec.GetValkey().GetMode(); mode != "" {
+		return mode
+	}
+	return valkeyModeReplication
 }
 
 func (r *valkeyClusterResource) Create(ctx context.Context, req resource.CreateRequest, resp *resource.CreateResponse) {
@@ -359,12 +402,23 @@ func (r *valkeyClusterResource) Create(ctx context.Context, req resource.CreateR
 	}
 
 	scoped := r.client.Workspace(ctx, plan.WorkspaceID.ValueString())
-	out, err := r.client.API.CreateDatabase(scoped, &serverv1.CreateDatabaseRequest{Name: plan.Name.ValueString(), Spec: valkeySpecToProto(plan)})
-	if err != nil {
-		resp.Diagnostics.AddError("Cannot create cluster", err.Error())
-		return
+	var created *serverv1.Database
+	if plan.Restore.IsNull() {
+		out, err := r.client.API.CreateDatabase(scoped, &serverv1.CreateDatabaseRequest{Name: plan.Name.ValueString(), Spec: valkeySpecToProto(plan)})
+		if err != nil {
+			resp.Diagnostics.AddError("Cannot create cluster", err.Error())
+			return
+		}
+		created = out.GetDatabase()
+	} else {
+		out, err := r.client.API.RestoreDatabase(scoped, restoreRequest(plan.Name.ValueString(), plan.Restore))
+		if err != nil {
+			resp.Diagnostics.AddError("Cannot restore cluster", err.Error())
+			return
+		}
+		created = out.GetDatabase()
 	}
-	id := out.GetDatabase().GetId()
+	id := created.GetId()
 	resp.Diagnostics.Append(resp.State.SetAttribute(ctx, path.Root("id"), id)...)
 	resp.Diagnostics.Append(resp.State.SetAttribute(ctx, path.Root("workspace_id"), plan.WorkspaceID)...)
 	resp.Diagnostics.Append(resp.State.SetAttribute(ctx, path.Root("name"), plan.Name)...)
@@ -374,9 +428,64 @@ func (r *valkeyClusterResource) Create(ctx context.Context, req resource.CreateR
 		resp.Diagnostics.AddError("Cluster did not become ready", err.Error())
 		return
 	}
+	if !plan.Restore.IsNull() {
+		if db = r.convergeRestore(scoped, req.Plan, plan, db, timeout, resp); db == nil {
+			return
+		}
+	}
 	state := valkeyClusterFromProto(db, plan)
 	keepPlannedStorage(state.Nodes, plan.Nodes)
 	resp.Diagnostics.Append(resp.State.Set(ctx, &state)...)
+}
+
+func (r *valkeyClusterResource) convergeRestore(ctx context.Context, config tfsdk.Plan, plan valkeyClusterModel, db *serverv1.Database, timeout time.Duration, resp *resource.CreateResponse) *serverv1.Database {
+	restored := valkeyClusterFromProto(db, plan)
+	for name, planned := range plan.Nodes {
+		if got, ok := restored.Nodes[name]; ok {
+			if order, ok := compareQuantity(planned.Resources.Storage, got.Resources.Storage); ok && order <= 0 {
+				got.Resources.Storage = planned.Resources.Storage
+				restored.Nodes[name] = got
+			}
+		}
+	}
+	resp.Diagnostics.Append(resp.State.Set(ctx, &restored)...)
+	if fixed := driftedRoots(config, resp.State, []string{"version", "mode"}); len(fixed) > 0 {
+		resp.Diagnostics.AddError("Restored cluster does not match the configuration",
+			"The source's "+strings.Join(fixed, " and ")+" differ from the configuration and cannot change in place. Set them to the values in state, then apply again.")
+		return nil
+	}
+	var paths []string
+	for _, root := range driftedRoots(config, resp.State, []string{"nodes", "shards", "replicas_per_shard", "parameters"}) {
+		p := map[string]string{"nodes": "nodes", "shards": "valkey", "replicas_per_shard": "valkey", "parameters": "valkey.parameters"}[root]
+		if !slices.Contains(paths, p) {
+			paths = append(paths, p)
+		}
+	}
+	if slices.Contains(paths, "valkey") {
+		paths = slices.DeleteFunc(paths, func(p string) bool { return p == "valkey.parameters" })
+	}
+	if len(paths) == 0 {
+		return db
+	}
+	desired := plan
+	desired.Version = restored.Version
+	if desired.Parameters.IsUnknown() {
+		desired.Parameters = restored.Parameters
+	}
+	if _, err := r.client.API.UpdateDatabase(ctx, &serverv1.UpdateDatabaseRequest{
+		Id:         db.GetId(),
+		Spec:       valkeySpecToProto(desired),
+		UpdateMask: &fieldmaskpb.FieldMask{Paths: paths},
+	}); err != nil {
+		resp.Diagnostics.AddError("Cannot apply the configuration to the restored cluster", err.Error())
+		return nil
+	}
+	db, err := r.waitRunning(ctx, db.GetId(), timeout)
+	if err != nil {
+		resp.Diagnostics.AddError("Restored cluster did not settle after update", err.Error())
+		return nil
+	}
+	return db
 }
 
 func (r *valkeyClusterResource) Read(ctx context.Context, req resource.ReadRequest, resp *resource.ReadResponse) {
@@ -706,6 +815,7 @@ func valkeyClusterFromProto(db *serverv1.Database, prior valkeyClusterModel) val
 		Nodes:                valkeyNodesFromProto(spec.GetNodes(), prior.Nodes),
 		Parameters:           keepConfiguredParameterNames(v.GetParameters(), prior.Parameters),
 		KeepBackupsOnDestroy: prior.KeepBackupsOnDestroy,
+		Restore:              prior.Restore,
 		Phase:                types.StringValue(st.GetPhase()),
 		PhaseMessage:         types.StringValue(st.GetMessage()),
 		EndpointHost:         types.StringValue(st.GetEndpoint().GetHost()),
