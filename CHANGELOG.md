@@ -1,3 +1,10 @@
+## 0.0.9 (November 2, 2026)
+
+BUG FIXES:
+
+* resource/relay_api_key: an imported key plans no change: the import reads `allowed_cidrs` and `expires_in` back from the key, leaving them null when they were copied from a parent key, so applying after an import no longer restarts the key's expiry ([#56](https://github.com/relay-sh/terraform-provider-relay/issues/56))
+* resource/relay_api_key: writing the same `expires_in` another way, such as `1440m` for `24h`, no longer restarts the key's expiry
+
 ## 0.0.8 (November 1, 2026)
 
 BUG FIXES:
