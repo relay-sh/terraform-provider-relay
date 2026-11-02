@@ -87,7 +87,7 @@ func (r *apiKeyResource) Schema(_ context.Context, _ resource.SchemaRequest, res
 			"expires_in": schema.StringAttribute{
 				Optional:            true,
 				Validators:          []validator.String{lifetimeValidator{}},
-				MarkdownDescription: "Lifetime as a duration, such as `720h`, at most `8760h`. Counted from the apply that sets or changes it. Omit it for a key that never expires, or that expires with its parent.",
+				MarkdownDescription: "Lifetime as a duration, such as `720h`, at most `8760h`. Counted from the apply that sets or changes it; the same duration spelled another way, such as `1440m` for `24h`, does not restart it. An import reads it back as the time from creation to expiry. Omit it for a key that never expires, or that expires with its parent.",
 			},
 			"expires_at": schema.StringAttribute{Computed: true, MarkdownDescription: "Expiry, RFC 3339. Null when the key never expires. Once it passes, the next plan replaces the key, which issues a new `secret`."},
 			"secret": schema.StringAttribute{
@@ -128,7 +128,7 @@ func (r *apiKeyResource) ModifyPlan(ctx context.Context, req resource.ModifyPlan
 		resp.Diagnostics.Append(resp.Plan.Set(ctx, &plan)...)
 		return
 	}
-	if plan.ExpiresIn.Equal(prior.ExpiresIn) {
+	if sameLifetime(plan.ExpiresIn, prior.ExpiresIn) {
 		plan.ExpiresAt = prior.ExpiresAt
 	}
 	if plan.AllowedCIDRs.Equal(prior.AllowedCIDRs) {
@@ -183,12 +183,12 @@ func (r *apiKeyResource) Read(ctx context.Context, req resource.ReadRequest, res
 		return
 	}
 	imported := state.EffectiveAllowedCIDRs.IsNull()
-	drifted := !imported && !stringSetFromGo(key.GetAllowedCidrs()).Equal(state.EffectiveAllowedCIDRs)
-	if drifted || (imported && key.GetParentKeyId() == "") {
-		state.AllowedCIDRs = types.SetNull(types.StringType)
-		if len(key.GetAllowedCidrs()) > 0 {
-			state.AllowedCIDRs = stringSetFromGo(key.GetAllowedCidrs())
-		}
+	if imported {
+		parent := r.parentKey(ctx, keys, key)
+		state.AllowedCIDRs = ownCIDRs(key, parent)
+		state.ExpiresIn = ownLifetime(key, parent)
+	} else if !stringSetFromGo(key.GetAllowedCidrs()).Equal(state.EffectiveAllowedCIDRs) {
+		state.AllowedCIDRs = ownCIDRs(key, nil)
 	}
 	state = apiKeyFromProto(key, state)
 	resp.Diagnostics.Append(resp.State.Set(ctx, &state)...)
@@ -209,7 +209,7 @@ func (r *apiKeyResource) Update(ctx context.Context, req resource.UpdateRequest,
 	if !plan.Role.Equal(prior.Role) {
 		update.RoleSlug = stringPtr(plan.Role.ValueString())
 	}
-	if !plan.ExpiresIn.Equal(prior.ExpiresIn) {
+	if !sameLifetime(plan.ExpiresIn, prior.ExpiresIn) {
 		update.ExpiresInSeconds = lifetimeSeconds(plan.ExpiresIn)
 	}
 	out, err := r.client.API.UpdateAPIKey(r.client.Org(ctx), update)
@@ -243,6 +243,66 @@ func (r *apiKeyResource) ImportState(ctx context.Context, req resource.ImportSta
 		resp.Diagnostics.Append(resp.State.SetAttribute(ctx, path.Root("workspace_id"), parts[0])...)
 	}
 	resp.Diagnostics.Append(resp.State.SetAttribute(ctx, path.Root("id"), parts[len(parts)-1])...)
+}
+
+func (r *apiKeyResource) parentKey(ctx context.Context, keys []*serverv1.APIKey, key *serverv1.APIKey) *serverv1.APIKey {
+	id := key.GetParentKeyId()
+	if id == "" {
+		return nil
+	}
+	if parent := apiKeyByID(keys, id); parent != nil || key.GetWorkspaceId() == "" {
+		return parent
+	}
+	orgKeys, err := listAPIKeys(ctx, r.client, "")
+	if err != nil {
+		return nil
+	}
+	return apiKeyByID(orgKeys, id)
+}
+
+func ownCIDRs(key, parent *serverv1.APIKey) types.Set {
+	cidrs := key.GetAllowedCidrs()
+	if len(cidrs) == 0 || (parent != nil && stringSetFromGo(cidrs).Equal(stringSetFromGo(parent.GetAllowedCidrs()))) {
+		return types.SetNull(types.StringType)
+	}
+	return stringSetFromGo(cidrs)
+}
+
+func ownLifetime(key, parent *serverv1.APIKey) types.String {
+	if key.GetExpiresAt() == nil || key.GetCreatedAt() == nil {
+		return types.StringNull()
+	}
+	if parent != nil && parent.GetExpiresAt() != nil && parent.GetExpiresAt().AsTime().Equal(key.GetExpiresAt().AsTime()) {
+		return types.StringNull()
+	}
+	lifetime := key.GetExpiresAt().AsTime().Sub(key.GetCreatedAt().AsTime()).Round(time.Second)
+	if lifetime < time.Second || lifetime > maxAPIKeyLifetime {
+		return types.StringNull()
+	}
+	return types.StringValue(formatLifetime(lifetime))
+}
+
+func formatLifetime(d time.Duration) string {
+	s := d.String()
+	if strings.HasSuffix(s, "m0s") {
+		s = strings.TrimSuffix(s, "0s")
+	}
+	if strings.HasSuffix(s, "h0m") {
+		s = strings.TrimSuffix(s, "0m")
+	}
+	return s
+}
+
+func sameLifetime(a, b types.String) bool {
+	if a.IsUnknown() || b.IsUnknown() || a.IsNull() || b.IsNull() {
+		return a.Equal(b)
+	}
+	da, errA := parseLifetime(a)
+	db, errB := parseLifetime(b)
+	if errA != nil || errB != nil {
+		return a.Equal(b)
+	}
+	return da == db
 }
 
 func apiKeyFromProto(k *serverv1.APIKey, prior apiKeyModel) apiKeyModel {

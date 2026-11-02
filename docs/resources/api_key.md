@@ -43,7 +43,7 @@ output "ci_key" {
 ### Optional
 
 - `allowed_cidrs` (Set of String) IP addresses or CIDR blocks the key may be used from, up to 20. Omit it to allow any address, or the parent key's addresses.
-- `expires_in` (String) Lifetime as a duration, such as `720h`, at most `8760h`. Counted from the apply that sets or changes it. Omit it for a key that never expires, or that expires with its parent.
+- `expires_in` (String) Lifetime as a duration, such as `720h`, at most `8760h`. Counted from the apply that sets or changes it; the same duration spelled another way, such as `1440m` for `24h`, does not restart it. An import reads it back as the time from creation to expiry. Omit it for a key that never expires, or that expires with its parent.
 - `workspace_id` (String) Workspace the key is confined to. Omit it for an organization key. Changing it replaces the key.
 
 ### Read-Only

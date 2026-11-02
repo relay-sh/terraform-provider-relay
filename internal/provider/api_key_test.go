@@ -7,14 +7,17 @@ import (
 	"regexp"
 	"strings"
 	"testing"
+	"time"
 
 	"github.com/hashicorp/terraform-plugin-framework/resource"
 	"github.com/hashicorp/terraform-plugin-framework/schema/validator"
 	"github.com/hashicorp/terraform-plugin-framework/tfsdk"
 	"github.com/hashicorp/terraform-plugin-framework/types"
 	tfresource "github.com/hashicorp/terraform-plugin-testing/helper/resource"
+	"github.com/hashicorp/terraform-plugin-testing/knownvalue"
 	"github.com/hashicorp/terraform-plugin-testing/plancheck"
 	"github.com/hashicorp/terraform-plugin-testing/terraform"
+	"github.com/hashicorp/terraform-plugin-testing/tfjsonpath"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
 	"google.golang.org/protobuf/types/known/timestamppb"
@@ -35,7 +38,11 @@ func noAPIKeysLeft(f *fakeServer) tfresource.TestCheckFunc {
 	return func(*terraform.State) error {
 		f.mu.Lock()
 		defer f.mu.Unlock()
-		if len(f.apiKeys) != 0 {
+		left := len(f.apiKeys)
+		if f.callerKey != nil && f.apiKeys[f.callerKey.GetId()] != nil {
+			left--
+		}
+		if left != 0 {
 			return fmt.Errorf("API keys left after destroy: %v", f.apiKeys)
 		}
 		return nil
@@ -130,6 +137,7 @@ func TestAPIKeyResource_WorkspaceKeyInheritsFromParent(t *testing.T) {
 	f.workspaces["ws-1"] = &serverv1.Workspace{Id: "ws-1", Name: "prod"}
 	f.workspaces["ws-2"] = &serverv1.Workspace{Id: "ws-2", Name: "staging"}
 	f.callerKey = &serverv1.APIKey{Id: "parent", AllowedCidrs: []string{"0.0.0.0/0"}, ExpiresAt: timestamppb.New(fakeNow.AddDate(0, 1, 0))}
+	f.apiKeys["parent"] = f.callerKey
 	workspaceKey := func(ws string) string {
 		return apiKeyConfig(f, fmt.Sprintf(`
   name         = "deployer"
@@ -204,6 +212,182 @@ func TestAPIKeyResource_ImportOfUserKeyKeepsItsAddresses(t *testing.T) {
 			),
 		}},
 	})
+}
+
+func TestAPIKeyResource_ImportOfChildKeyPlansNoChange(t *testing.T) {
+	f := startFakeServer(t)
+	f.callerKey = &serverv1.APIKey{Id: "tf", RoleSlug: "admin", CreatedAt: timestamppb.New(fakeNow.AddDate(0, -1, 0))}
+	f.apiKeys["tf"] = f.callerKey
+	expiresAt := fakeNow.Add(24 * time.Hour)
+	f.apiKeys["key-7"] = &serverv1.APIKey{
+		Id: "key-7", Name: "ci", RoleSlug: "viewer", AllowedCidrs: []string{"203.0.113.0/24"},
+		CreatedAt: timestamppb.New(fakeNow.Add(-3 * time.Millisecond)), ExpiresAt: timestamppb.New(expiresAt), ParentKeyId: "tf",
+	}
+	config := func(name, lifetime string) string {
+		return apiKeyConfig(f, fmt.Sprintf(`
+  name          = %q
+  role          = "viewer"
+  allowed_cidrs = ["203.0.113.0/24"]
+  expires_in    = %q
+`, name, lifetime))
+	}
+	expiryKept := func(*terraform.State) error {
+		if u := f.lastKeyUpdate; u.ExpiresInSeconds != nil {
+			return fmt.Errorf("an imported key's expiry must not restart: %+v", u)
+		}
+		return nil
+	}
+	tfresource.UnitTest(t, tfresource.TestCase{
+		ProtoV6ProviderFactories: factories(relay.Dial),
+		Steps: []tfresource.TestStep{
+			{
+				Config:             config("ci", "24h"),
+				ResourceName:       "relay_api_key.this",
+				ImportState:        true,
+				ImportStateId:      "key-7",
+				ImportStatePersist: true,
+				ImportStateCheck: func(states []*terraform.InstanceState) error {
+					if got := states[0].Attributes["expires_in"]; got != "24h" {
+						return fmt.Errorf("expires_in = %q", got)
+					}
+					if got := states[0].Attributes["allowed_cidrs.0"]; got != "203.0.113.0/24" {
+						return fmt.Errorf("allowed_cidrs = %q", got)
+					}
+					return nil
+				},
+			},
+			{Config: config("ci", "24h"), PlanOnly: true},
+			{
+				Config: config("ci", "1440m"),
+				ConfigPlanChecks: tfresource.ConfigPlanChecks{PreApply: []plancheck.PlanCheck{
+					plancheck.ExpectResourceAction("relay_api_key.this", plancheck.ResourceActionUpdate),
+					plancheck.ExpectKnownValue("relay_api_key.this", tfjsonpath.New("expires_at"), knownvalue.StringExact("2027-01-16T08:00:00Z")),
+				}},
+				Check: tfresource.ComposeAggregateTestCheckFunc(
+					tfresource.TestCheckResourceAttr("relay_api_key.this", "expires_at", "2027-01-16T08:00:00Z"),
+					expiryKept,
+				),
+			},
+			{
+				Config: config("ci-renamed", "1440m"),
+				Check: tfresource.ComposeAggregateTestCheckFunc(
+					tfresource.TestCheckResourceAttr("relay_api_key.this", "expires_at", "2027-01-16T08:00:00Z"),
+					expiryKept,
+				),
+			},
+			{
+				Config: config("ci-renamed", "48h"),
+				Check: tfresource.ComposeAggregateTestCheckFunc(
+					tfresource.TestCheckResourceAttr("relay_api_key.this", "expires_at", "2027-01-17T08:00:00Z"),
+					func(*terraform.State) error {
+						if got := f.lastKeyUpdate.GetExpiresInSeconds(); got != 48*3600 {
+							return fmt.Errorf("a changed lifetime must be sent: %d", got)
+						}
+						return nil
+					},
+				),
+			},
+		},
+	})
+}
+
+func TestAPIKeyResource_ImportOfKeyInheritingItsParent(t *testing.T) {
+	f := startFakeServer(t)
+	f.workspaces["ws-1"] = &serverv1.Workspace{Id: "ws-1", Name: "prod"}
+	parentExpiry := timestamppb.New(fakeNow.AddDate(0, 2, 0))
+	f.apiKeys["org-parent"] = &serverv1.APIKey{Id: "org-parent", AllowedCidrs: []string{"10.0.0.0/8"}, ExpiresAt: parentExpiry}
+	seed := func() {
+		f.set(func() {
+			f.apiKeys["key-5"] = &serverv1.APIKey{
+				Id: "key-5", Name: "deployer", WorkspaceId: "ws-1", RoleSlug: "viewer", AllowedCidrs: []string{"10.0.0.0/8"},
+				CreatedAt: timestamppb.New(fakeNow), ExpiresAt: parentExpiry, ParentKeyId: "org-parent",
+			}
+		})
+	}
+	importAndPlan := func(config string, parentHidden bool) []tfresource.TestStep {
+		return []tfresource.TestStep{
+			{
+				PreConfig: func() {
+					seed()
+					if parentHidden {
+						f.failAfter("ListAPIKeys", 1, status.Error(codes.PermissionDenied, "workspace-scoped caller"))
+					}
+				},
+				Config:             config,
+				ResourceName:       "relay_api_key.this",
+				ImportState:        true,
+				ImportStateId:      "ws-1/key-5",
+				ImportStatePersist: true,
+			},
+			{
+				PreConfig: func() { f.failWith("ListAPIKeys", nil) },
+				Config:    config,
+				PlanOnly:  true,
+			},
+		}
+	}
+	tfresource.UnitTest(t, tfresource.TestCase{
+		ProtoV6ProviderFactories: factories(relay.Dial),
+		Steps: importAndPlan(apiKeyConfig(f, `
+  name         = "deployer"
+  workspace_id = "ws-1"
+  role         = "viewer"
+`), false),
+	})
+	tfresource.UnitTest(t, tfresource.TestCase{
+		ProtoV6ProviderFactories: factories(relay.Dial),
+		Steps: importAndPlan(apiKeyConfig(f, `
+  name          = "deployer"
+  workspace_id  = "ws-1"
+  role          = "viewer"
+  allowed_cidrs = ["10.0.0.0/8"]
+  expires_in    = "1416h"
+`), true),
+	})
+}
+
+func TestAPIKeyLifetimeHelpers(t *testing.T) {
+	for d, want := range map[time.Duration]string{
+		45 * time.Second:           "45s",
+		30 * time.Minute:           "30m",
+		90 * time.Second:           "1m30s",
+		24 * time.Hour:             "24h",
+		90 * time.Minute:           "1h30m",
+		time.Hour + 30*time.Second: "1h0m30s",
+		8760 * time.Hour:           "8760h",
+		2*time.Hour + 5*time.Minute + 7*time.Second: "2h5m7s",
+	} {
+		if got := formatLifetime(d); got != want {
+			t.Errorf("formatLifetime(%s) = %q, want %q", d, got, want)
+		}
+	}
+	for _, tc := range []struct {
+		a, b types.String
+		want bool
+	}{
+		{types.StringValue("24h"), types.StringValue("1440m"), true},
+		{types.StringValue("24h"), types.StringValue("48h"), false},
+		{types.StringNull(), types.StringNull(), true},
+		{types.StringNull(), types.StringValue("24h"), false},
+		{types.StringUnknown(), types.StringValue("24h"), false},
+		{types.StringValue("soon"), types.StringValue("soon"), true},
+		{types.StringValue("24h"), types.StringValue("soon"), false},
+	} {
+		if got := sameLifetime(tc.a, tc.b); got != tc.want {
+			t.Errorf("sameLifetime(%s, %s) = %v", tc.a, tc.b, got)
+		}
+	}
+	created := timestamppb.New(fakeNow)
+	for name, key := range map[string]*serverv1.APIKey{
+		"no expiry":      {CreatedAt: created},
+		"no created_at":  {ExpiresAt: timestamppb.New(fakeNow.Add(time.Hour))},
+		"too long":       {CreatedAt: created, ExpiresAt: timestamppb.New(fakeNow.Add(9000 * time.Hour))},
+		"already passed": {CreatedAt: created, ExpiresAt: created},
+	} {
+		if got := ownLifetime(key, nil); !got.IsNull() {
+			t.Errorf("%s: ownLifetime = %s, want null", name, got)
+		}
+	}
 }
 
 func TestAPIKeyValidators(t *testing.T) {

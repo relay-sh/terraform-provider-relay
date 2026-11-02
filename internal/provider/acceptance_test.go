@@ -161,6 +161,32 @@ data "relay_api_key" "workspace" {
 	})
 }
 
+func TestAccAPIKeyImportPlansNoChange(t *testing.T) {
+	if os.Getenv("TF_ACC") == "" {
+		t.Skip("set TF_ACC=1 to run acceptance tests")
+	}
+	config := fmt.Sprintf(`
+resource "relay_api_key" "org" {
+  name          = %q
+  role          = "viewer"
+  allowed_cidrs = ["203.0.113.0/24"]
+  expires_in    = "24h"
+}
+`, acceptanceName(t))
+	resource.Test(t, resource.TestCase{
+		ProtoV6ProviderFactories: acceptanceFactories(t),
+		Steps: []resource.TestStep{
+			{Config: config},
+			{
+				Config:          config,
+				ResourceName:    "relay_api_key.org",
+				ImportState:     true,
+				ImportStateKind: resource.ImportBlockWithID,
+			},
+		},
+	})
+}
+
 func TestAccPostgreSQLClusterAndUser(t *testing.T) {
 	if os.Getenv("TF_ACC") == "" || os.Getenv("RELAY_ACC_DATABASES") == "" {
 		t.Skip("set TF_ACC=1 and RELAY_ACC_DATABASES=1 to provision real clusters")
