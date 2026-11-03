@@ -218,7 +218,7 @@ func (r *valkeyClusterResource) Schema(ctx context.Context, _ resource.SchemaReq
 			"restore": restoreAttribute("`mode`, `version` when set, and the node group label must match the source's.",
 				"Recover up to this instant, RFC 3339, for example `2026-10-31T12:00:00Z`. It replays the source's AOF archive, so it needs `mode = \"replication\"`, "+
 					"a source that still exists with `pitr_window_days` on its backup schedule, and an instant inside that window. Omit it to restore the latest backup."),
-			"default_connections": defaultConnectionsAttribute("relay_valkey_user"),
+			"default_connections": defaultConnectionsAttribute(),
 			"phase":               schema.StringAttribute{Computed: true, MarkdownDescription: "Lifecycle phase after the last apply."},
 			"phase_message":       schema.StringAttribute{Computed: true, MarkdownDescription: "Detail for the phase."},
 			"endpoint_host":       schema.StringAttribute{Computed: true, MarkdownDescription: "Public read-write endpoint host. Empty until the platform publishes it."},
@@ -446,6 +446,12 @@ func (r *valkeyClusterResource) Create(ctx context.Context, req resource.CreateR
 			return
 		}
 	}
+	if !plan.Restore.IsNull() && known(plan.DefaultConnections) {
+		if db, err = setDefaultConnections(scoped, r.client, id, plan.DefaultConnections); err != nil {
+			resp.Diagnostics.AddError("Cannot set default connections on the restored cluster", err.Error())
+			return
+		}
+	}
 	state := valkeyClusterFromProto(db, plan)
 	keepPlannedStorage(state.Nodes, plan.Nodes)
 	resp.Diagnostics.Append(resp.State.Set(ctx, &state)...)
@@ -554,6 +560,12 @@ func (r *valkeyClusterResource) Update(ctx context.Context, req resource.UpdateR
 			UpdateMask: &fieldmaskpb.FieldMask{Paths: paths},
 		}); err != nil {
 			resp.Diagnostics.AddError("Cannot update cluster", err.Error())
+			return
+		}
+	}
+	if known(plan.DefaultConnections) && !plan.DefaultConnections.Equal(prior.DefaultConnections) {
+		if _, err := setDefaultConnections(scoped, r.client, plan.ID.ValueString(), plan.DefaultConnections); err != nil {
+			resp.Diagnostics.AddError("Cannot change default connections", err.Error())
 			return
 		}
 	}
@@ -836,7 +848,7 @@ func valkeyClusterFromProto(db *serverv1.Database, prior valkeyClusterModel) val
 		Parameters:           keepConfiguredParameterNames(v.GetParameters(), prior.Parameters),
 		KeepBackupsOnDestroy: prior.KeepBackupsOnDestroy,
 		Restore:              prior.Restore,
-		DefaultConnections:   prior.DefaultConnections,
+		DefaultConnections:   defaultConnectionsFromProto(db.GetDefaultConnections(), prior.DefaultConnections),
 		Phase:                types.StringValue(st.GetPhase()),
 		PhaseMessage:         types.StringValue(st.GetMessage()),
 		EndpointHost:         types.StringValue(st.GetEndpoint().GetHost()),

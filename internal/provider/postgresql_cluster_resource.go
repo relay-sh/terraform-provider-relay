@@ -215,7 +215,7 @@ func (r *postgresqlClusterResource) Schema(ctx context.Context, _ resource.Schem
 			"restore": restoreAttribute("`version`, when set, must match the source's, and `nodes` must keep the label of the source's primary group.",
 				"Recover up to this instant, RFC 3339, for example `2026-10-31T12:00:00Z`, by replaying the source's archived WAL; "+
 					"the platform rejects an instant outside the source's backups. Omit it to restore the latest backup and replay all archived WAL."),
-			"default_connections": defaultConnectionsAttribute("relay_postgresql_user"),
+			"default_connections": defaultConnectionsAttribute(),
 			"phase":               schema.StringAttribute{Computed: true, MarkdownDescription: "Lifecycle phase after the last apply."},
 			"phase_message":       schema.StringAttribute{Computed: true, MarkdownDescription: "Detail for the phase."},
 			"endpoint_host":       schema.StringAttribute{Computed: true, MarkdownDescription: "Public read-write endpoint host, the same as the `rw` entry of `public_endpoints`. Empty until the platform publishes it. Never an alias."},
@@ -492,6 +492,12 @@ func (r *postgresqlClusterResource) Create(ctx context.Context, req resource.Cre
 			return
 		}
 	}
+	if !plan.Restore.IsNull() && known(plan.DefaultConnections) {
+		if db, err = setDefaultConnections(scoped, r.client, id, plan.DefaultConnections); err != nil {
+			resp.Diagnostics.AddError("Cannot set default connections on the restored cluster", err.Error())
+			return
+		}
+	}
 	state := clusterFromProto(db, plan)
 	resp.Diagnostics.Append(resp.State.Set(ctx, &state)...)
 }
@@ -576,6 +582,12 @@ func (r *postgresqlClusterResource) Update(ctx context.Context, req resource.Upd
 			UpdateMask: &fieldmaskpb.FieldMask{Paths: paths},
 		}); err != nil {
 			resp.Diagnostics.AddError("Cannot update cluster", err.Error())
+			return
+		}
+	}
+	if known(plan.DefaultConnections) && !plan.DefaultConnections.Equal(prior.DefaultConnections) {
+		if _, err := setDefaultConnections(scoped, r.client, plan.ID.ValueString(), plan.DefaultConnections); err != nil {
+			resp.Diagnostics.AddError("Cannot change default connections", err.Error())
 			return
 		}
 	}
@@ -698,7 +710,7 @@ func clusterFromProto(db *serverv1.Database, prior postgresqlClusterModel) postg
 		Replication:          replicationFromProto(spec.GetReplication()),
 		KeepBackupsOnDestroy: prior.KeepBackupsOnDestroy,
 		Restore:              prior.Restore,
-		DefaultConnections:   prior.DefaultConnections,
+		DefaultConnections:   defaultConnectionsFromProto(db.GetDefaultConnections(), prior.DefaultConnections),
 		Phase:                types.StringValue(st.GetPhase()),
 		PhaseMessage:         types.StringValue(st.GetMessage()),
 		EndpointHost:         endpointHost,
