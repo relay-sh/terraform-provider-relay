@@ -983,7 +983,7 @@ func TestSameSettingsCoversEveryConfigurableAttribute(t *testing.T) {
 	(&valkeyClusterResource{}).Schema(context.Background(), fwresource.SchemaRequest{}, &resp)
 	covered := map[string]bool{
 		"workspace_id": true, "name": true, "version": true, "mode": true, "shards": true, "replicas_per_shard": true,
-		"nodes": true, "parameters": true, "keep_backups_on_destroy": true, "restore": true, "timeouts": true,
+		"nodes": true, "parameters": true, "keep_backups_on_destroy": true, "restore": true, "default_connections": true, "timeouts": true,
 	}
 	for name, a := range resp.Schema.Attributes {
 		if (a.IsRequired() || a.IsOptional()) && !covered[name] {

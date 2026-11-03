@@ -74,6 +74,7 @@ type valkeyClusterModel struct {
 	Parameters           types.Map                       `tfsdk:"parameters"`
 	KeepBackupsOnDestroy types.Bool                      `tfsdk:"keep_backups_on_destroy"`
 	Restore              types.Object                    `tfsdk:"restore"`
+	DefaultConnections   types.Object                    `tfsdk:"default_connections"`
 	Phase                types.String                    `tfsdk:"phase"`
 	PhaseMessage         types.String                    `tfsdk:"phase_message"`
 	EndpointHost         types.String                    `tfsdk:"endpoint_host"`
@@ -217,12 +218,13 @@ func (r *valkeyClusterResource) Schema(ctx context.Context, _ resource.SchemaReq
 			"restore": restoreAttribute("`mode`, `version` when set, and the node group label must match the source's.",
 				"Recover up to this instant, RFC 3339, for example `2026-10-31T12:00:00Z`. It replays the source's AOF archive, so it needs `mode = \"replication\"`, "+
 					"a source that still exists with `pitr_window_days` on its backup schedule, and an instant inside that window. Omit it to restore the latest backup."),
-			"phase":             schema.StringAttribute{Computed: true, MarkdownDescription: "Lifecycle phase after the last apply."},
-			"phase_message":     schema.StringAttribute{Computed: true, MarkdownDescription: "Detail for the phase."},
-			"endpoint_host":     schema.StringAttribute{Computed: true, MarkdownDescription: "Public read-write endpoint host. Empty until the platform publishes it."},
-			"endpoint_port":     schema.Int64Attribute{Computed: true, MarkdownDescription: "Public read-write endpoint port."},
-			"public_endpoints":  schema.ListNestedAttribute{Computed: true, NestedObject: endpoint, MarkdownDescription: "Public endpoints by role."},
-			"private_endpoints": schema.ListNestedAttribute{Computed: true, NestedObject: endpoint, MarkdownDescription: "Private endpoints by role, when private access is enabled."},
+			"default_connections": defaultConnectionsAttribute("relay_valkey_user"),
+			"phase":               schema.StringAttribute{Computed: true, MarkdownDescription: "Lifecycle phase after the last apply."},
+			"phase_message":       schema.StringAttribute{Computed: true, MarkdownDescription: "Detail for the phase."},
+			"endpoint_host":       schema.StringAttribute{Computed: true, MarkdownDescription: "Public read-write endpoint host. Empty until the platform publishes it."},
+			"endpoint_port":       schema.Int64Attribute{Computed: true, MarkdownDescription: "Public read-write endpoint port."},
+			"public_endpoints":    schema.ListNestedAttribute{Computed: true, NestedObject: endpoint, MarkdownDescription: "Public endpoints by role."},
+			"private_endpoints":   schema.ListNestedAttribute{Computed: true, NestedObject: endpoint, MarkdownDescription: "Private endpoints by role, when private access is enabled."},
 			"storage_status": schema.ListNestedAttribute{
 				Computed: true,
 				NestedObject: schema.NestedAttributeObject{Attributes: map[string]schema.Attribute{
@@ -366,7 +368,8 @@ func (r *valkeyClusterResource) ModifyPlan(ctx context.Context, req resource.Mod
 func sameSettings(a, b valkeyClusterModel) bool {
 	return a.Name.Equal(b.Name) && a.WorkspaceID.Equal(b.WorkspaceID) && a.Version.Equal(b.Version) && a.Mode.Equal(b.Mode) &&
 		a.Shards.Equal(b.Shards) && a.ReplicasPerShard.Equal(b.ReplicasPerShard) && a.Parameters.Equal(b.Parameters) &&
-		a.KeepBackupsOnDestroy.Equal(b.KeepBackupsOnDestroy) && a.Restore.Equal(b.Restore) && a.Timeouts.Equal(b.Timeouts)
+		a.KeepBackupsOnDestroy.Equal(b.KeepBackupsOnDestroy) && a.Restore.Equal(b.Restore) &&
+		a.DefaultConnections.Equal(b.DefaultConnections) && a.Timeouts.Equal(b.Timeouts)
 }
 
 func (r *valkeyClusterResource) planRestore(ctx context.Context, req resource.ModifyPlanRequest, resp *resource.ModifyPlanResponse) {
@@ -412,7 +415,9 @@ func (r *valkeyClusterResource) Create(ctx context.Context, req resource.CreateR
 	scoped := r.client.Workspace(ctx, plan.WorkspaceID.ValueString())
 	var created *serverv1.Database
 	if plan.Restore.IsNull() {
-		out, err := r.client.API.CreateDatabase(scoped, &serverv1.CreateDatabaseRequest{Name: plan.Name.ValueString(), Spec: valkeySpecToProto(plan)})
+		out, err := r.client.API.CreateDatabase(scoped, &serverv1.CreateDatabaseRequest{
+			Name: plan.Name.ValueString(), Spec: valkeySpecToProto(plan), DefaultConnections: defaultConnectionsToProto(plan.DefaultConnections),
+		})
 		if err != nil {
 			resp.Diagnostics.AddError("Cannot create cluster", err.Error())
 			return
@@ -831,6 +836,7 @@ func valkeyClusterFromProto(db *serverv1.Database, prior valkeyClusterModel) val
 		Parameters:           keepConfiguredParameterNames(v.GetParameters(), prior.Parameters),
 		KeepBackupsOnDestroy: prior.KeepBackupsOnDestroy,
 		Restore:              prior.Restore,
+		DefaultConnections:   prior.DefaultConnections,
 		Phase:                types.StringValue(st.GetPhase()),
 		PhaseMessage:         types.StringValue(st.GetMessage()),
 		EndpointHost:         types.StringValue(st.GetEndpoint().GetHost()),
