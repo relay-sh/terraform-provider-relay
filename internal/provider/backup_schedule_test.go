@@ -50,7 +50,7 @@ const pgTiers = `
     { frequency = "weekly", interval = 2, retention_value = 5, retention_unit = "weeks" },
     { frequency = "hourly", interval = 5, retention_value = 0, enabled = false },
   ]
-  pitr_window_days = 14
+  pitr_window_days = 5
 `
 
 func noCustomSchedules(f *fakeServer) tfresource.TestCheckFunc {
@@ -84,7 +84,7 @@ func TestBackupScheduleResource_PostgreSQLLifecycle(t *testing.T) {
 					tfresource.TestCheckResourceAttr(scheduleAddr, "tiers.1.retention_unit", "weeks"),
 					tfresource.TestCheckResourceAttr(scheduleAddr, "tiers.2.enabled", "false"),
 					tfresource.TestCheckNoResourceAttr(scheduleAddr, "max_backups"),
-					tfresource.TestCheckResourceAttr(scheduleAddr, "pitr_window_days", "14"),
+					tfresource.TestCheckResourceAttr(scheduleAddr, "pitr_window_days", "5"),
 					tfresource.TestCheckResourceAttr(scheduleAddr, "last_backup_time", "2023-11-14T22:13:20Z"),
 					tfresource.TestCheckResourceAttr(scheduleAddr, "next_backup_time", "2023-11-15T22:13:20Z"),
 					tfresource.TestCheckResourceAttr(scheduleAddr, "active_backups", "3"),
@@ -95,7 +95,7 @@ func TestBackupScheduleResource_PostgreSQLLifecycle(t *testing.T) {
 							return fmt.Errorf("an omitted unit must be sent as the tier's own, got %+v", s.GetPolicyTiers())
 						case s.GetRetention() != nil:
 							return errors.New("max_backups was not configured and must not be sent")
-						case s.GetPitrWindowDays() != 14 || s.GetSnapshotTime().GetHour() != 3:
+						case s.GetPitrWindowDays() != 5 || s.GetSnapshotTime().GetHour() != 3:
 							return fmt.Errorf("spec = %+v", s)
 						}
 						if calls := f.callsTo("UpsertBackupSchedule"); calls[0].workspace != dbWorkspace {
@@ -182,10 +182,6 @@ func TestBackupScheduleResource_Valkey(t *testing.T) {
 					},
 				),
 			},
-			{
-				Config:      scheduleConfig(f, "db-1", "  pitr_window_days = 36"),
-				ExpectError: regexp.MustCompile(`(?s)Valkey point-in-time window too long.*at most 35 days, got 36`),
-			},
 		},
 	})
 }
@@ -224,7 +220,8 @@ func TestBackupScheduleResource_ConfigGuards(t *testing.T) {
 		"empty tiers":       {"  tiers = []", "list must contain at least 1"},
 		"max with tiers":    {"  max_backups = 3\n" + tier(`frequency = "daily", interval = 1, retention_value = 1`), "cannot be specified when"},
 		"max backups":       {"  max_backups = 0", "value must be at least 1"},
-		"pitr zero":         {"  pitr_window_days = 0", "value must be at least 1"},
+		"pitr zero":         {"  pitr_window_days = 0", "value must be between 1 and 7, got: 0"},
+		"pitr above 7":      {"  pitr_window_days = 8", "value must be between 1 and 7, got: 8"},
 		"missing frequency": {tier(`interval = 1, retention_value = 1`), "Incorrect attribute value type|attribute \"frequency\" is required"},
 	}
 	for name, tc := range cases {

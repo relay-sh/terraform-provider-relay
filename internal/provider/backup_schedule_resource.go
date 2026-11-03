@@ -34,8 +34,6 @@ import (
 const (
 	errorCodeTrailer = "x-relay-error-code"
 	planLimitReached = "PLAN_LIMIT_REACHED"
-
-	maxValkeyPITRWindowDays = 35
 )
 
 type backupScheduleResource struct {
@@ -148,8 +146,8 @@ func (r *backupScheduleResource) Schema(_ context.Context, _ resource.SchemaRequ
 			},
 			"pitr_window_days": schema.Int64Attribute{
 				Optional:            true,
-				Validators:          []validator.Int64{int64validator.AtLeast(1)},
-				MarkdownDescription: "Requested point-in-time-restore window in days. PostgreSQL defaults to 7. Valkey has no window unless set, accepts 1-35 days in `replication` mode only, and needs a disk at least twice its memory while the window is on.",
+				Validators:          []validator.Int64{int64validator.Between(1, 7)},
+				MarkdownDescription: "Requested point-in-time-restore window in days, 1 to 7. PostgreSQL defaults to 7. Valkey has no window unless set, accepts one in `replication` mode only, and needs a disk at least twice its memory while the window is on.",
 			},
 			"platform_default": schema.BoolAttribute{
 				Computed: true, PlanModifiers: []planmodifier.Bool{boolplanmodifier.UseStateForUnknown()},
@@ -225,9 +223,6 @@ func (r *backupScheduleResource) ModifyPlan(ctx context.Context, req resource.Mo
 	case spec.GetValkey().GetMode() == valkeyModeCluster:
 		resp.Diagnostics.AddAttributeError(path.Root("pitr_window_days"), "No point-in-time restore in Valkey cluster mode",
 			"Cluster "+clusterID.ValueString()+" runs in cluster mode; point-in-time restore needs replication mode. Remove pitr_window_days.")
-	case pitr.ValueInt64() > maxValkeyPITRWindowDays:
-		resp.Diagnostics.AddAttributeError(path.Root("pitr_window_days"), "Valkey point-in-time window too long",
-			fmt.Sprintf("A Valkey window is at most %d days, got %d.", maxValkeyPITRWindowDays, pitr.ValueInt64()))
 	}
 }
 
