@@ -78,7 +78,7 @@ resource "relay_postgresql_cluster" "billing" {
 
 ### Optional
 
-- `default_connections` (Attributes) Relay-managed users the platform creates once the cluster is running, each with a Relay connection that uses it: one read-only, one read-write and one admin. Omit it for all three, as the Relay console does; set a role to `false` to skip it. Only read on create: the platform cannot add them to a cluster that already exists, so setting or changing it there only stores the value, without replacing the cluster. For such a cluster, declare the users with `relay_postgresql_user` and their connections with `relay_connection`. Not available with `restore`. (see [below for nested schema](#nestedatt--default_connections))
+- `default_connections` (Attributes) Relay-managed users the platform creates once the cluster is running, each with a Relay connection that uses it: one read-only, one read-write and one admin. Omitted on create, all three are created, as the Relay console does; omitted afterwards, the current value is kept. Changing a role on an existing cluster creates it, or deletes its connection and then its user, without replacing the cluster; a user whose roles were changed outside Relay is kept. The platform applies a change after the apply returns. (see [below for nested schema](#nestedatt--default_connections))
 - `keep_backups_on_destroy` (Boolean) Keep the cluster's backups when it is destroyed.
 - `parameters` (Map of String) PostgreSQL settings (GUCs). An empty map resets them to defaults; omitting the attribute leaves them unmanaged. Some need a restart, which Relay orchestrates with a switchover.
 - `replication` (Attributes) Commit replication for the cluster. Patroni configures synchronous mode per cluster, not per node. (see [below for nested schema](#nestedatt--replication))
@@ -156,11 +156,11 @@ Optional:
 <a id="nestedatt--default_connections"></a>
 ### Nested Schema for `default_connections`
 
-Required:
+Optional:
 
-- `admin` (Boolean) Create the admin user and connection.
-- `readonly` (Boolean) Create the read-only user and connection.
-- `readwrite` (Boolean) Create the read-write user and connection.
+- `admin` (Boolean) The admin user and its connection. Omitted, it is `true` on create and keeps its current value afterwards.
+- `readonly` (Boolean) The read-only user and its connection. Omitted, it is `true` on create and keeps its current value afterwards.
+- `readwrite` (Boolean) The read-write user and its connection. Omitted, it is `true` on create and keeps its current value afterwards.
 
 
 <a id="nestedatt--replication"></a>

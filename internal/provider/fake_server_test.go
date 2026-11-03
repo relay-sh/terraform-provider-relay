@@ -67,6 +67,7 @@ type fakeServer struct {
 	lastLDBUpdate     *serverv1.UpdateLogicalDatabaseRequest
 	providers         []*serverv1.DatabaseProvider
 	lastDBCreate      *serverv1.CreateDatabaseRequest
+	lastDefaultConns  *serverv1.SetDefaultConnectionsRequest
 	lastRestore       *serverv1.RestoreDatabaseRequest
 	keptSources       map[string]*serverv1.Database
 	lastDBUpdate      *serverv1.UpdateDatabaseRequest
@@ -591,7 +592,26 @@ func (f *fakeServer) CreateDatabase(ctx context.Context, req *serverv1.CreateDat
 			n.Resources.StorageClass = "standard"
 		}
 	}
-	return &serverv1.CreateDatabaseResponse{Database: f.storeDatabase(ctx, req.GetName(), spec)}, nil
+	db := f.storeDatabase(ctx, req.GetName(), spec)
+	if dc := req.GetDefaultConnections(); dc != nil {
+		db.DefaultConnections = proto.Clone(dc).(*serverv1.DefaultConnectionsIntent)
+	}
+	return &serverv1.CreateDatabaseResponse{Database: db}, nil
+}
+
+func (f *fakeServer) SetDefaultConnections(ctx context.Context, req *serverv1.SetDefaultConnectionsRequest) (*serverv1.SetDefaultConnectionsResponse, error) {
+	f.mu.Lock()
+	defer f.mu.Unlock()
+	if err := f.record(ctx, "SetDefaultConnections"); err != nil {
+		return nil, err
+	}
+	f.lastDefaultConns = req
+	db, ok := f.databases[req.GetId()]
+	if !ok {
+		return nil, status.Error(codes.NotFound, "database not found")
+	}
+	db.DefaultConnections = proto.Clone(req.GetDefaultConnections()).(*serverv1.DefaultConnectionsIntent)
+	return &serverv1.SetDefaultConnectionsResponse{Database: db}, nil
 }
 
 func (f *fakeServer) storeDatabase(ctx context.Context, name string, spec *serverv1.DatabaseSpec) *serverv1.Database {

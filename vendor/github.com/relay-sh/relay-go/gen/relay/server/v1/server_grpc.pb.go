@@ -179,6 +179,7 @@ const (
 	ServerService_DeleteDatabase_FullMethodName               = "/relay.server.v1.ServerService/DeleteDatabase"
 	ServerService_RetryDeleteDatabase_FullMethodName          = "/relay.server.v1.ServerService/RetryDeleteDatabase"
 	ServerService_PauseDatabase_FullMethodName                = "/relay.server.v1.ServerService/PauseDatabase"
+	ServerService_SetDefaultConnections_FullMethodName        = "/relay.server.v1.ServerService/SetDefaultConnections"
 	ServerService_ResumeDatabase_FullMethodName               = "/relay.server.v1.ServerService/ResumeDatabase"
 	ServerService_GetDatabaseStatus_FullMethodName            = "/relay.server.v1.ServerService/GetDatabaseStatus"
 	ServerService_ListDatabaseNodes_FullMethodName            = "/relay.server.v1.ServerService/ListDatabaseNodes"
@@ -634,6 +635,9 @@ type ServerServiceClient interface {
 	// same data. Accepted rather than applied synchronously — see the
 	// request message.
 	PauseDatabase(ctx context.Context, in *PauseDatabaseRequest, opts ...grpc.CallOption) (*PauseDatabaseResponse, error)
+	// SetDefaultConnections turns the Relay-managed users and connections of an
+	// existing cluster on or off. Accepted, not applied synchronously.
+	SetDefaultConnections(ctx context.Context, in *SetDefaultConnectionsRequest, opts ...grpc.CallOption) (*SetDefaultConnectionsResponse, error)
 	// ResumeDatabase brings a paused cluster back from its storage.
 	ResumeDatabase(ctx context.Context, in *ResumeDatabaseRequest, opts ...grpc.CallOption) (*ResumeDatabaseResponse, error)
 	// GetDatabaseStatus returns the latest phase/connection details.
@@ -764,11 +768,10 @@ type ServerServiceClient interface {
 	// before enabling it. Does not persist anything.
 	TestOrgSSOConnection(ctx context.Context, in *TestOrgSSOConnectionRequest, opts ...grpc.CallOption) (*TestOrgSSOConnectionResponse, error)
 	// ListOrgDomains returns the email domains the org claims, each with its
-	// verification status. Requires org.sso.manage and is gated by the
-	// enterprise_sso flag.
+	// verification status. Requires org.sso.manage and the Enterprise plan.
 	ListOrgDomains(ctx context.Context, in *ListOrgDomainsRequest, opts ...grpc.CallOption) (*ListOrgDomainsResponse, error)
 	// AddOrgDomain claims a domain as pending and returns the DNS TXT record the
-	// org must publish to prove it owns it. Gated by the enterprise_sso flag.
+	// org must publish to prove it owns it. Requires the Enterprise plan.
 	AddOrgDomain(ctx context.Context, in *AddOrgDomainRequest, opts ...grpc.CallOption) (*AddOrgDomainResponse, error)
 	// VerifyOrgDomain looks up the TXT record now. A record that is not there is
 	// record_found=false, not an error, and never demotes a verified domain (only
@@ -776,7 +779,7 @@ type ServerServiceClient interface {
 	// another org is AlreadyExists (staff resolve it).
 	VerifyOrgDomain(ctx context.Context, in *VerifyOrgDomainRequest, opts ...grpc.CallOption) (*VerifyOrgDomainResponse, error)
 	// RemoveOrgDomain drops the org's claim on a domain. Not gated, so an org can
-	// clean up after the flag or plan is off.
+	// clean up after the plan is off.
 	RemoveOrgDomain(ctx context.Context, in *RemoveOrgDomainRequest, opts ...grpc.CallOption) (*RemoveOrgDomainResponse, error)
 	// ListPostgreSQLExtensions returns the curated extension set bundled for a
 	// PostgreSQL major.
@@ -2439,6 +2442,16 @@ func (c *serverServiceClient) PauseDatabase(ctx context.Context, in *PauseDataba
 	return out, nil
 }
 
+func (c *serverServiceClient) SetDefaultConnections(ctx context.Context, in *SetDefaultConnectionsRequest, opts ...grpc.CallOption) (*SetDefaultConnectionsResponse, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(SetDefaultConnectionsResponse)
+	err := c.cc.Invoke(ctx, ServerService_SetDefaultConnections_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
 func (c *serverServiceClient) ResumeDatabase(ctx context.Context, in *ResumeDatabaseRequest, opts ...grpc.CallOption) (*ResumeDatabaseResponse, error) {
 	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
 	out := new(ResumeDatabaseResponse)
@@ -3513,6 +3526,9 @@ type ServerServiceServer interface {
 	// same data. Accepted rather than applied synchronously — see the
 	// request message.
 	PauseDatabase(context.Context, *PauseDatabaseRequest) (*PauseDatabaseResponse, error)
+	// SetDefaultConnections turns the Relay-managed users and connections of an
+	// existing cluster on or off. Accepted, not applied synchronously.
+	SetDefaultConnections(context.Context, *SetDefaultConnectionsRequest) (*SetDefaultConnectionsResponse, error)
 	// ResumeDatabase brings a paused cluster back from its storage.
 	ResumeDatabase(context.Context, *ResumeDatabaseRequest) (*ResumeDatabaseResponse, error)
 	// GetDatabaseStatus returns the latest phase/connection details.
@@ -3643,11 +3659,10 @@ type ServerServiceServer interface {
 	// before enabling it. Does not persist anything.
 	TestOrgSSOConnection(context.Context, *TestOrgSSOConnectionRequest) (*TestOrgSSOConnectionResponse, error)
 	// ListOrgDomains returns the email domains the org claims, each with its
-	// verification status. Requires org.sso.manage and is gated by the
-	// enterprise_sso flag.
+	// verification status. Requires org.sso.manage and the Enterprise plan.
 	ListOrgDomains(context.Context, *ListOrgDomainsRequest) (*ListOrgDomainsResponse, error)
 	// AddOrgDomain claims a domain as pending and returns the DNS TXT record the
-	// org must publish to prove it owns it. Gated by the enterprise_sso flag.
+	// org must publish to prove it owns it. Requires the Enterprise plan.
 	AddOrgDomain(context.Context, *AddOrgDomainRequest) (*AddOrgDomainResponse, error)
 	// VerifyOrgDomain looks up the TXT record now. A record that is not there is
 	// record_found=false, not an error, and never demotes a verified domain (only
@@ -3655,7 +3670,7 @@ type ServerServiceServer interface {
 	// another org is AlreadyExists (staff resolve it).
 	VerifyOrgDomain(context.Context, *VerifyOrgDomainRequest) (*VerifyOrgDomainResponse, error)
 	// RemoveOrgDomain drops the org's claim on a domain. Not gated, so an org can
-	// clean up after the flag or plan is off.
+	// clean up after the plan is off.
 	RemoveOrgDomain(context.Context, *RemoveOrgDomainRequest) (*RemoveOrgDomainResponse, error)
 	// ListPostgreSQLExtensions returns the curated extension set bundled for a
 	// PostgreSQL major.
@@ -4188,6 +4203,9 @@ func (UnimplementedServerServiceServer) RetryDeleteDatabase(context.Context, *Re
 }
 func (UnimplementedServerServiceServer) PauseDatabase(context.Context, *PauseDatabaseRequest) (*PauseDatabaseResponse, error) {
 	return nil, status.Error(codes.Unimplemented, "method PauseDatabase not implemented")
+}
+func (UnimplementedServerServiceServer) SetDefaultConnections(context.Context, *SetDefaultConnectionsRequest) (*SetDefaultConnectionsResponse, error) {
+	return nil, status.Error(codes.Unimplemented, "method SetDefaultConnections not implemented")
 }
 func (UnimplementedServerServiceServer) ResumeDatabase(context.Context, *ResumeDatabaseRequest) (*ResumeDatabaseResponse, error) {
 	return nil, status.Error(codes.Unimplemented, "method ResumeDatabase not implemented")
@@ -7290,6 +7308,24 @@ func _ServerService_PauseDatabase_Handler(srv interface{}, ctx context.Context, 
 	return interceptor(ctx, in, info, handler)
 }
 
+func _ServerService_SetDefaultConnections_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(SetDefaultConnectionsRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(ServerServiceServer).SetDefaultConnections(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: ServerService_SetDefaultConnections_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(ServerServiceServer).SetDefaultConnections(ctx, req.(*SetDefaultConnectionsRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
 func _ServerService_ResumeDatabase_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
 	in := new(ResumeDatabaseRequest)
 	if err := dec(in); err != nil {
@@ -9176,6 +9212,10 @@ var ServerService_ServiceDesc = grpc.ServiceDesc{
 			Handler:    _ServerService_PauseDatabase_Handler,
 		},
 		{
+			MethodName: "SetDefaultConnections",
+			Handler:    _ServerService_SetDefaultConnections_Handler,
+		},
+		{
 			MethodName: "ResumeDatabase",
 			Handler:    _ServerService_ResumeDatabase_Handler,
 		},
@@ -9477,11 +9517,6 @@ const (
 	AdminService_AdminGrantOrganizationCredit_FullMethodName      = "/relay.server.v1.AdminService/AdminGrantOrganizationCredit"
 	AdminService_AdminRevokeOrganizationCredit_FullMethodName     = "/relay.server.v1.AdminService/AdminRevokeOrganizationCredit"
 	AdminService_AdminGetOrganizationCost_FullMethodName          = "/relay.server.v1.AdminService/AdminGetOrganizationCost"
-	AdminService_AdminListSignupAllowlist_FullMethodName          = "/relay.server.v1.AdminService/AdminListSignupAllowlist"
-	AdminService_AdminAddSignupAllowlistEntry_FullMethodName      = "/relay.server.v1.AdminService/AdminAddSignupAllowlistEntry"
-	AdminService_AdminRemoveSignupAllowlistEntry_FullMethodName   = "/relay.server.v1.AdminService/AdminRemoveSignupAllowlistEntry"
-	AdminService_AdminListSignupAttempts_FullMethodName           = "/relay.server.v1.AdminService/AdminListSignupAttempts"
-	AdminService_AdminDismissSignupAttempt_FullMethodName         = "/relay.server.v1.AdminService/AdminDismissSignupAttempt"
 	AdminService_AdminListAuditLog_FullMethodName                 = "/relay.server.v1.AdminService/AdminListAuditLog"
 	AdminService_AdminGetCloudCosts_FullMethodName                = "/relay.server.v1.AdminService/AdminGetCloudCosts"
 	AdminService_AdminGetRevenueOverview_FullMethodName           = "/relay.server.v1.AdminService/AdminGetRevenueOverview"
@@ -9600,23 +9635,6 @@ type AdminServiceClient interface {
 	// tenant cost only (shared/overhead is not attributed). Windows are limited by
 	// Kubecost retention (currently ~4 days).
 	AdminGetOrganizationCost(ctx context.Context, in *AdminGetOrganizationCostRequest, opts ...grpc.CallOption) (*AdminGetOrganizationCostResponse, error)
-	// AdminListSignupAllowlist returns the closed-alpha signup allowlist: the
-	// emails / "@domain"s allowed to sign in while the platform is invite-only,
-	// plus any entries still coming from the server's static config.
-	AdminListSignupAllowlist(ctx context.Context, in *AdminListSignupAllowlistRequest, opts ...grpc.CallOption) (*AdminListSignupAllowlistResponse, error)
-	// AdminAddSignupAllowlistEntry allowlists one email or whole domain. Takes
-	// effect on the next sign-in attempt; no OAuth-console or deploy change needed.
-	AdminAddSignupAllowlistEntry(ctx context.Context, in *AdminAddSignupAllowlistEntryRequest, opts ...grpc.CallOption) (*AdminAddSignupAllowlistEntryResponse, error)
-	// AdminRemoveSignupAllowlistEntry drops an entry. Removing every entry (and
-	// the static config) reopens signup to everyone.
-	AdminRemoveSignupAllowlistEntry(ctx context.Context, in *AdminRemoveSignupAllowlistEntryRequest, opts ...grpc.CallOption) (*AdminRemoveSignupAllowlistEntryResponse, error)
-	// AdminListSignupAttempts returns the closed-alpha waitlist: sign-ins that
-	// were refused because the email was not allowlisted, most recent first.
-	AdminListSignupAttempts(ctx context.Context, in *AdminListSignupAttemptsRequest, opts ...grpc.CallOption) (*AdminListSignupAttemptsResponse, error)
-	// AdminDismissSignupAttempt hides a waitlist entry without allowlisting it.
-	// Allowing someone is AdminAddSignupAllowlistEntry, which also clears their
-	// waitlist rows.
-	AdminDismissSignupAttempt(ctx context.Context, in *AdminDismissSignupAttemptRequest, opts ...grpc.CallOption) (*AdminDismissSignupAttemptResponse, error)
 	// AdminListAuditLog returns the durable audit trail of the backoffice: one
 	// entry per AdminService call (reads included), newest first, filterable by
 	// admin, target organization, method, or mutations only. Listing the audit
@@ -9937,56 +9955,6 @@ func (c *adminServiceClient) AdminGetOrganizationCost(ctx context.Context, in *A
 	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
 	out := new(AdminGetOrganizationCostResponse)
 	err := c.cc.Invoke(ctx, AdminService_AdminGetOrganizationCost_FullMethodName, in, out, cOpts...)
-	if err != nil {
-		return nil, err
-	}
-	return out, nil
-}
-
-func (c *adminServiceClient) AdminListSignupAllowlist(ctx context.Context, in *AdminListSignupAllowlistRequest, opts ...grpc.CallOption) (*AdminListSignupAllowlistResponse, error) {
-	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
-	out := new(AdminListSignupAllowlistResponse)
-	err := c.cc.Invoke(ctx, AdminService_AdminListSignupAllowlist_FullMethodName, in, out, cOpts...)
-	if err != nil {
-		return nil, err
-	}
-	return out, nil
-}
-
-func (c *adminServiceClient) AdminAddSignupAllowlistEntry(ctx context.Context, in *AdminAddSignupAllowlistEntryRequest, opts ...grpc.CallOption) (*AdminAddSignupAllowlistEntryResponse, error) {
-	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
-	out := new(AdminAddSignupAllowlistEntryResponse)
-	err := c.cc.Invoke(ctx, AdminService_AdminAddSignupAllowlistEntry_FullMethodName, in, out, cOpts...)
-	if err != nil {
-		return nil, err
-	}
-	return out, nil
-}
-
-func (c *adminServiceClient) AdminRemoveSignupAllowlistEntry(ctx context.Context, in *AdminRemoveSignupAllowlistEntryRequest, opts ...grpc.CallOption) (*AdminRemoveSignupAllowlistEntryResponse, error) {
-	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
-	out := new(AdminRemoveSignupAllowlistEntryResponse)
-	err := c.cc.Invoke(ctx, AdminService_AdminRemoveSignupAllowlistEntry_FullMethodName, in, out, cOpts...)
-	if err != nil {
-		return nil, err
-	}
-	return out, nil
-}
-
-func (c *adminServiceClient) AdminListSignupAttempts(ctx context.Context, in *AdminListSignupAttemptsRequest, opts ...grpc.CallOption) (*AdminListSignupAttemptsResponse, error) {
-	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
-	out := new(AdminListSignupAttemptsResponse)
-	err := c.cc.Invoke(ctx, AdminService_AdminListSignupAttempts_FullMethodName, in, out, cOpts...)
-	if err != nil {
-		return nil, err
-	}
-	return out, nil
-}
-
-func (c *adminServiceClient) AdminDismissSignupAttempt(ctx context.Context, in *AdminDismissSignupAttemptRequest, opts ...grpc.CallOption) (*AdminDismissSignupAttemptResponse, error) {
-	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
-	out := new(AdminDismissSignupAttemptResponse)
-	err := c.cc.Invoke(ctx, AdminService_AdminDismissSignupAttempt_FullMethodName, in, out, cOpts...)
 	if err != nil {
 		return nil, err
 	}
@@ -10577,23 +10545,6 @@ type AdminServiceServer interface {
 	// tenant cost only (shared/overhead is not attributed). Windows are limited by
 	// Kubecost retention (currently ~4 days).
 	AdminGetOrganizationCost(context.Context, *AdminGetOrganizationCostRequest) (*AdminGetOrganizationCostResponse, error)
-	// AdminListSignupAllowlist returns the closed-alpha signup allowlist: the
-	// emails / "@domain"s allowed to sign in while the platform is invite-only,
-	// plus any entries still coming from the server's static config.
-	AdminListSignupAllowlist(context.Context, *AdminListSignupAllowlistRequest) (*AdminListSignupAllowlistResponse, error)
-	// AdminAddSignupAllowlistEntry allowlists one email or whole domain. Takes
-	// effect on the next sign-in attempt; no OAuth-console or deploy change needed.
-	AdminAddSignupAllowlistEntry(context.Context, *AdminAddSignupAllowlistEntryRequest) (*AdminAddSignupAllowlistEntryResponse, error)
-	// AdminRemoveSignupAllowlistEntry drops an entry. Removing every entry (and
-	// the static config) reopens signup to everyone.
-	AdminRemoveSignupAllowlistEntry(context.Context, *AdminRemoveSignupAllowlistEntryRequest) (*AdminRemoveSignupAllowlistEntryResponse, error)
-	// AdminListSignupAttempts returns the closed-alpha waitlist: sign-ins that
-	// were refused because the email was not allowlisted, most recent first.
-	AdminListSignupAttempts(context.Context, *AdminListSignupAttemptsRequest) (*AdminListSignupAttemptsResponse, error)
-	// AdminDismissSignupAttempt hides a waitlist entry without allowlisting it.
-	// Allowing someone is AdminAddSignupAllowlistEntry, which also clears their
-	// waitlist rows.
-	AdminDismissSignupAttempt(context.Context, *AdminDismissSignupAttemptRequest) (*AdminDismissSignupAttemptResponse, error)
 	// AdminListAuditLog returns the durable audit trail of the backoffice: one
 	// entry per AdminService call (reads included), newest first, filterable by
 	// admin, target organization, method, or mutations only. Listing the audit
@@ -10821,21 +10772,6 @@ func (UnimplementedAdminServiceServer) AdminRevokeOrganizationCredit(context.Con
 }
 func (UnimplementedAdminServiceServer) AdminGetOrganizationCost(context.Context, *AdminGetOrganizationCostRequest) (*AdminGetOrganizationCostResponse, error) {
 	return nil, status.Error(codes.Unimplemented, "method AdminGetOrganizationCost not implemented")
-}
-func (UnimplementedAdminServiceServer) AdminListSignupAllowlist(context.Context, *AdminListSignupAllowlistRequest) (*AdminListSignupAllowlistResponse, error) {
-	return nil, status.Error(codes.Unimplemented, "method AdminListSignupAllowlist not implemented")
-}
-func (UnimplementedAdminServiceServer) AdminAddSignupAllowlistEntry(context.Context, *AdminAddSignupAllowlistEntryRequest) (*AdminAddSignupAllowlistEntryResponse, error) {
-	return nil, status.Error(codes.Unimplemented, "method AdminAddSignupAllowlistEntry not implemented")
-}
-func (UnimplementedAdminServiceServer) AdminRemoveSignupAllowlistEntry(context.Context, *AdminRemoveSignupAllowlistEntryRequest) (*AdminRemoveSignupAllowlistEntryResponse, error) {
-	return nil, status.Error(codes.Unimplemented, "method AdminRemoveSignupAllowlistEntry not implemented")
-}
-func (UnimplementedAdminServiceServer) AdminListSignupAttempts(context.Context, *AdminListSignupAttemptsRequest) (*AdminListSignupAttemptsResponse, error) {
-	return nil, status.Error(codes.Unimplemented, "method AdminListSignupAttempts not implemented")
-}
-func (UnimplementedAdminServiceServer) AdminDismissSignupAttempt(context.Context, *AdminDismissSignupAttemptRequest) (*AdminDismissSignupAttemptResponse, error) {
-	return nil, status.Error(codes.Unimplemented, "method AdminDismissSignupAttempt not implemented")
 }
 func (UnimplementedAdminServiceServer) AdminListAuditLog(context.Context, *AdminListAuditLogRequest) (*AdminListAuditLogResponse, error) {
 	return nil, status.Error(codes.Unimplemented, "method AdminListAuditLog not implemented")
@@ -11262,96 +11198,6 @@ func _AdminService_AdminGetOrganizationCost_Handler(srv interface{}, ctx context
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
 		return srv.(AdminServiceServer).AdminGetOrganizationCost(ctx, req.(*AdminGetOrganizationCostRequest))
-	}
-	return interceptor(ctx, in, info, handler)
-}
-
-func _AdminService_AdminListSignupAllowlist_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(AdminListSignupAllowlistRequest)
-	if err := dec(in); err != nil {
-		return nil, err
-	}
-	if interceptor == nil {
-		return srv.(AdminServiceServer).AdminListSignupAllowlist(ctx, in)
-	}
-	info := &grpc.UnaryServerInfo{
-		Server:     srv,
-		FullMethod: AdminService_AdminListSignupAllowlist_FullMethodName,
-	}
-	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(AdminServiceServer).AdminListSignupAllowlist(ctx, req.(*AdminListSignupAllowlistRequest))
-	}
-	return interceptor(ctx, in, info, handler)
-}
-
-func _AdminService_AdminAddSignupAllowlistEntry_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(AdminAddSignupAllowlistEntryRequest)
-	if err := dec(in); err != nil {
-		return nil, err
-	}
-	if interceptor == nil {
-		return srv.(AdminServiceServer).AdminAddSignupAllowlistEntry(ctx, in)
-	}
-	info := &grpc.UnaryServerInfo{
-		Server:     srv,
-		FullMethod: AdminService_AdminAddSignupAllowlistEntry_FullMethodName,
-	}
-	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(AdminServiceServer).AdminAddSignupAllowlistEntry(ctx, req.(*AdminAddSignupAllowlistEntryRequest))
-	}
-	return interceptor(ctx, in, info, handler)
-}
-
-func _AdminService_AdminRemoveSignupAllowlistEntry_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(AdminRemoveSignupAllowlistEntryRequest)
-	if err := dec(in); err != nil {
-		return nil, err
-	}
-	if interceptor == nil {
-		return srv.(AdminServiceServer).AdminRemoveSignupAllowlistEntry(ctx, in)
-	}
-	info := &grpc.UnaryServerInfo{
-		Server:     srv,
-		FullMethod: AdminService_AdminRemoveSignupAllowlistEntry_FullMethodName,
-	}
-	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(AdminServiceServer).AdminRemoveSignupAllowlistEntry(ctx, req.(*AdminRemoveSignupAllowlistEntryRequest))
-	}
-	return interceptor(ctx, in, info, handler)
-}
-
-func _AdminService_AdminListSignupAttempts_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(AdminListSignupAttemptsRequest)
-	if err := dec(in); err != nil {
-		return nil, err
-	}
-	if interceptor == nil {
-		return srv.(AdminServiceServer).AdminListSignupAttempts(ctx, in)
-	}
-	info := &grpc.UnaryServerInfo{
-		Server:     srv,
-		FullMethod: AdminService_AdminListSignupAttempts_FullMethodName,
-	}
-	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(AdminServiceServer).AdminListSignupAttempts(ctx, req.(*AdminListSignupAttemptsRequest))
-	}
-	return interceptor(ctx, in, info, handler)
-}
-
-func _AdminService_AdminDismissSignupAttempt_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(AdminDismissSignupAttemptRequest)
-	if err := dec(in); err != nil {
-		return nil, err
-	}
-	if interceptor == nil {
-		return srv.(AdminServiceServer).AdminDismissSignupAttempt(ctx, in)
-	}
-	info := &grpc.UnaryServerInfo{
-		Server:     srv,
-		FullMethod: AdminService_AdminDismissSignupAttempt_FullMethodName,
-	}
-	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(AdminServiceServer).AdminDismissSignupAttempt(ctx, req.(*AdminDismissSignupAttemptRequest))
 	}
 	return interceptor(ctx, in, info, handler)
 }
@@ -12354,26 +12200,6 @@ var AdminService_ServiceDesc = grpc.ServiceDesc{
 		{
 			MethodName: "AdminGetOrganizationCost",
 			Handler:    _AdminService_AdminGetOrganizationCost_Handler,
-		},
-		{
-			MethodName: "AdminListSignupAllowlist",
-			Handler:    _AdminService_AdminListSignupAllowlist_Handler,
-		},
-		{
-			MethodName: "AdminAddSignupAllowlistEntry",
-			Handler:    _AdminService_AdminAddSignupAllowlistEntry_Handler,
-		},
-		{
-			MethodName: "AdminRemoveSignupAllowlistEntry",
-			Handler:    _AdminService_AdminRemoveSignupAllowlistEntry_Handler,
-		},
-		{
-			MethodName: "AdminListSignupAttempts",
-			Handler:    _AdminService_AdminListSignupAttempts_Handler,
-		},
-		{
-			MethodName: "AdminDismissSignupAttempt",
-			Handler:    _AdminService_AdminDismissSignupAttempt_Handler,
 		},
 		{
 			MethodName: "AdminListAuditLog",
