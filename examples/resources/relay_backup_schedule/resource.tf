@@ -2,7 +2,7 @@ resource "relay_backup_schedule" "orders" {
   workspace_id     = relay_workspace.prod.id
   cluster_id       = relay_postgresql_cluster.orders.id
   snapshot_time    = { hour = 3, minute = 30 }
-  pitr_window_days = 14
+  pitr_window_days = 7
 
   tiers = [
     { frequency = "hourly", interval = 6, retention_value = 8 },

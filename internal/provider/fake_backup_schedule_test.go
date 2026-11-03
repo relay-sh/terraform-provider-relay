@@ -123,8 +123,8 @@ func validateSchedule(engine string, spec *serverv1.BackupScheduleSpec) error {
 		return fmt.Errorf("retention.max_days is not supported for %s schedules", engine)
 	case spec.GetRetention() != nil && spec.GetRetention().GetMaxBackups() < 1:
 		return fmt.Errorf("retention.max_backups must be at least 1")
-	case engine == engineValkey && spec.GetPitrWindowDays() > maxValkeyPITRWindowDays:
-		return fmt.Errorf("pitr_window_days must be 1-%d for Valkey, got %d", maxValkeyPITRWindowDays, spec.GetPitrWindowDays())
+	case spec.GetPitrWindowDays() > 7:
+		return fmt.Errorf("pitr_window_days must be 1-7 for %s, got %d", engine, spec.GetPitrWindowDays())
 	case t != nil && (t.GetHour() < 0 || t.GetHour() > 23 || t.GetMinute() < 0 || t.GetMinute() > 59):
 		return fmt.Errorf("snapshot_time must be a UTC wall-clock time (hour 0-23, minute 0-59)")
 	}
