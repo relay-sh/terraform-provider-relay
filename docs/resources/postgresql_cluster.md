@@ -78,6 +78,7 @@ resource "relay_postgresql_cluster" "billing" {
 
 ### Optional
 
+- `default_connections` (Attributes) Relay-managed users the platform creates once the cluster is running, each with a Relay connection that uses it: one read-only, one read-write and one admin. Omit it for all three, as the Relay console does; set a role to `false` to skip it. Only read on create: the platform cannot add them to a cluster that already exists, so setting or changing it there only stores the value, without replacing the cluster. For such a cluster, declare the users with `relay_postgresql_user` and their connections with `relay_connection`. Not available with `restore`. (see [below for nested schema](#nestedatt--default_connections))
 - `keep_backups_on_destroy` (Boolean) Keep the cluster's backups when it is destroyed.
 - `parameters` (Map of String) PostgreSQL settings (GUCs). An empty map resets them to defaults; omitting the attribute leaves them unmanaged. Some need a restart, which Relay orchestrates with a switchover.
 - `replication` (Attributes) Commit replication for the cluster. Patroni configures synchronous mode per cluster, not per node. (see [below for nested schema](#nestedatt--replication))
@@ -150,6 +151,16 @@ Optional:
 - `threshold_percent` (Number) Disk-usage percent that triggers a grow. `0` or omitted uses the platform default of 80; otherwise 50-95.
 
 
+
+
+<a id="nestedatt--default_connections"></a>
+### Nested Schema for `default_connections`
+
+Required:
+
+- `admin` (Boolean) Create the admin user and connection.
+- `readonly` (Boolean) Create the read-only user and connection.
+- `readwrite` (Boolean) Create the read-write user and connection.
 
 
 <a id="nestedatt--replication"></a>

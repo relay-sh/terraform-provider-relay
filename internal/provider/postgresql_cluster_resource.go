@@ -51,6 +51,7 @@ type postgresqlClusterModel struct {
 	Replication          types.Object              `tfsdk:"replication"`
 	KeepBackupsOnDestroy types.Bool                `tfsdk:"keep_backups_on_destroy"`
 	Restore              types.Object              `tfsdk:"restore"`
+	DefaultConnections   types.Object              `tfsdk:"default_connections"`
 	Phase                types.String              `tfsdk:"phase"`
 	PhaseMessage         types.String              `tfsdk:"phase_message"`
 	EndpointHost         types.String              `tfsdk:"endpoint_host"`
@@ -214,10 +215,11 @@ func (r *postgresqlClusterResource) Schema(ctx context.Context, _ resource.Schem
 			"restore": restoreAttribute("`version`, when set, must match the source's, and `nodes` must keep the label of the source's primary group.",
 				"Recover up to this instant, RFC 3339, for example `2026-10-31T12:00:00Z`, by replaying the source's archived WAL; "+
 					"the platform rejects an instant outside the source's backups. Omit it to restore the latest backup and replay all archived WAL."),
-			"phase":         schema.StringAttribute{Computed: true, MarkdownDescription: "Lifecycle phase after the last apply."},
-			"phase_message": schema.StringAttribute{Computed: true, MarkdownDescription: "Detail for the phase."},
-			"endpoint_host": schema.StringAttribute{Computed: true, MarkdownDescription: "Public read-write endpoint host, the same as the `rw` entry of `public_endpoints`. Empty until the platform publishes it. Never an alias."},
-			"endpoint_port": schema.Int64Attribute{Computed: true, MarkdownDescription: "Public read-write endpoint port."},
+			"default_connections": defaultConnectionsAttribute("relay_postgresql_user"),
+			"phase":               schema.StringAttribute{Computed: true, MarkdownDescription: "Lifecycle phase after the last apply."},
+			"phase_message":       schema.StringAttribute{Computed: true, MarkdownDescription: "Detail for the phase."},
+			"endpoint_host":       schema.StringAttribute{Computed: true, MarkdownDescription: "Public read-write endpoint host, the same as the `rw` entry of `public_endpoints`. Empty until the platform publishes it. Never an alias."},
+			"endpoint_port":       schema.Int64Attribute{Computed: true, MarkdownDescription: "Public read-write endpoint port."},
 			"shared_host": schema.StringAttribute{
 				Computed: true,
 				MarkdownDescription: "The previous shared read-write address of a database upgraded from the Free plan. It keeps working next to the new names, but is never `endpoint_host` " +
@@ -456,7 +458,9 @@ func (r *postgresqlClusterResource) Create(ctx context.Context, req resource.Cre
 	scoped := r.client.Workspace(ctx, plan.WorkspaceID.ValueString())
 	var created *serverv1.Database
 	if plan.Restore.IsNull() {
-		out, err := r.client.API.CreateDatabase(scoped, &serverv1.CreateDatabaseRequest{Name: plan.Name.ValueString(), Spec: clusterSpecToProto(plan)})
+		out, err := r.client.API.CreateDatabase(scoped, &serverv1.CreateDatabaseRequest{
+			Name: plan.Name.ValueString(), Spec: clusterSpecToProto(plan), DefaultConnections: defaultConnectionsToProto(plan.DefaultConnections),
+		})
 		if err != nil {
 			resp.Diagnostics.AddError("Cannot create cluster", err.Error())
 			return
@@ -694,6 +698,7 @@ func clusterFromProto(db *serverv1.Database, prior postgresqlClusterModel) postg
 		Replication:          replicationFromProto(spec.GetReplication()),
 		KeepBackupsOnDestroy: prior.KeepBackupsOnDestroy,
 		Restore:              prior.Restore,
+		DefaultConnections:   prior.DefaultConnections,
 		Phase:                types.StringValue(st.GetPhase()),
 		PhaseMessage:         types.StringValue(st.GetMessage()),
 		EndpointHost:         endpointHost,

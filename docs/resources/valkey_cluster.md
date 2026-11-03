@@ -75,6 +75,7 @@ resource "relay_valkey_cluster" "leaderboard" {
 
 ### Optional
 
+- `default_connections` (Attributes) Relay-managed users the platform creates once the cluster is running, each with a Relay connection that uses it: one read-only, one read-write and one admin. Omit it for all three, as the Relay console does; set a role to `false` to skip it. Only read on create: the platform cannot add them to a cluster that already exists, so setting or changing it there only stores the value, without replacing the cluster. For such a cluster, declare the users with `relay_valkey_user` and their connections with `relay_connection`. Not available with `restore`. (see [below for nested schema](#nestedatt--default_connections))
 - `keep_backups_on_destroy` (Boolean) Keep the cluster's backups when it is destroyed.
 - `mode` (String) `replication` runs one primary and its replicas. `cluster` shards the keyspace across `shards` primaries, each with `replicas_per_shard` replicas. Changing it replaces the cluster.
 - `parameters` (Map of String) Valkey settings, for example `maxmemory-policy`. An empty map resets them to defaults; omitting the attribute leaves them unmanaged. Settings the platform manages, such as `maxmemory` or `port`, are rejected. The platform stores canonical names (lower case, aliases resolved); the spelling you configure is kept in state when it maps to the stored name.
@@ -140,6 +141,16 @@ Optional:
 - `threshold_percent` (Number) Disk-usage percent that triggers a grow. `0` or omitted uses the platform default of 80; otherwise 50-95.
 
 
+
+
+<a id="nestedatt--default_connections"></a>
+### Nested Schema for `default_connections`
+
+Required:
+
+- `admin` (Boolean) Create the admin user and connection.
+- `readonly` (Boolean) Create the read-only user and connection.
+- `readwrite` (Boolean) Create the read-write user and connection.
 
 
 <a id="nestedatt--restore"></a>
