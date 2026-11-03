@@ -1,3 +1,13 @@
+## 0.0.10 (November 3, 2026)
+
+FEATURES:
+
+* resource/relay_postgresql_cluster, resource/relay_valkey_cluster: `default_connections` creates the Relay-managed read-only, read-write and admin users, each with a connection, as the Relay console does. Omitted on create, all three are created. Changing a role on an existing cluster creates it, or deletes its connection and then its user, without replacing the cluster ([#92](https://github.com/relay-sh/terraform-provider-relay/pull/92), [#93](https://github.com/relay-sh/terraform-provider-relay/pull/93))
+
+NOTES:
+
+* resource/relay_postgresql_cluster, resource/relay_valkey_cluster: a cluster created without `default_connections` in its configuration now gets all three default connections. Set the roles to `false` to keep creating clusters without them
+
 ## 0.0.9 (November 2, 2026)
 
 BUG FIXES:
