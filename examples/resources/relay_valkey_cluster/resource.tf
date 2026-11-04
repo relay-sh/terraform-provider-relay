@@ -21,11 +21,12 @@ resource "relay_valkey_cluster" "sessions" {
 }
 
 resource "relay_valkey_cluster" "leaderboard" {
-  workspace_id       = relay_workspace.prod.id
-  name               = "leaderboard"
-  mode               = "cluster"
-  shards             = 3
-  replicas_per_shard = 1
+  workspace_id        = relay_workspace.prod.id
+  name                = "leaderboard"
+  mode                = "cluster"
+  shards              = 3
+  replicas_per_shard  = 1
+  deletion_protection = true
 
   nodes = {
     shards = {

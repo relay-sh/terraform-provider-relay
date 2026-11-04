@@ -18,6 +18,8 @@ resource "relay_postgresql_cluster" "billing" {
   name         = "billing"
   version      = "18"
 
+  deletion_protection = true
+
   nodes = {
     writers = {
       role   = "electable"

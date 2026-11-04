@@ -14,8 +14,9 @@ A workspace groups connections, databases and agents inside the provider's organ
 
 ```terraform
 resource "relay_workspace" "prod" {
-  name        = "prod"
-  description = "Production databases"
+  name                = "prod"
+  description         = "Production databases"
+  deletion_protection = true
 }
 ```
 
