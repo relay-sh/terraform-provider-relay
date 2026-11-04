@@ -3,12 +3,12 @@
 page_title: "relay_postgresql_database Resource - relay"
 subcategory: ""
 description: |-
-  A logical database on a managed PostgreSQL cluster. readOnly, readWrite and dbAdmin roles of relay_postgresql_user apply to one, so create it before the user. The name cannot change in place; owner, description, schemas, extensions and lock_public can, and removing the optional ones clears them. A database the platform adopted rather than created is kept on the cluster when the resource is destroyed.
+  A logical database on a managed PostgreSQL cluster. readOnly, readWrite and dbAdmin roles of relay_postgresql_user apply to one, so create it before the user. The name cannot change in place; owner, description, schemas, extensions, lock_public and deletion_protection can, and removing the optional ones clears them. A database the platform adopted rather than created is kept on the cluster when the resource is destroyed.
 ---
 
 # relay_postgresql_database (Resource)
 
-A logical database on a managed PostgreSQL cluster. `readOnly`, `readWrite` and `dbAdmin` roles of `relay_postgresql_user` apply to one, so create it before the user. The name cannot change in place; `owner`, `description`, `schemas`, `extensions` and `lock_public` can, and removing the optional ones clears them. A database the platform adopted rather than created is kept on the cluster when the resource is destroyed.
+A logical database on a managed PostgreSQL cluster. `readOnly`, `readWrite` and `dbAdmin` roles of `relay_postgresql_user` apply to one, so create it before the user. The name cannot change in place; `owner`, `description`, `schemas`, `extensions`, `lock_public` and `deletion_protection` can, and removing the optional ones clears them. A database the platform adopted rather than created is kept on the cluster when the resource is destroyed.
 
 ## Example Usage
 
@@ -41,6 +41,7 @@ resource "relay_postgresql_database" "balance" {
 
 ### Optional
 
+- `deletion_protection` (Boolean) While `true`, the platform refuses to delete the database, and `terraform destroy` or a replacement fails before deleting it. Turning it on needs deletion protection enabled for the organization. Turning it off needs the `org.deletion_protection.disable` permission, which the owner and admin roles hold.
 - `description` (String) Free-text description.
 - `extensions` (Attributes List) Extensions the platform installs. The platform refuses extensions that its PostgreSQL version does not allow (for example `pgaudit`, `pg_stat_statements`, `pgcrypto`, `citext`, `hstore`, `uuid-ossp`, `pg_trgm`, `btree_gin`, `btree_gist`, `unaccent` and `vector`). (see [below for nested schema](#nestedatt--extensions))
 - `lock_public` (Boolean) Revoke the `public` schema from `PUBLIC` and stop user roles from covering it. Every extension then needs a `schema` other than `public`.
