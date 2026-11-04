@@ -28,6 +28,7 @@ data "relay_workspace" "prod" {
 
 ### Read-Only
 
+- `deletion_protection` (Boolean) Whether the platform refuses to delete the workspace.
 - `description` (String) Free-text description.
 - `managed_by` (String) Owner tag, empty when unmanaged.
 - `slug` (String) URL slug.

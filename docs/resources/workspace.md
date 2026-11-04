@@ -28,6 +28,7 @@ resource "relay_workspace" "prod" {
 
 ### Optional
 
+- `deletion_protection` (Boolean) While `true`, the platform refuses to delete the workspace, and `terraform destroy` or a replacement fails before deleting it. Turning it on needs deletion protection enabled for the organization. Turning it off needs the `org.deletion_protection.disable` permission, which the owner and admin roles hold.
 - `description` (String) Free-text description.
 - `managed_by` (String) Owner tag the dashboard shows. Defaults to `terraform`; set it to another tool or an empty string.
 

@@ -51,6 +51,7 @@ func (r *workspaceResource) Schema(_ context.Context, _ resource.SchemaRequest, 
 				Computed:            true,
 				MarkdownDescription: "URL slug derived from the name.",
 			},
+			"deletion_protection": deletionProtectionAttribute("workspace"),
 			"managed_by": schema.StringAttribute{
 				Optional:            true,
 				Computed:            true,
@@ -72,9 +73,10 @@ func (r *workspaceResource) Create(ctx context.Context, req resource.CreateReque
 		return
 	}
 	out, err := r.client.API.CreateWorkspace(r.client.Org(ctx), &serverv1.CreateWorkspaceRequest{
-		Name:        plan.Name.ValueString(),
-		Description: plan.Description.ValueString(),
-		ManagedBy:   plan.ManagedBy.ValueStringPointer(),
+		Name:               plan.Name.ValueString(),
+		Description:        plan.Description.ValueString(),
+		ManagedBy:          plan.ManagedBy.ValueStringPointer(),
+		DeletionProtection: plan.DeletionProtection.ValueBool(),
 	})
 	if err != nil {
 		resp.Diagnostics.AddError("Cannot create workspace", err.Error())
@@ -120,9 +122,14 @@ func (r *workspaceResource) Update(ctx context.Context, req resource.UpdateReque
 	if !plan.Name.Equal(prior.Name) {
 		update.NewName = stringPtr(plan.Name.ValueString())
 	}
+	disabling := false
+	if !plan.DeletionProtection.Equal(prior.DeletionProtection) {
+		update.DeletionProtection = boolPtr(plan.DeletionProtection.ValueBool())
+		disabling = !plan.DeletionProtection.ValueBool()
+	}
 	out, err := r.client.API.UpdateWorkspace(r.client.Org(ctx), update)
 	if err != nil {
-		resp.Diagnostics.AddError("Cannot update workspace", err.Error())
+		addDeletionProtectionError(&resp.Diagnostics, "Cannot update workspace", err, disabling)
 		return
 	}
 	state := workspaceFromProto(out.GetWorkspace())
@@ -133,6 +140,9 @@ func (r *workspaceResource) Delete(ctx context.Context, req resource.DeleteReque
 	var state workspaceModel
 	resp.Diagnostics.Append(req.State.Get(ctx, &state)...)
 	if resp.Diagnostics.HasError() {
+		return
+	}
+	if refuseProtectedDelete(state.DeletionProtection, &resp.Diagnostics) {
 		return
 	}
 	_, err := r.client.API.DeleteWorkspace(r.client.Org(ctx), &serverv1.DeleteWorkspaceRequest{Name: state.Name.ValueString()})

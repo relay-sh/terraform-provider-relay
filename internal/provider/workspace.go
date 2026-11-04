@@ -9,19 +9,21 @@ import (
 const managedBy = "terraform"
 
 type workspaceModel struct {
-	ID          types.String `tfsdk:"id"`
-	Name        types.String `tfsdk:"name"`
-	Description types.String `tfsdk:"description"`
-	Slug        types.String `tfsdk:"slug"`
-	ManagedBy   types.String `tfsdk:"managed_by"`
+	ID                 types.String `tfsdk:"id"`
+	Name               types.String `tfsdk:"name"`
+	Description        types.String `tfsdk:"description"`
+	Slug               types.String `tfsdk:"slug"`
+	ManagedBy          types.String `tfsdk:"managed_by"`
+	DeletionProtection types.Bool   `tfsdk:"deletion_protection"`
 }
 
 func workspaceFromProto(w *serverv1.Workspace) workspaceModel {
 	return workspaceModel{
-		ID:          types.StringValue(w.GetId()),
-		Name:        types.StringValue(w.GetName()),
-		Description: types.StringValue(w.GetDescription()),
-		Slug:        types.StringValue(w.GetSlug()),
-		ManagedBy:   types.StringValue(w.GetManagedBy()),
+		ID:                 types.StringValue(w.GetId()),
+		Name:               types.StringValue(w.GetName()),
+		Description:        types.StringValue(w.GetDescription()),
+		Slug:               types.StringValue(w.GetSlug()),
+		ManagedBy:          types.StringValue(w.GetManagedBy()),
+		DeletionProtection: types.BoolValue(w.GetDeletionProtection()),
 	}
 }
