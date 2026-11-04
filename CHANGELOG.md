@@ -1,3 +1,9 @@
+## Unreleased
+
+BUG FIXES:
+
+* resource/relay_connection: on a connection created for a database user, changing `managed_database_id`, `user`, `database` or `engine`, or switching between a database user and a `host`, replaces the connection, because the platform built it from them and the server rejects those changes in place. `agent_pool` still updates in place
+
 ## 0.0.14 (November 4, 2026)
 
 FEATURES:
