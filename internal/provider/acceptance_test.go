@@ -192,6 +192,25 @@ func TestAccPostgreSQLClusterAndUser(t *testing.T) {
 		t.Skip("set TF_ACC=1 and RELAY_ACC_DATABASES=1 to provision real clusters")
 	}
 	name := acceptanceName(t)
+	userConnection := ""
+	var userConnectionChecks []resource.TestCheckFunc
+	if os.Getenv("RELAY_ACC_USER_CONNECTIONS") != "" {
+		userConnection = `
+resource "relay_connection" "user" {
+  workspace_id        = relay_workspace.this.id
+  name                = "tfacc-user"
+  engine              = "postgres"
+  agent_pool          = "default"
+  managed_database_id = relay_postgresql_cluster.this.id
+  user                = relay_postgresql_user.this.username
+  database            = relay_postgresql_database.this.name
+}
+`
+		userConnectionChecks = []resource.TestCheckFunc{
+			resource.TestCheckResourceAttrPair("relay_connection.user", "database_user", "relay_postgresql_user.this", "username"),
+			resource.TestCheckNoResourceAttr("relay_connection.user", "host"),
+		}
+	}
 	resource.Test(t, resource.TestCase{
 		ProtoV6ProviderFactories: acceptanceFactories(t),
 		Steps: []resource.TestStep{{
@@ -234,14 +253,14 @@ data "relay_postgresql_cluster" "this" {
   workspace_id = relay_workspace.this.id
   name         = relay_postgresql_cluster.this.name
 }
-`, name, envOr("RELAY_ACC_PG_VERSION", "17"), envOr("RELAY_ACC_CLOUD", "aws"), envOr("RELAY_ACC_REGION", "us-east-1")),
-			Check: resource.ComposeAggregateTestCheckFunc(
+%[5]s`, name, envOr("RELAY_ACC_PG_VERSION", "17"), envOr("RELAY_ACC_CLOUD", "aws"), envOr("RELAY_ACC_REGION", "us-east-1"), userConnection),
+			Check: resource.ComposeAggregateTestCheckFunc(append(userConnectionChecks,
 				resource.TestCheckResourceAttr("relay_postgresql_cluster.this", "phase", "running"),
 				resource.TestCheckResourceAttr("relay_postgresql_database.this", "phase", "Ready"),
 				resource.TestCheckResourceAttr("relay_postgresql_user.this", "phase", "Ready"),
 				resource.TestCheckResourceAttrSet("relay_postgresql_user.this", "generated_password"),
 				resource.TestCheckResourceAttrPair("data.relay_postgresql_cluster.this", "id", "relay_postgresql_cluster.this", "id"),
-			),
+			)...),
 		}},
 	})
 }

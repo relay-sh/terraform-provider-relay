@@ -345,6 +345,11 @@ func (f *fakeServer) CreateConnection(ctx context.Context, req *serverv1.CreateC
 		return nil, status.Error(codes.AlreadyExists, "connection already exists")
 	}
 	c := proto.Clone(req.GetConnection()).(*serverv1.Connection)
+	if c.GetManagedDatabaseId() != "" && c.GetUser() != "" && c.GetHost() == "" {
+		if err := bindDatabaseUser(c); err != nil {
+			return nil, err
+		}
+	}
 	c.Id = f.newID("conn")
 	c.Status = "unknown"
 	c.PasswordSet = c.GetPassword() != ""
@@ -352,6 +357,29 @@ func (f *fakeServer) CreateConnection(ctx context.Context, req *serverv1.CreateC
 	normalizeTLS(c)
 	f.connections[key] = c
 	return &serverv1.CreateConnectionResponse{Connection: userFacing(c)}, nil
+}
+
+func bindDatabaseUser(c *serverv1.Connection) error {
+	rejected := map[string]bool{
+		"internal_host":     c.GetInternalHost() != "",
+		"credential_ref":    c.GetCredentialRef() != "",
+		"credential_source": c.GetCredentialSource() != "",
+		"password":          c.GetPassword() != "",
+		"host_tls":          c.GetHostTls() != nil,
+		"tls":               c.GetTls() != nil,
+		"database_user":     c.GetDatabaseUser() != "",
+	}
+	for field, set := range rejected {
+		if set {
+			return status.Errorf(codes.InvalidArgument, "%s is set by the platform when a connection is created for a database user", field)
+		}
+	}
+	c.Engine = "postgres"
+	c.DatabaseUser = c.GetUser()
+	c.Host = "pg.internal:5432"
+	c.CredentialRef = "secret/" + c.GetUser()
+	c.HostTls = &serverv1.HostTLSConfig{Enabled: true, Ca: "PLATFORMCA"}
+	return nil
 }
 
 func userFacing(c *serverv1.Connection) *serverv1.Connection {

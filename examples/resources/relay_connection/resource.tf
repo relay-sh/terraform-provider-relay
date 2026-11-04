@@ -14,3 +14,18 @@ resource "relay_connection" "orders" {
     { column_pattern = "email", strategy = "hash" },
   ]
 }
+
+resource "relay_connection" "account_rw" {
+  workspace_id        = relay_workspace.prod.id
+  name                = "account-rw"
+  engine              = "postgres"
+  agent_pool          = "default"
+  managed_database_id = relay_postgresql_cluster.main.id
+  user                = "usr_account_rw"
+  database            = "account"
+
+  redact_enabled = true
+  redact_rules = [
+    { column_pattern = "email", strategy = "hash" },
+  ]
+}
