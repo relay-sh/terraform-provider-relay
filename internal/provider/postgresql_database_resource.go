@@ -33,20 +33,21 @@ type postgresqlDatabaseResource struct {
 }
 
 type postgresqlDatabaseModel struct {
-	ID           types.String   `tfsdk:"id"`
-	WorkspaceID  types.String   `tfsdk:"workspace_id"`
-	ClusterID    types.String   `tfsdk:"cluster_id"`
-	Name         types.String   `tfsdk:"name"`
-	Owner        types.String   `tfsdk:"owner"`
-	Description  types.String   `tfsdk:"description"`
-	Schemas      types.List     `tfsdk:"schemas"`
-	Extensions   types.List     `tfsdk:"extensions"`
-	LockPublic   types.Bool     `tfsdk:"lock_public"`
-	Origin       types.String   `tfsdk:"origin"`
-	Phase        types.String   `tfsdk:"phase"`
-	PhaseMessage types.String   `tfsdk:"phase_message"`
-	CreatedAt    types.String   `tfsdk:"created_at"`
-	Timeouts     timeouts.Value `tfsdk:"timeouts"`
+	ID                 types.String   `tfsdk:"id"`
+	WorkspaceID        types.String   `tfsdk:"workspace_id"`
+	ClusterID          types.String   `tfsdk:"cluster_id"`
+	Name               types.String   `tfsdk:"name"`
+	Owner              types.String   `tfsdk:"owner"`
+	Description        types.String   `tfsdk:"description"`
+	Schemas            types.List     `tfsdk:"schemas"`
+	Extensions         types.List     `tfsdk:"extensions"`
+	LockPublic         types.Bool     `tfsdk:"lock_public"`
+	DeletionProtection types.Bool     `tfsdk:"deletion_protection"`
+	Origin             types.String   `tfsdk:"origin"`
+	Phase              types.String   `tfsdk:"phase"`
+	PhaseMessage       types.String   `tfsdk:"phase_message"`
+	CreatedAt          types.String   `tfsdk:"created_at"`
+	Timeouts           timeouts.Value `tfsdk:"timeouts"`
 }
 
 type databaseExtensionModel struct {
@@ -77,7 +78,7 @@ func (r *postgresqlDatabaseResource) Schema(ctx context.Context, _ resource.Sche
 	nonEmpty := []validator.String{stringvalidator.LengthAtLeast(1)}
 
 	resp.Schema = schema.Schema{
-		MarkdownDescription: "A logical database on a managed PostgreSQL cluster. `readOnly`, `readWrite` and `dbAdmin` roles of `relay_postgresql_user` apply to one, so create it before the user. The name cannot change in place; `owner`, `description`, `schemas`, `extensions` and `lock_public` can, and removing the optional ones clears them. A database the platform adopted rather than created is kept on the cluster when the resource is destroyed.",
+		MarkdownDescription: "A logical database on a managed PostgreSQL cluster. `readOnly`, `readWrite` and `dbAdmin` roles of `relay_postgresql_user` apply to one, so create it before the user. The name cannot change in place; `owner`, `description`, `schemas`, `extensions`, `lock_public` and `deletion_protection` can, and removing the optional ones clears them. A database the platform adopted rather than created is kept on the cluster when the resource is destroyed.",
 		Attributes: map[string]schema.Attribute{
 			"id":           schema.StringAttribute{Computed: true, PlanModifiers: keep, MarkdownDescription: "`<cluster_id>/<name>`."},
 			"workspace_id": schema.StringAttribute{Required: true, PlanModifiers: replace, MarkdownDescription: "Workspace of the cluster."},
@@ -108,10 +109,11 @@ func (r *postgresqlDatabaseResource) Schema(ctx context.Context, _ resource.Sche
 				Optional: true, Computed: true, Default: booldefault.StaticBool(false),
 				MarkdownDescription: "Revoke the `public` schema from `PUBLIC` and stop user roles from covering it. Every extension then needs a `schema` other than `public`.",
 			},
-			"origin":        schema.StringAttribute{Computed: true, PlanModifiers: keep, MarkdownDescription: "`Created` when the platform created the database, `Adopted` when it took over an existing one."},
-			"phase":         schema.StringAttribute{Computed: true, MarkdownDescription: "Reconcile phase."},
-			"phase_message": schema.StringAttribute{Computed: true, MarkdownDescription: "Detail for the phase."},
-			"created_at":    schema.StringAttribute{Computed: true, PlanModifiers: keep, MarkdownDescription: "Creation time, RFC 3339."},
+			"deletion_protection": deletionProtectionAttribute("database"),
+			"origin":              schema.StringAttribute{Computed: true, PlanModifiers: keep, MarkdownDescription: "`Created` when the platform created the database, `Adopted` when it took over an existing one."},
+			"phase":               schema.StringAttribute{Computed: true, MarkdownDescription: "Reconcile phase."},
+			"phase_message":       schema.StringAttribute{Computed: true, MarkdownDescription: "Detail for the phase."},
+			"created_at":          schema.StringAttribute{Computed: true, PlanModifiers: keep, MarkdownDescription: "Creation time, RFC 3339."},
 		},
 		Blocks: map[string]schema.Block{
 			"timeouts": timeouts.Block(ctx, timeouts.Opts{Create: true}),
@@ -187,13 +189,14 @@ func (r *postgresqlDatabaseResource) Create(ctx context.Context, req resource.Cr
 
 	scoped := r.client.Workspace(ctx, plan.WorkspaceID.ValueString())
 	_, err := r.client.API.CreateLogicalDatabase(scoped, &serverv1.CreateLogicalDatabaseRequest{
-		DatabaseId:  plan.ClusterID.ValueString(),
-		Name:        plan.Name.ValueString(),
-		Owner:       plan.Owner.ValueString(),
-		Description: plan.Description.ValueString(),
-		Schemas:     stringListToGo(plan.Schemas),
-		Extensions:  extensionsToProto(plan.Extensions),
-		LockPublic:  plan.LockPublic.ValueBool(),
+		DatabaseId:         plan.ClusterID.ValueString(),
+		Name:               plan.Name.ValueString(),
+		Owner:              plan.Owner.ValueString(),
+		Description:        plan.Description.ValueString(),
+		Schemas:            stringListToGo(plan.Schemas),
+		Extensions:         extensionsToProto(plan.Extensions),
+		LockPublic:         plan.LockPublic.ValueBool(),
+		DeletionProtection: plan.DeletionProtection.ValueBool(),
 	})
 	if err != nil {
 		resp.Diagnostics.AddError("Cannot create PostgreSQL database", err.Error())
@@ -284,9 +287,14 @@ func (r *postgresqlDatabaseResource) Update(ctx context.Context, req resource.Up
 	if !plan.LockPublic.Equal(prior.LockPublic) {
 		update.LockPublic = boolPtr(plan.LockPublic.ValueBool())
 	}
+	disabling := false
+	if !plan.DeletionProtection.Equal(prior.DeletionProtection) {
+		update.DeletionProtection = boolPtr(plan.DeletionProtection.ValueBool())
+		disabling = !plan.DeletionProtection.ValueBool()
+	}
 	out, err := r.client.API.UpdateLogicalDatabase(r.client.Workspace(ctx, plan.WorkspaceID.ValueString()), update)
 	if err != nil {
-		resp.Diagnostics.AddError("Cannot update PostgreSQL database", err.Error())
+		addDeletionProtectionError(&resp.Diagnostics, "Cannot update PostgreSQL database", err, disabling)
 		return
 	}
 	state := logicalDatabaseFromProto(out.GetDatabase(), plan)
@@ -297,6 +305,9 @@ func (r *postgresqlDatabaseResource) Delete(ctx context.Context, req resource.De
 	var state postgresqlDatabaseModel
 	resp.Diagnostics.Append(req.State.Get(ctx, &state)...)
 	if resp.Diagnostics.HasError() {
+		return
+	}
+	if refuseProtectedDelete(state.DeletionProtection, &resp.Diagnostics) {
 		return
 	}
 	_, err := r.client.API.DeleteLogicalDatabase(r.client.Workspace(ctx, state.WorkspaceID.ValueString()), &serverv1.DeleteLogicalDatabaseRequest{
@@ -341,6 +352,7 @@ func logicalDatabaseFromProto(db *serverv1.LogicalDatabase, prior postgresqlData
 	out.Schemas = stringListFromGo(db.GetSchemas(), prior.Schemas)
 	out.Extensions = extensionsFromProto(db.GetExtensions(), prior.Extensions)
 	out.LockPublic = types.BoolValue(db.GetLockPublic())
+	out.DeletionProtection = types.BoolValue(db.GetDeletionProtection())
 	out.Origin = types.StringValue(db.GetOrigin())
 	out.Phase = types.StringValue(db.GetPhase())
 	out.PhaseMessage = types.StringValue(db.GetPhaseMessage())

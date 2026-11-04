@@ -958,15 +958,16 @@ func (f *fakeServer) CreateLogicalDatabase(ctx context.Context, req *serverv1.Cr
 		return nil, status.Error(codes.AlreadyExists, "database already exists")
 	}
 	f.logicalDBs[key] = &serverv1.LogicalDatabase{
-		Name:        req.GetName(),
-		Owner:       req.GetOwner(),
-		Description: req.GetDescription(),
-		Schemas:     req.GetSchemas(),
-		Extensions:  req.GetExtensions(),
-		LockPublic:  req.GetLockPublic(),
-		Phase:       "Pending",
-		Origin:      "Created",
-		CreatedAt:   timestamppb.New(time.Unix(1_700_000_000, 0)),
+		Name:               req.GetName(),
+		Owner:              req.GetOwner(),
+		Description:        req.GetDescription(),
+		Schemas:            req.GetSchemas(),
+		Extensions:         req.GetExtensions(),
+		LockPublic:         req.GetLockPublic(),
+		DeletionProtection: req.GetDeletionProtection(),
+		Phase:              "Pending",
+		Origin:             "Created",
+		CreatedAt:          timestamppb.New(time.Unix(1_700_000_000, 0)),
 	}
 	f.ldbCountdown[key] = f.readyAfter
 	return &serverv1.CreateLogicalDatabaseResponse{Database: f.logicalDBs[key]}, nil
@@ -1025,8 +1026,14 @@ func (f *fakeServer) UpdateLogicalDatabase(ctx context.Context, req *serverv1.Up
 	if req.Extensions != nil {
 		db.Extensions = req.GetExtensions().GetItems()
 	}
+	if req.DeletionProtection != nil && !req.GetDeletionProtection() && db.GetDeletionProtection() && f.denyDisable {
+		return nil, status.Error(codes.PermissionDenied, "missing permission org.deletion_protection.disable")
+	}
 	if req.LockPublic != nil {
 		db.LockPublic = req.GetLockPublic()
+	}
+	if req.DeletionProtection != nil {
+		db.DeletionProtection = req.GetDeletionProtection()
 	}
 	updated := proto.Clone(db).(*serverv1.LogicalDatabase)
 	updated.CreatedAt = nil
@@ -1040,8 +1047,12 @@ func (f *fakeServer) DeleteLogicalDatabase(ctx context.Context, req *serverv1.De
 		return nil, err
 	}
 	key := userKey(req.GetDatabaseId(), req.GetName())
-	if _, ok := f.logicalDBs[key]; !ok {
+	db, ok := f.logicalDBs[key]
+	if !ok {
 		return nil, status.Error(codes.NotFound, "database not found")
+	}
+	if db.GetDeletionProtection() {
+		return nil, status.Error(codes.FailedPrecondition, "deletion protection is enabled; disable it first")
 	}
 	delete(f.logicalDBs, key)
 	return &serverv1.DeleteLogicalDatabaseResponse{}, nil
