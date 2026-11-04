@@ -27,31 +27,32 @@ type connectionResource struct {
 }
 
 type connectionModel struct {
-	ID                types.String      `tfsdk:"id"`
-	WorkspaceID       types.String      `tfsdk:"workspace_id"`
-	Name              types.String      `tfsdk:"name"`
-	Engine            types.String      `tfsdk:"engine"`
-	Host              types.String      `tfsdk:"host"`
-	User              types.String      `tfsdk:"user"`
-	Password          types.String      `tfsdk:"password"`
-	CredentialRef     types.String      `tfsdk:"credential_ref"`
-	CredentialSource  types.String      `tfsdk:"credential_source"`
-	Database          types.String      `tfsdk:"database"`
-	Listen            types.String      `tfsdk:"listen"`
-	AgentPool         types.String      `tfsdk:"agent_pool"`
-	ManagedDatabaseID types.String      `tfsdk:"managed_database_id"`
-	RedactEnabled     types.Bool        `tfsdk:"redact_enabled"`
-	AuditEnabled      types.Bool        `tfsdk:"audit_enabled"`
-	PolicyFailMode    types.String      `tfsdk:"policy_fail_mode"`
-	RedactRules       []redactRuleModel `tfsdk:"redact_rules"`
-	TLSCert           types.String      `tfsdk:"tls_cert"`
-	TLSKey            types.String      `tfsdk:"tls_key"`
-	TLSCA             types.String      `tfsdk:"tls_ca"`
-	HostTLSCA         types.String      `tfsdk:"host_tls_ca"`
-	Status            types.String      `tfsdk:"status"`
-	StatusError       types.String      `tfsdk:"status_error"`
-	PasswordSet       types.Bool        `tfsdk:"password_set"`
-	ManagedBy         types.String      `tfsdk:"managed_by"`
+	ID                 types.String      `tfsdk:"id"`
+	WorkspaceID        types.String      `tfsdk:"workspace_id"`
+	Name               types.String      `tfsdk:"name"`
+	Engine             types.String      `tfsdk:"engine"`
+	Host               types.String      `tfsdk:"host"`
+	User               types.String      `tfsdk:"user"`
+	Password           types.String      `tfsdk:"password"`
+	CredentialRef      types.String      `tfsdk:"credential_ref"`
+	CredentialSource   types.String      `tfsdk:"credential_source"`
+	Database           types.String      `tfsdk:"database"`
+	Listen             types.String      `tfsdk:"listen"`
+	AgentPool          types.String      `tfsdk:"agent_pool"`
+	ManagedDatabaseID  types.String      `tfsdk:"managed_database_id"`
+	RedactEnabled      types.Bool        `tfsdk:"redact_enabled"`
+	AuditEnabled       types.Bool        `tfsdk:"audit_enabled"`
+	PolicyFailMode     types.String      `tfsdk:"policy_fail_mode"`
+	RedactRules        []redactRuleModel `tfsdk:"redact_rules"`
+	TLSCert            types.String      `tfsdk:"tls_cert"`
+	TLSKey             types.String      `tfsdk:"tls_key"`
+	TLSCA              types.String      `tfsdk:"tls_ca"`
+	HostTLSCA          types.String      `tfsdk:"host_tls_ca"`
+	Status             types.String      `tfsdk:"status"`
+	StatusError        types.String      `tfsdk:"status_error"`
+	PasswordSet        types.Bool        `tfsdk:"password_set"`
+	ManagedBy          types.String      `tfsdk:"managed_by"`
+	DeletionProtection types.Bool        `tfsdk:"deletion_protection"`
 }
 
 type redactRuleModel struct {
@@ -128,13 +129,14 @@ func (r *connectionResource) Schema(_ context.Context, _ resource.SchemaRequest,
 					},
 				},
 			},
-			"tls_cert":     emptyString("Client certificate, PEM."),
-			"tls_key":      schema.StringAttribute{Optional: true, Computed: true, Sensitive: true, Default: stringdefault.StaticString(""), MarkdownDescription: "Client key, PEM."},
-			"tls_ca":       emptyString("CA bundle for the client certificate, PEM."),
-			"host_tls_ca":  emptyString("CA bundle used to verify the upstream server, PEM."),
-			"status":       computedString("`healthy`, `error` or `unknown`, as last reported by the agent."),
-			"status_error": computedString("Last error reported by the agent."),
-			"password_set": schema.BoolAttribute{Computed: true, MarkdownDescription: "Whether a password is stored."},
+			"tls_cert":            emptyString("Client certificate, PEM."),
+			"tls_key":             schema.StringAttribute{Optional: true, Computed: true, Sensitive: true, Default: stringdefault.StaticString(""), MarkdownDescription: "Client key, PEM."},
+			"tls_ca":              emptyString("CA bundle for the client certificate, PEM."),
+			"host_tls_ca":         emptyString("CA bundle used to verify the upstream server, PEM."),
+			"status":              computedString("`healthy`, `error` or `unknown`, as last reported by the agent."),
+			"status_error":        computedString("Last error reported by the agent."),
+			"password_set":        schema.BoolAttribute{Computed: true, MarkdownDescription: "Whether a password is stored."},
+			"deletion_protection": deletionProtectionAttribute("connection"),
 			"managed_by": schema.StringAttribute{
 				Optional:            true,
 				Computed:            true,
@@ -157,18 +159,19 @@ func (r *connectionResource) Create(ctx context.Context, req resource.CreateRequ
 	}
 	out, err := r.client.API.CreateConnection(r.client.Workspace(ctx, plan.WorkspaceID.ValueString()), &serverv1.CreateConnectionRequest{
 		Connection: &serverv1.Connection{
-			Name:              plan.Name.ValueString(),
-			Engine:            plan.Engine.ValueString(),
-			Host:              plan.Host.ValueString(),
-			User:              plan.User.ValueString(),
-			Password:          plan.Password.ValueString(),
-			CredentialRef:     plan.CredentialRef.ValueString(),
-			CredentialSource:  plan.CredentialSource.ValueString(),
-			Database:          plan.Database.ValueString(),
-			Listen:            plan.Listen.ValueString(),
-			AgentPool:         plan.AgentPool.ValueString(),
-			ManagedDatabaseId: plan.ManagedDatabaseID.ValueString(),
-			ManagedBy:         plan.ManagedBy.ValueString(),
+			Name:               plan.Name.ValueString(),
+			Engine:             plan.Engine.ValueString(),
+			Host:               plan.Host.ValueString(),
+			User:               plan.User.ValueString(),
+			Password:           plan.Password.ValueString(),
+			CredentialRef:      plan.CredentialRef.ValueString(),
+			CredentialSource:   plan.CredentialSource.ValueString(),
+			Database:           plan.Database.ValueString(),
+			Listen:             plan.Listen.ValueString(),
+			AgentPool:          plan.AgentPool.ValueString(),
+			ManagedDatabaseId:  plan.ManagedDatabaseID.ValueString(),
+			ManagedBy:          plan.ManagedBy.ValueString(),
+			DeletionProtection: plan.DeletionProtection.ValueBool(),
 			Config: &serverv1.ConnectionConfig{
 				RedactEnabled:  plan.RedactEnabled.ValueBool(),
 				AuditEnabled:   plan.AuditEnabled.ValueBool(),
@@ -237,6 +240,11 @@ func (r *connectionResource) Update(ctx context.Context, req resource.UpdateRequ
 	if !plan.Password.Equal(prior.Password) {
 		update.Password = stringPtr(plan.Password.ValueString())
 	}
+	disabling := false
+	if !plan.DeletionProtection.Equal(prior.DeletionProtection) {
+		update.DeletionProtection = boolPtr(plan.DeletionProtection.ValueBool())
+		disabling = !plan.DeletionProtection.ValueBool()
+	}
 	if plan.ManagedDatabaseID.IsNull() {
 		update.ClearManagedDatabaseId = !prior.ManagedDatabaseID.IsNull()
 	} else {
@@ -245,7 +253,7 @@ func (r *connectionResource) Update(ctx context.Context, req resource.UpdateRequ
 
 	out, err := r.client.API.UpdateConnection(r.client.Workspace(ctx, plan.WorkspaceID.ValueString()), update)
 	if err != nil {
-		resp.Diagnostics.AddError("Cannot update connection", err.Error())
+		addDeletionProtectionError(&resp.Diagnostics, "Cannot update connection", err, disabling)
 		return
 	}
 	state := connectionFromProto(out.GetConnection(), plan)
@@ -256,6 +264,9 @@ func (r *connectionResource) Delete(ctx context.Context, req resource.DeleteRequ
 	var state connectionModel
 	resp.Diagnostics.Append(req.State.Get(ctx, &state)...)
 	if resp.Diagnostics.HasError() {
+		return
+	}
+	if refuseProtectedDelete(state.DeletionProtection, &resp.Diagnostics) {
 		return
 	}
 	_, err := r.client.API.DeleteConnection(r.client.Workspace(ctx, state.WorkspaceID.ValueString()), &serverv1.DeleteConnectionRequest{Name: state.Name.ValueString()})
@@ -277,31 +288,32 @@ func (r *connectionResource) ImportState(ctx context.Context, req resource.Impor
 func connectionFromProto(c *serverv1.Connection, prior connectionModel) connectionModel {
 	cfg := c.GetConfig()
 	return connectionModel{
-		ID:                types.StringValue(c.GetId()),
-		WorkspaceID:       prior.WorkspaceID,
-		Name:              types.StringValue(c.GetName()),
-		Engine:            types.StringValue(c.GetEngine()),
-		Host:              connectionHost(c, prior),
-		User:              types.StringValue(c.GetUser()),
-		Password:          prior.Password,
-		CredentialRef:     types.StringValue(c.GetCredentialRef()),
-		CredentialSource:  types.StringValue(c.GetCredentialSource()),
-		Database:          types.StringValue(c.GetDatabase()),
-		Listen:            types.StringValue(c.GetListen()),
-		AgentPool:         types.StringValue(c.GetAgentPool()),
-		ManagedDatabaseID: nullIfEmpty(c.GetManagedDatabaseId()),
-		RedactEnabled:     types.BoolValue(cfg.GetRedactEnabled()),
-		AuditEnabled:      types.BoolValue(cfg.GetAuditEnabled()),
-		PolicyFailMode:    types.StringValue(cfg.GetPolicyFailMode()),
-		RedactRules:       redactRulesFromProto(cfg.GetRedactRules(), prior.RedactRules),
-		TLSCert:           types.StringValue(c.GetTls().GetCert()),
-		TLSKey:            types.StringValue(c.GetTls().GetKey()),
-		TLSCA:             types.StringValue(c.GetTls().GetCa()),
-		HostTLSCA:         types.StringValue(c.GetHostTls().GetCa()),
-		Status:            types.StringValue(c.GetStatus()),
-		StatusError:       types.StringValue(c.GetStatusError()),
-		PasswordSet:       types.BoolValue(c.GetPasswordSet()),
-		ManagedBy:         types.StringValue(c.GetManagedBy()),
+		ID:                 types.StringValue(c.GetId()),
+		WorkspaceID:        prior.WorkspaceID,
+		Name:               types.StringValue(c.GetName()),
+		Engine:             types.StringValue(c.GetEngine()),
+		Host:               connectionHost(c, prior),
+		User:               types.StringValue(c.GetUser()),
+		Password:           prior.Password,
+		CredentialRef:      types.StringValue(c.GetCredentialRef()),
+		CredentialSource:   types.StringValue(c.GetCredentialSource()),
+		Database:           types.StringValue(c.GetDatabase()),
+		Listen:             types.StringValue(c.GetListen()),
+		AgentPool:          types.StringValue(c.GetAgentPool()),
+		ManagedDatabaseID:  nullIfEmpty(c.GetManagedDatabaseId()),
+		RedactEnabled:      types.BoolValue(cfg.GetRedactEnabled()),
+		AuditEnabled:       types.BoolValue(cfg.GetAuditEnabled()),
+		PolicyFailMode:     types.StringValue(cfg.GetPolicyFailMode()),
+		RedactRules:        redactRulesFromProto(cfg.GetRedactRules(), prior.RedactRules),
+		TLSCert:            types.StringValue(c.GetTls().GetCert()),
+		TLSKey:             types.StringValue(c.GetTls().GetKey()),
+		TLSCA:              types.StringValue(c.GetTls().GetCa()),
+		HostTLSCA:          types.StringValue(c.GetHostTls().GetCa()),
+		Status:             types.StringValue(c.GetStatus()),
+		StatusError:        types.StringValue(c.GetStatusError()),
+		PasswordSet:        types.BoolValue(c.GetPasswordSet()),
+		ManagedBy:          types.StringValue(c.GetManagedBy()),
+		DeletionProtection: types.BoolValue(c.GetDeletionProtection()),
 	}
 }
 
