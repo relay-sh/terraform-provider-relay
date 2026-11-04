@@ -5,6 +5,8 @@ import (
 	"strings"
 
 	"github.com/hashicorp/terraform-plugin-framework-validators/stringvalidator"
+	"github.com/hashicorp/terraform-plugin-framework/attr"
+	"github.com/hashicorp/terraform-plugin-framework/diag"
 	"github.com/hashicorp/terraform-plugin-framework/path"
 	"github.com/hashicorp/terraform-plugin-framework/resource"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema"
@@ -14,6 +16,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/stringdefault"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/stringplanmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/schema/validator"
+	"github.com/hashicorp/terraform-plugin-framework/tfsdk"
 	"github.com/hashicorp/terraform-plugin-framework/types"
 
 	serverv1 "github.com/relay-sh/relay-go/gen/relay/server/v1"
@@ -52,6 +55,7 @@ type connectionModel struct {
 	StatusError        types.String      `tfsdk:"status_error"`
 	PasswordSet        types.Bool        `tfsdk:"password_set"`
 	ManagedBy          types.String      `tfsdk:"managed_by"`
+	DatabaseUser       types.String      `tfsdk:"database_user"`
 	DeletionProtection types.Bool        `tfsdk:"deletion_protection"`
 }
 
@@ -89,19 +93,19 @@ func (r *connectionResource) Schema(_ context.Context, _ resource.SchemaRequest,
 			"workspace_id": schema.StringAttribute{Required: true, PlanModifiers: replace, MarkdownDescription: "Workspace the connection belongs to."},
 			"name":         schema.StringAttribute{Required: true, PlanModifiers: replace, MarkdownDescription: "Name, unique in the workspace. Changing it replaces the connection."},
 			"engine":       schema.StringAttribute{Required: true, MarkdownDescription: "Database engine: `postgres`, `mongodb`, `mysql`, `valkey` (Valkey and Redis), `sqlserver` or `oracle`."},
-			"host":         schema.StringAttribute{Required: true, MarkdownDescription: "Upstream `host:port`. The API does not return it for a connection with `managed_database_id`, so Terraform keeps the configured value, and an import leaves it empty until the next apply."},
+			"host":         schema.StringAttribute{Optional: true, MarkdownDescription: "Upstream `host:port`. Required unless `managed_database_id` and `user` are set, which creates the connection on that database user and lets the platform set the address. The API does not return it for a connection with `managed_database_id`, so Terraform keeps the configured value, and an import leaves it empty until the next apply."},
 			"agent_pool":   schema.StringAttribute{Required: true, MarkdownDescription: "The agent (pool) that serves this connection, for example `default`, the workspace's managed agent."},
-			"user":         emptyString("Upstream user."),
+			"user":         emptyString("Upstream user. With `managed_database_id` and no `host`, the PostgreSQL user of the managed database the connection is created on."),
 			"password": schema.StringAttribute{
 				Optional:            true,
 				Sensitive:           true,
-				MarkdownDescription: "Upstream password. Write-only on the API: changes made outside Terraform are not detected. Prefer `credential_ref`.",
+				MarkdownDescription: "Upstream password. Write-only on the API: changes made outside Terraform are not detected. Prefer `credential_ref`. Not allowed on a connection created for a database user.",
 			},
-			"credential_ref":      emptyString("Reference the agent resolves to a credential. Takes precedence over `password`."),
-			"credential_source":   emptyString("Name of the external secret source that resolves `credential_ref`. Empty uses the agent's built-in source."),
-			"database":            emptyString("Default database name."),
+			"credential_ref":      emptyString("Reference the agent resolves to a credential. Takes precedence over `password`. Set by the platform, and not allowed, on a connection created for a database user."),
+			"credential_source":   emptyString("Name of the external secret source that resolves `credential_ref`. Empty uses the agent's built-in source. Set by the platform, and not allowed, on a connection created for a database user."),
+			"database":            emptyString("Default database name. For a connection created for a database user, the logical database it is pinned to."),
 			"listen":              emptyString("Local listen address on the agent."),
-			"managed_database_id": schema.StringAttribute{Optional: true, MarkdownDescription: "Managed database this connection belongs to."},
+			"managed_database_id": schema.StringAttribute{Optional: true, MarkdownDescription: "Managed database this connection belongs to. Together with `user` and no `host`, the connection is created on that database user: the platform sets the address, CA and credential, and `host`, `credential_ref`, `credential_source`, `password`, `tls_cert`, `tls_key`, `tls_ca` and `host_tls_ca` are not allowed."},
 			"redact_enabled": schema.BoolAttribute{
 				Optional: true, Computed: true, Default: booldefault.StaticBool(false),
 				MarkdownDescription: "Apply `redact_rules` to query results.",
@@ -129,12 +133,13 @@ func (r *connectionResource) Schema(_ context.Context, _ resource.SchemaRequest,
 					},
 				},
 			},
-			"tls_cert":            emptyString("Client certificate, PEM."),
-			"tls_key":             schema.StringAttribute{Optional: true, Computed: true, Sensitive: true, Default: stringdefault.StaticString(""), MarkdownDescription: "Client key, PEM."},
-			"tls_ca":              emptyString("CA bundle for the client certificate, PEM."),
-			"host_tls_ca":         emptyString("CA bundle used to verify the upstream server, PEM."),
+			"tls_cert":            emptyString("Client certificate, PEM. Set by the platform, and not allowed, on a connection created for a database user."),
+			"tls_key":             schema.StringAttribute{Optional: true, Computed: true, Sensitive: true, Default: stringdefault.StaticString(""), MarkdownDescription: "Client key, PEM. Set by the platform, and not allowed, on a connection created for a database user."},
+			"tls_ca":              emptyString("CA bundle for the client certificate, PEM. Set by the platform, and not allowed, on a connection created for a database user."),
+			"host_tls_ca":         emptyString("CA bundle used to verify the upstream server, PEM. Set by the platform, and not allowed, on a connection created for a database user."),
 			"status":              computedString("`healthy`, `error` or `unknown`, as last reported by the agent."),
 			"status_error":        computedString("Last error reported by the agent."),
+			"database_user":       schema.StringAttribute{Computed: true, PlanModifiers: []planmodifier.String{stringplanmodifier.UseStateForUnknown()}, MarkdownDescription: "PostgreSQL user of the managed database that the platform bound this connection to. Empty for a connection that is not created for a database user."},
 			"password_set":        schema.BoolAttribute{Computed: true, MarkdownDescription: "Whether a password is stored."},
 			"deletion_protection": deletionProtectionAttribute("connection"),
 			"managed_by": schema.StringAttribute{
@@ -147,6 +152,67 @@ func (r *connectionResource) Schema(_ context.Context, _ resource.SchemaRequest,
 	}
 }
 
+var (
+	databaseUserServerSet = []string{"credential_ref", "credential_source", "tls_cert", "tls_key", "tls_ca", "host_tls_ca"}
+	databaseUserForbidden = append([]string{"password"}, databaseUserServerSet...)
+)
+
+func (r *connectionResource) ValidateConfig(ctx context.Context, req resource.ValidateConfigRequest, resp *resource.ValidateConfigResponse) {
+	var host, managedDatabaseID, user types.String
+	req.Config.GetAttribute(ctx, path.Root("host"), &host)
+	req.Config.GetAttribute(ctx, path.Root("managed_database_id"), &managedDatabaseID)
+	req.Config.GetAttribute(ctx, path.Root("user"), &user)
+	if host.IsUnknown() || user.IsUnknown() || host.ValueString() != "" {
+		return
+	}
+	if !isDatabaseUserConnection(host, managedDatabaseID, user) {
+		resp.Diagnostics.AddAttributeError(path.Root("host"), "Missing host", "host is required unless managed_database_id and user are set, which creates the connection on that database user.")
+		return
+	}
+	for _, name := range databaseUserForbidden {
+		var value types.String
+		req.Config.GetAttribute(ctx, path.Root(name), &value)
+		if !value.IsUnknown() && value.ValueString() != "" {
+			resp.Diagnostics.AddAttributeError(path.Root(name), "Set by the platform", name+" cannot be set on a connection created for a database user, because the platform sets it.")
+		}
+	}
+}
+
+func (r *connectionResource) ModifyPlan(ctx context.Context, req resource.ModifyPlanRequest, resp *resource.ModifyPlanResponse) {
+	if req.Plan.Raw.IsNull() {
+		return
+	}
+	var host, managedDatabaseID, user types.String
+	req.Plan.GetAttribute(ctx, path.Root("host"), &host)
+	req.Plan.GetAttribute(ctx, path.Root("managed_database_id"), &managedDatabaseID)
+	req.Plan.GetAttribute(ctx, path.Root("user"), &user)
+	if host.IsUnknown() || user.IsUnknown() || !isDatabaseUserConnection(host, managedDatabaseID, user) {
+		return
+	}
+	if req.State.Raw.IsNull() {
+		for _, name := range databaseUserServerSet {
+			resp.Diagnostics.Append(resp.Plan.SetAttribute(ctx, path.Root(name), types.StringUnknown())...)
+		}
+		return
+	}
+	resp.Diagnostics.Append(copyFromState(ctx, req.State, &resp.Plan, databaseUserServerSet)...)
+	settled := resp.Plan
+	resp.Diagnostics.Append(copyFromState(ctx, req.State, &settled, []string{"password_set", "status", "status_error"})...)
+	if settled.Raw.Equal(req.State.Raw) {
+		resp.Plan = settled
+	}
+}
+
+func copyFromState(ctx context.Context, state tfsdk.State, plan *tfsdk.Plan, names []string) diag.Diagnostics {
+	var diags diag.Diagnostics
+	for _, name := range names {
+		var value attr.Value
+		diags.Append(state.GetAttribute(ctx, path.Root(name), &value)...)
+		diags.Append(plan.SetAttribute(ctx, path.Root(name), value)...)
+	}
+	return diags
+}
+
 func (r *connectionResource) Configure(_ context.Context, req resource.ConfigureRequest, resp *resource.ConfigureResponse) {
 	r.client = clientFromProviderData(req.ProviderData, &resp.Diagnostics)
 }
@@ -157,31 +223,7 @@ func (r *connectionResource) Create(ctx context.Context, req resource.CreateRequ
 	if resp.Diagnostics.HasError() {
 		return
 	}
-	out, err := r.client.API.CreateConnection(r.client.Workspace(ctx, plan.WorkspaceID.ValueString()), &serverv1.CreateConnectionRequest{
-		Connection: &serverv1.Connection{
-			Name:               plan.Name.ValueString(),
-			Engine:             plan.Engine.ValueString(),
-			Host:               plan.Host.ValueString(),
-			User:               plan.User.ValueString(),
-			Password:           plan.Password.ValueString(),
-			CredentialRef:      plan.CredentialRef.ValueString(),
-			CredentialSource:   plan.CredentialSource.ValueString(),
-			Database:           plan.Database.ValueString(),
-			Listen:             plan.Listen.ValueString(),
-			AgentPool:          plan.AgentPool.ValueString(),
-			ManagedDatabaseId:  plan.ManagedDatabaseID.ValueString(),
-			ManagedBy:          plan.ManagedBy.ValueString(),
-			DeletionProtection: plan.DeletionProtection.ValueBool(),
-			Config: &serverv1.ConnectionConfig{
-				RedactEnabled:  plan.RedactEnabled.ValueBool(),
-				AuditEnabled:   plan.AuditEnabled.ValueBool(),
-				PolicyFailMode: plan.PolicyFailMode.ValueString(),
-				RedactRules:    redactRulesToProto(plan.RedactRules),
-			},
-			Tls:     &serverv1.TLSConfig{Cert: plan.TLSCert.ValueString(), Key: plan.TLSKey.ValueString(), Ca: plan.TLSCA.ValueString()},
-			HostTls: &serverv1.HostTLSConfig{Enabled: true, Ca: plan.HostTLSCA.ValueString()},
-		},
-	})
+	out, err := r.client.API.CreateConnection(r.client.Workspace(ctx, plan.WorkspaceID.ValueString()), &serverv1.CreateConnectionRequest{Connection: connectionToProto(plan)})
 	if err != nil {
 		resp.Diagnostics.AddError("Cannot create connection", err.Error())
 		return
@@ -221,10 +263,7 @@ func (r *connectionResource) Update(ctx context.Context, req resource.UpdateRequ
 	update := &serverv1.UpdateConnectionRequest{
 		Name:             plan.Name.ValueString(),
 		Engine:           plan.Engine.ValueStringPointer(),
-		Host:             plan.Host.ValueStringPointer(),
 		User:             plan.User.ValueStringPointer(),
-		CredentialRef:    plan.CredentialRef.ValueStringPointer(),
-		CredentialSource: plan.CredentialSource.ValueStringPointer(),
 		Database:         plan.Database.ValueStringPointer(),
 		Listen:           plan.Listen.ValueStringPointer(),
 		AgentPool:        plan.AgentPool.ValueStringPointer(),
@@ -233,12 +272,17 @@ func (r *connectionResource) Update(ctx context.Context, req resource.UpdateRequ
 		PolicyFailMode:   plan.PolicyFailMode.ValueStringPointer(),
 		RedactRules:      redactRulesToProto(plan.RedactRules),
 		ClearRedactRules: len(plan.RedactRules) == 0,
-		Tls:              &serverv1.TLSConfig{Cert: plan.TLSCert.ValueString(), Key: plan.TLSKey.ValueString(), Ca: plan.TLSCA.ValueString()},
-		HostTls:          &serverv1.HostTLSConfig{Enabled: true, Ca: plan.HostTLSCA.ValueString()},
 		ManagedBy:        plan.ManagedBy.ValueStringPointer(),
 	}
-	if !plan.Password.Equal(prior.Password) {
-		update.Password = stringPtr(plan.Password.ValueString())
+	if !plan.forDatabaseUser() {
+		update.Host = plan.Host.ValueStringPointer()
+		update.CredentialRef = plan.CredentialRef.ValueStringPointer()
+		update.CredentialSource = plan.CredentialSource.ValueStringPointer()
+		update.Tls = &serverv1.TLSConfig{Cert: plan.TLSCert.ValueString(), Key: plan.TLSKey.ValueString(), Ca: plan.TLSCA.ValueString()}
+		update.HostTls = &serverv1.HostTLSConfig{Enabled: true, Ca: plan.HostTLSCA.ValueString()}
+		if !plan.Password.Equal(prior.Password) {
+			update.Password = stringPtr(plan.Password.ValueString())
+		}
 	}
 	disabling := false
 	if !plan.DeletionProtection.Equal(prior.DeletionProtection) {
@@ -285,6 +329,43 @@ func (r *connectionResource) ImportState(ctx context.Context, req resource.Impor
 	resp.Diagnostics.Append(resp.State.SetAttribute(ctx, path.Root("name"), name)...)
 }
 
+func connectionToProto(plan connectionModel) *serverv1.Connection {
+	c := &serverv1.Connection{
+		Name:               plan.Name.ValueString(),
+		Engine:             plan.Engine.ValueString(),
+		User:               plan.User.ValueString(),
+		Database:           plan.Database.ValueString(),
+		Listen:             plan.Listen.ValueString(),
+		AgentPool:          plan.AgentPool.ValueString(),
+		ManagedDatabaseId:  plan.ManagedDatabaseID.ValueString(),
+		ManagedBy:          plan.ManagedBy.ValueString(),
+		DeletionProtection: plan.DeletionProtection.ValueBool(),
+		Config: &serverv1.ConnectionConfig{
+			RedactEnabled:  plan.RedactEnabled.ValueBool(),
+			AuditEnabled:   plan.AuditEnabled.ValueBool(),
+			PolicyFailMode: plan.PolicyFailMode.ValueString(),
+			RedactRules:    redactRulesToProto(plan.RedactRules),
+		},
+	}
+	if !plan.forDatabaseUser() {
+		c.Host = plan.Host.ValueString()
+		c.Password = plan.Password.ValueString()
+		c.CredentialRef = plan.CredentialRef.ValueString()
+		c.CredentialSource = plan.CredentialSource.ValueString()
+		c.Tls = &serverv1.TLSConfig{Cert: plan.TLSCert.ValueString(), Key: plan.TLSKey.ValueString(), Ca: plan.TLSCA.ValueString()}
+		c.HostTls = &serverv1.HostTLSConfig{Enabled: true, Ca: plan.HostTLSCA.ValueString()}
+	}
+	return c
+}
+
+func (m connectionModel) forDatabaseUser() bool {
+	return isDatabaseUserConnection(m.Host, m.ManagedDatabaseID, m.User)
+}
+
+func isDatabaseUserConnection(host, managedDatabaseID, user types.String) bool {
+	return host.ValueString() == "" && !managedDatabaseID.IsNull() && user.ValueString() != ""
+}
+
 func connectionFromProto(c *serverv1.Connection, prior connectionModel) connectionModel {
 	cfg := c.GetConfig()
 	return connectionModel{
@@ -313,6 +394,7 @@ func connectionFromProto(c *serverv1.Connection, prior connectionModel) connecti
 		StatusError:        types.StringValue(c.GetStatusError()),
 		PasswordSet:        types.BoolValue(c.GetPasswordSet()),
 		ManagedBy:          types.StringValue(c.GetManagedBy()),
+		DatabaseUser:       types.StringValue(c.GetDatabaseUser()),
 		DeletionProtection: types.BoolValue(c.GetDeletionProtection()),
 	}
 }
@@ -348,7 +430,7 @@ func redactRulesFromProto(rules []*serverv1.RedactRule, prior []redactRuleModel)
 }
 
 func connectionHost(c *serverv1.Connection, prior connectionModel) types.String {
-	if c.GetHost() == "" && c.GetManagedDatabaseId() != "" && !prior.Host.IsNull() && !prior.Host.IsUnknown() {
+	if c.GetHost() == "" && c.GetManagedDatabaseId() != "" {
 		return prior.Host
 	}
 	return types.StringValue(c.GetHost())

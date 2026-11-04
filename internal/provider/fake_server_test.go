@@ -345,6 +345,18 @@ func (f *fakeServer) CreateConnection(ctx context.Context, req *serverv1.CreateC
 		return nil, status.Error(codes.AlreadyExists, "connection already exists")
 	}
 	c := proto.Clone(req.GetConnection()).(*serverv1.Connection)
+	if c.GetManagedDatabaseId() != "" && c.GetUser() != "" && c.GetHost() == "" {
+		if field := platformFieldSet(c); field != "" {
+			return nil, status.Errorf(codes.InvalidArgument, "%s is set by the platform when a connection is created for a database user", field)
+		}
+		c.DatabaseUser = c.GetUser()
+		c.InternalHost = "pg-rw.tenant.svc:5432"
+		c.Host = "pg-rw.tenant.svc:5432"
+		c.CredentialRef = "platform/" + c.GetUser()
+		c.CredentialSource = "platform"
+		c.HostTls = &serverv1.HostTLSConfig{Enabled: true, Ca: "PLATFORMCA"}
+		c.Tls = &serverv1.TLSConfig{Ca: "PLATFORMTLSCA"}
+	}
 	c.Id = f.newID("conn")
 	c.Status = "unknown"
 	c.PasswordSet = c.GetPassword() != ""
@@ -352,6 +364,24 @@ func (f *fakeServer) CreateConnection(ctx context.Context, req *serverv1.CreateC
 	normalizeTLS(c)
 	f.connections[key] = c
 	return &serverv1.CreateConnectionResponse{Connection: userFacing(c)}, nil
+}
+
+func platformFieldSet(c *serverv1.Connection) string {
+	switch {
+	case c.GetInternalHost() != "":
+		return "internal_host"
+	case c.GetCredentialRef() != "":
+		return "credential_ref"
+	case c.GetCredentialSource() != "":
+		return "credential_source"
+	case c.GetPassword() != "":
+		return "password"
+	case c.GetHostTls() != nil:
+		return "host_tls"
+	case c.GetTls() != nil:
+		return "tls"
+	}
+	return ""
 }
 
 func userFacing(c *serverv1.Connection) *serverv1.Connection {
@@ -394,6 +424,9 @@ func (f *fakeServer) UpdateConnection(ctx context.Context, req *serverv1.UpdateC
 		if v != nil {
 			*dst = *v
 		}
+	}
+	if c.GetDatabaseUser() != "" && (req.Host != nil || req.HostTls != nil || req.Tls != nil || req.CredentialRef != nil || req.CredentialSource != nil || req.Password != nil) {
+		return nil, status.Error(codes.InvalidArgument, "platform fields cannot be updated")
 	}
 	set(&c.Engine, req.Engine)
 	set(&c.Host, req.Host)

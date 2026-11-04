@@ -255,3 +255,133 @@ func TestConnectionResource_EmptyRedactRulesStayEmpty(t *testing.T) {
 		}},
 	})
 }
+
+func databaseUserConnectionConfig(f *fakeServer, name, body string) string {
+	return providerBlock(f) + fmt.Sprintf(`
+resource "relay_connection" "this" {
+  workspace_id        = %q
+  name                = %q
+  engine              = "postgres"
+  agent_pool          = "default"
+  managed_database_id = "db-1"
+  user                = "usr_account_rw"
+  database            = "account"
+%s
+}
+`, connWorkspace, name, body)
+}
+
+func TestConnectionResource_DatabaseUserConnection(t *testing.T) {
+	f := startFakeServer(t)
+	resource.UnitTest(t, resource.TestCase{
+		ProtoV6ProviderFactories: factories(relay.Dial),
+		CheckDestroy:             noConnectionsLeft(f),
+		Steps: []resource.TestStep{
+			{
+				Config: databaseUserConnectionConfig(f, "acct", ""),
+				Check: resource.ComposeAggregateTestCheckFunc(
+					resource.TestCheckResourceAttr("relay_connection.this", "database_user", "usr_account_rw"),
+					resource.TestCheckNoResourceAttr("relay_connection.this", "host"),
+					resource.TestCheckResourceAttr("relay_connection.this", "credential_ref", "platform/usr_account_rw"),
+					resource.TestCheckResourceAttr("relay_connection.this", "credential_source", "platform"),
+					resource.TestCheckResourceAttr("relay_connection.this", "host_tls_ca", "PLATFORMCA"),
+					resource.TestCheckResourceAttr("relay_connection.this", "tls_ca", "PLATFORMTLSCA"),
+					func(*terraform.State) error {
+						c := f.lastCreate.GetConnection()
+						if c.Host != "" || c.HostTls != nil || c.Tls != nil || c.CredentialRef != "" || c.CredentialSource != "" || c.Password != "" {
+							return fmt.Errorf("platform fields must not be sent: %+v", c)
+						}
+						return nil
+					},
+				),
+			},
+			{
+				Config:   databaseUserConnectionConfig(f, "acct", ""),
+				PlanOnly: true,
+			},
+			{
+				Config: databaseUserConnectionConfig(f, "acct", `  audit_enabled = false`),
+				Check: func(*terraform.State) error {
+					u := f.lastUpdate
+					if u.Host != nil || u.HostTls != nil || u.Tls != nil || u.CredentialRef != nil || u.CredentialSource != nil || u.Password != nil {
+						return fmt.Errorf("platform fields must not be updated: %+v", u)
+					}
+					return nil
+				},
+			},
+			{
+				Config:   databaseUserConnectionConfig(f, "acct", `  audit_enabled = false`),
+				PlanOnly: true,
+			},
+		},
+	})
+}
+
+func TestConnectionResource_DatabaseUserConnectionRejectsPlatformFields(t *testing.T) {
+	f := startFakeServer(t)
+	cases := map[string]string{
+		"credential_ref":    `  credential_ref = "x"`,
+		"credential_source": `  credential_source = "x"`,
+		"password":          `  password = "x"`,
+		"tls_cert":          `  tls_cert = "x"`,
+		"tls_key":           `  tls_key = "x"`,
+		"tls_ca":            `  tls_ca = "x"`,
+		"host_tls_ca":       `  host_tls_ca = "x"`,
+	}
+	steps := []resource.TestStep{}
+	for name, body := range cases {
+		steps = append(steps, resource.TestStep{
+			Config:      databaseUserConnectionConfig(f, "acct", body),
+			PlanOnly:    true,
+			ExpectError: regexp.MustCompile(name + ` cannot be set on a connection created for a database user`),
+		})
+	}
+	resource.UnitTest(t, resource.TestCase{ProtoV6ProviderFactories: factories(relay.Dial), Steps: steps})
+}
+
+func TestConnectionResource_HostIsRequiredWithoutADatabaseUser(t *testing.T) {
+	f := startFakeServer(t)
+	noHost := func(body string) string {
+		return providerBlock(f) + fmt.Sprintf(`
+resource "relay_connection" "this" {
+  workspace_id = %q
+  name         = "acct"
+  engine       = "postgres"
+  agent_pool   = "default"
+%s
+}
+`, connWorkspace, body)
+	}
+	resource.UnitTest(t, resource.TestCase{
+		ProtoV6ProviderFactories: factories(relay.Dial),
+		Steps: []resource.TestStep{
+			{Config: noHost(""), PlanOnly: true, ExpectError: regexp.MustCompile("host is required unless managed_database_id and user are set")},
+			{Config: noHost(`  managed_database_id = "db-1"`), PlanOnly: true, ExpectError: regexp.MustCompile("host is required unless")},
+			{Config: noHost(`  user = "u"`), PlanOnly: true, ExpectError: regexp.MustCompile("host is required unless")},
+		},
+	})
+}
+
+func TestConnectionResource_ConfigWithUnknownValuesIsNotValidatedEarly(t *testing.T) {
+	f := startFakeServer(t)
+	resource.UnitTest(t, resource.TestCase{
+		ProtoV6ProviderFactories: factories(relay.Dial),
+		Steps: []resource.TestStep{{
+			Config: providerBlock(f) + fmt.Sprintf(`
+resource "terraform_data" "src" {
+  input = "db-1"
+}
+
+resource "relay_connection" "this" {
+  workspace_id        = %q
+  name                = "acct"
+  engine              = "postgres"
+  agent_pool          = "default"
+  managed_database_id = terraform_data.src.output
+  user                = "usr_account_rw"
+}
+`, connWorkspace),
+			Check: resource.TestCheckResourceAttr("relay_connection.this", "database_user", "usr_account_rw"),
+		}},
+	})
+}
