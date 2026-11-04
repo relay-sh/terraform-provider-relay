@@ -1,3 +1,10 @@
+## 0.0.14 (November 4, 2026)
+
+FEATURES:
+
+* resource/relay_connection: `managed_database_id` with `user` and no `host` creates the connection on that PostgreSQL database user of the managed database, with `database` as the logical database. The platform sets the address, CA and credential, so `host`, `credential_ref`, `credential_source`, `password`, `tls_cert`, `tls_key`, `tls_ca` and `host_tls_ca` are rejected at plan time in this mode. Needs the `database_user_connections` feature for the organization. `host` is now optional, and a connection without a database user still requires it
+* resource/relay_connection: `database_user` exposes the database user the platform bound the connection to
+
 ## 0.0.13 (November 4, 2026)
 
 BREAKING CHANGES:

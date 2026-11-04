@@ -19,237 +19,239 @@ import (
 const _ = grpc.SupportPackageIsVersion9
 
 const (
-	ServerService_WhoAmI_FullMethodName                       = "/relay.server.v1.ServerService/WhoAmI"
-	ServerService_SetUserFlags_FullMethodName                 = "/relay.server.v1.ServerService/SetUserFlags"
-	ServerService_Logout_FullMethodName                       = "/relay.server.v1.ServerService/Logout"
-	ServerService_ListSessions_FullMethodName                 = "/relay.server.v1.ServerService/ListSessions"
-	ServerService_RevokeSession_FullMethodName                = "/relay.server.v1.ServerService/RevokeSession"
-	ServerService_GetMaintenanceBanner_FullMethodName         = "/relay.server.v1.ServerService/GetMaintenanceBanner"
-	ServerService_CreateAPIKey_FullMethodName                 = "/relay.server.v1.ServerService/CreateAPIKey"
-	ServerService_ListAPIKeys_FullMethodName                  = "/relay.server.v1.ServerService/ListAPIKeys"
-	ServerService_UpdateAPIKey_FullMethodName                 = "/relay.server.v1.ServerService/UpdateAPIKey"
-	ServerService_RevokeAPIKey_FullMethodName                 = "/relay.server.v1.ServerService/RevokeAPIKey"
-	ServerService_ListConnections_FullMethodName              = "/relay.server.v1.ServerService/ListConnections"
-	ServerService_GetConnections_FullMethodName               = "/relay.server.v1.ServerService/GetConnections"
-	ServerService_CreateConnection_FullMethodName             = "/relay.server.v1.ServerService/CreateConnection"
-	ServerService_DeleteConnection_FullMethodName             = "/relay.server.v1.ServerService/DeleteConnection"
-	ServerService_UpdateConnection_FullMethodName             = "/relay.server.v1.ServerService/UpdateConnection"
-	ServerService_SetConnectionPools_FullMethodName           = "/relay.server.v1.ServerService/SetConnectionPools"
-	ServerService_IssueTunnelToken_FullMethodName             = "/relay.server.v1.ServerService/IssueTunnelToken"
-	ServerService_ResolveTunnelToken_FullMethodName           = "/relay.server.v1.ServerService/ResolveTunnelToken"
-	ServerService_ReportTunnelSessions_FullMethodName         = "/relay.server.v1.ServerService/ReportTunnelSessions"
-	ServerService_ListTunnelSessions_FullMethodName           = "/relay.server.v1.ServerService/ListTunnelSessions"
-	ServerService_ReportMaskingClassifications_FullMethodName = "/relay.server.v1.ServerService/ReportMaskingClassifications"
-	ServerService_ListMaskingClassifications_FullMethodName   = "/relay.server.v1.ServerService/ListMaskingClassifications"
-	ServerService_ResolveMaskingClassification_FullMethodName = "/relay.server.v1.ServerService/ResolveMaskingClassification"
-	ServerService_ListConnectionGroups_FullMethodName         = "/relay.server.v1.ServerService/ListConnectionGroups"
-	ServerService_CreateConnectionGroup_FullMethodName        = "/relay.server.v1.ServerService/CreateConnectionGroup"
-	ServerService_DeleteConnectionGroup_FullMethodName        = "/relay.server.v1.ServerService/DeleteConnectionGroup"
-	ServerService_UpdateConnectionGroup_FullMethodName        = "/relay.server.v1.ServerService/UpdateConnectionGroup"
-	ServerService_AddConnectionToGroup_FullMethodName         = "/relay.server.v1.ServerService/AddConnectionToGroup"
-	ServerService_RemoveConnectionFromGroup_FullMethodName    = "/relay.server.v1.ServerService/RemoveConnectionFromGroup"
-	ServerService_ListPolicies_FullMethodName                 = "/relay.server.v1.ServerService/ListPolicies"
-	ServerService_GetPolicy_FullMethodName                    = "/relay.server.v1.ServerService/GetPolicy"
-	ServerService_CreatePolicy_FullMethodName                 = "/relay.server.v1.ServerService/CreatePolicy"
-	ServerService_UpdatePolicy_FullMethodName                 = "/relay.server.v1.ServerService/UpdatePolicy"
-	ServerService_DeletePolicy_FullMethodName                 = "/relay.server.v1.ServerService/DeletePolicy"
-	ServerService_SetConnectionPolicies_FullMethodName        = "/relay.server.v1.ServerService/SetConnectionPolicies"
-	ServerService_ListConnectionPolicies_FullMethodName       = "/relay.server.v1.ServerService/ListConnectionPolicies"
-	ServerService_RequestQueryApproval_FullMethodName         = "/relay.server.v1.ServerService/RequestQueryApproval"
-	ServerService_WaitQueryApproval_FullMethodName            = "/relay.server.v1.ServerService/WaitQueryApproval"
-	ServerService_ListQueryApprovals_FullMethodName           = "/relay.server.v1.ServerService/ListQueryApprovals"
-	ServerService_GetQueryApproval_FullMethodName             = "/relay.server.v1.ServerService/GetQueryApproval"
-	ServerService_ApproveQueryApproval_FullMethodName         = "/relay.server.v1.ServerService/ApproveQueryApproval"
-	ServerService_DenyQueryApproval_FullMethodName            = "/relay.server.v1.ServerService/DenyQueryApproval"
-	ServerService_DetachQueryApproval_FullMethodName          = "/relay.server.v1.ServerService/DetachQueryApproval"
-	ServerService_CancelQueryApproval_FullMethodName          = "/relay.server.v1.ServerService/CancelQueryApproval"
-	ServerService_ListApprovalIntegrations_FullMethodName     = "/relay.server.v1.ServerService/ListApprovalIntegrations"
-	ServerService_UpsertApprovalIntegration_FullMethodName    = "/relay.server.v1.ServerService/UpsertApprovalIntegration"
-	ServerService_DeleteApprovalIntegration_FullMethodName    = "/relay.server.v1.ServerService/DeleteApprovalIntegration"
-	ServerService_ListAccessGrants_FullMethodName             = "/relay.server.v1.ServerService/ListAccessGrants"
-	ServerService_CreateAccessGrant_FullMethodName            = "/relay.server.v1.ServerService/CreateAccessGrant"
-	ServerService_DeleteAccessGrant_FullMethodName            = "/relay.server.v1.ServerService/DeleteAccessGrant"
-	ServerService_RequestAccessGrant_FullMethodName           = "/relay.server.v1.ServerService/RequestAccessGrant"
-	ServerService_ListAccessGrantRequests_FullMethodName      = "/relay.server.v1.ServerService/ListAccessGrantRequests"
-	ServerService_GetAccessGrantRequest_FullMethodName        = "/relay.server.v1.ServerService/GetAccessGrantRequest"
-	ServerService_ApproveAccessGrantRequest_FullMethodName    = "/relay.server.v1.ServerService/ApproveAccessGrantRequest"
-	ServerService_DenyAccessGrantRequest_FullMethodName       = "/relay.server.v1.ServerService/DenyAccessGrantRequest"
-	ServerService_CancelAccessGrantRequest_FullMethodName     = "/relay.server.v1.ServerService/CancelAccessGrantRequest"
-	ServerService_RevokeAccessGrantRequest_FullMethodName     = "/relay.server.v1.ServerService/RevokeAccessGrantRequest"
-	ServerService_ListRequestableConnections_FullMethodName   = "/relay.server.v1.ServerService/ListRequestableConnections"
-	ServerService_GetAccessRequestSettings_FullMethodName     = "/relay.server.v1.ServerService/GetAccessRequestSettings"
-	ServerService_UpdateAccessRequestSettings_FullMethodName  = "/relay.server.v1.ServerService/UpdateAccessRequestSettings"
-	ServerService_ListTeams_FullMethodName                    = "/relay.server.v1.ServerService/ListTeams"
-	ServerService_CreateTeam_FullMethodName                   = "/relay.server.v1.ServerService/CreateTeam"
-	ServerService_DeleteTeam_FullMethodName                   = "/relay.server.v1.ServerService/DeleteTeam"
-	ServerService_AddTeamMember_FullMethodName                = "/relay.server.v1.ServerService/AddTeamMember"
-	ServerService_RemoveTeamMember_FullMethodName             = "/relay.server.v1.ServerService/RemoveTeamMember"
-	ServerService_ListMembers_FullMethodName                  = "/relay.server.v1.ServerService/ListMembers"
-	ServerService_SetMemberRole_FullMethodName                = "/relay.server.v1.ServerService/SetMemberRole"
-	ServerService_RemoveMember_FullMethodName                 = "/relay.server.v1.ServerService/RemoveMember"
-	ServerService_UpdateMember_FullMethodName                 = "/relay.server.v1.ServerService/UpdateMember"
-	ServerService_RevokeUserSessions_FullMethodName           = "/relay.server.v1.ServerService/RevokeUserSessions"
-	ServerService_InviteMember_FullMethodName                 = "/relay.server.v1.ServerService/InviteMember"
-	ServerService_ListInvitations_FullMethodName              = "/relay.server.v1.ServerService/ListInvitations"
-	ServerService_RevokeInvitation_FullMethodName             = "/relay.server.v1.ServerService/RevokeInvitation"
-	ServerService_GetInvitation_FullMethodName                = "/relay.server.v1.ServerService/GetInvitation"
-	ServerService_AcceptInvitation_FullMethodName             = "/relay.server.v1.ServerService/AcceptInvitation"
-	ServerService_ListAgents_FullMethodName                   = "/relay.server.v1.ServerService/ListAgents"
-	ServerService_DeleteAgent_FullMethodName                  = "/relay.server.v1.ServerService/DeleteAgent"
-	ServerService_CreateEnrollmentToken_FullMethodName        = "/relay.server.v1.ServerService/CreateEnrollmentToken"
-	ServerService_ListEnrollmentTokens_FullMethodName         = "/relay.server.v1.ServerService/ListEnrollmentTokens"
-	ServerService_DeleteEnrollmentToken_FullMethodName        = "/relay.server.v1.ServerService/DeleteEnrollmentToken"
-	ServerService_EnrollAgent_FullMethodName                  = "/relay.server.v1.ServerService/EnrollAgent"
-	ServerService_Heartbeat_FullMethodName                    = "/relay.server.v1.ServerService/Heartbeat"
-	ServerService_Deregister_FullMethodName                   = "/relay.server.v1.ServerService/Deregister"
-	ServerService_ListAgentPools_FullMethodName               = "/relay.server.v1.ServerService/ListAgentPools"
-	ServerService_CreateAgentPool_FullMethodName              = "/relay.server.v1.ServerService/CreateAgentPool"
-	ServerService_DeleteAgentPool_FullMethodName              = "/relay.server.v1.ServerService/DeleteAgentPool"
-	ServerService_UpdateAgentPool_FullMethodName              = "/relay.server.v1.ServerService/UpdateAgentPool"
-	ServerService_SetAgentPoolTeams_FullMethodName            = "/relay.server.v1.ServerService/SetAgentPoolTeams"
-	ServerService_WakeAgentPool_FullMethodName                = "/relay.server.v1.ServerService/WakeAgentPool"
-	ServerService_ResolveConnectionCredential_FullMethodName  = "/relay.server.v1.ServerService/ResolveConnectionCredential"
-	ServerService_ResolveExternalSecretSource_FullMethodName  = "/relay.server.v1.ServerService/ResolveExternalSecretSource"
-	ServerService_ListExternalSecretSources_FullMethodName    = "/relay.server.v1.ServerService/ListExternalSecretSources"
-	ServerService_GetExternalSecretSource_FullMethodName      = "/relay.server.v1.ServerService/GetExternalSecretSource"
-	ServerService_UpsertExternalSecretSource_FullMethodName   = "/relay.server.v1.ServerService/UpsertExternalSecretSource"
-	ServerService_DeleteExternalSecretSource_FullMethodName   = "/relay.server.v1.ServerService/DeleteExternalSecretSource"
-	ServerService_GetCloudIntegrationSetup_FullMethodName     = "/relay.server.v1.ServerService/GetCloudIntegrationSetup"
-	ServerService_ListCloudIntegrations_FullMethodName        = "/relay.server.v1.ServerService/ListCloudIntegrations"
-	ServerService_GetCloudIntegration_FullMethodName          = "/relay.server.v1.ServerService/GetCloudIntegration"
-	ServerService_CreateCloudIntegration_FullMethodName       = "/relay.server.v1.ServerService/CreateCloudIntegration"
-	ServerService_UpdateCloudIntegration_FullMethodName       = "/relay.server.v1.ServerService/UpdateCloudIntegration"
-	ServerService_DeleteCloudIntegration_FullMethodName       = "/relay.server.v1.ServerService/DeleteCloudIntegration"
-	ServerService_TestCloudIntegration_FullMethodName         = "/relay.server.v1.ServerService/TestCloudIntegration"
-	ServerService_GetLogStream_FullMethodName                 = "/relay.server.v1.ServerService/GetLogStream"
-	ServerService_UpsertLogStream_FullMethodName              = "/relay.server.v1.ServerService/UpsertLogStream"
-	ServerService_DeleteLogStream_FullMethodName              = "/relay.server.v1.ServerService/DeleteLogStream"
-	ServerService_GetBackupAutoExport_FullMethodName          = "/relay.server.v1.ServerService/GetBackupAutoExport"
-	ServerService_UpsertBackupAutoExport_FullMethodName       = "/relay.server.v1.ServerService/UpsertBackupAutoExport"
-	ServerService_DeleteBackupAutoExport_FullMethodName       = "/relay.server.v1.ServerService/DeleteBackupAutoExport"
-	ServerService_ExportToCloud_FullMethodName                = "/relay.server.v1.ServerService/ExportToCloud"
-	ServerService_ListLogDestinations_FullMethodName          = "/relay.server.v1.ServerService/ListLogDestinations"
-	ServerService_CreateLogDestination_FullMethodName         = "/relay.server.v1.ServerService/CreateLogDestination"
-	ServerService_UpdateLogDestination_FullMethodName         = "/relay.server.v1.ServerService/UpdateLogDestination"
-	ServerService_DeleteLogDestination_FullMethodName         = "/relay.server.v1.ServerService/DeleteLogDestination"
-	ServerService_TestLogDestination_FullMethodName           = "/relay.server.v1.ServerService/TestLogDestination"
-	ServerService_IngestAuditEvents_FullMethodName            = "/relay.server.v1.ServerService/IngestAuditEvents"
-	ServerService_ListAuditLogs_FullMethodName                = "/relay.server.v1.ServerService/ListAuditLogs"
-	ServerService_GetAuditMetrics_FullMethodName              = "/relay.server.v1.ServerService/GetAuditMetrics"
-	ServerService_ListActivityLogs_FullMethodName             = "/relay.server.v1.ServerService/ListActivityLogs"
-	ServerService_ListOrgActivityLogs_FullMethodName          = "/relay.server.v1.ServerService/ListOrgActivityLogs"
-	ServerService_EmitActivity_FullMethodName                 = "/relay.server.v1.ServerService/EmitActivity"
-	ServerService_ListUserOrganizations_FullMethodName        = "/relay.server.v1.ServerService/ListUserOrganizations"
-	ServerService_GetOrganization_FullMethodName              = "/relay.server.v1.ServerService/GetOrganization"
-	ServerService_CreateOrganization_FullMethodName           = "/relay.server.v1.ServerService/CreateOrganization"
-	ServerService_UpdateOrganization_FullMethodName           = "/relay.server.v1.ServerService/UpdateOrganization"
-	ServerService_UpdateOrganizationSettings_FullMethodName   = "/relay.server.v1.ServerService/UpdateOrganizationSettings"
-	ServerService_DeleteOrganization_FullMethodName           = "/relay.server.v1.ServerService/DeleteOrganization"
-	ServerService_SwitchOrganization_FullMethodName           = "/relay.server.v1.ServerService/SwitchOrganization"
-	ServerService_GetOrgOverview_FullMethodName               = "/relay.server.v1.ServerService/GetOrgOverview"
-	ServerService_ListWorkspaces_FullMethodName               = "/relay.server.v1.ServerService/ListWorkspaces"
-	ServerService_GetWorkspace_FullMethodName                 = "/relay.server.v1.ServerService/GetWorkspace"
-	ServerService_CreateWorkspace_FullMethodName              = "/relay.server.v1.ServerService/CreateWorkspace"
-	ServerService_UpdateWorkspace_FullMethodName              = "/relay.server.v1.ServerService/UpdateWorkspace"
-	ServerService_DeleteWorkspace_FullMethodName              = "/relay.server.v1.ServerService/DeleteWorkspace"
-	ServerService_AddWorkspaceMember_FullMethodName           = "/relay.server.v1.ServerService/AddWorkspaceMember"
-	ServerService_RemoveWorkspaceMember_FullMethodName        = "/relay.server.v1.ServerService/RemoveWorkspaceMember"
-	ServerService_ListWorkspaceMembers_FullMethodName         = "/relay.server.v1.ServerService/ListWorkspaceMembers"
-	ServerService_AddWorkspaceTeam_FullMethodName             = "/relay.server.v1.ServerService/AddWorkspaceTeam"
-	ServerService_RemoveWorkspaceTeam_FullMethodName          = "/relay.server.v1.ServerService/RemoveWorkspaceTeam"
-	ServerService_ListWorkspaceTeams_FullMethodName           = "/relay.server.v1.ServerService/ListWorkspaceTeams"
-	ServerService_SetWorkspaceMemberRole_FullMethodName       = "/relay.server.v1.ServerService/SetWorkspaceMemberRole"
-	ServerService_SetWorkspaceTeamRole_FullMethodName         = "/relay.server.v1.ServerService/SetWorkspaceTeamRole"
-	ServerService_ListRoles_FullMethodName                    = "/relay.server.v1.ServerService/ListRoles"
-	ServerService_CreateRole_FullMethodName                   = "/relay.server.v1.ServerService/CreateRole"
-	ServerService_UpdateRole_FullMethodName                   = "/relay.server.v1.ServerService/UpdateRole"
-	ServerService_DeleteRole_FullMethodName                   = "/relay.server.v1.ServerService/DeleteRole"
-	ServerService_ListRoleBindings_FullMethodName             = "/relay.server.v1.ServerService/ListRoleBindings"
-	ServerService_CreateRoleBinding_FullMethodName            = "/relay.server.v1.ServerService/CreateRoleBinding"
-	ServerService_DeleteRoleBinding_FullMethodName            = "/relay.server.v1.ServerService/DeleteRoleBinding"
-	ServerService_ListDatabases_FullMethodName                = "/relay.server.v1.ServerService/ListDatabases"
-	ServerService_CreateDatabase_FullMethodName               = "/relay.server.v1.ServerService/CreateDatabase"
-	ServerService_RestoreDatabase_FullMethodName              = "/relay.server.v1.ServerService/RestoreDatabase"
-	ServerService_GetDatabase_FullMethodName                  = "/relay.server.v1.ServerService/GetDatabase"
-	ServerService_UpdateDatabase_FullMethodName               = "/relay.server.v1.ServerService/UpdateDatabase"
-	ServerService_ListPostgreSQLParameters_FullMethodName     = "/relay.server.v1.ServerService/ListPostgreSQLParameters"
-	ServerService_ListValkeyParameters_FullMethodName         = "/relay.server.v1.ServerService/ListValkeyParameters"
-	ServerService_WatchDatabase_FullMethodName                = "/relay.server.v1.ServerService/WatchDatabase"
-	ServerService_ListPendingOperations_FullMethodName        = "/relay.server.v1.ServerService/ListPendingOperations"
-	ServerService_DeleteDatabase_FullMethodName               = "/relay.server.v1.ServerService/DeleteDatabase"
-	ServerService_RetryDeleteDatabase_FullMethodName          = "/relay.server.v1.ServerService/RetryDeleteDatabase"
-	ServerService_PauseDatabase_FullMethodName                = "/relay.server.v1.ServerService/PauseDatabase"
-	ServerService_SetDefaultConnections_FullMethodName        = "/relay.server.v1.ServerService/SetDefaultConnections"
-	ServerService_SetDeletionProtection_FullMethodName        = "/relay.server.v1.ServerService/SetDeletionProtection"
-	ServerService_ResumeDatabase_FullMethodName               = "/relay.server.v1.ServerService/ResumeDatabase"
-	ServerService_GetDatabaseStatus_FullMethodName            = "/relay.server.v1.ServerService/GetDatabaseStatus"
-	ServerService_ListDatabaseNodes_FullMethodName            = "/relay.server.v1.ServerService/ListDatabaseNodes"
-	ServerService_GetDatabaseLogs_FullMethodName              = "/relay.server.v1.ServerService/GetDatabaseLogs"
-	ServerService_GetDatabaseAnalytics_FullMethodName         = "/relay.server.v1.ServerService/GetDatabaseAnalytics"
-	ServerService_GetDatabaseConnection_FullMethodName        = "/relay.server.v1.ServerService/GetDatabaseConnection"
-	ServerService_ListIPAllowlist_FullMethodName              = "/relay.server.v1.ServerService/ListIPAllowlist"
-	ServerService_AddIPAllowlistEntry_FullMethodName          = "/relay.server.v1.ServerService/AddIPAllowlistEntry"
-	ServerService_UpdateIPAllowlistEntry_FullMethodName       = "/relay.server.v1.ServerService/UpdateIPAllowlistEntry"
-	ServerService_RemoveIPAllowlistEntry_FullMethodName       = "/relay.server.v1.ServerService/RemoveIPAllowlistEntry"
-	ServerService_ListPrivateEndpointRegions_FullMethodName   = "/relay.server.v1.ServerService/ListPrivateEndpointRegions"
-	ServerService_CreatePrivateEndpointService_FullMethodName = "/relay.server.v1.ServerService/CreatePrivateEndpointService"
-	ServerService_ListPrivateEndpointServices_FullMethodName  = "/relay.server.v1.ServerService/ListPrivateEndpointServices"
-	ServerService_GetPrivateEndpointService_FullMethodName    = "/relay.server.v1.ServerService/GetPrivateEndpointService"
-	ServerService_DeletePrivateEndpointService_FullMethodName = "/relay.server.v1.ServerService/DeletePrivateEndpointService"
-	ServerService_CreatePrivateEndpoint_FullMethodName        = "/relay.server.v1.ServerService/CreatePrivateEndpoint"
-	ServerService_GetPrivateEndpoint_FullMethodName           = "/relay.server.v1.ServerService/GetPrivateEndpoint"
-	ServerService_DeletePrivateEndpoint_FullMethodName        = "/relay.server.v1.ServerService/DeletePrivateEndpoint"
-	ServerService_ListBackupSchedules_FullMethodName          = "/relay.server.v1.ServerService/ListBackupSchedules"
-	ServerService_ListBackups_FullMethodName                  = "/relay.server.v1.ServerService/ListBackups"
-	ServerService_GetBackupSchedule_FullMethodName            = "/relay.server.v1.ServerService/GetBackupSchedule"
-	ServerService_UpsertBackupSchedule_FullMethodName         = "/relay.server.v1.ServerService/UpsertBackupSchedule"
-	ServerService_ResetBackupSchedule_FullMethodName          = "/relay.server.v1.ServerService/ResetBackupSchedule"
-	ServerService_CreateBackup_FullMethodName                 = "/relay.server.v1.ServerService/CreateBackup"
-	ServerService_DeleteBackup_FullMethodName                 = "/relay.server.v1.ServerService/DeleteBackup"
-	ServerService_ListDatabaseUsers_FullMethodName            = "/relay.server.v1.ServerService/ListDatabaseUsers"
-	ServerService_GetDatabaseUser_FullMethodName              = "/relay.server.v1.ServerService/GetDatabaseUser"
-	ServerService_CreateDatabaseUser_FullMethodName           = "/relay.server.v1.ServerService/CreateDatabaseUser"
-	ServerService_UpdateDatabaseUser_FullMethodName           = "/relay.server.v1.ServerService/UpdateDatabaseUser"
-	ServerService_DeleteDatabaseUser_FullMethodName           = "/relay.server.v1.ServerService/DeleteDatabaseUser"
-	ServerService_ListLogicalDatabases_FullMethodName         = "/relay.server.v1.ServerService/ListLogicalDatabases"
-	ServerService_CreateLogicalDatabase_FullMethodName        = "/relay.server.v1.ServerService/CreateLogicalDatabase"
-	ServerService_UpdateLogicalDatabase_FullMethodName        = "/relay.server.v1.ServerService/UpdateLogicalDatabase"
-	ServerService_DeleteLogicalDatabase_FullMethodName        = "/relay.server.v1.ServerService/DeleteLogicalDatabase"
-	ServerService_ListDatabaseProviders_FullMethodName        = "/relay.server.v1.ServerService/ListDatabaseProviders"
-	ServerService_GetBillingState_FullMethodName              = "/relay.server.v1.ServerService/GetBillingState"
-	ServerService_CreateCheckoutSession_FullMethodName        = "/relay.server.v1.ServerService/CreateCheckoutSession"
-	ServerService_CreateBillingPortalSession_FullMethodName   = "/relay.server.v1.ServerService/CreateBillingPortalSession"
-	ServerService_ChangePlan_FullMethodName                   = "/relay.server.v1.ServerService/ChangePlan"
-	ServerService_CreateSupportReport_FullMethodName          = "/relay.server.v1.ServerService/CreateSupportReport"
-	ServerService_ListSupportReports_FullMethodName           = "/relay.server.v1.ServerService/ListSupportReports"
-	ServerService_GetSupportReport_FullMethodName             = "/relay.server.v1.ServerService/GetSupportReport"
-	ServerService_AddSupportReportComment_FullMethodName      = "/relay.server.v1.ServerService/AddSupportReportComment"
-	ServerService_GetSupportAttachment_FullMethodName         = "/relay.server.v1.ServerService/GetSupportAttachment"
-	ServerService_UpdateSupportReportStatus_FullMethodName    = "/relay.server.v1.ServerService/UpdateSupportReportStatus"
-	ServerService_GetOrgSSOConnection_FullMethodName          = "/relay.server.v1.ServerService/GetOrgSSOConnection"
-	ServerService_UpsertOrgSSOConnection_FullMethodName       = "/relay.server.v1.ServerService/UpsertOrgSSOConnection"
-	ServerService_DeleteOrgSSOConnection_FullMethodName       = "/relay.server.v1.ServerService/DeleteOrgSSOConnection"
-	ServerService_TestOrgSSOConnection_FullMethodName         = "/relay.server.v1.ServerService/TestOrgSSOConnection"
-	ServerService_ListOrgDomains_FullMethodName               = "/relay.server.v1.ServerService/ListOrgDomains"
-	ServerService_AddOrgDomain_FullMethodName                 = "/relay.server.v1.ServerService/AddOrgDomain"
-	ServerService_VerifyOrgDomain_FullMethodName              = "/relay.server.v1.ServerService/VerifyOrgDomain"
-	ServerService_RemoveOrgDomain_FullMethodName              = "/relay.server.v1.ServerService/RemoveOrgDomain"
-	ServerService_ListPostgreSQLExtensions_FullMethodName     = "/relay.server.v1.ServerService/ListPostgreSQLExtensions"
-	ServerService_GetLicenseStatus_FullMethodName             = "/relay.server.v1.ServerService/GetLicenseStatus"
-	ServerService_ExportLicenseUsageReport_FullMethodName     = "/relay.server.v1.ServerService/ExportLicenseUsageReport"
-	ServerService_GetRunbookSource_FullMethodName             = "/relay.server.v1.ServerService/GetRunbookSource"
-	ServerService_UpsertRunbookSource_FullMethodName          = "/relay.server.v1.ServerService/UpsertRunbookSource"
-	ServerService_DeleteRunbookSource_FullMethodName          = "/relay.server.v1.ServerService/DeleteRunbookSource"
-	ServerService_SyncRunbooks_FullMethodName                 = "/relay.server.v1.ServerService/SyncRunbooks"
-	ServerService_RotateRunbookWebhookSecret_FullMethodName   = "/relay.server.v1.ServerService/RotateRunbookWebhookSecret"
-	ServerService_FetchRunbookHostKey_FullMethodName          = "/relay.server.v1.ServerService/FetchRunbookHostKey"
-	ServerService_ListRunbooks_FullMethodName                 = "/relay.server.v1.ServerService/ListRunbooks"
-	ServerService_GetRunbook_FullMethodName                   = "/relay.server.v1.ServerService/GetRunbook"
-	ServerService_RunRunbook_FullMethodName                   = "/relay.server.v1.ServerService/RunRunbook"
-	ServerService_GetRunbookExecution_FullMethodName          = "/relay.server.v1.ServerService/GetRunbookExecution"
-	ServerService_ListRunbookExecutions_FullMethodName        = "/relay.server.v1.ServerService/ListRunbookExecutions"
-	ServerService_ClaimRunbookExecutions_FullMethodName       = "/relay.server.v1.ServerService/ClaimRunbookExecutions"
-	ServerService_ReportRunbookExecution_FullMethodName       = "/relay.server.v1.ServerService/ReportRunbookExecution"
+	ServerService_WhoAmI_FullMethodName                         = "/relay.server.v1.ServerService/WhoAmI"
+	ServerService_SetUserFlags_FullMethodName                   = "/relay.server.v1.ServerService/SetUserFlags"
+	ServerService_Logout_FullMethodName                         = "/relay.server.v1.ServerService/Logout"
+	ServerService_ListSessions_FullMethodName                   = "/relay.server.v1.ServerService/ListSessions"
+	ServerService_RevokeSession_FullMethodName                  = "/relay.server.v1.ServerService/RevokeSession"
+	ServerService_GetMaintenanceBanner_FullMethodName           = "/relay.server.v1.ServerService/GetMaintenanceBanner"
+	ServerService_CreateAPIKey_FullMethodName                   = "/relay.server.v1.ServerService/CreateAPIKey"
+	ServerService_ListAPIKeys_FullMethodName                    = "/relay.server.v1.ServerService/ListAPIKeys"
+	ServerService_UpdateAPIKey_FullMethodName                   = "/relay.server.v1.ServerService/UpdateAPIKey"
+	ServerService_RevokeAPIKey_FullMethodName                   = "/relay.server.v1.ServerService/RevokeAPIKey"
+	ServerService_ListConnections_FullMethodName                = "/relay.server.v1.ServerService/ListConnections"
+	ServerService_ListManagedDatabaseConnections_FullMethodName = "/relay.server.v1.ServerService/ListManagedDatabaseConnections"
+	ServerService_GetConnections_FullMethodName                 = "/relay.server.v1.ServerService/GetConnections"
+	ServerService_CreateConnection_FullMethodName               = "/relay.server.v1.ServerService/CreateConnection"
+	ServerService_DeleteConnection_FullMethodName               = "/relay.server.v1.ServerService/DeleteConnection"
+	ServerService_UpdateConnection_FullMethodName               = "/relay.server.v1.ServerService/UpdateConnection"
+	ServerService_SetConnectionPools_FullMethodName             = "/relay.server.v1.ServerService/SetConnectionPools"
+	ServerService_IssueTunnelToken_FullMethodName               = "/relay.server.v1.ServerService/IssueTunnelToken"
+	ServerService_ResolveTunnelToken_FullMethodName             = "/relay.server.v1.ServerService/ResolveTunnelToken"
+	ServerService_ReportTunnelSessions_FullMethodName           = "/relay.server.v1.ServerService/ReportTunnelSessions"
+	ServerService_ListTunnelSessions_FullMethodName             = "/relay.server.v1.ServerService/ListTunnelSessions"
+	ServerService_ReportMaskingClassifications_FullMethodName   = "/relay.server.v1.ServerService/ReportMaskingClassifications"
+	ServerService_ListMaskingClassifications_FullMethodName     = "/relay.server.v1.ServerService/ListMaskingClassifications"
+	ServerService_ResolveMaskingClassification_FullMethodName   = "/relay.server.v1.ServerService/ResolveMaskingClassification"
+	ServerService_ListConnectionGroups_FullMethodName           = "/relay.server.v1.ServerService/ListConnectionGroups"
+	ServerService_CreateConnectionGroup_FullMethodName          = "/relay.server.v1.ServerService/CreateConnectionGroup"
+	ServerService_DeleteConnectionGroup_FullMethodName          = "/relay.server.v1.ServerService/DeleteConnectionGroup"
+	ServerService_UpdateConnectionGroup_FullMethodName          = "/relay.server.v1.ServerService/UpdateConnectionGroup"
+	ServerService_AddConnectionToGroup_FullMethodName           = "/relay.server.v1.ServerService/AddConnectionToGroup"
+	ServerService_RemoveConnectionFromGroup_FullMethodName      = "/relay.server.v1.ServerService/RemoveConnectionFromGroup"
+	ServerService_ListPolicies_FullMethodName                   = "/relay.server.v1.ServerService/ListPolicies"
+	ServerService_GetPolicy_FullMethodName                      = "/relay.server.v1.ServerService/GetPolicy"
+	ServerService_CreatePolicy_FullMethodName                   = "/relay.server.v1.ServerService/CreatePolicy"
+	ServerService_UpdatePolicy_FullMethodName                   = "/relay.server.v1.ServerService/UpdatePolicy"
+	ServerService_DeletePolicy_FullMethodName                   = "/relay.server.v1.ServerService/DeletePolicy"
+	ServerService_SetConnectionPolicies_FullMethodName          = "/relay.server.v1.ServerService/SetConnectionPolicies"
+	ServerService_ListConnectionPolicies_FullMethodName         = "/relay.server.v1.ServerService/ListConnectionPolicies"
+	ServerService_RequestQueryApproval_FullMethodName           = "/relay.server.v1.ServerService/RequestQueryApproval"
+	ServerService_WaitQueryApproval_FullMethodName              = "/relay.server.v1.ServerService/WaitQueryApproval"
+	ServerService_ListQueryApprovals_FullMethodName             = "/relay.server.v1.ServerService/ListQueryApprovals"
+	ServerService_GetQueryApproval_FullMethodName               = "/relay.server.v1.ServerService/GetQueryApproval"
+	ServerService_ApproveQueryApproval_FullMethodName           = "/relay.server.v1.ServerService/ApproveQueryApproval"
+	ServerService_DenyQueryApproval_FullMethodName              = "/relay.server.v1.ServerService/DenyQueryApproval"
+	ServerService_DetachQueryApproval_FullMethodName            = "/relay.server.v1.ServerService/DetachQueryApproval"
+	ServerService_CancelQueryApproval_FullMethodName            = "/relay.server.v1.ServerService/CancelQueryApproval"
+	ServerService_ListApprovalIntegrations_FullMethodName       = "/relay.server.v1.ServerService/ListApprovalIntegrations"
+	ServerService_UpsertApprovalIntegration_FullMethodName      = "/relay.server.v1.ServerService/UpsertApprovalIntegration"
+	ServerService_DeleteApprovalIntegration_FullMethodName      = "/relay.server.v1.ServerService/DeleteApprovalIntegration"
+	ServerService_ListAccessGrants_FullMethodName               = "/relay.server.v1.ServerService/ListAccessGrants"
+	ServerService_CreateAccessGrant_FullMethodName              = "/relay.server.v1.ServerService/CreateAccessGrant"
+	ServerService_DeleteAccessGrant_FullMethodName              = "/relay.server.v1.ServerService/DeleteAccessGrant"
+	ServerService_RequestAccessGrant_FullMethodName             = "/relay.server.v1.ServerService/RequestAccessGrant"
+	ServerService_ListAccessGrantRequests_FullMethodName        = "/relay.server.v1.ServerService/ListAccessGrantRequests"
+	ServerService_GetAccessGrantRequest_FullMethodName          = "/relay.server.v1.ServerService/GetAccessGrantRequest"
+	ServerService_ApproveAccessGrantRequest_FullMethodName      = "/relay.server.v1.ServerService/ApproveAccessGrantRequest"
+	ServerService_DenyAccessGrantRequest_FullMethodName         = "/relay.server.v1.ServerService/DenyAccessGrantRequest"
+	ServerService_CancelAccessGrantRequest_FullMethodName       = "/relay.server.v1.ServerService/CancelAccessGrantRequest"
+	ServerService_RevokeAccessGrantRequest_FullMethodName       = "/relay.server.v1.ServerService/RevokeAccessGrantRequest"
+	ServerService_ListRequestableConnections_FullMethodName     = "/relay.server.v1.ServerService/ListRequestableConnections"
+	ServerService_GetAccessRequestSettings_FullMethodName       = "/relay.server.v1.ServerService/GetAccessRequestSettings"
+	ServerService_UpdateAccessRequestSettings_FullMethodName    = "/relay.server.v1.ServerService/UpdateAccessRequestSettings"
+	ServerService_ListTeams_FullMethodName                      = "/relay.server.v1.ServerService/ListTeams"
+	ServerService_CreateTeam_FullMethodName                     = "/relay.server.v1.ServerService/CreateTeam"
+	ServerService_DeleteTeam_FullMethodName                     = "/relay.server.v1.ServerService/DeleteTeam"
+	ServerService_AddTeamMember_FullMethodName                  = "/relay.server.v1.ServerService/AddTeamMember"
+	ServerService_RemoveTeamMember_FullMethodName               = "/relay.server.v1.ServerService/RemoveTeamMember"
+	ServerService_ListMembers_FullMethodName                    = "/relay.server.v1.ServerService/ListMembers"
+	ServerService_SetMemberRole_FullMethodName                  = "/relay.server.v1.ServerService/SetMemberRole"
+	ServerService_TransferOwnership_FullMethodName              = "/relay.server.v1.ServerService/TransferOwnership"
+	ServerService_RemoveMember_FullMethodName                   = "/relay.server.v1.ServerService/RemoveMember"
+	ServerService_UpdateMember_FullMethodName                   = "/relay.server.v1.ServerService/UpdateMember"
+	ServerService_RevokeUserSessions_FullMethodName             = "/relay.server.v1.ServerService/RevokeUserSessions"
+	ServerService_InviteMember_FullMethodName                   = "/relay.server.v1.ServerService/InviteMember"
+	ServerService_ListInvitations_FullMethodName                = "/relay.server.v1.ServerService/ListInvitations"
+	ServerService_RevokeInvitation_FullMethodName               = "/relay.server.v1.ServerService/RevokeInvitation"
+	ServerService_GetInvitation_FullMethodName                  = "/relay.server.v1.ServerService/GetInvitation"
+	ServerService_AcceptInvitation_FullMethodName               = "/relay.server.v1.ServerService/AcceptInvitation"
+	ServerService_ListAgents_FullMethodName                     = "/relay.server.v1.ServerService/ListAgents"
+	ServerService_DeleteAgent_FullMethodName                    = "/relay.server.v1.ServerService/DeleteAgent"
+	ServerService_CreateEnrollmentToken_FullMethodName          = "/relay.server.v1.ServerService/CreateEnrollmentToken"
+	ServerService_ListEnrollmentTokens_FullMethodName           = "/relay.server.v1.ServerService/ListEnrollmentTokens"
+	ServerService_DeleteEnrollmentToken_FullMethodName          = "/relay.server.v1.ServerService/DeleteEnrollmentToken"
+	ServerService_EnrollAgent_FullMethodName                    = "/relay.server.v1.ServerService/EnrollAgent"
+	ServerService_Heartbeat_FullMethodName                      = "/relay.server.v1.ServerService/Heartbeat"
+	ServerService_Deregister_FullMethodName                     = "/relay.server.v1.ServerService/Deregister"
+	ServerService_ListAgentPools_FullMethodName                 = "/relay.server.v1.ServerService/ListAgentPools"
+	ServerService_CreateAgentPool_FullMethodName                = "/relay.server.v1.ServerService/CreateAgentPool"
+	ServerService_DeleteAgentPool_FullMethodName                = "/relay.server.v1.ServerService/DeleteAgentPool"
+	ServerService_UpdateAgentPool_FullMethodName                = "/relay.server.v1.ServerService/UpdateAgentPool"
+	ServerService_SetAgentPoolTeams_FullMethodName              = "/relay.server.v1.ServerService/SetAgentPoolTeams"
+	ServerService_WakeAgentPool_FullMethodName                  = "/relay.server.v1.ServerService/WakeAgentPool"
+	ServerService_ResolveConnectionCredential_FullMethodName    = "/relay.server.v1.ServerService/ResolveConnectionCredential"
+	ServerService_ResolveExternalSecretSource_FullMethodName    = "/relay.server.v1.ServerService/ResolveExternalSecretSource"
+	ServerService_ListExternalSecretSources_FullMethodName      = "/relay.server.v1.ServerService/ListExternalSecretSources"
+	ServerService_GetExternalSecretSource_FullMethodName        = "/relay.server.v1.ServerService/GetExternalSecretSource"
+	ServerService_UpsertExternalSecretSource_FullMethodName     = "/relay.server.v1.ServerService/UpsertExternalSecretSource"
+	ServerService_DeleteExternalSecretSource_FullMethodName     = "/relay.server.v1.ServerService/DeleteExternalSecretSource"
+	ServerService_GetCloudIntegrationSetup_FullMethodName       = "/relay.server.v1.ServerService/GetCloudIntegrationSetup"
+	ServerService_ListCloudIntegrations_FullMethodName          = "/relay.server.v1.ServerService/ListCloudIntegrations"
+	ServerService_GetCloudIntegration_FullMethodName            = "/relay.server.v1.ServerService/GetCloudIntegration"
+	ServerService_CreateCloudIntegration_FullMethodName         = "/relay.server.v1.ServerService/CreateCloudIntegration"
+	ServerService_UpdateCloudIntegration_FullMethodName         = "/relay.server.v1.ServerService/UpdateCloudIntegration"
+	ServerService_DeleteCloudIntegration_FullMethodName         = "/relay.server.v1.ServerService/DeleteCloudIntegration"
+	ServerService_TestCloudIntegration_FullMethodName           = "/relay.server.v1.ServerService/TestCloudIntegration"
+	ServerService_GetLogStream_FullMethodName                   = "/relay.server.v1.ServerService/GetLogStream"
+	ServerService_UpsertLogStream_FullMethodName                = "/relay.server.v1.ServerService/UpsertLogStream"
+	ServerService_DeleteLogStream_FullMethodName                = "/relay.server.v1.ServerService/DeleteLogStream"
+	ServerService_GetBackupAutoExport_FullMethodName            = "/relay.server.v1.ServerService/GetBackupAutoExport"
+	ServerService_UpsertBackupAutoExport_FullMethodName         = "/relay.server.v1.ServerService/UpsertBackupAutoExport"
+	ServerService_DeleteBackupAutoExport_FullMethodName         = "/relay.server.v1.ServerService/DeleteBackupAutoExport"
+	ServerService_ExportToCloud_FullMethodName                  = "/relay.server.v1.ServerService/ExportToCloud"
+	ServerService_ListLogDestinations_FullMethodName            = "/relay.server.v1.ServerService/ListLogDestinations"
+	ServerService_CreateLogDestination_FullMethodName           = "/relay.server.v1.ServerService/CreateLogDestination"
+	ServerService_UpdateLogDestination_FullMethodName           = "/relay.server.v1.ServerService/UpdateLogDestination"
+	ServerService_DeleteLogDestination_FullMethodName           = "/relay.server.v1.ServerService/DeleteLogDestination"
+	ServerService_TestLogDestination_FullMethodName             = "/relay.server.v1.ServerService/TestLogDestination"
+	ServerService_IngestAuditEvents_FullMethodName              = "/relay.server.v1.ServerService/IngestAuditEvents"
+	ServerService_ListAuditLogs_FullMethodName                  = "/relay.server.v1.ServerService/ListAuditLogs"
+	ServerService_GetAuditMetrics_FullMethodName                = "/relay.server.v1.ServerService/GetAuditMetrics"
+	ServerService_ListActivityLogs_FullMethodName               = "/relay.server.v1.ServerService/ListActivityLogs"
+	ServerService_ListOrgActivityLogs_FullMethodName            = "/relay.server.v1.ServerService/ListOrgActivityLogs"
+	ServerService_EmitActivity_FullMethodName                   = "/relay.server.v1.ServerService/EmitActivity"
+	ServerService_ListUserOrganizations_FullMethodName          = "/relay.server.v1.ServerService/ListUserOrganizations"
+	ServerService_GetOrganization_FullMethodName                = "/relay.server.v1.ServerService/GetOrganization"
+	ServerService_CreateOrganization_FullMethodName             = "/relay.server.v1.ServerService/CreateOrganization"
+	ServerService_UpdateOrganization_FullMethodName             = "/relay.server.v1.ServerService/UpdateOrganization"
+	ServerService_UpdateOrganizationSettings_FullMethodName     = "/relay.server.v1.ServerService/UpdateOrganizationSettings"
+	ServerService_DeleteOrganization_FullMethodName             = "/relay.server.v1.ServerService/DeleteOrganization"
+	ServerService_SwitchOrganization_FullMethodName             = "/relay.server.v1.ServerService/SwitchOrganization"
+	ServerService_GetOrgOverview_FullMethodName                 = "/relay.server.v1.ServerService/GetOrgOverview"
+	ServerService_ListWorkspaces_FullMethodName                 = "/relay.server.v1.ServerService/ListWorkspaces"
+	ServerService_GetWorkspace_FullMethodName                   = "/relay.server.v1.ServerService/GetWorkspace"
+	ServerService_CreateWorkspace_FullMethodName                = "/relay.server.v1.ServerService/CreateWorkspace"
+	ServerService_UpdateWorkspace_FullMethodName                = "/relay.server.v1.ServerService/UpdateWorkspace"
+	ServerService_DeleteWorkspace_FullMethodName                = "/relay.server.v1.ServerService/DeleteWorkspace"
+	ServerService_AddWorkspaceMember_FullMethodName             = "/relay.server.v1.ServerService/AddWorkspaceMember"
+	ServerService_RemoveWorkspaceMember_FullMethodName          = "/relay.server.v1.ServerService/RemoveWorkspaceMember"
+	ServerService_ListWorkspaceMembers_FullMethodName           = "/relay.server.v1.ServerService/ListWorkspaceMembers"
+	ServerService_AddWorkspaceTeam_FullMethodName               = "/relay.server.v1.ServerService/AddWorkspaceTeam"
+	ServerService_RemoveWorkspaceTeam_FullMethodName            = "/relay.server.v1.ServerService/RemoveWorkspaceTeam"
+	ServerService_ListWorkspaceTeams_FullMethodName             = "/relay.server.v1.ServerService/ListWorkspaceTeams"
+	ServerService_SetWorkspaceMemberRole_FullMethodName         = "/relay.server.v1.ServerService/SetWorkspaceMemberRole"
+	ServerService_SetWorkspaceTeamRole_FullMethodName           = "/relay.server.v1.ServerService/SetWorkspaceTeamRole"
+	ServerService_ListRoles_FullMethodName                      = "/relay.server.v1.ServerService/ListRoles"
+	ServerService_CreateRole_FullMethodName                     = "/relay.server.v1.ServerService/CreateRole"
+	ServerService_UpdateRole_FullMethodName                     = "/relay.server.v1.ServerService/UpdateRole"
+	ServerService_DeleteRole_FullMethodName                     = "/relay.server.v1.ServerService/DeleteRole"
+	ServerService_ListRoleBindings_FullMethodName               = "/relay.server.v1.ServerService/ListRoleBindings"
+	ServerService_CreateRoleBinding_FullMethodName              = "/relay.server.v1.ServerService/CreateRoleBinding"
+	ServerService_DeleteRoleBinding_FullMethodName              = "/relay.server.v1.ServerService/DeleteRoleBinding"
+	ServerService_ListDatabases_FullMethodName                  = "/relay.server.v1.ServerService/ListDatabases"
+	ServerService_CreateDatabase_FullMethodName                 = "/relay.server.v1.ServerService/CreateDatabase"
+	ServerService_RestoreDatabase_FullMethodName                = "/relay.server.v1.ServerService/RestoreDatabase"
+	ServerService_GetDatabase_FullMethodName                    = "/relay.server.v1.ServerService/GetDatabase"
+	ServerService_UpdateDatabase_FullMethodName                 = "/relay.server.v1.ServerService/UpdateDatabase"
+	ServerService_ListPostgreSQLParameters_FullMethodName       = "/relay.server.v1.ServerService/ListPostgreSQLParameters"
+	ServerService_ListValkeyParameters_FullMethodName           = "/relay.server.v1.ServerService/ListValkeyParameters"
+	ServerService_WatchDatabase_FullMethodName                  = "/relay.server.v1.ServerService/WatchDatabase"
+	ServerService_ListPendingOperations_FullMethodName          = "/relay.server.v1.ServerService/ListPendingOperations"
+	ServerService_DeleteDatabase_FullMethodName                 = "/relay.server.v1.ServerService/DeleteDatabase"
+	ServerService_RetryDeleteDatabase_FullMethodName            = "/relay.server.v1.ServerService/RetryDeleteDatabase"
+	ServerService_PauseDatabase_FullMethodName                  = "/relay.server.v1.ServerService/PauseDatabase"
+	ServerService_SetDefaultConnections_FullMethodName          = "/relay.server.v1.ServerService/SetDefaultConnections"
+	ServerService_SetDeletionProtection_FullMethodName          = "/relay.server.v1.ServerService/SetDeletionProtection"
+	ServerService_ResumeDatabase_FullMethodName                 = "/relay.server.v1.ServerService/ResumeDatabase"
+	ServerService_GetDatabaseStatus_FullMethodName              = "/relay.server.v1.ServerService/GetDatabaseStatus"
+	ServerService_ListDatabaseNodes_FullMethodName              = "/relay.server.v1.ServerService/ListDatabaseNodes"
+	ServerService_GetDatabaseLogs_FullMethodName                = "/relay.server.v1.ServerService/GetDatabaseLogs"
+	ServerService_GetDatabaseAnalytics_FullMethodName           = "/relay.server.v1.ServerService/GetDatabaseAnalytics"
+	ServerService_GetDatabaseConnection_FullMethodName          = "/relay.server.v1.ServerService/GetDatabaseConnection"
+	ServerService_ListIPAllowlist_FullMethodName                = "/relay.server.v1.ServerService/ListIPAllowlist"
+	ServerService_AddIPAllowlistEntry_FullMethodName            = "/relay.server.v1.ServerService/AddIPAllowlistEntry"
+	ServerService_UpdateIPAllowlistEntry_FullMethodName         = "/relay.server.v1.ServerService/UpdateIPAllowlistEntry"
+	ServerService_RemoveIPAllowlistEntry_FullMethodName         = "/relay.server.v1.ServerService/RemoveIPAllowlistEntry"
+	ServerService_ListPrivateEndpointRegions_FullMethodName     = "/relay.server.v1.ServerService/ListPrivateEndpointRegions"
+	ServerService_CreatePrivateEndpointService_FullMethodName   = "/relay.server.v1.ServerService/CreatePrivateEndpointService"
+	ServerService_ListPrivateEndpointServices_FullMethodName    = "/relay.server.v1.ServerService/ListPrivateEndpointServices"
+	ServerService_GetPrivateEndpointService_FullMethodName      = "/relay.server.v1.ServerService/GetPrivateEndpointService"
+	ServerService_DeletePrivateEndpointService_FullMethodName   = "/relay.server.v1.ServerService/DeletePrivateEndpointService"
+	ServerService_CreatePrivateEndpoint_FullMethodName          = "/relay.server.v1.ServerService/CreatePrivateEndpoint"
+	ServerService_GetPrivateEndpoint_FullMethodName             = "/relay.server.v1.ServerService/GetPrivateEndpoint"
+	ServerService_DeletePrivateEndpoint_FullMethodName          = "/relay.server.v1.ServerService/DeletePrivateEndpoint"
+	ServerService_ListBackupSchedules_FullMethodName            = "/relay.server.v1.ServerService/ListBackupSchedules"
+	ServerService_ListBackups_FullMethodName                    = "/relay.server.v1.ServerService/ListBackups"
+	ServerService_GetBackupSchedule_FullMethodName              = "/relay.server.v1.ServerService/GetBackupSchedule"
+	ServerService_UpsertBackupSchedule_FullMethodName           = "/relay.server.v1.ServerService/UpsertBackupSchedule"
+	ServerService_ResetBackupSchedule_FullMethodName            = "/relay.server.v1.ServerService/ResetBackupSchedule"
+	ServerService_CreateBackup_FullMethodName                   = "/relay.server.v1.ServerService/CreateBackup"
+	ServerService_DeleteBackup_FullMethodName                   = "/relay.server.v1.ServerService/DeleteBackup"
+	ServerService_ListDatabaseUsers_FullMethodName              = "/relay.server.v1.ServerService/ListDatabaseUsers"
+	ServerService_GetDatabaseUser_FullMethodName                = "/relay.server.v1.ServerService/GetDatabaseUser"
+	ServerService_CreateDatabaseUser_FullMethodName             = "/relay.server.v1.ServerService/CreateDatabaseUser"
+	ServerService_UpdateDatabaseUser_FullMethodName             = "/relay.server.v1.ServerService/UpdateDatabaseUser"
+	ServerService_DeleteDatabaseUser_FullMethodName             = "/relay.server.v1.ServerService/DeleteDatabaseUser"
+	ServerService_ListLogicalDatabases_FullMethodName           = "/relay.server.v1.ServerService/ListLogicalDatabases"
+	ServerService_CreateLogicalDatabase_FullMethodName          = "/relay.server.v1.ServerService/CreateLogicalDatabase"
+	ServerService_UpdateLogicalDatabase_FullMethodName          = "/relay.server.v1.ServerService/UpdateLogicalDatabase"
+	ServerService_DeleteLogicalDatabase_FullMethodName          = "/relay.server.v1.ServerService/DeleteLogicalDatabase"
+	ServerService_ListDatabaseProviders_FullMethodName          = "/relay.server.v1.ServerService/ListDatabaseProviders"
+	ServerService_GetBillingState_FullMethodName                = "/relay.server.v1.ServerService/GetBillingState"
+	ServerService_CreateCheckoutSession_FullMethodName          = "/relay.server.v1.ServerService/CreateCheckoutSession"
+	ServerService_CreateBillingPortalSession_FullMethodName     = "/relay.server.v1.ServerService/CreateBillingPortalSession"
+	ServerService_ChangePlan_FullMethodName                     = "/relay.server.v1.ServerService/ChangePlan"
+	ServerService_CreateSupportReport_FullMethodName            = "/relay.server.v1.ServerService/CreateSupportReport"
+	ServerService_ListSupportReports_FullMethodName             = "/relay.server.v1.ServerService/ListSupportReports"
+	ServerService_GetSupportReport_FullMethodName               = "/relay.server.v1.ServerService/GetSupportReport"
+	ServerService_AddSupportReportComment_FullMethodName        = "/relay.server.v1.ServerService/AddSupportReportComment"
+	ServerService_GetSupportAttachment_FullMethodName           = "/relay.server.v1.ServerService/GetSupportAttachment"
+	ServerService_UpdateSupportReportStatus_FullMethodName      = "/relay.server.v1.ServerService/UpdateSupportReportStatus"
+	ServerService_GetOrgSSOConnection_FullMethodName            = "/relay.server.v1.ServerService/GetOrgSSOConnection"
+	ServerService_UpsertOrgSSOConnection_FullMethodName         = "/relay.server.v1.ServerService/UpsertOrgSSOConnection"
+	ServerService_DeleteOrgSSOConnection_FullMethodName         = "/relay.server.v1.ServerService/DeleteOrgSSOConnection"
+	ServerService_TestOrgSSOConnection_FullMethodName           = "/relay.server.v1.ServerService/TestOrgSSOConnection"
+	ServerService_ListOrgDomains_FullMethodName                 = "/relay.server.v1.ServerService/ListOrgDomains"
+	ServerService_AddOrgDomain_FullMethodName                   = "/relay.server.v1.ServerService/AddOrgDomain"
+	ServerService_VerifyOrgDomain_FullMethodName                = "/relay.server.v1.ServerService/VerifyOrgDomain"
+	ServerService_RemoveOrgDomain_FullMethodName                = "/relay.server.v1.ServerService/RemoveOrgDomain"
+	ServerService_ListPostgreSQLExtensions_FullMethodName       = "/relay.server.v1.ServerService/ListPostgreSQLExtensions"
+	ServerService_GetLicenseStatus_FullMethodName               = "/relay.server.v1.ServerService/GetLicenseStatus"
+	ServerService_ExportLicenseUsageReport_FullMethodName       = "/relay.server.v1.ServerService/ExportLicenseUsageReport"
+	ServerService_GetRunbookSource_FullMethodName               = "/relay.server.v1.ServerService/GetRunbookSource"
+	ServerService_UpsertRunbookSource_FullMethodName            = "/relay.server.v1.ServerService/UpsertRunbookSource"
+	ServerService_DeleteRunbookSource_FullMethodName            = "/relay.server.v1.ServerService/DeleteRunbookSource"
+	ServerService_SyncRunbooks_FullMethodName                   = "/relay.server.v1.ServerService/SyncRunbooks"
+	ServerService_RotateRunbookWebhookSecret_FullMethodName     = "/relay.server.v1.ServerService/RotateRunbookWebhookSecret"
+	ServerService_FetchRunbookHostKey_FullMethodName            = "/relay.server.v1.ServerService/FetchRunbookHostKey"
+	ServerService_ListRunbooks_FullMethodName                   = "/relay.server.v1.ServerService/ListRunbooks"
+	ServerService_GetRunbook_FullMethodName                     = "/relay.server.v1.ServerService/GetRunbook"
+	ServerService_RunRunbook_FullMethodName                     = "/relay.server.v1.ServerService/RunRunbook"
+	ServerService_GetRunbookExecution_FullMethodName            = "/relay.server.v1.ServerService/GetRunbookExecution"
+	ServerService_ListRunbookExecutions_FullMethodName          = "/relay.server.v1.ServerService/ListRunbookExecutions"
+	ServerService_ClaimRunbookExecutions_FullMethodName         = "/relay.server.v1.ServerService/ClaimRunbookExecutions"
+	ServerService_ReportRunbookExecution_FullMethodName         = "/relay.server.v1.ServerService/ReportRunbookExecution"
 )
 
 // ServerServiceClient is the client API for ServerService service.
@@ -289,6 +291,10 @@ type ServerServiceClient interface {
 	RevokeAPIKey(ctx context.Context, in *RevokeAPIKeyRequest, opts ...grpc.CallOption) (*RevokeAPIKeyResponse, error)
 	// ListConnections returns all connections in the user's organization.
 	ListConnections(ctx context.Context, in *ListConnectionsRequest, opts ...grpc.CallOption) (*ListConnectionsResponse, error)
+	// ListManagedDatabaseConnections returns every connection bound to a managed
+	// database in the caller's workspace, with the host and internal host they
+	// were created with. System principals only.
+	ListManagedDatabaseConnections(ctx context.Context, in *ListManagedDatabaseConnectionsRequest, opts ...grpc.CallOption) (*ListManagedDatabaseConnectionsResponse, error)
 	// GetConnections returns connections matching the given names.
 	GetConnections(ctx context.Context, in *GetConnectionsRequest, opts ...grpc.CallOption) (*GetConnectionsResponse, error)
 	// CreateConnection creates a new connection.
@@ -435,6 +441,8 @@ type ServerServiceClient interface {
 	ListMembers(ctx context.Context, in *ListMembersRequest, opts ...grpc.CallOption) (*ListMembersResponse, error)
 	// SetMemberRole changes a member's role in the organization.
 	SetMemberRole(ctx context.Context, in *SetMemberRoleRequest, opts ...grpc.CallOption) (*SetMemberRoleResponse, error)
+	// TransferOwnership makes another member the owner and demotes the caller to admin.
+	TransferOwnership(ctx context.Context, in *TransferOwnershipRequest, opts ...grpc.CallOption) (*TransferOwnershipResponse, error)
 	// RemoveMember removes a member from the organization.
 	RemoveMember(ctx context.Context, in *RemoveMemberRequest, opts ...grpc.CallOption) (*RemoveMemberResponse, error)
 	// UpdateMember updates editable profile fields on an org member.
@@ -939,6 +947,16 @@ func (c *serverServiceClient) ListConnections(ctx context.Context, in *ListConne
 	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
 	out := new(ListConnectionsResponse)
 	err := c.cc.Invoke(ctx, ServerService_ListConnections_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *serverServiceClient) ListManagedDatabaseConnections(ctx context.Context, in *ListManagedDatabaseConnectionsRequest, opts ...grpc.CallOption) (*ListManagedDatabaseConnectionsResponse, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(ListManagedDatabaseConnectionsResponse)
+	err := c.cc.Invoke(ctx, ServerService_ListManagedDatabaseConnections_FullMethodName, in, out, cOpts...)
 	if err != nil {
 		return nil, err
 	}
@@ -1499,6 +1517,16 @@ func (c *serverServiceClient) SetMemberRole(ctx context.Context, in *SetMemberRo
 	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
 	out := new(SetMemberRoleResponse)
 	err := c.cc.Invoke(ctx, ServerService_SetMemberRole_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *serverServiceClient) TransferOwnership(ctx context.Context, in *TransferOwnershipRequest, opts ...grpc.CallOption) (*TransferOwnershipResponse, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(TransferOwnershipResponse)
+	err := c.cc.Invoke(ctx, ServerService_TransferOwnership_FullMethodName, in, out, cOpts...)
 	if err != nil {
 		return nil, err
 	}
@@ -3191,6 +3219,10 @@ type ServerServiceServer interface {
 	RevokeAPIKey(context.Context, *RevokeAPIKeyRequest) (*RevokeAPIKeyResponse, error)
 	// ListConnections returns all connections in the user's organization.
 	ListConnections(context.Context, *ListConnectionsRequest) (*ListConnectionsResponse, error)
+	// ListManagedDatabaseConnections returns every connection bound to a managed
+	// database in the caller's workspace, with the host and internal host they
+	// were created with. System principals only.
+	ListManagedDatabaseConnections(context.Context, *ListManagedDatabaseConnectionsRequest) (*ListManagedDatabaseConnectionsResponse, error)
 	// GetConnections returns connections matching the given names.
 	GetConnections(context.Context, *GetConnectionsRequest) (*GetConnectionsResponse, error)
 	// CreateConnection creates a new connection.
@@ -3337,6 +3369,8 @@ type ServerServiceServer interface {
 	ListMembers(context.Context, *ListMembersRequest) (*ListMembersResponse, error)
 	// SetMemberRole changes a member's role in the organization.
 	SetMemberRole(context.Context, *SetMemberRoleRequest) (*SetMemberRoleResponse, error)
+	// TransferOwnership makes another member the owner and demotes the caller to admin.
+	TransferOwnership(context.Context, *TransferOwnershipRequest) (*TransferOwnershipResponse, error)
 	// RemoveMember removes a member from the organization.
 	RemoveMember(context.Context, *RemoveMemberRequest) (*RemoveMemberResponse, error)
 	// UpdateMember updates editable profile fields on an org member.
@@ -3770,6 +3804,9 @@ func (UnimplementedServerServiceServer) RevokeAPIKey(context.Context, *RevokeAPI
 func (UnimplementedServerServiceServer) ListConnections(context.Context, *ListConnectionsRequest) (*ListConnectionsResponse, error) {
 	return nil, status.Error(codes.Unimplemented, "method ListConnections not implemented")
 }
+func (UnimplementedServerServiceServer) ListManagedDatabaseConnections(context.Context, *ListManagedDatabaseConnectionsRequest) (*ListManagedDatabaseConnectionsResponse, error) {
+	return nil, status.Error(codes.Unimplemented, "method ListManagedDatabaseConnections not implemented")
+}
 func (UnimplementedServerServiceServer) GetConnections(context.Context, *GetConnectionsRequest) (*GetConnectionsResponse, error) {
 	return nil, status.Error(codes.Unimplemented, "method GetConnections not implemented")
 }
@@ -3937,6 +3974,9 @@ func (UnimplementedServerServiceServer) ListMembers(context.Context, *ListMember
 }
 func (UnimplementedServerServiceServer) SetMemberRole(context.Context, *SetMemberRoleRequest) (*SetMemberRoleResponse, error) {
 	return nil, status.Error(codes.Unimplemented, "method SetMemberRole not implemented")
+}
+func (UnimplementedServerServiceServer) TransferOwnership(context.Context, *TransferOwnershipRequest) (*TransferOwnershipResponse, error) {
+	return nil, status.Error(codes.Unimplemented, "method TransferOwnership not implemented")
 }
 func (UnimplementedServerServiceServer) RemoveMember(context.Context, *RemoveMemberRequest) (*RemoveMemberResponse, error) {
 	return nil, status.Error(codes.Unimplemented, "method RemoveMember not implemented")
@@ -4645,6 +4685,24 @@ func _ServerService_ListConnections_Handler(srv interface{}, ctx context.Context
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
 		return srv.(ServerServiceServer).ListConnections(ctx, req.(*ListConnectionsRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _ServerService_ListManagedDatabaseConnections_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(ListManagedDatabaseConnectionsRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(ServerServiceServer).ListManagedDatabaseConnections(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: ServerService_ListManagedDatabaseConnections_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(ServerServiceServer).ListManagedDatabaseConnections(ctx, req.(*ListManagedDatabaseConnectionsRequest))
 	}
 	return interceptor(ctx, in, info, handler)
 }
@@ -5653,6 +5711,24 @@ func _ServerService_SetMemberRole_Handler(srv interface{}, ctx context.Context, 
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
 		return srv.(ServerServiceServer).SetMemberRole(ctx, req.(*SetMemberRoleRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _ServerService_TransferOwnership_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(TransferOwnershipRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(ServerServiceServer).TransferOwnership(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: ServerService_TransferOwnership_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(ServerServiceServer).TransferOwnership(ctx, req.(*TransferOwnershipRequest))
 	}
 	return interceptor(ctx, in, info, handler)
 }
@@ -8654,6 +8730,10 @@ var ServerService_ServiceDesc = grpc.ServiceDesc{
 			Handler:    _ServerService_ListConnections_Handler,
 		},
 		{
+			MethodName: "ListManagedDatabaseConnections",
+			Handler:    _ServerService_ListManagedDatabaseConnections_Handler,
+		},
+		{
 			MethodName: "GetConnections",
 			Handler:    _ServerService_GetConnections_Handler,
 		},
@@ -8876,6 +8956,10 @@ var ServerService_ServiceDesc = grpc.ServiceDesc{
 		{
 			MethodName: "SetMemberRole",
 			Handler:    _ServerService_SetMemberRole_Handler,
+		},
+		{
+			MethodName: "TransferOwnership",
+			Handler:    _ServerService_TransferOwnership_Handler,
 		},
 		{
 			MethodName: "RemoveMember",
@@ -9563,6 +9647,8 @@ const (
 	AdminService_AdminAddSupportReportComment_FullMethodName      = "/relay.server.v1.AdminService/AdminAddSupportReportComment"
 	AdminService_AdminGetSupportAttachment_FullMethodName         = "/relay.server.v1.AdminService/AdminGetSupportAttachment"
 	AdminService_AdminUpdateSupportReportStatus_FullMethodName    = "/relay.server.v1.AdminService/AdminUpdateSupportReportStatus"
+	AdminService_AdminListSupportComponents_FullMethodName        = "/relay.server.v1.AdminService/AdminListSupportComponents"
+	AdminService_AdminFileSupportReportIssue_FullMethodName       = "/relay.server.v1.AdminService/AdminFileSupportReportIssue"
 	AdminService_AdminListMembers_FullMethodName                  = "/relay.server.v1.AdminService/AdminListMembers"
 	AdminService_AdminSetMemberRole_FullMethodName                = "/relay.server.v1.AdminService/AdminSetMemberRole"
 	AdminService_AdminRemoveMember_FullMethodName                 = "/relay.server.v1.AdminService/AdminRemoveMember"
@@ -9703,6 +9789,14 @@ type AdminServiceClient interface {
 	// AdminUpdateSupportReportStatus changes a report's status (open,
 	// in_progress, resolved), in any organization, and emails the author.
 	AdminUpdateSupportReportStatus(ctx context.Context, in *AdminUpdateSupportReportStatusRequest, opts ...grpc.CallOption) (*AdminUpdateSupportReportStatusResponse, error)
+	// AdminListSupportComponents returns the support routing catalog: the
+	// components customers pick and the internal components (with their
+	// relay-sh repository) issues are filed under.
+	AdminListSupportComponents(ctx context.Context, in *AdminListSupportComponentsRequest, opts ...grpc.CallOption) (*AdminListSupportComponentsResponse, error)
+	// AdminFileSupportReportIssue files the GitHub issue for a report that has
+	// none yet, under internal_component (default: the routing of the report's
+	// component). FailedPrecondition when the report already has one.
+	AdminFileSupportReportIssue(ctx context.Context, in *AdminFileSupportReportIssueRequest, opts ...grpc.CallOption) (*AdminFileSupportReportIssueResponse, error)
 	// AdminListMembers returns the roster of a specific organization.
 	AdminListMembers(ctx context.Context, in *AdminListMembersRequest, opts ...grpc.CallOption) (*ListMembersResponse, error)
 	// AdminSetMemberRole changes a member's org role. Last-owner is still
@@ -10073,6 +10167,26 @@ func (c *adminServiceClient) AdminUpdateSupportReportStatus(ctx context.Context,
 	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
 	out := new(AdminUpdateSupportReportStatusResponse)
 	err := c.cc.Invoke(ctx, AdminService_AdminUpdateSupportReportStatus_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *adminServiceClient) AdminListSupportComponents(ctx context.Context, in *AdminListSupportComponentsRequest, opts ...grpc.CallOption) (*AdminListSupportComponentsResponse, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(AdminListSupportComponentsResponse)
+	err := c.cc.Invoke(ctx, AdminService_AdminListSupportComponents_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *adminServiceClient) AdminFileSupportReportIssue(ctx context.Context, in *AdminFileSupportReportIssueRequest, opts ...grpc.CallOption) (*AdminFileSupportReportIssueResponse, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(AdminFileSupportReportIssueResponse)
+	err := c.cc.Invoke(ctx, AdminService_AdminFileSupportReportIssue_FullMethodName, in, out, cOpts...)
 	if err != nil {
 		return nil, err
 	}
@@ -10613,6 +10727,14 @@ type AdminServiceServer interface {
 	// AdminUpdateSupportReportStatus changes a report's status (open,
 	// in_progress, resolved), in any organization, and emails the author.
 	AdminUpdateSupportReportStatus(context.Context, *AdminUpdateSupportReportStatusRequest) (*AdminUpdateSupportReportStatusResponse, error)
+	// AdminListSupportComponents returns the support routing catalog: the
+	// components customers pick and the internal components (with their
+	// relay-sh repository) issues are filed under.
+	AdminListSupportComponents(context.Context, *AdminListSupportComponentsRequest) (*AdminListSupportComponentsResponse, error)
+	// AdminFileSupportReportIssue files the GitHub issue for a report that has
+	// none yet, under internal_component (default: the routing of the report's
+	// component). FailedPrecondition when the report already has one.
+	AdminFileSupportReportIssue(context.Context, *AdminFileSupportReportIssueRequest) (*AdminFileSupportReportIssueResponse, error)
 	// AdminListMembers returns the roster of a specific organization.
 	AdminListMembers(context.Context, *AdminListMembersRequest) (*ListMembersResponse, error)
 	// AdminSetMemberRole changes a member's org role. Last-owner is still
@@ -10834,6 +10956,12 @@ func (UnimplementedAdminServiceServer) AdminGetSupportAttachment(context.Context
 }
 func (UnimplementedAdminServiceServer) AdminUpdateSupportReportStatus(context.Context, *AdminUpdateSupportReportStatusRequest) (*AdminUpdateSupportReportStatusResponse, error) {
 	return nil, status.Error(codes.Unimplemented, "method AdminUpdateSupportReportStatus not implemented")
+}
+func (UnimplementedAdminServiceServer) AdminListSupportComponents(context.Context, *AdminListSupportComponentsRequest) (*AdminListSupportComponentsResponse, error) {
+	return nil, status.Error(codes.Unimplemented, "method AdminListSupportComponents not implemented")
+}
+func (UnimplementedAdminServiceServer) AdminFileSupportReportIssue(context.Context, *AdminFileSupportReportIssueRequest) (*AdminFileSupportReportIssueResponse, error) {
+	return nil, status.Error(codes.Unimplemented, "method AdminFileSupportReportIssue not implemented")
 }
 func (UnimplementedAdminServiceServer) AdminListMembers(context.Context, *AdminListMembersRequest) (*ListMembersResponse, error) {
 	return nil, status.Error(codes.Unimplemented, "method AdminListMembers not implemented")
@@ -11380,6 +11508,42 @@ func _AdminService_AdminUpdateSupportReportStatus_Handler(srv interface{}, ctx c
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
 		return srv.(AdminServiceServer).AdminUpdateSupportReportStatus(ctx, req.(*AdminUpdateSupportReportStatusRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _AdminService_AdminListSupportComponents_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(AdminListSupportComponentsRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(AdminServiceServer).AdminListSupportComponents(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: AdminService_AdminListSupportComponents_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(AdminServiceServer).AdminListSupportComponents(ctx, req.(*AdminListSupportComponentsRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _AdminService_AdminFileSupportReportIssue_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(AdminFileSupportReportIssueRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(AdminServiceServer).AdminFileSupportReportIssue(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: AdminService_AdminFileSupportReportIssue_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(AdminServiceServer).AdminFileSupportReportIssue(ctx, req.(*AdminFileSupportReportIssueRequest))
 	}
 	return interceptor(ctx, in, info, handler)
 }
@@ -12270,6 +12434,14 @@ var AdminService_ServiceDesc = grpc.ServiceDesc{
 		{
 			MethodName: "AdminUpdateSupportReportStatus",
 			Handler:    _AdminService_AdminUpdateSupportReportStatus_Handler,
+		},
+		{
+			MethodName: "AdminListSupportComponents",
+			Handler:    _AdminService_AdminListSupportComponents_Handler,
+		},
+		{
+			MethodName: "AdminFileSupportReportIssue",
+			Handler:    _AdminService_AdminFileSupportReportIssue_Handler,
 		},
 		{
 			MethodName: "AdminListMembers",
