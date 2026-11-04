@@ -174,7 +174,7 @@ func TestWorkspaceResource_CreateConflict(t *testing.T) {
 
 func TestWorkspaceDataSource(t *testing.T) {
 	f := startFakeServer(t)
-	f.workspaces["ws-1"] = &serverv1.Workspace{Id: "ws-1", Name: "prod", Slug: "prod", Description: "d"}
+	f.workspaces["ws-1"] = &serverv1.Workspace{Id: "ws-1", Name: "prod", Slug: "prod", Description: "d", DeletionProtection: true}
 	resource.UnitTest(t, resource.TestCase{
 		ProtoV6ProviderFactories: factories(relay.Dial),
 		Steps: []resource.TestStep{{
@@ -192,6 +192,7 @@ data "relay_workspace" "by_id" {
 				resource.TestCheckResourceAttr("data.relay_workspace.by_name", "description", "d"),
 				resource.TestCheckResourceAttr("data.relay_workspace.by_name", "managed_by", ""),
 				resource.TestCheckResourceAttr("data.relay_workspace.by_id", "name", "prod"),
+				resource.TestCheckResourceAttr("data.relay_workspace.by_id", "deletion_protection", "true"),
 			),
 		}},
 	})

@@ -246,7 +246,7 @@ func (f *fakeServer) CreateWorkspace(ctx context.Context, req *serverv1.CreateWo
 	if f.workspaceByName(req.GetName()) != nil {
 		return nil, status.Errorf(codes.AlreadyExists, "workspace %q already exists", req.GetName())
 	}
-	w := &serverv1.Workspace{Id: f.newID("ws"), Name: req.GetName(), Slug: req.GetName(), Description: req.GetDescription(), ManagedBy: req.GetManagedBy()}
+	w := &serverv1.Workspace{Id: f.newID("ws"), Name: req.GetName(), Slug: req.GetName(), Description: req.GetDescription(), ManagedBy: req.GetManagedBy(), DeletionProtection: req.GetDeletionProtection()}
 	f.workspaces[w.Id] = w
 	return &serverv1.CreateWorkspaceResponse{Workspace: w}, nil
 }
@@ -283,6 +283,12 @@ func (f *fakeServer) UpdateWorkspace(ctx context.Context, req *serverv1.UpdateWo
 	if req.Description != nil {
 		w.Description = req.GetDescription()
 	}
+	if req.DeletionProtection != nil && !req.GetDeletionProtection() && w.GetDeletionProtection() && f.denyDisable {
+		return nil, status.Error(codes.PermissionDenied, "missing permission org.deletion_protection.disable")
+	}
+	if req.DeletionProtection != nil {
+		w.DeletionProtection = req.GetDeletionProtection()
+	}
 	if req.ManagedBy != nil {
 		w.ManagedBy = req.GetManagedBy()
 	}
@@ -298,6 +304,9 @@ func (f *fakeServer) DeleteWorkspace(ctx context.Context, req *serverv1.DeleteWo
 	w := f.workspaceByName(req.GetName())
 	if w == nil {
 		return nil, status.Error(codes.NotFound, "workspace not found")
+	}
+	if w.GetDeletionProtection() {
+		return nil, status.Error(codes.FailedPrecondition, "deletion protection is enabled; disable it first")
 	}
 	delete(f.workspaces, w.Id)
 	return &serverv1.DeleteWorkspaceResponse{}, nil

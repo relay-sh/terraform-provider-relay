@@ -30,11 +30,12 @@ func (d *workspaceDataSource) Schema(_ context.Context, _ datasource.SchemaReque
 	resp.Schema = schema.Schema{
 		MarkdownDescription: "Reads an existing workspace by name or ID, for workspaces not managed by this configuration.",
 		Attributes: map[string]schema.Attribute{
-			"id":          schema.StringAttribute{Optional: true, Computed: true, MarkdownDescription: "Workspace ID."},
-			"name":        schema.StringAttribute{Optional: true, Computed: true, MarkdownDescription: "Workspace name."},
-			"description": schema.StringAttribute{Computed: true, MarkdownDescription: "Free-text description."},
-			"slug":        schema.StringAttribute{Computed: true, MarkdownDescription: "URL slug."},
-			"managed_by":  schema.StringAttribute{Computed: true, MarkdownDescription: "Owner tag, empty when unmanaged."},
+			"id":                  schema.StringAttribute{Optional: true, Computed: true, MarkdownDescription: "Workspace ID."},
+			"name":                schema.StringAttribute{Optional: true, Computed: true, MarkdownDescription: "Workspace name."},
+			"description":         schema.StringAttribute{Computed: true, MarkdownDescription: "Free-text description."},
+			"slug":                schema.StringAttribute{Computed: true, MarkdownDescription: "URL slug."},
+			"managed_by":          schema.StringAttribute{Computed: true, MarkdownDescription: "Owner tag, empty when unmanaged."},
+			"deletion_protection": schema.BoolAttribute{Computed: true, MarkdownDescription: "Whether the platform refuses to delete the workspace."},
 		},
 	}
 }
