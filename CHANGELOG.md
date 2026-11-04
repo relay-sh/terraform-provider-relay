@@ -1,5 +1,9 @@
 ## Unreleased
 
+FEATURES:
+
+* resource/relay_access_grant: new resource that gives a user or a team access to a connection or a connection group, optionally until `expires_at`. A grant that expired or was revoked outside Terraform is removed from state on refresh and recreated on the next apply
+
 BUG FIXES:
 
 * resource/relay_connection: on a connection created for a database user, changing `managed_database_id`, `user`, `database` or `engine`, or switching between a database user and a `host`, replaces the connection, because the platform built it from them and the server rejects those changes in place. `agent_pool` still updates in place

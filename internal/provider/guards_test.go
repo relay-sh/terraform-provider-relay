@@ -112,6 +112,7 @@ func TestClusterValidateConfigReportsNothingOnMalformedInput(t *testing.T) {
 func TestResourceGuards(t *testing.T) {
 	assertResourceGuards(t, newWorkspaceResource())
 	assertResourceGuards(t, newConnectionResource())
+	assertResourceGuards(t, newAccessGrantResource())
 	assertResourceGuards(t, newPostgreSQLClusterResource())
 	assertResourceGuards(t, newPostgreSQLUserResource())
 	assertResourceGuards(t, newPostgreSQLDatabaseResource())

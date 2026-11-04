@@ -79,6 +79,10 @@ type fakeServer struct {
 	lastKeyCreate     *serverv1.CreateAPIKeyRequest
 	lastKeyUpdate     *serverv1.UpdateAPIKeyRequest
 
+	grants          map[string][]*serverv1.AccessGrant
+	lastGrant       *serverv1.CreateAccessGrantRequest
+	grantTargetGone bool
+
 	allowlist       map[string][]*serverv1.IPAllowlistEntry
 	syncingFor      int
 	syncCountdown   map[string]int
@@ -128,6 +132,7 @@ func startFakeServer(t *testing.T) *fakeServer {
 		ldbCountdown:      map[string]int{},
 		apiKeys:           map[string]*serverv1.APIKey{},
 		allowlist:         map[string][]*serverv1.IPAllowlistEntry{},
+		grants:            map[string][]*serverv1.AccessGrant{},
 		syncCountdown:     map[string]int{},
 		peServices:        map[string]*serverv1.PrivateEndpointService{},
 		svcCountdown:      map[string]int{},
