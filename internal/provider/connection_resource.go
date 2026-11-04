@@ -178,15 +178,51 @@ func (r *connectionResource) ValidateConfig(ctx context.Context, req resource.Va
 	}
 }
 
+var databaseUserReplaceOn = []string{"managed_database_id", "user", "database", "engine"}
+
+type attributeGetter interface {
+	GetAttribute(ctx context.Context, p path.Path, target any) diag.Diagnostics
+}
+
+func stringAttributes(ctx context.Context, src attributeGetter, names ...string) map[string]types.String {
+	out := make(map[string]types.String, len(names))
+	for _, name := range names {
+		var value types.String
+		src.GetAttribute(ctx, path.Root(name), &value)
+		out[name] = value
+	}
+	return out
+}
+
 func (r *connectionResource) ModifyPlan(ctx context.Context, req resource.ModifyPlanRequest, resp *resource.ModifyPlanResponse) {
 	if req.Plan.Raw.IsNull() {
 		return
 	}
-	var host, managedDatabaseID, user types.String
-	req.Plan.GetAttribute(ctx, path.Root("host"), &host)
-	req.Plan.GetAttribute(ctx, path.Root("managed_database_id"), &managedDatabaseID)
-	req.Plan.GetAttribute(ctx, path.Root("user"), &user)
-	if host.IsUnknown() || user.IsUnknown() || !isDatabaseUserConnection(host, managedDatabaseID, user) {
+	plan := stringAttributes(ctx, req.Plan, append([]string{"host"}, databaseUserReplaceOn...)...)
+	host, managedDatabaseID, user := plan["host"], plan["managed_database_id"], plan["user"]
+	if host.IsUnknown() || user.IsUnknown() {
+		return
+	}
+	forDatabaseUser := isDatabaseUserConnection(host, managedDatabaseID, user)
+	if !req.State.Raw.IsNull() {
+		state := stringAttributes(ctx, req.State, append([]string{"database_user"}, databaseUserReplaceOn...)...)
+		wasDatabaseUser := state["database_user"].ValueString() != ""
+		if wasDatabaseUser != forDatabaseUser {
+			resp.RequiresReplace = append(resp.RequiresReplace, path.Root("host"))
+			return
+		}
+		if forDatabaseUser {
+			for _, name := range databaseUserReplaceOn {
+				if !plan[name].Equal(state[name]) {
+					resp.RequiresReplace = append(resp.RequiresReplace, path.Root(name))
+				}
+			}
+			if len(resp.RequiresReplace) > 0 {
+				return
+			}
+		}
+	}
+	if !forDatabaseUser {
 		return
 	}
 	if req.State.Raw.IsNull() {
