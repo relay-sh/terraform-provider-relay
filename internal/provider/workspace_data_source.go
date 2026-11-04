@@ -34,7 +34,6 @@ func (d *workspaceDataSource) Schema(_ context.Context, _ datasource.SchemaReque
 			"name":        schema.StringAttribute{Optional: true, Computed: true, MarkdownDescription: "Workspace name."},
 			"description": schema.StringAttribute{Computed: true, MarkdownDescription: "Free-text description."},
 			"slug":        schema.StringAttribute{Computed: true, MarkdownDescription: "URL slug."},
-			"is_default":  schema.BoolAttribute{Computed: true, DeprecationMessage: isDefaultDeprecation, MarkdownDescription: "Always `false`. The platform no longer has a default workspace."},
 			"managed_by":  schema.StringAttribute{Computed: true, MarkdownDescription: "Owner tag, empty when unmanaged."},
 		},
 	}

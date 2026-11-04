@@ -8,14 +8,11 @@ import (
 
 const managedBy = "terraform"
 
-const isDefaultDeprecation = "The platform no longer has a default workspace, so is_default is always false. It will be removed in a future release."
-
 type workspaceModel struct {
 	ID          types.String `tfsdk:"id"`
 	Name        types.String `tfsdk:"name"`
 	Description types.String `tfsdk:"description"`
 	Slug        types.String `tfsdk:"slug"`
-	IsDefault   types.Bool   `tfsdk:"is_default"`
 	ManagedBy   types.String `tfsdk:"managed_by"`
 }
 
@@ -25,7 +22,6 @@ func workspaceFromProto(w *serverv1.Workspace) workspaceModel {
 		Name:        types.StringValue(w.GetName()),
 		Description: types.StringValue(w.GetDescription()),
 		Slug:        types.StringValue(w.GetSlug()),
-		IsDefault:   types.BoolValue(false),
 		ManagedBy:   types.StringValue(w.GetManagedBy()),
 	}
 }
