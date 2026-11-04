@@ -53,7 +53,8 @@ func (r *workspaceResource) Schema(_ context.Context, _ resource.SchemaRequest, 
 			},
 			"is_default": schema.BoolAttribute{
 				Computed:            true,
-				MarkdownDescription: "Whether this is the organization's default workspace.",
+				DeprecationMessage:  isDefaultDeprecation,
+				MarkdownDescription: "Always `false`. The platform no longer has a default workspace.",
 			},
 			"managed_by": schema.StringAttribute{
 				Optional:            true,

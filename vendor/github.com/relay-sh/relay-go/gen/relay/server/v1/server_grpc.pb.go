@@ -180,6 +180,7 @@ const (
 	ServerService_RetryDeleteDatabase_FullMethodName          = "/relay.server.v1.ServerService/RetryDeleteDatabase"
 	ServerService_PauseDatabase_FullMethodName                = "/relay.server.v1.ServerService/PauseDatabase"
 	ServerService_SetDefaultConnections_FullMethodName        = "/relay.server.v1.ServerService/SetDefaultConnections"
+	ServerService_SetDeletionProtection_FullMethodName        = "/relay.server.v1.ServerService/SetDeletionProtection"
 	ServerService_ResumeDatabase_FullMethodName               = "/relay.server.v1.ServerService/ResumeDatabase"
 	ServerService_GetDatabaseStatus_FullMethodName            = "/relay.server.v1.ServerService/GetDatabaseStatus"
 	ServerService_ListDatabaseNodes_FullMethodName            = "/relay.server.v1.ServerService/ListDatabaseNodes"
@@ -638,6 +639,7 @@ type ServerServiceClient interface {
 	// SetDefaultConnections turns the Relay-managed users and connections of an
 	// existing cluster on or off. Accepted, not applied synchronously.
 	SetDefaultConnections(ctx context.Context, in *SetDefaultConnectionsRequest, opts ...grpc.CallOption) (*SetDefaultConnectionsResponse, error)
+	SetDeletionProtection(ctx context.Context, in *SetDeletionProtectionRequest, opts ...grpc.CallOption) (*SetDeletionProtectionResponse, error)
 	// ResumeDatabase brings a paused cluster back from its storage.
 	ResumeDatabase(ctx context.Context, in *ResumeDatabaseRequest, opts ...grpc.CallOption) (*ResumeDatabaseResponse, error)
 	// GetDatabaseStatus returns the latest phase/connection details.
@@ -2452,6 +2454,16 @@ func (c *serverServiceClient) SetDefaultConnections(ctx context.Context, in *Set
 	return out, nil
 }
 
+func (c *serverServiceClient) SetDeletionProtection(ctx context.Context, in *SetDeletionProtectionRequest, opts ...grpc.CallOption) (*SetDeletionProtectionResponse, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(SetDeletionProtectionResponse)
+	err := c.cc.Invoke(ctx, ServerService_SetDeletionProtection_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
 func (c *serverServiceClient) ResumeDatabase(ctx context.Context, in *ResumeDatabaseRequest, opts ...grpc.CallOption) (*ResumeDatabaseResponse, error) {
 	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
 	out := new(ResumeDatabaseResponse)
@@ -3529,6 +3541,7 @@ type ServerServiceServer interface {
 	// SetDefaultConnections turns the Relay-managed users and connections of an
 	// existing cluster on or off. Accepted, not applied synchronously.
 	SetDefaultConnections(context.Context, *SetDefaultConnectionsRequest) (*SetDefaultConnectionsResponse, error)
+	SetDeletionProtection(context.Context, *SetDeletionProtectionRequest) (*SetDeletionProtectionResponse, error)
 	// ResumeDatabase brings a paused cluster back from its storage.
 	ResumeDatabase(context.Context, *ResumeDatabaseRequest) (*ResumeDatabaseResponse, error)
 	// GetDatabaseStatus returns the latest phase/connection details.
@@ -4206,6 +4219,9 @@ func (UnimplementedServerServiceServer) PauseDatabase(context.Context, *PauseDat
 }
 func (UnimplementedServerServiceServer) SetDefaultConnections(context.Context, *SetDefaultConnectionsRequest) (*SetDefaultConnectionsResponse, error) {
 	return nil, status.Error(codes.Unimplemented, "method SetDefaultConnections not implemented")
+}
+func (UnimplementedServerServiceServer) SetDeletionProtection(context.Context, *SetDeletionProtectionRequest) (*SetDeletionProtectionResponse, error) {
+	return nil, status.Error(codes.Unimplemented, "method SetDeletionProtection not implemented")
 }
 func (UnimplementedServerServiceServer) ResumeDatabase(context.Context, *ResumeDatabaseRequest) (*ResumeDatabaseResponse, error) {
 	return nil, status.Error(codes.Unimplemented, "method ResumeDatabase not implemented")
@@ -7326,6 +7342,24 @@ func _ServerService_SetDefaultConnections_Handler(srv interface{}, ctx context.C
 	return interceptor(ctx, in, info, handler)
 }
 
+func _ServerService_SetDeletionProtection_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(SetDeletionProtectionRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(ServerServiceServer).SetDeletionProtection(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: ServerService_SetDeletionProtection_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(ServerServiceServer).SetDeletionProtection(ctx, req.(*SetDeletionProtectionRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
 func _ServerService_ResumeDatabase_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
 	in := new(ResumeDatabaseRequest)
 	if err := dec(in); err != nil {
@@ -9214,6 +9248,10 @@ var ServerService_ServiceDesc = grpc.ServiceDesc{
 		{
 			MethodName: "SetDefaultConnections",
 			Handler:    _ServerService_SetDefaultConnections_Handler,
+		},
+		{
+			MethodName: "SetDeletionProtection",
+			Handler:    _ServerService_SetDeletionProtection_Handler,
 		},
 		{
 			MethodName: "ResumeDatabase",
