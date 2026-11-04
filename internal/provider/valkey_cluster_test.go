@@ -703,7 +703,8 @@ func TestValkeyClusterDataSource(t *testing.T) {
 				},
 			}},
 		},
-		Status: &serverv1.DatabaseStatus{Phase: "running", TotalNodes: 6, ReadyNodes: 6, Endpoint: &serverv1.Endpoint{Host: "cache.db", Port: 6379}},
+		Status:             &serverv1.DatabaseStatus{Phase: "running", TotalNodes: 6, ReadyNodes: 6, Endpoint: &serverv1.Endpoint{Host: "cache.db", Port: 6379}},
+		DeletionProtection: true,
 	}
 	f.databases["db-plain"] = &serverv1.Database{
 		Id: "db-plain", Name: "plain", WorkspaceId: dbWorkspace,
@@ -727,6 +728,8 @@ data "relay_valkey_cluster" "by_id" {
 			Check: resource.ComposeAggregateTestCheckFunc(
 				resource.TestCheckResourceAttr("data.relay_valkey_cluster.by_name", "id", "db-cache"),
 				resource.TestCheckResourceAttr("data.relay_valkey_cluster.by_name", "mode", "cluster"),
+				resource.TestCheckResourceAttr("data.relay_valkey_cluster.by_name", "deletion_protection", "true"),
+				resource.TestCheckResourceAttr("data.relay_valkey_cluster.by_id", "deletion_protection", "false"),
 				resource.TestCheckResourceAttr("data.relay_valkey_cluster.by_name", "shards", "3"),
 				resource.TestCheckResourceAttr("data.relay_valkey_cluster.by_name", "replicas_per_shard", "1"),
 				resource.TestCheckResourceAttr("data.relay_valkey_cluster.by_name", "parameters.maxmemory-policy", "allkeys-lru"),
@@ -983,7 +986,7 @@ func TestSameSettingsCoversEveryConfigurableAttribute(t *testing.T) {
 	(&valkeyClusterResource{}).Schema(context.Background(), fwresource.SchemaRequest{}, &resp)
 	covered := map[string]bool{
 		"workspace_id": true, "name": true, "version": true, "mode": true, "shards": true, "replicas_per_shard": true,
-		"nodes": true, "parameters": true, "keep_backups_on_destroy": true, "restore": true, "default_connections": true, "timeouts": true,
+		"nodes": true, "parameters": true, "keep_backups_on_destroy": true, "deletion_protection": true, "restore": true, "default_connections": true, "timeouts": true,
 	}
 	for name, a := range resp.Schema.Attributes {
 		if (a.IsRequired() || a.IsOptional()) && !covered[name] {

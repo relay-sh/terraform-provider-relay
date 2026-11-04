@@ -79,6 +79,7 @@ resource "relay_postgresql_cluster" "billing" {
 ### Optional
 
 - `default_connections` (Attributes) Relay-managed users the platform creates once the cluster is running, each with a Relay connection that uses it: one read-only, one read-write and one admin. Omitted on create, all three are created, as the Relay console does; omitted afterwards, the current value is kept. Changing a role on an existing cluster creates it, or deletes its connection and then its user, without replacing the cluster; a user whose roles were changed outside Relay is kept. The platform applies a change after the apply returns. (see [below for nested schema](#nestedatt--default_connections))
+- `deletion_protection` (Boolean) While `true`, the platform refuses to delete the cluster, and `terraform destroy` or a replacement fails before deleting it. Turning it on needs deletion protection enabled for the organization. Turning it off needs the `org.deletion_protection.disable` permission, which the owner and admin roles hold.
 - `keep_backups_on_destroy` (Boolean) Keep the cluster's backups when it is destroyed.
 - `parameters` (Map of String) PostgreSQL settings (GUCs). An empty map resets them to defaults; omitting the attribute leaves them unmanaged. Some need a restart, which Relay orchestrates with a switchover.
 - `replication` (Attributes) Commit replication for the cluster. Patroni configures synchronous mode per cluster, not per node. (see [below for nested schema](#nestedatt--replication))

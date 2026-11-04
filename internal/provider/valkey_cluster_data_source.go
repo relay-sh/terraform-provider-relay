@@ -18,23 +18,24 @@ type valkeyClusterDataSource struct {
 }
 
 type valkeyClusterDataModel struct {
-	ID               types.String                    `tfsdk:"id"`
-	WorkspaceID      types.String                    `tfsdk:"workspace_id"`
-	Name             types.String                    `tfsdk:"name"`
-	Version          types.String                    `tfsdk:"version"`
-	Mode             types.String                    `tfsdk:"mode"`
-	Shards           types.Int64                     `tfsdk:"shards"`
-	ReplicasPerShard types.Int64                     `tfsdk:"replicas_per_shard"`
-	Nodes            map[string]valkeyNodeGroupModel `tfsdk:"nodes"`
-	Parameters       types.Map                       `tfsdk:"parameters"`
-	Phase            types.String                    `tfsdk:"phase"`
-	EndpointHost     types.String                    `tfsdk:"endpoint_host"`
-	EndpointPort     types.Int64                     `tfsdk:"endpoint_port"`
-	PublicEndpoints  types.List                      `tfsdk:"public_endpoints"`
-	PrivateEndpoints types.List                      `tfsdk:"private_endpoints"`
-	StorageStatus    types.List                      `tfsdk:"storage_status"`
-	ReadyNodes       types.Int64                     `tfsdk:"ready_nodes"`
-	TotalNodes       types.Int64                     `tfsdk:"total_nodes"`
+	ID                 types.String                    `tfsdk:"id"`
+	WorkspaceID        types.String                    `tfsdk:"workspace_id"`
+	Name               types.String                    `tfsdk:"name"`
+	Version            types.String                    `tfsdk:"version"`
+	Mode               types.String                    `tfsdk:"mode"`
+	Shards             types.Int64                     `tfsdk:"shards"`
+	ReplicasPerShard   types.Int64                     `tfsdk:"replicas_per_shard"`
+	Nodes              map[string]valkeyNodeGroupModel `tfsdk:"nodes"`
+	Parameters         types.Map                       `tfsdk:"parameters"`
+	Phase              types.String                    `tfsdk:"phase"`
+	DeletionProtection types.Bool                      `tfsdk:"deletion_protection"`
+	EndpointHost       types.String                    `tfsdk:"endpoint_host"`
+	EndpointPort       types.Int64                     `tfsdk:"endpoint_port"`
+	PublicEndpoints    types.List                      `tfsdk:"public_endpoints"`
+	PrivateEndpoints   types.List                      `tfsdk:"private_endpoints"`
+	StorageStatus      types.List                      `tfsdk:"storage_status"`
+	ReadyNodes         types.Int64                     `tfsdk:"ready_nodes"`
+	TotalNodes         types.Int64                     `tfsdk:"total_nodes"`
 }
 
 func newValkeyClusterDataSource() datasource.DataSource {
@@ -88,12 +89,13 @@ func (d *valkeyClusterDataSource) Schema(_ context.Context, _ datasource.SchemaR
 				}},
 				MarkdownDescription: "The cluster's node group, keyed by its label.",
 			},
-			"parameters":        schema.MapAttribute{ElementType: types.StringType, Computed: true, MarkdownDescription: "Valkey settings."},
-			"phase":             schema.StringAttribute{Computed: true},
-			"endpoint_host":     schema.StringAttribute{Computed: true, MarkdownDescription: "Public read-write endpoint host. Empty until the platform publishes it."},
-			"endpoint_port":     schema.Int64Attribute{Computed: true, MarkdownDescription: "Public read-write endpoint port."},
-			"public_endpoints":  schema.ListNestedAttribute{Computed: true, NestedObject: endpoint},
-			"private_endpoints": schema.ListNestedAttribute{Computed: true, NestedObject: endpoint},
+			"parameters":          schema.MapAttribute{ElementType: types.StringType, Computed: true, MarkdownDescription: "Valkey settings."},
+			"phase":               schema.StringAttribute{Computed: true},
+			"deletion_protection": schema.BoolAttribute{Computed: true, MarkdownDescription: "Whether the platform refuses to delete the cluster."},
+			"endpoint_host":       schema.StringAttribute{Computed: true, MarkdownDescription: "Public read-write endpoint host. Empty until the platform publishes it."},
+			"endpoint_port":       schema.Int64Attribute{Computed: true, MarkdownDescription: "Public read-write endpoint port."},
+			"public_endpoints":    schema.ListNestedAttribute{Computed: true, NestedObject: endpoint},
+			"private_endpoints":   schema.ListNestedAttribute{Computed: true, NestedObject: endpoint},
 			"storage_status": schema.ListNestedAttribute{
 				Computed: true,
 				NestedObject: schema.NestedAttributeObject{Attributes: map[string]schema.Attribute{
@@ -146,23 +148,24 @@ func (d *valkeyClusterDataSource) Read(ctx context.Context, req datasource.ReadR
 
 	full := valkeyClusterFromProto(db, valkeyClusterModel{WorkspaceID: config.WorkspaceID, ReplicasPerShard: types.Int64Value(0)})
 	state := valkeyClusterDataModel{
-		ID:               full.ID,
-		WorkspaceID:      full.WorkspaceID,
-		Name:             full.Name,
-		Version:          full.Version,
-		Mode:             full.Mode,
-		Shards:           full.Shards,
-		ReplicasPerShard: full.ReplicasPerShard,
-		Nodes:            full.Nodes,
-		Parameters:       full.Parameters,
-		Phase:            full.Phase,
-		EndpointHost:     full.EndpointHost,
-		EndpointPort:     full.EndpointPort,
-		PublicEndpoints:  full.PublicEndpoints,
-		PrivateEndpoints: full.PrivateEndpoints,
-		StorageStatus:    full.StorageStatus,
-		ReadyNodes:       full.ReadyNodes,
-		TotalNodes:       full.TotalNodes,
+		ID:                 full.ID,
+		WorkspaceID:        full.WorkspaceID,
+		Name:               full.Name,
+		Version:            full.Version,
+		Mode:               full.Mode,
+		Shards:             full.Shards,
+		ReplicasPerShard:   full.ReplicasPerShard,
+		Nodes:              full.Nodes,
+		Parameters:         full.Parameters,
+		Phase:              full.Phase,
+		DeletionProtection: full.DeletionProtection,
+		EndpointHost:       full.EndpointHost,
+		EndpointPort:       full.EndpointPort,
+		PublicEndpoints:    full.PublicEndpoints,
+		PrivateEndpoints:   full.PrivateEndpoints,
+		StorageStatus:      full.StorageStatus,
+		ReadyNodes:         full.ReadyNodes,
+		TotalNodes:         full.TotalNodes,
 	}
 	resp.Diagnostics.Append(resp.State.Set(ctx, &state)...)
 }

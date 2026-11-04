@@ -73,6 +73,7 @@ type fakeServer struct {
 	lastDBUpdate      *serverv1.UpdateDatabaseRequest
 	lastDBDelete      *serverv1.DeleteDatabaseRequest
 	afterUpdate       func(*serverv1.Database)
+	denyDisable       bool
 	apiKeys           map[string]*serverv1.APIKey
 	callerKey         *serverv1.APIKey
 	lastKeyCreate     *serverv1.CreateAPIKeyRequest
@@ -596,6 +597,7 @@ func (f *fakeServer) CreateDatabase(ctx context.Context, req *serverv1.CreateDat
 	if dc := req.GetDefaultConnections(); dc != nil {
 		db.DefaultConnections = proto.Clone(dc).(*serverv1.DefaultConnectionsIntent)
 	}
+	db.DeletionProtection = req.GetDeletionProtection()
 	return &serverv1.CreateDatabaseResponse{Database: db}, nil
 }
 
@@ -612,6 +614,23 @@ func (f *fakeServer) SetDefaultConnections(ctx context.Context, req *serverv1.Se
 	}
 	db.DefaultConnections = proto.Clone(req.GetDefaultConnections()).(*serverv1.DefaultConnectionsIntent)
 	return &serverv1.SetDefaultConnectionsResponse{Database: db}, nil
+}
+
+func (f *fakeServer) SetDeletionProtection(ctx context.Context, req *serverv1.SetDeletionProtectionRequest) (*serverv1.SetDeletionProtectionResponse, error) {
+	f.mu.Lock()
+	defer f.mu.Unlock()
+	if err := f.record(ctx, "SetDeletionProtection"); err != nil {
+		return nil, err
+	}
+	if f.denyDisable && !req.GetEnabled() {
+		return nil, status.Error(codes.PermissionDenied, "missing permission org.deletion_protection.disable")
+	}
+	db, ok := f.databases[req.GetId()]
+	if !ok {
+		return nil, status.Error(codes.NotFound, "database not found")
+	}
+	db.DeletionProtection = req.GetEnabled()
+	return &serverv1.SetDeletionProtectionResponse{Database: db}, nil
 }
 
 func (f *fakeServer) storeDatabase(ctx context.Context, name string, spec *serverv1.DatabaseSpec) *serverv1.Database {
@@ -768,6 +787,9 @@ func (f *fakeServer) DeleteDatabase(ctx context.Context, req *serverv1.DeleteDat
 	// outside it, so a delete without the workspace scope must not find anything.
 	if !ok || db.GetWorkspaceId() != workspaceOf(ctx) {
 		return nil, status.Error(codes.NotFound, "database not found")
+	}
+	if db.GetDeletionProtection() {
+		return nil, status.Error(codes.FailedPrecondition, "deletion protection is enabled; disable it first")
 	}
 	f.settle(req.GetId(), "deleting")
 	return &serverv1.DeleteDatabaseResponse{}, nil

@@ -730,8 +730,9 @@ func TestPostgreSQLClusterDataSource(t *testing.T) {
 		id := "db-" + name
 		f.databases[id] = &serverv1.Database{
 			Id: id, Name: name, WorkspaceId: dbWorkspace,
-			Spec:   &serverv1.DatabaseSpec{Engine: "postgresql", Version: "18"},
-			Status: &serverv1.DatabaseStatus{Phase: "running", TotalNodes: 3, Endpoint: &serverv1.Endpoint{Host: name + ".db", Port: 5432}, PrivateEndpoints: []*serverv1.PublicEndpoint{{Role: "primary", Host: name + ".pl", Port: 5432}}},
+			Spec:               &serverv1.DatabaseSpec{Engine: "postgresql", Version: "18"},
+			Status:             &serverv1.DatabaseStatus{Phase: "running", TotalNodes: 3, Endpoint: &serverv1.Endpoint{Host: name + ".db", Port: 5432}, PrivateEndpoints: []*serverv1.PublicEndpoint{{Role: "primary", Host: name + ".pl", Port: 5432}}},
+			DeletionProtection: name == "billing",
 		}
 	}
 	f.databases["db-mongo"] = &serverv1.Database{
@@ -759,6 +760,8 @@ data "relay_postgresql_cluster" "by_id" {
 				resource.TestCheckResourceAttr("data.relay_postgresql_cluster.by_id", "name", "billing"),
 				resource.TestCheckResourceAttr("data.relay_postgresql_cluster.by_id", "endpoint_port", "5432"),
 				resource.TestCheckResourceAttr("data.relay_postgresql_cluster.by_id", "total_nodes", "3"),
+				resource.TestCheckResourceAttr("data.relay_postgresql_cluster.by_id", "deletion_protection", "true"),
+				resource.TestCheckResourceAttr("data.relay_postgresql_cluster.by_name", "deletion_protection", "false"),
 				func(*terraform.State) error {
 					if n := len(f.callsTo("ListDatabases")); n < 3 {
 						return fmt.Errorf("lookup by name must page through the list, got %d calls", n)
