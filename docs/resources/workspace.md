@@ -34,7 +34,6 @@ resource "relay_workspace" "prod" {
 ### Read-Only
 
 - `id` (String) Workspace ID.
-- `is_default` (Boolean) Whether this is the organization's default workspace.
 - `slug` (String) URL slug derived from the name.
 
 ## Import

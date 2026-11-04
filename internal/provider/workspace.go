@@ -13,7 +13,6 @@ type workspaceModel struct {
 	Name        types.String `tfsdk:"name"`
 	Description types.String `tfsdk:"description"`
 	Slug        types.String `tfsdk:"slug"`
-	IsDefault   types.Bool   `tfsdk:"is_default"`
 	ManagedBy   types.String `tfsdk:"managed_by"`
 }
 
@@ -23,7 +22,6 @@ func workspaceFromProto(w *serverv1.Workspace) workspaceModel {
 		Name:        types.StringValue(w.GetName()),
 		Description: types.StringValue(w.GetDescription()),
 		Slug:        types.StringValue(w.GetSlug()),
-		IsDefault:   types.BoolValue(w.GetIsDefault()),
 		ManagedBy:   types.StringValue(w.GetManagedBy()),
 	}
 }

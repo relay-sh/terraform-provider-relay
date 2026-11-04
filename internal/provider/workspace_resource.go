@@ -51,10 +51,6 @@ func (r *workspaceResource) Schema(_ context.Context, _ resource.SchemaRequest, 
 				Computed:            true,
 				MarkdownDescription: "URL slug derived from the name.",
 			},
-			"is_default": schema.BoolAttribute{
-				Computed:            true,
-				MarkdownDescription: "Whether this is the organization's default workspace.",
-			},
 			"managed_by": schema.StringAttribute{
 				Optional:            true,
 				Computed:            true,

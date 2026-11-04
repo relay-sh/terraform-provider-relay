@@ -79,7 +79,6 @@ func TestWorkspaceResource_Lifecycle(t *testing.T) {
 					resource.TestCheckResourceAttr("relay_workspace.this", "name", "prod"),
 					resource.TestCheckResourceAttr("relay_workspace.this", "description", "Production"),
 					resource.TestCheckResourceAttr("relay_workspace.this", "slug", "prod"),
-					resource.TestCheckResourceAttr("relay_workspace.this", "is_default", "false"),
 					resource.TestCheckResourceAttr("relay_workspace.this", "managed_by", "terraform"),
 					func(*terraform.State) error {
 						calls := f.callsTo("CreateWorkspace")
@@ -175,7 +174,7 @@ func TestWorkspaceResource_CreateConflict(t *testing.T) {
 
 func TestWorkspaceDataSource(t *testing.T) {
 	f := startFakeServer(t)
-	f.workspaces["ws-1"] = &serverv1.Workspace{Id: "ws-1", Name: "prod", Slug: "prod", Description: "d", IsDefault: true}
+	f.workspaces["ws-1"] = &serverv1.Workspace{Id: "ws-1", Name: "prod", Slug: "prod", Description: "d"}
 	resource.UnitTest(t, resource.TestCase{
 		ProtoV6ProviderFactories: factories(relay.Dial),
 		Steps: []resource.TestStep{{
@@ -191,7 +190,6 @@ data "relay_workspace" "by_id" {
 			Check: resource.ComposeAggregateTestCheckFunc(
 				resource.TestCheckResourceAttr("data.relay_workspace.by_name", "id", "ws-1"),
 				resource.TestCheckResourceAttr("data.relay_workspace.by_name", "description", "d"),
-				resource.TestCheckResourceAttr("data.relay_workspace.by_name", "is_default", "true"),
 				resource.TestCheckResourceAttr("data.relay_workspace.by_name", "managed_by", ""),
 				resource.TestCheckResourceAttr("data.relay_workspace.by_id", "name", "prod"),
 			),

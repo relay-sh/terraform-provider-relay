@@ -29,6 +29,5 @@ data "relay_workspace" "prod" {
 ### Read-Only
 
 - `description` (String) Free-text description.
-- `is_default` (Boolean) Whether this is the organization's default workspace.
 - `managed_by` (String) Owner tag, empty when unmanaged.
 - `slug` (String) URL slug.
