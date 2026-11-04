@@ -394,6 +394,12 @@ func (f *fakeServer) UpdateConnection(ctx context.Context, req *serverv1.UpdateC
 	set(&c.Database, req.Database)
 	set(&c.Listen, req.Listen)
 	set(&c.AgentPool, req.AgentPool)
+	if req.DeletionProtection != nil && !req.GetDeletionProtection() && c.GetDeletionProtection() && f.denyDisable {
+		return nil, status.Error(codes.PermissionDenied, "missing permission org.deletion_protection.disable")
+	}
+	if req.DeletionProtection != nil {
+		c.DeletionProtection = req.GetDeletionProtection()
+	}
 	set(&c.ManagedBy, req.ManagedBy)
 	if req.Password != nil {
 		c.PasswordSet = req.GetPassword() != ""
@@ -435,8 +441,12 @@ func (f *fakeServer) DeleteConnection(ctx context.Context, req *serverv1.DeleteC
 		return nil, err
 	}
 	key := connectionKey(ctx, req.GetName())
-	if _, ok := f.connections[key]; !ok {
+	c, ok := f.connections[key]
+	if !ok {
 		return nil, status.Error(codes.NotFound, "connection not found")
+	}
+	if c.GetDeletionProtection() {
+		return nil, status.Error(codes.FailedPrecondition, "deletion protection is enabled; disable it first")
 	}
 	delete(f.connections, key)
 	return &serverv1.DeleteConnectionResponse{}, nil

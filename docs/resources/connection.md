@@ -48,6 +48,7 @@ resource "relay_connection" "orders" {
 - `credential_ref` (String) Reference the agent resolves to a credential. Takes precedence over `password`.
 - `credential_source` (String) Name of the external secret source that resolves `credential_ref`. Empty uses the agent's built-in source.
 - `database` (String) Default database name.
+- `deletion_protection` (Boolean) While `true`, the platform refuses to delete the connection, and `terraform destroy` or a replacement fails before deleting it. Turning it on needs deletion protection enabled for the organization. Turning it off needs the `org.deletion_protection.disable` permission, which the owner and admin roles hold.
 - `host_tls_ca` (String) CA bundle used to verify the upstream server, PEM.
 - `listen` (String) Local listen address on the agent.
 - `managed_by` (String) Owner tag the dashboard shows. Defaults to `terraform`; set it to another tool or an empty string.
