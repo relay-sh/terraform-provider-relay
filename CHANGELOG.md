@@ -1,3 +1,9 @@
+## 0.0.11 (November 4, 2026)
+
+BREAKING CHANGES:
+
+* resource/relay_backup_schedule: `pitr_window_days` accepts 1 to 7 for every engine; a value above 7 is rejected at plan time. The platform restores to any instant only within the last 7 days ([#96](https://github.com/relay-sh/terraform-provider-relay/pull/96))
+
 ## 0.0.10 (November 3, 2026)
 
 FEATURES:
