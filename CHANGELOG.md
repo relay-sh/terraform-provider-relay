@@ -1,3 +1,15 @@
+## 0.0.13 (November 4, 2026)
+
+BREAKING CHANGES:
+
+* resource/relay_workspace, data-source/relay_workspace: `is_default` is removed, after its deprecation in 0.0.12. State that still holds it loads without error; remove the attribute from configurations that reference it ([#101](https://github.com/relay-sh/terraform-provider-relay/pull/101))
+
+FEATURES:
+
+* resource/relay_postgresql_database: `deletion_protection` blocks destroying the logical database, including the destroy half of a replacement, while it is `true`. A protected database also blocks deleting its cluster ([#103](https://github.com/relay-sh/terraform-provider-relay/pull/103))
+* resource/relay_connection: `deletion_protection` blocks destroying the connection, including the destroy half of a replacement, while it is `true`. A protected connection also blocks deleting its cluster ([#104](https://github.com/relay-sh/terraform-provider-relay/pull/104))
+* resource/relay_workspace, data-source/relay_workspace: `deletion_protection` blocks destroying the workspace while it is `true`. A protected workspace also blocks deleting its organization ([#105](https://github.com/relay-sh/terraform-provider-relay/pull/105))
+
 ## 0.0.12 (November 4, 2026)
 
 FEATURES:
