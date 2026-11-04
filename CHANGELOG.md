@@ -1,3 +1,13 @@
+## 0.0.12 (November 4, 2026)
+
+FEATURES:
+
+* resource/relay_postgresql_cluster, resource/relay_valkey_cluster: `deletion_protection` blocks destroying the cluster, including the destroy half of a replacement, while it is `true`. Turning it off needs the `org.deletion_protection.disable` permission. Turning it on needs the platform's `deletion_protection` feature for the organization ([#99](https://github.com/relay-sh/terraform-provider-relay/pull/99))
+
+DEPRECATIONS:
+
+* resource/relay_workspace, data-source/relay_workspace: `is_default` is deprecated and always `false`, because the platform no longer has a default workspace. It will be removed in the next release ([#98](https://github.com/relay-sh/terraform-provider-relay/pull/98))
+
 ## 0.0.11 (November 4, 2026)
 
 BREAKING CHANGES:
