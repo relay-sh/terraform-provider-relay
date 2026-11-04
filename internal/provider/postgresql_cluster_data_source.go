@@ -18,19 +18,20 @@ type postgresqlClusterDataSource struct {
 }
 
 type postgresqlClusterDataModel struct {
-	ID               types.String `tfsdk:"id"`
-	WorkspaceID      types.String `tfsdk:"workspace_id"`
-	Name             types.String `tfsdk:"name"`
-	Version          types.String `tfsdk:"version"`
-	Phase            types.String `tfsdk:"phase"`
-	EndpointHost     types.String `tfsdk:"endpoint_host"`
-	EndpointPort     types.Int64  `tfsdk:"endpoint_port"`
-	SharedHost       types.String `tfsdk:"shared_host"`
-	PublicEndpoints  types.List   `tfsdk:"public_endpoints"`
-	PrivateEndpoints types.List   `tfsdk:"private_endpoints"`
-	StorageStatus    types.List   `tfsdk:"storage_status"`
-	ReadyNodes       types.Int64  `tfsdk:"ready_nodes"`
-	TotalNodes       types.Int64  `tfsdk:"total_nodes"`
+	ID                 types.String `tfsdk:"id"`
+	WorkspaceID        types.String `tfsdk:"workspace_id"`
+	Name               types.String `tfsdk:"name"`
+	Version            types.String `tfsdk:"version"`
+	Phase              types.String `tfsdk:"phase"`
+	DeletionProtection types.Bool   `tfsdk:"deletion_protection"`
+	EndpointHost       types.String `tfsdk:"endpoint_host"`
+	EndpointPort       types.Int64  `tfsdk:"endpoint_port"`
+	SharedHost         types.String `tfsdk:"shared_host"`
+	PublicEndpoints    types.List   `tfsdk:"public_endpoints"`
+	PrivateEndpoints   types.List   `tfsdk:"private_endpoints"`
+	StorageStatus      types.List   `tfsdk:"storage_status"`
+	ReadyNodes         types.Int64  `tfsdk:"ready_nodes"`
+	TotalNodes         types.Int64  `tfsdk:"total_nodes"`
 }
 
 func newPostgreSQLClusterDataSource() datasource.DataSource {
@@ -50,16 +51,17 @@ func (d *postgresqlClusterDataSource) Schema(_ context.Context, _ datasource.Sch
 	resp.Schema = schema.Schema{
 		MarkdownDescription: "Reads an existing managed PostgreSQL cluster in a workspace, by ID or by name.",
 		Attributes: map[string]schema.Attribute{
-			"workspace_id":      schema.StringAttribute{Required: true, MarkdownDescription: "Workspace to look in."},
-			"id":                schema.StringAttribute{Optional: true, Computed: true, MarkdownDescription: "Cluster ID."},
-			"name":              schema.StringAttribute{Optional: true, Computed: true, MarkdownDescription: "Cluster name."},
-			"version":           schema.StringAttribute{Computed: true},
-			"phase":             schema.StringAttribute{Computed: true},
-			"endpoint_host":     schema.StringAttribute{Computed: true, MarkdownDescription: "Public read-write endpoint host. Empty until the platform publishes it."},
-			"endpoint_port":     schema.Int64Attribute{Computed: true, MarkdownDescription: "Public read-write endpoint port."},
-			"shared_host":       schema.StringAttribute{Computed: true, MarkdownDescription: "The previous shared read-write address of a database upgraded from the Free plan. It keeps working, but is never `endpoint_host`. Empty when there is no such alias."},
-			"public_endpoints":  schema.ListNestedAttribute{Computed: true, NestedObject: endpoint},
-			"private_endpoints": schema.ListNestedAttribute{Computed: true, NestedObject: endpoint},
+			"workspace_id":        schema.StringAttribute{Required: true, MarkdownDescription: "Workspace to look in."},
+			"id":                  schema.StringAttribute{Optional: true, Computed: true, MarkdownDescription: "Cluster ID."},
+			"name":                schema.StringAttribute{Optional: true, Computed: true, MarkdownDescription: "Cluster name."},
+			"version":             schema.StringAttribute{Computed: true},
+			"phase":               schema.StringAttribute{Computed: true},
+			"deletion_protection": schema.BoolAttribute{Computed: true, MarkdownDescription: "Whether the platform refuses to delete the cluster."},
+			"endpoint_host":       schema.StringAttribute{Computed: true, MarkdownDescription: "Public read-write endpoint host. Empty until the platform publishes it."},
+			"endpoint_port":       schema.Int64Attribute{Computed: true, MarkdownDescription: "Public read-write endpoint port."},
+			"shared_host":         schema.StringAttribute{Computed: true, MarkdownDescription: "The previous shared read-write address of a database upgraded from the Free plan. It keeps working, but is never `endpoint_host`. Empty when there is no such alias."},
+			"public_endpoints":    schema.ListNestedAttribute{Computed: true, NestedObject: endpoint},
+			"private_endpoints":   schema.ListNestedAttribute{Computed: true, NestedObject: endpoint},
 			"storage_status": schema.ListNestedAttribute{
 				Computed: true,
 				NestedObject: schema.NestedAttributeObject{Attributes: map[string]schema.Attribute{
@@ -113,19 +115,20 @@ func (d *postgresqlClusterDataSource) Read(ctx context.Context, req datasource.R
 	spec, st := db.GetSpec(), db.GetStatus()
 	endpointHost, endpointPort := primaryEndpointFromProto(st)
 	state := postgresqlClusterDataModel{
-		ID:               types.StringValue(db.GetId()),
-		WorkspaceID:      config.WorkspaceID,
-		Name:             types.StringValue(db.GetName()),
-		Version:          types.StringValue(spec.GetVersion()),
-		Phase:            types.StringValue(st.GetPhase()),
-		EndpointHost:     endpointHost,
-		EndpointPort:     endpointPort,
-		SharedHost:       sharedHostFromProto(st.GetPublicEndpoints()),
-		PublicEndpoints:  endpointsFromProto(st.GetPublicEndpoints()),
-		PrivateEndpoints: endpointsFromProto(st.GetPrivateEndpoints()),
-		StorageStatus:    storageStatusFromProto(st.GetStorage()),
-		ReadyNodes:       types.Int64Value(int64(st.GetReadyNodes())),
-		TotalNodes:       types.Int64Value(int64(st.GetTotalNodes())),
+		ID:                 types.StringValue(db.GetId()),
+		WorkspaceID:        config.WorkspaceID,
+		Name:               types.StringValue(db.GetName()),
+		Version:            types.StringValue(spec.GetVersion()),
+		Phase:              types.StringValue(st.GetPhase()),
+		DeletionProtection: types.BoolValue(db.GetDeletionProtection()),
+		EndpointHost:       endpointHost,
+		EndpointPort:       endpointPort,
+		SharedHost:         sharedHostFromProto(st.GetPublicEndpoints()),
+		PublicEndpoints:    endpointsFromProto(st.GetPublicEndpoints()),
+		PrivateEndpoints:   endpointsFromProto(st.GetPrivateEndpoints()),
+		StorageStatus:      storageStatusFromProto(st.GetStorage()),
+		ReadyNodes:         types.Int64Value(int64(st.GetReadyNodes())),
+		TotalNodes:         types.Int64Value(int64(st.GetTotalNodes())),
 	}
 	resp.Diagnostics.Append(resp.State.Set(ctx, &state)...)
 }

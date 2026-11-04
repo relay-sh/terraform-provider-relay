@@ -33,6 +33,7 @@ data "relay_postgresql_cluster" "billing" {
 
 ### Read-Only
 
+- `deletion_protection` (Boolean) Whether the platform refuses to delete the cluster.
 - `endpoint_host` (String) Public read-write endpoint host. Empty until the platform publishes it.
 - `endpoint_port` (Number) Public read-write endpoint port.
 - `phase` (String)
