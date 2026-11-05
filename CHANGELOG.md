@@ -1,14 +1,14 @@
-## 0.1.0 (Unreleased)
+## 0.1.0 (November 4, 2026)
 
 BREAKING CHANGES:
 
-* resource/relay_postgresql_cluster, resource/relay_valkey_cluster: volume size and storage autoscaling are cluster-wide, because every node holds the same data. `nodes.<group>.resources.storage` and `nodes.<group>.resources.storage_autoscale` are removed in favour of a root `storage = { size, autoscale = { enabled, max_storage, threshold_percent, increase_percent } }`. To migrate, move the values to the root `storage` block and delete them from every group; `disk_type`, `iops` and `throughput` stay per group. State upgrades automatically: `storage.size` takes the largest per-group size and `storage.autoscale` the primary group's, with the largest `max_storage` of any group. Omit `storage` to take the platform's default size
-* resource/relay_postgresql_cluster, resource/relay_valkey_cluster, data-source/relay_postgresql_cluster, data-source/relay_valkey_cluster: `storage_status` is a single object `{ size, last_expanded_at }` instead of a list per group, and is null until autoscaling grows the volumes. Replace `storage_status[0].size` with `storage_status.size`
-* data-source/relay_valkey_cluster: `nodes.<group>.resources.storage` and `nodes.<group>.resources.storage_autoscale` are replaced by the root `storage`
+* resource/relay_postgresql_cluster, resource/relay_valkey_cluster: volume size and storage autoscaling are cluster-wide, because every node holds the same data. `nodes.<group>.resources.storage` and `nodes.<group>.resources.storage_autoscale` are removed in favour of a root `storage = { size, autoscale = { enabled, max_storage, threshold_percent, increase_percent } }`. To migrate, move the values to the root `storage` block and delete them from every group; `disk_type`, `iops` and `throughput` stay per group. State upgrades automatically: `storage.size` takes the largest per-group size and `storage.autoscale` the primary group's, with the largest `max_storage` of any group. Omit `storage` to take the platform's default size ([#115](https://github.com/relay-sh/terraform-provider-relay/pull/115))
+* resource/relay_postgresql_cluster, resource/relay_valkey_cluster, data-source/relay_postgresql_cluster, data-source/relay_valkey_cluster: `storage_status` is a single object `{ size, last_expanded_at }` instead of a list per group, and is null until autoscaling grows the volumes. Replace `storage_status[0].size` with `storage_status.size` ([#115](https://github.com/relay-sh/terraform-provider-relay/pull/115))
+* data-source/relay_valkey_cluster: `nodes.<group>.resources.storage` and `nodes.<group>.resources.storage_autoscale` are replaced by the root `storage` ([#115](https://github.com/relay-sh/terraform-provider-relay/pull/115))
 
 FEATURES:
 
-* data-source/relay_postgresql_cluster, data-source/relay_valkey_cluster: `storage` exposes the cluster's volume size and autoscaling
+* data-source/relay_postgresql_cluster, data-source/relay_valkey_cluster: `storage` exposes the cluster's volume size and autoscaling ([#115](https://github.com/relay-sh/terraform-provider-relay/pull/115))
 
 ## 0.0.15 (November 4, 2026)
 
