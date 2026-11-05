@@ -18,15 +18,17 @@ resource "relay_valkey_cluster" "sessions" {
   name         = "sessions"
   version      = "9.1"
 
+  storage = {
+    size = "8Gi"
+  }
+
   nodes = {
     cache = {
-      count  = 2
-      cloud  = "aws"
-      region = "us-east-1"
-      tier   = "RC20"
-      resources = {
-        storage = "8Gi"
-      }
+      count     = 2
+      cloud     = "aws"
+      region    = "us-east-1"
+      tier      = "RC20"
+      resources = {}
     }
   }
 
@@ -43,19 +45,21 @@ resource "relay_valkey_cluster" "leaderboard" {
   replicas_per_shard  = 1
   deletion_protection = true
 
+  storage = {
+    size = "28Gi"
+    autoscale = {
+      enabled     = true
+      max_storage = "100Gi"
+    }
+  }
+
   nodes = {
     shards = {
-      count  = 6
-      cloud  = "aws"
-      region = "us-east-1"
-      tier   = "RC40"
-      resources = {
-        storage = "28Gi"
-        storage_autoscale = {
-          enabled     = true
-          max_storage = "100Gi"
-        }
-      }
+      count     = 6
+      cloud     = "aws"
+      region    = "us-east-1"
+      tier      = "RC40"
+      resources = {}
     }
   }
 
@@ -84,6 +88,7 @@ resource "relay_valkey_cluster" "leaderboard" {
 - `replicas_per_shard` (Number) Replicas behind each shard's primary, 0-4. Only in `cluster` mode; omitted means 0.
 - `restore` (Attributes) Creates the cluster from another cluster's backups instead of empty. The platform picks the backup and starts the cluster with the source's settings; the provider then applies the configured nodes and settings. `mode`, `version` when set, and the node group label must match the source's. Only read on create: changing it replaces the cluster, while adding it to or removing it from an existing cluster changes nothing. (see [below for nested schema](#nestedatt--restore))
 - `shards` (Number) Primaries the keyspace is split across, 3-100. Required in `cluster` mode and not allowed in `replication` mode. Changing it reshards in place, together with the node group's `count`.
+- `storage` (Attributes) Volume size and autoscaling for the whole cluster: every node holds the same data, so every node's volume has this size. Omit the block and the platform picks the size, which the next read reports; once it is set, removing the whole block keeps the current size and autoscaling, so remove `autoscale` alone to turn it off. Disk type, IOPS and throughput stay per node group. (see [below for nested schema](#nestedatt--storage))
 - `timeouts` (Block, Optional) (see [below for nested schema](#nestedblock--timeouts))
 - `version` (String) Valkey version, for example `9.1`. Omit it and the platform picks one, which the next read reports. It cannot change here: upgrades go through Relay's upgrade flow, and a plan that changes it fails.
 
@@ -98,7 +103,7 @@ resource "relay_valkey_cluster" "leaderboard" {
 - `private_endpoints` (Attributes List) Private endpoints by role, when private access is enabled. (see [below for nested schema](#nestedatt--private_endpoints))
 - `public_endpoints` (Attributes List) Public endpoints by role. (see [below for nested schema](#nestedatt--public_endpoints))
 - `ready_nodes` (Number) Nodes ready.
-- `storage_status` (Attributes List) Volume size the platform has grown to via `storage_autoscale`, when above the group's `storage` floor. (see [below for nested schema](#nestedatt--storage_status))
+- `storage_status` (Attributes) Volume size the platform has grown to via `storage.autoscale`, when above `storage.size`. Null until it grows. (see [below for nested schema](#nestedatt--storage_status))
 - `total_nodes` (Number) Nodes expected.
 - `updated_at` (String) Last change time, RFC 3339.
 
@@ -119,29 +124,10 @@ Optional:
 <a id="nestedatt--nodes--resources"></a>
 ### Nested Schema for `nodes.resources`
 
-Optional:
-
-- `storage` (String) Minimum volume size for persistence, Kubernetes quantity. Omit it to use the tier's storage. The platform raises the volume to at least 1.5 times the node's memory and never lowers it, so after a refresh this holds the size it is at; a configured value at or below that plans no change, and a larger one grows the volume. With `storage_autoscale` enabled the platform may grow the volume past it, reported in `storage_status`.
-- `storage_autoscale` (Attributes) Grows the group's volumes past `storage`, up to `max_storage`, when disk usage crosses `threshold_percent`. Omitting this block, or removing it from a config that had it, disables autoscaling. (see [below for nested schema](#nestedatt--nodes--resources--storage_autoscale))
-
 Read-Only:
 
 - `cpu` (String) CPU request derived from `tier`.
 - `memory` (String) Memory request derived from `tier`.
-
-<a id="nestedatt--nodes--resources--storage_autoscale"></a>
-### Nested Schema for `nodes.resources.storage_autoscale`
-
-Required:
-
-- `enabled` (Boolean) Turn storage autoscaling on for this group.
-
-Optional:
-
-- `increase_percent` (Number) Percent to grow the volume by on each trigger. `0` or omitted uses the platform default of 20; otherwise 10-100.
-- `max_storage` (String) Ceiling the platform will not grow past, Kubernetes quantity. Required when `enabled` is true, and must be at least `storage`. The platform raises it to the volume size when the volume is larger, and a configured value below that plans no change.
-- `threshold_percent` (Number) Disk-usage percent that triggers a grow. `0` or omitted uses the platform default of 80; otherwise 50-95.
-
 
 
 
@@ -165,6 +151,29 @@ Required:
 Optional:
 
 - `target_time` (String) Recover up to this instant, RFC 3339, for example `2026-10-31T12:00:00Z`. It replays the source's AOF archive, so it needs `mode = "replication"`, a source that still exists with `pitr_window_days` on its backup schedule, and an instant inside that window. Omit it to restore the latest backup.
+
+
+<a id="nestedatt--storage"></a>
+### Nested Schema for `storage`
+
+Optional:
+
+- `autoscale` (Attributes) Grows the cluster's volumes past `size`, up to `max_storage`, when disk usage crosses `threshold_percent`. Omitting this block, or removing it from a config that had it, disables autoscaling. (see [below for nested schema](#nestedatt--storage--autoscale))
+- `size` (String) Minimum volume size for persistence, Kubernetes quantity. Omit it to use the tier's storage. The platform raises the volume to at least 1.5 times the node's memory and never lowers it, so after a refresh this holds the size it is at; a configured value at or below that plans no change, and a larger one grows the volume. With `autoscale` enabled the platform may grow the volume past it, reported in `storage_status`.
+
+<a id="nestedatt--storage--autoscale"></a>
+### Nested Schema for `storage.autoscale`
+
+Required:
+
+- `enabled` (Boolean) Turn storage autoscaling on for the cluster.
+
+Optional:
+
+- `increase_percent` (Number) Percent to grow the volume by on each trigger. `0` or omitted uses the platform default of 20; otherwise 10-100.
+- `max_storage` (String) Ceiling the platform will not grow past, Kubernetes quantity. Required when `enabled` is true, and must be at least `size`.
+- `threshold_percent` (Number) Disk-usage percent that triggers a grow. `0` or omitted uses the platform default of 80; otherwise 50-95.
+
 
 
 <a id="nestedblock--timeouts"></a>
@@ -202,8 +211,8 @@ Read-Only:
 
 Read-Only:
 
-- `node_group` (String)
-- `size` (String)
+- `last_expanded_at` (String) When the platform last grew the volumes, RFC 3339.
+- `size` (String) Volume size the platform has grown the cluster to.
 
 ## Import
 

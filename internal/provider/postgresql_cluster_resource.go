@@ -45,6 +45,7 @@ type postgresqlClusterModel struct {
 	WorkspaceID          types.String              `tfsdk:"workspace_id"`
 	Name                 types.String              `tfsdk:"name"`
 	Version              types.String              `tfsdk:"version"`
+	Storage              types.Object              `tfsdk:"storage"`
 	Nodes                map[string]nodeGroupModel `tfsdk:"nodes"`
 	PrimaryNodeGroup     types.String              `tfsdk:"primary_node_group"`
 	Parameters           types.Map                 `tfsdk:"parameters"`
@@ -60,7 +61,7 @@ type postgresqlClusterModel struct {
 	SharedHost           types.String              `tfsdk:"shared_host"`
 	PublicEndpoints      types.List                `tfsdk:"public_endpoints"`
 	PrivateEndpoints     types.List                `tfsdk:"private_endpoints"`
-	StorageStatus        types.List                `tfsdk:"storage_status"`
+	StorageStatus        types.Object              `tfsdk:"storage_status"`
 	ReadyNodes           types.Int64               `tfsdk:"ready_nodes"`
 	TotalNodes           types.Int64               `tfsdk:"total_nodes"`
 	CreatedAt            types.String              `tfsdk:"created_at"`
@@ -87,6 +88,7 @@ func (r *postgresqlClusterResource) Schema(ctx context.Context, _ resource.Schem
 	}}
 
 	resp.Schema = schema.Schema{
+		Version: 1,
 		MarkdownDescription: "A managed PostgreSQL cluster. Creating, updating and destroying wait for the cluster to settle. " +
 			"Changing `name` or `workspace_id` replaces the cluster and its data; use `lifecycle { prevent_destroy = true }`.",
 		Attributes: map[string]schema.Attribute{
@@ -102,6 +104,9 @@ func (r *postgresqlClusterResource) Schema(ctx context.Context, _ resource.Schem
 				Computed: true, PlanModifiers: keepString,
 				MarkdownDescription: "Label of the group holding the primary. The platform picks an `electable` group and keeps it, so adding a group never moves the primary.",
 			},
+			"storage": storageAttribute("Volume size of every node, Kubernetes quantity. Omit it and the platform picks the default size included with the groups' tiers, which the next read reports. " +
+				"It can only grow here; a plan that shrinks it fails. This is the floor: with `autoscale` enabled the platform may grow the volumes past it, reported in `storage_status`, " +
+				"and that growth never shows as drift, because `size` always reads from the spec, never from status."),
 			"nodes": schema.MapNestedAttribute{
 				Required:   true,
 				Validators: []validator.Map{mapvalidator.SizeAtLeast(1)},
@@ -140,12 +145,6 @@ func (r *postgresqlClusterResource) Schema(ctx context.Context, _ resource.Schem
 						Attributes: map[string]schema.Attribute{
 							"cpu":    schema.StringAttribute{Computed: true, PlanModifiers: keepString, MarkdownDescription: "CPU request derived from `tier`."},
 							"memory": schema.StringAttribute{Computed: true, PlanModifiers: keepString, MarkdownDescription: "Memory request derived from `tier`."},
-							"storage": schema.StringAttribute{
-								Required: true,
-								MarkdownDescription: "Volume size, Kubernetes quantity. It can only grow here; a plan that shrinks it fails. This is the floor: with " +
-									"`storage_autoscale` enabled the platform may grow the volume past it, reported in `storage_status`, and that growth never " +
-									"shows as drift, because `storage` always reads from the spec, never from status.",
-							},
 							"iops": schema.Int64Attribute{
 								Optional: true, Computed: true, PlanModifiers: keepInt,
 								MarkdownDescription: "Provisioned IOPS. Can change in place. Required for `io1`/`io2`. AWS caps: gp3 3000–80000 (500/GiB above 3000), io1 100–64000 (50/GiB), io2 100–256000 (1000/GiB).",
@@ -157,28 +156,6 @@ func (r *postgresqlClusterResource) Schema(ctx context.Context, _ resource.Schem
 							"disk_type": schema.StringAttribute{
 								Optional: true, Computed: true, PlanModifiers: keepString,
 								MarkdownDescription: "Cloud volume type. AWS: `gp3` (default), `io1`, `io2` (min 4Gi). GCP: `pd-ssd`, `pd-balanced`, `hyperdisk-balanced`. Azure: `PremiumV2_LRS`, `UltraSSD_LRS`. Can change in place. `io1`/`io2` require `iops` within the per-GiB cap.",
-							},
-							"storage_autoscale": schema.SingleNestedAttribute{
-								Optional: true,
-								MarkdownDescription: "Grows the group's volumes past `storage`, up to `max_storage`, when disk usage crosses `threshold_percent`. " +
-									"Omitting this block, or removing it from a config that had it, disables autoscaling.",
-								Attributes: map[string]schema.Attribute{
-									"enabled": schema.BoolAttribute{Required: true, MarkdownDescription: "Turn storage autoscaling on for this group."},
-									"threshold_percent": schema.Int64Attribute{
-										Optional: true, Computed: true, PlanModifiers: keepInt,
-										Validators:          []validator.Int64{int64validator.Any(int64validator.OneOf(0), int64validator.Between(50, 95))},
-										MarkdownDescription: "Disk-usage percent that triggers a grow. `0` or omitted uses the platform default of 80; otherwise 50-95.",
-									},
-									"increase_percent": schema.Int64Attribute{
-										Optional: true, Computed: true, PlanModifiers: keepInt,
-										Validators:          []validator.Int64{int64validator.Any(int64validator.OneOf(0), int64validator.Between(10, 100))},
-										MarkdownDescription: "Percent to grow the volume by on each trigger. `0` or omitted uses the platform default of 20; otherwise 10-100.",
-									},
-									"max_storage": schema.StringAttribute{
-										Optional:            true,
-										MarkdownDescription: "Ceiling the platform will not grow past, Kubernetes quantity. Required when `enabled` is true, and must be at least `storage`.",
-									},
-								},
 							},
 						},
 					},
@@ -229,13 +206,13 @@ func (r *postgresqlClusterResource) Schema(ctx context.Context, _ resource.Schem
 			},
 			"public_endpoints":  schema.ListNestedAttribute{Computed: true, NestedObject: endpoint, MarkdownDescription: "Public endpoints by role, without aliases: see `shared_host`."},
 			"private_endpoints": schema.ListNestedAttribute{Computed: true, NestedObject: endpoint, MarkdownDescription: "Private endpoints by role, when private access is enabled."},
-			"storage_status": schema.ListNestedAttribute{
+			"storage_status": schema.SingleNestedAttribute{
 				Computed: true,
-				NestedObject: schema.NestedAttributeObject{Attributes: map[string]schema.Attribute{
-					"node_group": schema.StringAttribute{Computed: true},
-					"size":       schema.StringAttribute{Computed: true},
-				}},
-				MarkdownDescription: "Per-group volume size the platform has grown to via `storage_autoscale`, when above the group's `storage` floor.",
+				Attributes: map[string]schema.Attribute{
+					"size":             schema.StringAttribute{Computed: true, MarkdownDescription: "Volume size the platform has grown the cluster to."},
+					"last_expanded_at": schema.StringAttribute{Computed: true, MarkdownDescription: "When the platform last grew the volumes, RFC 3339."},
+				},
+				MarkdownDescription: "Volume size the platform has grown to via `storage.autoscale`, when above `storage.size`. Null until it grows.",
 			},
 			"ready_nodes": schema.Int64Attribute{Computed: true, MarkdownDescription: "Nodes ready."},
 			"total_nodes": schema.Int64Attribute{Computed: true, MarkdownDescription: "Nodes expected."},
@@ -253,6 +230,8 @@ func (r *postgresqlClusterResource) Configure(_ context.Context, req resource.Co
 }
 
 func (r *postgresqlClusterResource) ValidateConfig(ctx context.Context, req resource.ValidateConfigRequest, resp *resource.ValidateConfigResponse) {
+	validateStorage(ctx, req.Config, &resp.Diagnostics)
+
 	var replication types.Object
 	resp.Diagnostics.Append(req.Config.GetAttribute(ctx, path.Root("replication"), &replication)...)
 	if !replication.IsNull() && !replication.IsUnknown() {
@@ -276,7 +255,6 @@ func (r *postgresqlClusterResource) ValidateConfig(ctx context.Context, req reso
 		if role, ok := attrs["role"].(types.String); ok && role.ValueString() == roleElectable {
 			electable = true
 		}
-		validateStorageAutoscale(resp, label, attrs["resources"])
 		cloud, _ := attrs["cloud"].(types.String)
 		region, _ := attrs["region"].(types.String)
 		if cloud.IsNull() || cloud.IsUnknown() || region.IsNull() || region.IsUnknown() {
@@ -292,37 +270,6 @@ func (r *postgresqlClusterResource) ValidateConfig(ctx context.Context, req reso
 	if len(placements) > 1 {
 		resp.Diagnostics.AddAttributeError(path.Root("nodes"), "One cluster, one region",
 			"The groups ask for "+describePlacements(placements)+". Every group runs where the cluster runs; spreading one cluster across regions is not available yet.")
-	}
-}
-
-func validateStorageAutoscale(resp *resource.ValidateConfigResponse, label string, resourcesAttr attr.Value) {
-	resources, _ := resourcesAttr.(types.Object)
-	rAttrs := resources.Attributes()
-	autoscale, _ := rAttrs["storage_autoscale"].(types.Object)
-	if autoscale.IsNull() || autoscale.IsUnknown() {
-		return
-	}
-	saAttrs := autoscale.Attributes()
-	enabled, _ := saAttrs["enabled"].(types.Bool)
-	if !enabled.ValueBool() {
-		return
-	}
-	group := path.Root("nodes").AtMapKey(label).AtName("resources").AtName("storage_autoscale").AtName("max_storage")
-	maxStorage, _ := saAttrs["max_storage"].(types.String)
-	if maxStorage.IsUnknown() {
-		return
-	}
-	if maxStorage.ValueString() == "" {
-		resp.Diagnostics.AddAttributeError(group, "Missing max_storage",
-			"Storage autoscaling needs a ceiling: set max_storage to the largest size the platform may grow group "+label+" to.")
-		return
-	}
-	storage, _ := rAttrs["storage"].(types.String)
-	want, wantOK := parseQuantity(maxStorage.ValueString())
-	have, haveOK := parseQuantity(storage.ValueString())
-	if wantOK && haveOK && want < have {
-		resp.Diagnostics.AddAttributeError(group, "max_storage is below storage",
-			"Group "+label+" has storage "+storage.ValueString()+" but max_storage "+maxStorage.ValueString()+" is smaller. max_storage must be at least storage.")
 	}
 }
 
@@ -360,6 +307,11 @@ func (r *postgresqlClusterResource) ModifyPlan(ctx context.Context, req resource
 		resp.Diagnostics.AddAttributeError(path.Root("version"), "Version cannot change here",
 			"Upgrading from "+prior.Version.ValueString()+" to "+plan.Version.ValueString()+" goes through Relay's upgrade flow. Run the upgrade, then set version to the new value.")
 	}
+	rejectShrink(plan.Storage, prior.Storage, &resp.Diagnostics)
+	if autoscaleEnabledAnew(plan.Storage, prior.Storage) {
+		plan.Storage = unknownComputedStorage(plan.Storage)
+		changed = true
+	}
 	for name, planned := range plan.Nodes {
 		current, ok := prior.Nodes[name]
 		if !ok {
@@ -369,10 +321,6 @@ func (r *postgresqlClusterResource) ModifyPlan(ctx context.Context, req resource
 			continue
 		}
 		group := path.Root("nodes").AtMapKey(name)
-		if shrinks(planned.Resources.Storage, current.Resources.Storage) {
-			resp.Diagnostics.AddAttributeError(group.AtName("resources").AtName("storage"), "Storage cannot shrink",
-				"Volumes only grow. Group "+name+" is at "+current.Resources.Storage.ValueString()+" and the plan asks for "+planned.Resources.Storage.ValueString()+".")
-		}
 		if !planned.Count.IsUnknown() && planned.Count.ValueInt64() < current.Count.ValueInt64() {
 			resp.Diagnostics.AddAttributeWarning(group.AtName("count"), "Removed nodes lose their volumes",
 				"Group "+name+" goes from "+current.Count.String()+" to "+planned.Count.String()+" nodes. Relay deletes the removed nodes and their volumes without draining them first.")
@@ -383,16 +331,12 @@ func (r *postgresqlClusterResource) ModifyPlan(ctx context.Context, req resource
 			plan.Nodes[name] = planned
 			changed = true
 		}
-		if current.Resources.StorageAutoscale.IsNull() && !planned.Resources.StorageAutoscale.IsNull() && !planned.Resources.StorageAutoscale.IsUnknown() {
-			planned.Resources.StorageAutoscale = unknownComputedStorageAutoscale(planned.Resources.StorageAutoscale)
-			plan.Nodes[name] = planned
-			changed = true
-		}
 	}
-	if !changed {
+	if changed {
+		resp.Diagnostics.Append(resp.Plan.Set(ctx, &plan)...)
+	} else if !req.Config.Raw.IsFullyKnown() {
 		return
 	}
-	resp.Diagnostics.Append(resp.Plan.Set(ctx, &plan)...)
 	if satisfies(resp.Plan.Raw, req.State.Raw) {
 		resp.Diagnostics.Append(resp.Plan.Set(ctx, &prior)...)
 	}
@@ -423,22 +367,7 @@ func unknownComputed(g nodeGroupModel) nodeGroupModel {
 	if g.Resources.Throughput.IsNull() {
 		g.Resources.Throughput = types.Int64Unknown()
 	}
-	g.Resources.StorageAutoscale = unknownComputedStorageAutoscale(g.Resources.StorageAutoscale)
 	return g
-}
-
-func unknownComputedStorageAutoscale(o types.Object) types.Object {
-	if o.IsNull() || o.IsUnknown() {
-		return o
-	}
-	attrs := o.Attributes()
-	if attrs["threshold_percent"].(types.Int64).IsNull() {
-		attrs["threshold_percent"] = types.Int64Unknown()
-	}
-	if attrs["increase_percent"].(types.Int64).IsNull() {
-		attrs["increase_percent"] = types.Int64Unknown()
-	}
-	return types.ObjectValueMust(storageAutoscaleAttrTypes, attrs)
 }
 
 func unknownIfNull(v types.String) types.String {
@@ -521,8 +450,8 @@ func (r *postgresqlClusterResource) convergeRestore(ctx context.Context, config 
 		return nil
 	}
 	var paths []string
-	for _, root := range driftedRoots(config, resp.State, []string{"nodes", "replication", "parameters"}) {
-		paths = append(paths, map[string]string{"nodes": "nodes", "replication": "replication", "parameters": "postgresql"}[root])
+	for _, root := range driftedRoots(config, resp.State, []string{"nodes", "storage", "replication", "parameters"}) {
+		paths = append(paths, map[string]string{"nodes": "nodes", "storage": "storage", "replication": "replication", "parameters": "postgresql"}[root])
 	}
 	if len(paths) == 0 {
 		return db
@@ -688,6 +617,7 @@ func clusterSpecToProto(m postgresqlClusterModel) *serverv1.DatabaseSpec {
 		Engine:           enginePostgreSQL,
 		Version:          m.Version.ValueString(),
 		Nodes:            nodesToProto(m.Nodes),
+		Storage:          storageToProto(m.Storage),
 		PrimaryNodeGroup: primaryNodeGroup(m.Nodes, m.PrimaryNodeGroup),
 		// Turning backups off is accepted and then ignored, so on is the only value that reads back unchanged.
 		BackupsEnabled: true,
@@ -707,6 +637,7 @@ func clusterUpdateMask(plan, prior postgresqlClusterModel) []string {
 		}
 	}
 	add(!reflect.DeepEqual(plan.Nodes, prior.Nodes), "nodes")
+	add(!plan.Storage.Equal(prior.Storage), "storage")
 	add(!plan.Replication.Equal(prior.Replication), "replication")
 	add(!plan.Parameters.Equal(prior.Parameters), "postgresql")
 	return paths
@@ -720,7 +651,8 @@ func clusterFromProto(db *serverv1.Database, prior postgresqlClusterModel) postg
 		WorkspaceID:          prior.WorkspaceID,
 		Name:                 types.StringValue(db.GetName()),
 		Version:              types.StringValue(spec.GetVersion()),
-		Nodes:                nodesFromProto(spec.GetNodes(), prior.Nodes),
+		Storage:              storageFromProto(spec.GetStorage(), prior.Storage),
+		Nodes:                nodesFromProto(spec.GetNodes()),
 		PrimaryNodeGroup:     types.StringValue(spec.GetPrimaryNodeGroup()),
 		Parameters:           stringMapFromGo(spec.GetPostgresql().GetParameters()),
 		Replication:          replicationFromProto(spec.GetReplication()),

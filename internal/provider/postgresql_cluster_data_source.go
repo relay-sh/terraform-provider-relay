@@ -29,7 +29,8 @@ type postgresqlClusterDataModel struct {
 	SharedHost         types.String `tfsdk:"shared_host"`
 	PublicEndpoints    types.List   `tfsdk:"public_endpoints"`
 	PrivateEndpoints   types.List   `tfsdk:"private_endpoints"`
-	StorageStatus      types.List   `tfsdk:"storage_status"`
+	Storage            types.Object `tfsdk:"storage"`
+	StorageStatus      types.Object `tfsdk:"storage_status"`
 	ReadyNodes         types.Int64  `tfsdk:"ready_nodes"`
 	TotalNodes         types.Int64  `tfsdk:"total_nodes"`
 }
@@ -62,15 +63,10 @@ func (d *postgresqlClusterDataSource) Schema(_ context.Context, _ datasource.Sch
 			"shared_host":         schema.StringAttribute{Computed: true, MarkdownDescription: "The previous shared read-write address of a database upgraded from the Free plan. It keeps working, but is never `endpoint_host`. Empty when there is no such alias."},
 			"public_endpoints":    schema.ListNestedAttribute{Computed: true, NestedObject: endpoint},
 			"private_endpoints":   schema.ListNestedAttribute{Computed: true, NestedObject: endpoint},
-			"storage_status": schema.ListNestedAttribute{
-				Computed: true,
-				NestedObject: schema.NestedAttributeObject{Attributes: map[string]schema.Attribute{
-					"node_group": schema.StringAttribute{Computed: true},
-					"size":       schema.StringAttribute{Computed: true},
-				}},
-			},
-			"ready_nodes": schema.Int64Attribute{Computed: true},
-			"total_nodes": schema.Int64Attribute{Computed: true},
+			"storage":             storageDataAttribute(),
+			"storage_status":      storageStatusDataAttribute(),
+			"ready_nodes":         schema.Int64Attribute{Computed: true},
+			"total_nodes":         schema.Int64Attribute{Computed: true},
 		},
 	}
 }
@@ -126,6 +122,7 @@ func (d *postgresqlClusterDataSource) Read(ctx context.Context, req datasource.R
 		SharedHost:         sharedHostFromProto(st.GetPublicEndpoints()),
 		PublicEndpoints:    endpointsFromProto(st.GetPublicEndpoints()),
 		PrivateEndpoints:   endpointsFromProto(st.GetPrivateEndpoints()),
+		Storage:            storageFromProto(spec.GetStorage(), types.ObjectNull(storageAttrTypes)),
 		StorageStatus:      storageStatusFromProto(st.GetStorage()),
 		ReadyNodes:         types.Int64Value(int64(st.GetReadyNodes())),
 		TotalNodes:         types.Int64Value(int64(st.GetTotalNodes())),

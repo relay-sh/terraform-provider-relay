@@ -36,7 +36,8 @@ func valkeySource(id, version, mode, label string, backups bool) *serverv1.Datab
 		Id: id, Name: "source-" + id, WorkspaceId: dbWorkspace,
 		Spec: &serverv1.DatabaseSpec{
 			Engine: engineValkey, Version: version, BackupsEnabled: backups, PrimaryNodeGroup: label,
-			Valkey: &serverv1.ValkeyConfig{Mode: mode, Shards: shards, Parameters: map[string]string{"maxmemory-policy": "noeviction"}},
+			Storage: &serverv1.ClusterStorage{Size: "8Gi"},
+			Valkey:  &serverv1.ValkeyConfig{Mode: mode, Shards: shards, Parameters: map[string]string{"maxmemory-policy": "noeviction"}},
 			Nodes: []*serverv1.NodeSpec{{
 				Name: label, Role: roleElectable, Count: count, Cloud: "aws", Region: "us-east-1", Tier: "RC10",
 				Resources: &serverv1.ResourceRequirements{Storage: "8Gi"},
@@ -51,6 +52,7 @@ func postgresSource(id, version string) *serverv1.Database {
 		Id: id, Name: "source-" + id, WorkspaceId: dbWorkspace,
 		Spec: &serverv1.DatabaseSpec{
 			Engine: enginePostgreSQL, Version: version, BackupsEnabled: true, PrimaryNodeGroup: "writers",
+			Storage:     &serverv1.ClusterStorage{Size: "10Gi"},
 			Replication: &serverv1.Replication{Mode: "async"},
 			Postgresql:  &serverv1.PostgreSQLConfig{Parameters: map[string]string{"work_mem": "4MB"}},
 			Nodes: []*serverv1.NodeSpec{{
@@ -90,7 +92,7 @@ resource "relay_postgresql_cluster" "this" {
       cloud  = "aws"
       region = "us-east-1"
       tier   = "R10"
-      resources = { storage = "10Gi" }
+      resources = {}
     }
   }
 }
@@ -174,7 +176,7 @@ func TestValkeyClusterResource_RestoreConverges(t *testing.T) {
 		"larger storage": {
 			source: valkeySource("db-src", "9.1", valkeyModeReplication, "cache", true),
 			body:   restoreBlock("db-src", "") + valkeyGroup("cache", 1, "16Gi", ""),
-			mask:   []string{"nodes"},
+			mask:   []string{"storage"},
 		},
 		"reshard and parameters": {
 			source: valkeySource("db-src", "9.1", valkeyModeCluster, "cache", true),
@@ -198,11 +200,6 @@ func TestValkeyClusterResource_RestoreConverges(t *testing.T) {
 						}
 						if !slices.Equal(mask, tc.mask) {
 							return fmt.Errorf("mask %v, want %v", mask, tc.mask)
-						}
-						for _, n := range f.lastDBUpdate.GetSpec().GetNodes() {
-							if n.GetResources().GetStorage() == "" {
-								return fmt.Errorf("an update must send the restored storage when none is configured, got %v", n)
-							}
 						}
 						return nil
 					},

@@ -34,25 +34,16 @@ type nodeGroupModel struct {
 }
 
 type resourcesModel struct {
-	CPU              types.String `tfsdk:"cpu"`
-	Memory           types.String `tfsdk:"memory"`
-	Storage          types.String `tfsdk:"storage"`
-	IOPS             types.Int64  `tfsdk:"iops"`
-	Throughput       types.Int64  `tfsdk:"throughput"`
-	DiskType         types.String `tfsdk:"disk_type"`
-	StorageAutoscale types.Object `tfsdk:"storage_autoscale"`
+	CPU        types.String `tfsdk:"cpu"`
+	Memory     types.String `tfsdk:"memory"`
+	IOPS       types.Int64  `tfsdk:"iops"`
+	Throughput types.Int64  `tfsdk:"throughput"`
+	DiskType   types.String `tfsdk:"disk_type"`
 }
 
 var (
-	replicationAttrTypes      = map[string]attr.Type{"mode": types.StringType, "synchronous_replicas": types.Int64Type}
-	endpointAttrTypes         = map[string]attr.Type{"role": types.StringType, "host": types.StringType, "port": types.Int64Type}
-	storageAutoscaleAttrTypes = map[string]attr.Type{
-		"enabled":           types.BoolType,
-		"threshold_percent": types.Int64Type,
-		"increase_percent":  types.Int64Type,
-		"max_storage":       types.StringType,
-	}
-	storageStatusAttrTypes = map[string]attr.Type{"node_group": types.StringType, "size": types.StringType}
+	replicationAttrTypes = map[string]attr.Type{"mode": types.StringType, "synchronous_replicas": types.Int64Type}
+	endpointAttrTypes    = map[string]attr.Type{"role": types.StringType, "host": types.StringType, "port": types.Int64Type}
 )
 
 func changing(st *serverv1.DatabaseStatus) bool {
@@ -79,10 +70,7 @@ func nodesToProto(nodes map[string]nodeGroupModel) []*serverv1.NodeSpec {
 	out := make([]*serverv1.NodeSpec, 0, len(names))
 	for _, name := range names {
 		n := nodes[name]
-		res := &serverv1.ResourceRequirements{
-			Storage:          n.Resources.Storage.ValueString(),
-			StorageAutoscale: storageAutoscaleToProto(n.Resources.StorageAutoscale),
-		}
+		res := &serverv1.ResourceRequirements{}
 		if v := n.Resources.IOPS; !v.IsNull() && !v.IsUnknown() {
 			res.Iops = int32Ptr(v.ValueInt64())
 		}
@@ -136,14 +124,10 @@ func roleOrder(n nodeGroupModel) int {
 	return 2
 }
 
-func nodesFromProto(nodes []*serverv1.NodeSpec, prior map[string]nodeGroupModel) map[string]nodeGroupModel {
+func nodesFromProto(nodes []*serverv1.NodeSpec) map[string]nodeGroupModel {
 	out := make(map[string]nodeGroupModel, len(nodes))
 	for _, n := range nodes {
 		res := n.GetResources()
-		priorAutoscale := types.ObjectNull(storageAutoscaleAttrTypes)
-		if p, ok := prior[n.GetName()]; ok {
-			priorAutoscale = p.Resources.StorageAutoscale
-		}
 		out[n.GetName()] = nodeGroupModel{
 			Role:   types.StringValue(n.GetRole()),
 			Count:  types.Int64Value(int64(n.GetCount())),
@@ -151,60 +135,15 @@ func nodesFromProto(nodes []*serverv1.NodeSpec, prior map[string]nodeGroupModel)
 			Region: types.StringValue(n.GetRegion()),
 			Tier:   types.StringValue(n.GetTier()),
 			Resources: resourcesModel{
-				CPU:              types.StringValue(res.GetCpu()),
-				Memory:           types.StringValue(res.GetMemory()),
-				Storage:          types.StringValue(res.GetStorage()),
-				IOPS:             optionalInt64(res.Iops),
-				Throughput:       optionalInt64(res.Throughput),
-				DiskType:         types.StringValue(res.GetDiskType()),
-				StorageAutoscale: storageAutoscaleFromProto(res.GetStorageAutoscale(), priorAutoscale),
+				CPU:        types.StringValue(res.GetCpu()),
+				Memory:     types.StringValue(res.GetMemory()),
+				IOPS:       optionalInt64(res.Iops),
+				Throughput: optionalInt64(res.Throughput),
+				DiskType:   types.StringValue(res.GetDiskType()),
 			},
 		}
 	}
 	return out
-}
-
-func storageAutoscaleToProto(o types.Object) *serverv1.StorageAutoscale {
-	out := &serverv1.StorageAutoscale{}
-	if o.IsNull() || o.IsUnknown() {
-		return out
-	}
-	attrs := o.Attributes()
-	out.Enabled = attrs["enabled"].(types.Bool).ValueBool()
-	if v := attrs["threshold_percent"].(types.Int64); !v.IsNull() && !v.IsUnknown() {
-		out.ThresholdPercent = int32(v.ValueInt64())
-	}
-	if v := attrs["increase_percent"].(types.Int64); !v.IsNull() && !v.IsUnknown() {
-		out.IncreasePercent = int32(v.ValueInt64())
-	}
-	if v := attrs["max_storage"].(types.String); !v.IsNull() && !v.IsUnknown() {
-		out.MaxStorage = v.ValueString()
-	}
-	return out
-}
-
-func storageAutoscaleFromProto(sa *serverv1.StorageAutoscale, prior types.Object) types.Object {
-	if sa == nil || (!sa.GetEnabled() && prior.IsNull()) {
-		return types.ObjectNull(storageAutoscaleAttrTypes)
-	}
-	return types.ObjectValueMust(storageAutoscaleAttrTypes, map[string]attr.Value{
-		"enabled":           types.BoolValue(sa.GetEnabled()),
-		"threshold_percent": types.Int64Value(int64(sa.GetThresholdPercent())),
-		"increase_percent":  types.Int64Value(int64(sa.GetIncreasePercent())),
-		"max_storage":       optionalString(sa.GetMaxStorage()),
-	})
-}
-
-func storageStatusFromProto(entries []*serverv1.NodeGroupStorage) types.List {
-	elemType := types.ObjectType{AttrTypes: storageStatusAttrTypes}
-	elems := make([]attr.Value, 0, len(entries))
-	for _, e := range entries {
-		elems = append(elems, types.ObjectValueMust(storageStatusAttrTypes, map[string]attr.Value{
-			"node_group": types.StringValue(e.GetNodeGroup()),
-			"size":       types.StringValue(e.GetSize()),
-		}))
-	}
-	return types.ListValueMust(elemType, elems)
 }
 
 func replicationToProto(r types.Object) *serverv1.Replication {

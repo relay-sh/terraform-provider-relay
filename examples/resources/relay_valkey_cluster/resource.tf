@@ -3,15 +3,17 @@ resource "relay_valkey_cluster" "sessions" {
   name         = "sessions"
   version      = "9.1"
 
+  storage = {
+    size = "8Gi"
+  }
+
   nodes = {
     cache = {
-      count  = 2
-      cloud  = "aws"
-      region = "us-east-1"
-      tier   = "RC20"
-      resources = {
-        storage = "8Gi"
-      }
+      count     = 2
+      cloud     = "aws"
+      region    = "us-east-1"
+      tier      = "RC20"
+      resources = {}
     }
   }
 
@@ -28,19 +30,21 @@ resource "relay_valkey_cluster" "leaderboard" {
   replicas_per_shard  = 1
   deletion_protection = true
 
+  storage = {
+    size = "28Gi"
+    autoscale = {
+      enabled     = true
+      max_storage = "100Gi"
+    }
+  }
+
   nodes = {
     shards = {
-      count  = 6
-      cloud  = "aws"
-      region = "us-east-1"
-      tier   = "RC40"
-      resources = {
-        storage = "28Gi"
-        storage_autoscale = {
-          enabled     = true
-          max_storage = "100Gi"
-        }
-      }
+      count     = 6
+      cloud     = "aws"
+      region    = "us-east-1"
+      tier      = "RC40"
+      resources = {}
     }
   }
 

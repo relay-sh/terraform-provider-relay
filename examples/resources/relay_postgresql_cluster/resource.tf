@@ -5,6 +5,14 @@ resource "relay_postgresql_cluster" "billing" {
 
   deletion_protection = true
 
+  storage = {
+    size = "200Gi"
+    autoscale = {
+      enabled     = true
+      max_storage = "1000Gi"
+    }
+  }
+
   nodes = {
     writers = {
       role   = "electable"
@@ -13,23 +21,18 @@ resource "relay_postgresql_cluster" "billing" {
       region = "us-east-1"
       tier   = "R30"
       resources = {
-        storage = "100Gi"
-        storage_autoscale = {
-          enabled     = true
-          max_storage = "500Gi"
-        }
+        disk_type = "gp3"
+        iops      = 6000
       }
     }
 
     readers = {
-      role   = "read_only"
-      count  = 2
-      cloud  = "aws"
-      region = "us-east-1"
-      tier   = "R40"
-      resources = {
-        storage = "200Gi"
-      }
+      role      = "read_only"
+      count     = 2
+      cloud     = "aws"
+      region    = "us-east-1"
+      tier      = "R40"
+      resources = {}
     }
   }
 

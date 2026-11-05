@@ -21,7 +21,6 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/booldefault"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/int64default"
-	"github.com/hashicorp/terraform-plugin-framework/resource/schema/int64planmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/mapplanmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/planmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/stringdefault"
@@ -56,10 +55,8 @@ type valkeyNodeGroupModel struct {
 }
 
 type valkeyResourcesModel struct {
-	CPU              types.String `tfsdk:"cpu"`
-	Memory           types.String `tfsdk:"memory"`
-	Storage          types.String `tfsdk:"storage"`
-	StorageAutoscale types.Object `tfsdk:"storage_autoscale"`
+	CPU    types.String `tfsdk:"cpu"`
+	Memory types.String `tfsdk:"memory"`
 }
 
 type valkeyClusterModel struct {
@@ -70,6 +67,7 @@ type valkeyClusterModel struct {
 	Mode                 types.String                    `tfsdk:"mode"`
 	Shards               types.Int64                     `tfsdk:"shards"`
 	ReplicasPerShard     types.Int64                     `tfsdk:"replicas_per_shard"`
+	Storage              types.Object                    `tfsdk:"storage"`
 	Nodes                map[string]valkeyNodeGroupModel `tfsdk:"nodes"`
 	Parameters           types.Map                       `tfsdk:"parameters"`
 	KeepBackupsOnDestroy types.Bool                      `tfsdk:"keep_backups_on_destroy"`
@@ -82,7 +80,7 @@ type valkeyClusterModel struct {
 	EndpointPort         types.Int64                     `tfsdk:"endpoint_port"`
 	PublicEndpoints      types.List                      `tfsdk:"public_endpoints"`
 	PrivateEndpoints     types.List                      `tfsdk:"private_endpoints"`
-	StorageStatus        types.List                      `tfsdk:"storage_status"`
+	StorageStatus        types.Object                    `tfsdk:"storage_status"`
 	ReadyNodes           types.Int64                     `tfsdk:"ready_nodes"`
 	TotalNodes           types.Int64                     `tfsdk:"total_nodes"`
 	CreatedAt            types.String                    `tfsdk:"created_at"`
@@ -103,7 +101,6 @@ func (r *valkeyClusterResource) Metadata(_ context.Context, req resource.Metadat
 func (r *valkeyClusterResource) Schema(ctx context.Context, _ resource.SchemaRequest, resp *resource.SchemaResponse) {
 	replace := []planmodifier.String{stringplanmodifier.RequiresReplace()}
 	keepString := []planmodifier.String{stringplanmodifier.UseStateForUnknown()}
-	keepInt := []planmodifier.Int64{int64planmodifier.UseStateForUnknown()}
 	endpoint := schema.NestedAttributeObject{Attributes: map[string]schema.Attribute{
 		"role": schema.StringAttribute{Computed: true},
 		"host": schema.StringAttribute{Computed: true},
@@ -111,6 +108,7 @@ func (r *valkeyClusterResource) Schema(ctx context.Context, _ resource.SchemaReq
 	}}
 
 	resp.Schema = schema.Schema{
+		Version: 1,
 		MarkdownDescription: "A managed Valkey cluster. Creating, updating and destroying wait for the cluster to settle. " +
 			"Changing `name`, `workspace_id` or `mode` replaces the cluster and its data; use `lifecycle { prevent_destroy = true }`.",
 		Attributes: map[string]schema.Attribute{
@@ -140,6 +138,10 @@ func (r *valkeyClusterResource) Schema(ctx context.Context, _ resource.SchemaReq
 				Validators:          []validator.Int64{int64validator.Between(0, 4)},
 				MarkdownDescription: "Replicas behind each shard's primary, 0-4. Only in `cluster` mode; omitted means 0.",
 			},
+			"storage": storageAttribute("Minimum volume size for persistence, Kubernetes quantity. Omit it to use the tier's storage. " +
+				"The platform raises the volume to at least 1.5 times the node's memory and never lowers it, so after a refresh this holds the size it is at; " +
+				"a configured value at or below that plans no change, and a larger one grows the volume. " +
+				"With `autoscale` enabled the platform may grow the volume past it, reported in `storage_status`."),
 			"nodes": schema.MapNestedAttribute{
 				Required: true,
 				Validators: []validator.Map{
@@ -171,36 +173,6 @@ func (r *valkeyClusterResource) Schema(ctx context.Context, _ resource.SchemaReq
 						Attributes: map[string]schema.Attribute{
 							"cpu":    schema.StringAttribute{Computed: true, PlanModifiers: keepString, MarkdownDescription: "CPU request derived from `tier`."},
 							"memory": schema.StringAttribute{Computed: true, PlanModifiers: keepString, MarkdownDescription: "Memory request derived from `tier`."},
-							"storage": schema.StringAttribute{
-								Optional: true, Computed: true, PlanModifiers: keepString,
-								MarkdownDescription: "Minimum volume size for persistence, Kubernetes quantity. Omit it to use the tier's storage. " +
-									"The platform raises the volume to at least 1.5 times the node's memory and never lowers it, so after a refresh this holds the size it is at; " +
-									"a configured value at or below that plans no change, and a larger one grows the volume. " +
-									"With `storage_autoscale` enabled the platform may grow the volume past it, reported in `storage_status`.",
-							},
-							"storage_autoscale": schema.SingleNestedAttribute{
-								Optional: true,
-								MarkdownDescription: "Grows the group's volumes past `storage`, up to `max_storage`, when disk usage crosses `threshold_percent`. " +
-									"Omitting this block, or removing it from a config that had it, disables autoscaling.",
-								Attributes: map[string]schema.Attribute{
-									"enabled": schema.BoolAttribute{Required: true, MarkdownDescription: "Turn storage autoscaling on for this group."},
-									"threshold_percent": schema.Int64Attribute{
-										Optional: true, Computed: true, PlanModifiers: keepInt,
-										Validators:          []validator.Int64{int64validator.Any(int64validator.OneOf(0), int64validator.Between(50, 95))},
-										MarkdownDescription: "Disk-usage percent that triggers a grow. `0` or omitted uses the platform default of 80; otherwise 50-95.",
-									},
-									"increase_percent": schema.Int64Attribute{
-										Optional: true, Computed: true, PlanModifiers: keepInt,
-										Validators:          []validator.Int64{int64validator.Any(int64validator.OneOf(0), int64validator.Between(10, 100))},
-										MarkdownDescription: "Percent to grow the volume by on each trigger. `0` or omitted uses the platform default of 20; otherwise 10-100.",
-									},
-									"max_storage": schema.StringAttribute{
-										Optional: true,
-										MarkdownDescription: "Ceiling the platform will not grow past, Kubernetes quantity. Required when `enabled` is true, and must be at least `storage`. " +
-											"The platform raises it to the volume size when the volume is larger, and a configured value below that plans no change.",
-									},
-								},
-							},
 						},
 					},
 				}},
@@ -227,13 +199,13 @@ func (r *valkeyClusterResource) Schema(ctx context.Context, _ resource.SchemaReq
 			"endpoint_port":       schema.Int64Attribute{Computed: true, MarkdownDescription: "Public read-write endpoint port."},
 			"public_endpoints":    schema.ListNestedAttribute{Computed: true, NestedObject: endpoint, MarkdownDescription: "Public endpoints by role."},
 			"private_endpoints":   schema.ListNestedAttribute{Computed: true, NestedObject: endpoint, MarkdownDescription: "Private endpoints by role, when private access is enabled."},
-			"storage_status": schema.ListNestedAttribute{
+			"storage_status": schema.SingleNestedAttribute{
 				Computed: true,
-				NestedObject: schema.NestedAttributeObject{Attributes: map[string]schema.Attribute{
-					"node_group": schema.StringAttribute{Computed: true},
-					"size":       schema.StringAttribute{Computed: true},
-				}},
-				MarkdownDescription: "Volume size the platform has grown to via `storage_autoscale`, when above the group's `storage` floor.",
+				Attributes: map[string]schema.Attribute{
+					"size":             schema.StringAttribute{Computed: true, MarkdownDescription: "Volume size the platform has grown the cluster to."},
+					"last_expanded_at": schema.StringAttribute{Computed: true, MarkdownDescription: "When the platform last grew the volumes, RFC 3339."},
+				},
+				MarkdownDescription: "Volume size the platform has grown to via `storage.autoscale`, when above `storage.size`. Null until it grows.",
 			},
 			"ready_nodes": schema.Int64Attribute{Computed: true, MarkdownDescription: "Nodes ready."},
 			"total_nodes": schema.Int64Attribute{Computed: true, MarkdownDescription: "Nodes expected."},
@@ -251,6 +223,7 @@ func (r *valkeyClusterResource) Configure(_ context.Context, req resource.Config
 }
 
 func (r *valkeyClusterResource) ValidateConfig(ctx context.Context, req resource.ValidateConfigRequest, resp *resource.ValidateConfigResponse) {
+	validateStorage(ctx, req.Config, &resp.Diagnostics)
 	var mode types.String
 	var shards, replicas types.Int64
 	var nodes types.Map
@@ -283,7 +256,6 @@ func (r *valkeyClusterResource) ValidateConfig(ctx context.Context, req resource
 	for label, element := range nodes.Elements() {
 		group, _ := element.(types.Object)
 		attrs := group.Attributes()
-		validateStorageAutoscale(resp, label, attrs["resources"])
 		count, _ := attrs["count"].(types.Int64)
 		if mode.ValueString() != valkeyModeCluster || shards.IsNull() || shards.IsUnknown() || replicas.IsUnknown() || count.IsUnknown() {
 			continue
@@ -314,9 +286,7 @@ func (r *valkeyClusterResource) ModifyPlan(ctx context.Context, req resource.Mod
 	if resp.Diagnostics.HasError() {
 		return
 	}
-	equivalent := keepEquivalentRestore(plan.Restore, prior.Restore)
-	changed := !equivalent.Equal(plan.Restore)
-	plan.Restore = equivalent
+	plan.Restore = keepEquivalentRestore(plan.Restore, prior.Restore)
 	if restoreChanged(plan.Restore, prior.Restore) {
 		resp.RequiresReplace = append(resp.RequiresReplace, path.Root("restore"))
 	}
@@ -324,41 +294,29 @@ func (r *valkeyClusterResource) ModifyPlan(ctx context.Context, req resource.Mod
 		resp.Diagnostics.AddAttributeError(path.Root("version"), "Version cannot change here",
 			"Upgrading from "+prior.Version.ValueString()+" to "+plan.Version.ValueString()+" goes through Relay's upgrade flow. Run the upgrade, then set version to the new value.")
 	}
+	if order, ok := compareQuantity(storageSizeOf(plan.Storage), storageSizeOf(prior.Storage)); ok && order <= 0 {
+		plan.Storage = withStorageSize(plan.Storage, storageSizeOf(prior.Storage))
+	}
+	if raised := keepRaisedMaxStorage(plan.Storage, prior.Storage); !raised.IsNull() {
+		plan.Storage = withStorageAutoscale(plan.Storage, raised)
+	}
+	if autoscaleEnabledAnew(plan.Storage, prior.Storage) {
+		plan.Storage = unknownComputedStorage(plan.Storage)
+	}
 	for name, planned := range plan.Nodes {
 		current, ok := prior.Nodes[name]
 		if !ok {
 			planned.Resources.CPU = types.StringUnknown()
 			planned.Resources.Memory = types.StringUnknown()
-			planned.Resources.StorageAutoscale = unknownComputedStorageAutoscale(planned.Resources.StorageAutoscale)
 			plan.Nodes[name] = planned
 			resp.RequiresReplace = append(resp.RequiresReplace, path.Root("nodes"))
-			changed = true
 			continue
 		}
 		if !planned.Tier.IsUnknown() && !planned.Tier.Equal(current.Tier) {
 			planned.Resources.CPU = types.StringUnknown()
 			planned.Resources.Memory = types.StringUnknown()
 			plan.Nodes[name] = planned
-			changed = true
 		}
-		if order, ok := compareQuantity(planned.Resources.Storage, current.Resources.Storage); ok && order <= 0 {
-			planned.Resources.Storage = current.Resources.Storage
-			plan.Nodes[name] = planned
-			changed = true
-		}
-		if raised := keepRaisedMaxStorage(planned.Resources, current.Resources); !raised.IsNull() {
-			planned.Resources.StorageAutoscale = raised
-			plan.Nodes[name] = planned
-			changed = true
-		}
-		if current.Resources.StorageAutoscale.IsNull() && !planned.Resources.StorageAutoscale.IsNull() && !planned.Resources.StorageAutoscale.IsUnknown() {
-			planned.Resources.StorageAutoscale = unknownComputedStorageAutoscale(planned.Resources.StorageAutoscale)
-			plan.Nodes[name] = planned
-			changed = true
-		}
-	}
-	if !changed {
-		return
 	}
 	if reflect.DeepEqual(plan.Nodes, prior.Nodes) && sameSettings(plan, prior) {
 		resp.Diagnostics.Append(resp.Plan.Set(ctx, &prior)...)
@@ -369,7 +327,7 @@ func (r *valkeyClusterResource) ModifyPlan(ctx context.Context, req resource.Mod
 
 func sameSettings(a, b valkeyClusterModel) bool {
 	return a.Name.Equal(b.Name) && a.WorkspaceID.Equal(b.WorkspaceID) && a.Version.Equal(b.Version) && a.Mode.Equal(b.Mode) &&
-		a.Shards.Equal(b.Shards) && a.ReplicasPerShard.Equal(b.ReplicasPerShard) && a.Parameters.Equal(b.Parameters) &&
+		a.Storage.Equal(b.Storage) && a.Shards.Equal(b.Shards) && a.ReplicasPerShard.Equal(b.ReplicasPerShard) && a.Parameters.Equal(b.Parameters) &&
 		a.KeepBackupsOnDestroy.Equal(b.KeepBackupsOnDestroy) && a.DeletionProtection.Equal(b.DeletionProtection) && a.Restore.Equal(b.Restore) &&
 		a.DefaultConnections.Equal(b.DefaultConnections) && a.Timeouts.Equal(b.Timeouts)
 }
@@ -463,19 +421,14 @@ func (r *valkeyClusterResource) Create(ctx context.Context, req resource.CreateR
 		db = protected
 	}
 	state := valkeyClusterFromProto(db, plan)
-	keepPlannedStorage(state.Nodes, plan.Nodes)
+	state.Storage = keepPlannedStorage(state.Storage, plan.Storage)
 	resp.Diagnostics.Append(resp.State.Set(ctx, &state)...)
 }
 
 func (r *valkeyClusterResource) convergeRestore(ctx context.Context, config tfsdk.Plan, plan valkeyClusterModel, db *serverv1.Database, timeout time.Duration, resp *resource.CreateResponse) *serverv1.Database {
 	restored := valkeyClusterFromProto(db, plan)
-	for name, planned := range plan.Nodes {
-		if got, ok := restored.Nodes[name]; ok {
-			if order, ok := compareQuantity(planned.Resources.Storage, got.Resources.Storage); ok && order <= 0 {
-				got.Resources.Storage = planned.Resources.Storage
-				restored.Nodes[name] = got
-			}
-		}
+	if order, ok := compareQuantity(storageSizeOf(plan.Storage), storageSizeOf(restored.Storage)); ok && order <= 0 {
+		restored.Storage = withStorageSize(restored.Storage, storageSizeOf(plan.Storage))
 	}
 	resp.Diagnostics.Append(resp.State.Set(ctx, &restored)...)
 	if fixed := driftedRoots(config, resp.State, []string{"version", "mode"}); len(fixed) > 0 {
@@ -484,8 +437,8 @@ func (r *valkeyClusterResource) convergeRestore(ctx context.Context, config tfsd
 		return nil
 	}
 	var paths []string
-	for _, root := range driftedRoots(config, resp.State, []string{"nodes", "shards", "replicas_per_shard", "parameters"}) {
-		p := map[string]string{"nodes": "nodes", "shards": "valkey", "replicas_per_shard": "valkey", "parameters": "valkey.parameters"}[root]
+	for _, root := range driftedRoots(config, resp.State, []string{"nodes", "storage", "shards", "replicas_per_shard", "parameters"}) {
+		p := map[string]string{"nodes": "nodes", "storage": "storage", "shards": "valkey", "replicas_per_shard": "valkey", "parameters": "valkey.parameters"}[root]
 		if !slices.Contains(paths, p) {
 			paths = append(paths, p)
 		}
@@ -500,13 +453,6 @@ func (r *valkeyClusterResource) convergeRestore(ctx context.Context, config tfsd
 	desired.Version = restored.Version
 	if desired.Parameters.IsUnknown() {
 		desired.Parameters = restored.Parameters
-	}
-	desired.Nodes = make(map[string]valkeyNodeGroupModel, len(plan.Nodes))
-	for name, planned := range plan.Nodes {
-		if got, ok := restored.Nodes[name]; ok && planned.Resources.Storage.IsUnknown() {
-			planned.Resources.Storage = got.Resources.Storage
-		}
-		desired.Nodes[name] = planned
 	}
 	if _, err := r.client.API.UpdateDatabase(ctx, &serverv1.UpdateDatabaseRequest{
 		Id:         db.GetId(),
@@ -588,7 +534,7 @@ func (r *valkeyClusterResource) Update(ctx context.Context, req resource.UpdateR
 		return
 	}
 	state := valkeyClusterFromProto(db, plan)
-	keepPlannedStorage(state.Nodes, plan.Nodes)
+	state.Storage = keepPlannedStorage(state.Storage, plan.Storage)
 	resp.Diagnostics.Append(resp.State.Set(ctx, &state)...)
 }
 
@@ -667,6 +613,7 @@ func valkeySpecToProto(m valkeyClusterModel) *serverv1.DatabaseSpec {
 		Engine:         engineValkey,
 		Version:        m.Version.ValueString(),
 		BackupsEnabled: true,
+		Storage:        storageToProto(m.Storage),
 		Valkey: &serverv1.ValkeyConfig{
 			Mode:             m.Mode.ValueString(),
 			Shards:           int32(m.Shards.ValueInt64()),
@@ -677,83 +624,25 @@ func valkeySpecToProto(m valkeyClusterModel) *serverv1.DatabaseSpec {
 	for name, n := range m.Nodes {
 		spec.PrimaryNodeGroup = name
 		spec.Nodes = append(spec.Nodes, &serverv1.NodeSpec{
-			Name:   name,
-			Role:   roleElectable,
-			Count:  int32(n.Count.ValueInt64()),
-			Cloud:  n.Cloud.ValueString(),
-			Region: n.Region.ValueString(),
-			Tier:   n.Tier.ValueString(),
-			Resources: &serverv1.ResourceRequirements{
-				Storage:          n.Resources.Storage.ValueString(),
-				StorageAutoscale: storageAutoscaleToProto(n.Resources.StorageAutoscale),
-			},
+			Name:      name,
+			Role:      roleElectable,
+			Count:     int32(n.Count.ValueInt64()),
+			Cloud:     n.Cloud.ValueString(),
+			Region:    n.Region.ValueString(),
+			Tier:      n.Tier.ValueString(),
+			Resources: &serverv1.ResourceRequirements{},
 		})
 	}
 	return spec
-}
-
-func keepPlannedStorage(state, plan map[string]valkeyNodeGroupModel) {
-	for name, planned := range plan {
-		got, ok := state[name]
-		if !ok {
-			continue
-		}
-		if !planned.Resources.Storage.IsUnknown() && !planned.Resources.Storage.IsNull() {
-			got.Resources.Storage = planned.Resources.Storage
-		}
-		if want, have := maxStorageOf(planned.Resources.StorageAutoscale), got.Resources.StorageAutoscale; !want.IsNull() && !want.IsUnknown() && !have.IsNull() {
-			attrs := have.Attributes()
-			attrs["max_storage"] = want
-			got.Resources.StorageAutoscale = types.ObjectValueMust(storageAutoscaleAttrTypes, attrs)
-		}
-		state[name] = got
-	}
-}
-
-func maxStorageOf(autoscale types.Object) types.String {
-	if autoscale.IsNull() || autoscale.IsUnknown() {
-		return types.StringNull()
-	}
-	return autoscale.Attributes()["max_storage"].(types.String)
-}
-
-func keepRaisedMaxStorage(planned, current valkeyResourcesModel) types.Object {
-	want, have := maxStorageOf(planned.StorageAutoscale), maxStorageOf(current.StorageAutoscale)
-	if want.IsNull() || want.IsUnknown() || have.IsNull() {
-		return types.ObjectNull(storageAutoscaleAttrTypes)
-	}
-	below, ok := compareQuantity(want, planned.Storage)
-	kept, kok := compareQuantity(have, want)
-	held, hok := compareQuantity(have, planned.Storage)
-	if !ok || !kok || !hok || below > 0 || held < 0 || (below == 0 && kept != 0) {
-		return types.ObjectNull(storageAutoscaleAttrTypes)
-	}
-	attrs := planned.StorageAutoscale.Attributes()
-	attrs["max_storage"] = have
-	return types.ObjectValueMust(storageAutoscaleAttrTypes, attrs)
-}
-
-func compareQuantity(a, b types.String) (int, bool) {
-	if a.IsUnknown() || b.IsUnknown() || a.IsNull() || b.IsNull() {
-		return 0, false
-	}
-	x, xok := parseQuantity(a.ValueString())
-	y, yok := parseQuantity(b.ValueString())
-	switch {
-	case !xok || !yok:
-		return 0, false
-	case x < y:
-		return -1, true
-	case x > y:
-		return 1, true
-	}
-	return 0, true
 }
 
 func valkeyUpdateMask(plan, prior valkeyClusterModel) []string {
 	var paths []string
 	if !reflect.DeepEqual(plan.Nodes, prior.Nodes) {
 		paths = append(paths, "nodes")
+	}
+	if !plan.Storage.Equal(prior.Storage) {
+		paths = append(paths, "storage")
 	}
 	switch {
 	case !plan.Shards.Equal(prior.Shards) || !plan.ReplicasPerShard.Equal(prior.ReplicasPerShard):
@@ -764,24 +653,18 @@ func valkeyUpdateMask(plan, prior valkeyClusterModel) []string {
 	return paths
 }
 
-func valkeyNodesFromProto(nodes []*serverv1.NodeSpec, prior map[string]valkeyNodeGroupModel) map[string]valkeyNodeGroupModel {
+func valkeyNodesFromProto(nodes []*serverv1.NodeSpec) map[string]valkeyNodeGroupModel {
 	out := make(map[string]valkeyNodeGroupModel, len(nodes))
 	for _, n := range nodes {
 		res := n.GetResources()
-		priorAutoscale := types.ObjectNull(storageAutoscaleAttrTypes)
-		if p, ok := prior[n.GetName()]; ok {
-			priorAutoscale = p.Resources.StorageAutoscale
-		}
 		out[n.GetName()] = valkeyNodeGroupModel{
 			Count:  types.Int64Value(int64(n.GetCount())),
 			Cloud:  types.StringValue(n.GetCloud()),
 			Region: types.StringValue(n.GetRegion()),
 			Tier:   types.StringValue(n.GetTier()),
 			Resources: valkeyResourcesModel{
-				CPU:              types.StringValue(res.GetCpu()),
-				Memory:           types.StringValue(res.GetMemory()),
-				Storage:          types.StringValue(res.GetStorage()),
-				StorageAutoscale: storageAutoscaleFromProto(res.GetStorageAutoscale(), priorAutoscale),
+				CPU:    types.StringValue(res.GetCpu()),
+				Memory: types.StringValue(res.GetMemory()),
 			},
 		}
 	}
@@ -860,7 +743,8 @@ func valkeyClusterFromProto(db *serverv1.Database, prior valkeyClusterModel) val
 		Mode:                 types.StringValue(mode),
 		Shards:               shards,
 		ReplicasPerShard:     replicas,
-		Nodes:                valkeyNodesFromProto(spec.GetNodes(), prior.Nodes),
+		Storage:              storageFromProto(spec.GetStorage(), prior.Storage),
+		Nodes:                valkeyNodesFromProto(spec.GetNodes()),
 		Parameters:           keepConfiguredParameterNames(v.GetParameters(), prior.Parameters),
 		KeepBackupsOnDestroy: prior.KeepBackupsOnDestroy,
 		DeletionProtection:   types.BoolValue(db.GetDeletionProtection()),

@@ -640,7 +640,9 @@ func (f *fakeServer) CreateDatabase(ctx context.Context, req *serverv1.CreateDat
 	}
 	spec := proto.Clone(req.GetSpec()).(*serverv1.DatabaseSpec)
 	canonicalizeValkeyParameters(spec)
-	f.raiseValkeyStorage(spec, nil)
+	if err := f.resolveStorage(spec, nil); err != nil {
+		return nil, err
+	}
 	deriveTierResources(spec)
 	if err := f.bindPlacement(spec.GetNodes()); err != nil {
 		return nil, err
@@ -790,6 +792,9 @@ func (f *fakeServer) UpdateDatabase(ctx context.Context, req *serverv1.UpdateDat
 	}
 	in := req.GetSpec()
 	merged := proto.Clone(db.GetSpec()).(*serverv1.DatabaseSpec)
+	if merged.Storage == nil {
+		merged.Storage = &serverv1.ClusterStorage{}
+	}
 	for _, p := range req.GetUpdateMask().GetPaths() {
 		switch p {
 		case "nodes":
@@ -799,12 +804,14 @@ func (f *fakeServer) UpdateDatabase(ctx context.Context, req *serverv1.UpdateDat
 			if err := f.bindPlacement(in.GetNodes()); err != nil {
 				return nil, err
 			}
-			for _, n := range in.GetNodes() {
-				if merged.GetEngine() == engineValkey && n.GetResources().GetStorage() == "" {
-					return nil, status.Error(codes.InvalidArgument, "node resources.storage is required")
-				}
-			}
 			merged.Nodes = in.GetNodes()
+		case "storage":
+			if in.GetStorage().GetSize() != "" {
+				merged.Storage.Size = in.GetStorage().GetSize()
+			}
+			if in.GetStorage().GetAutoscale() != nil {
+				merged.Storage.Autoscale = in.GetStorage().GetAutoscale()
+			}
 		case "replication":
 			merged.Replication = in.GetReplication()
 		case "postgresql":
@@ -821,7 +828,9 @@ func (f *fakeServer) UpdateDatabase(ctx context.Context, req *serverv1.UpdateDat
 	if err := validateValkey(merged); err != nil {
 		return nil, err
 	}
-	f.raiseValkeyStorage(merged, db.GetSpec())
+	if err := f.resolveStorage(merged, db.GetSpec()); err != nil {
+		return nil, err
+	}
 	deriveTierResources(merged)
 	db.Spec = merged
 	if f.afterUpdate != nil {
@@ -1114,31 +1123,67 @@ func (f *fakeServer) DeleteLogicalDatabase(ctx context.Context, req *serverv1.De
 	delete(f.logicalDBs, key)
 	return &serverv1.DeleteLogicalDatabaseResponse{}, nil
 }
-func (f *fakeServer) raiseValkeyStorage(spec, stored *serverv1.DatabaseSpec) {
-	if spec.GetEngine() != engineValkey || f.valkeyFloor == "" {
-		return
+
+var tierStorage = map[string]string{"R5": "10Gi", "R10": "20Gi", "R20": "40Gi", "RC5": "2Gi", "RC10": "4Gi", "RC20": "8Gi"}
+
+func (f *fakeServer) resolveStorage(spec, stored *serverv1.DatabaseSpec) error {
+	if spec.Storage == nil {
+		spec.Storage = &serverv1.ClusterStorage{}
 	}
-	for _, n := range spec.GetNodes() {
-		if n.Resources == nil {
-			n.Resources = &serverv1.ResourceRequirements{}
-		}
-		candidates := []string{n.Resources.Storage, f.valkeyFloor}
-		for _, old := range stored.GetNodes() {
-			if old.GetName() == n.GetName() {
-				candidates = append(candidates, old.GetResources().GetStorage())
+	st := spec.Storage
+	if stored == nil {
+		sizes := map[string]bool{}
+		for _, n := range spec.GetNodes() {
+			if size := n.GetResources().GetStorage(); size != "" {
+				sizes[size] = true
+			}
+			if sa := n.GetResources().GetStorageAutoscale(); sa != nil && st.Autoscale == nil {
+				st.Autoscale = proto.Clone(sa).(*serverv1.StorageAutoscale)
 			}
 		}
+		if len(sizes) > 1 {
+			return status.Error(codes.InvalidArgument, "validate spec: node storage sizes disagree")
+		}
+		for size := range sizes {
+			if st.Size == "" {
+				st.Size = size
+			} else if st.Size != size {
+				return status.Error(codes.InvalidArgument, "validate spec: nodes[].resources.storage disagrees with storage.size")
+			}
+		}
+		if st.Size == "" {
+			best, bestSize := "", -1.0
+			for _, n := range spec.GetNodes() {
+				if size, ok := parseQuantity(tierStorage[n.GetTier()]); ok && size > bestSize {
+					best, bestSize = tierStorage[n.GetTier()], size
+				}
+			}
+			st.Size = best
+		}
+	} else if stored.GetStorage().GetSize() != "" && st.Size == "" {
+		st.Size = stored.GetStorage().GetSize()
+	}
+	if spec.GetEngine() == engineValkey && f.valkeyFloor != "" {
+		candidates := []string{st.Size, f.valkeyFloor, stored.GetStorage().GetSize()}
 		best, bestSize := "", -1.0
 		for _, c := range candidates {
 			if size, ok := parseQuantity(c); ok && size > bestSize {
 				best, bestSize = c, size
 			}
 		}
-		n.Resources.Storage = best
-		if sa := n.Resources.StorageAutoscale; sa.GetEnabled() {
+		st.Size = best
+		if sa := st.Autoscale; sa.GetEnabled() {
 			if limit, ok := parseQuantity(sa.GetMaxStorage()); ok && limit < bestSize {
 				sa.MaxStorage = best
 			}
 		}
 	}
+	for _, n := range spec.GetNodes() {
+		if n.Resources == nil {
+			n.Resources = &serverv1.ResourceRequirements{}
+		}
+		n.Resources.Storage = st.Size
+		n.Resources.StorageAutoscale = proto.Clone(st.Autoscale).(*serverv1.StorageAutoscale)
+	}
+	return nil
 }

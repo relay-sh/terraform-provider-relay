@@ -41,7 +41,8 @@ data "relay_postgresql_cluster" "billing" {
 - `public_endpoints` (Attributes List) (see [below for nested schema](#nestedatt--public_endpoints))
 - `ready_nodes` (Number)
 - `shared_host` (String) The previous shared read-write address of a database upgraded from the Free plan. It keeps working, but is never `endpoint_host`. Empty when there is no such alias.
-- `storage_status` (Attributes List) (see [below for nested schema](#nestedatt--storage_status))
+- `storage` (Attributes) Volume size and autoscaling of the whole cluster. (see [below for nested schema](#nestedatt--storage))
+- `storage_status` (Attributes) Volume size the platform has grown to via autoscaling, when above `storage.size`. Null until it grows. (see [below for nested schema](#nestedatt--storage_status))
 - `total_nodes` (Number)
 - `version` (String)
 
@@ -65,10 +66,30 @@ Read-Only:
 - `role` (String)
 
 
+<a id="nestedatt--storage"></a>
+### Nested Schema for `storage`
+
+Read-Only:
+
+- `autoscale` (Attributes) (see [below for nested schema](#nestedatt--storage--autoscale))
+- `size` (String)
+
+<a id="nestedatt--storage--autoscale"></a>
+### Nested Schema for `storage.autoscale`
+
+Read-Only:
+
+- `enabled` (Boolean)
+- `increase_percent` (Number)
+- `max_storage` (String)
+- `threshold_percent` (Number)
+
+
+
 <a id="nestedatt--storage_status"></a>
 ### Nested Schema for `storage_status`
 
 Read-Only:
 
-- `node_group` (String)
+- `last_expanded_at` (String)
 - `size` (String)
