@@ -32,24 +32,26 @@ resource "relay_valkey_cluster" "this" {
 `, dbWorkspace, body)
 }
 
-func valkeyGroup(label string, count int, storage, extra string) string {
-	storageLine := ""
-	if storage != "" {
-		storageLine = fmt.Sprintf("storage = %q", storage)
+func valkeyGroup(label string, count int, size, autoscale string) string {
+	storage := ""
+	if size != "" || autoscale != "" {
+		sizeLine := ""
+		if size != "" {
+			sizeLine = fmt.Sprintf("size = %q", size)
+		}
+		storage = fmt.Sprintf("\n  storage = {\n    %s%s\n  }\n", sizeLine, autoscale)
 	}
-	return fmt.Sprintf(`
+	return storage + fmt.Sprintf(`
   nodes = {
     %s = {
       count  = %d
       cloud  = "aws"
       region = "us-east-1"
       tier   = "RC10"
-      resources = {
-        %s%s
-      }
+      resources = {}
     }
   }
-`, label, count, storageLine, extra)
+`, label, count)
 }
 
 func replicationConfig(f *fakeServer, version, storage, parameters, extra string) string {
@@ -107,12 +109,12 @@ func TestValkeyClusterResource_Lifecycle(t *testing.T) {
 			{
 				Config: replicationConfig(f, "9.1", "16Gi", `{}`, ""),
 				Check: resource.ComposeAggregateTestCheckFunc(
-					resource.TestCheckResourceAttr("relay_valkey_cluster.this", "nodes.cache.resources.storage", "16Gi"),
+					resource.TestCheckResourceAttr("relay_valkey_cluster.this", "storage.size", "16Gi"),
 					resource.TestCheckResourceAttr("relay_valkey_cluster.this", "parameters.%", "0"),
 					func(*terraform.State) error {
 						paths := f.lastDBUpdate.GetUpdateMask().GetPaths()
-						if !slices.Equal(paths, []string{"nodes", "valkey.parameters"}) {
-							return fmt.Errorf("a parameters-only change must not send the topology, got mask %v", paths)
+						if !slices.Equal(paths, []string{"storage", "valkey.parameters"}) {
+							return fmt.Errorf("a storage and parameters change must not send the topology, got mask %v", paths)
 						}
 						if v := f.lastDBUpdate.GetSpec().GetValkey(); v.GetMode() != "replication" || v.GetParameters() != nil {
 							return fmt.Errorf("an emptied parameters map must clear them and keep the mode, got %+v", v)
@@ -344,15 +346,18 @@ func TestValkeyClusterResource_StorageAutoscale(t *testing.T) {
 			{Config: valkeyConfig(f, valkeyGroup("cache", 1, "4Gi", ""))},
 			{
 				Config: valkeyConfig(f, valkeyGroup("cache", 1, "4Gi", `
-        storage_autoscale = {
+        autoscale = {
           enabled     = true
           max_storage = "40Gi"
         }`)),
 				Check: resource.ComposeAggregateTestCheckFunc(
-					resource.TestCheckResourceAttr("relay_valkey_cluster.this", "nodes.cache.resources.storage_autoscale.enabled", "true"),
+					resource.TestCheckResourceAttr("relay_valkey_cluster.this", "storage.autoscale.enabled", "true"),
 					func(*terraform.State) error {
-						if sa := f.lastDBUpdate.GetSpec().GetNodes()[0].GetResources().GetStorageAutoscale(); !sa.GetEnabled() || sa.GetMaxStorage() != "40Gi" {
-							return fmt.Errorf("storage_autoscale must reach the platform enabled, got %+v", sa)
+						if sa := f.lastDBUpdate.GetSpec().GetStorage().GetAutoscale(); !sa.GetEnabled() || sa.GetMaxStorage() != "40Gi" {
+							return fmt.Errorf("storage.autoscale must reach the platform enabled, got %+v", sa)
+						}
+						if paths := f.lastDBUpdate.GetUpdateMask().GetPaths(); !slices.Equal(paths, []string{"storage"}) {
+							return fmt.Errorf("a storage-only change must send only the storage path, got %v", paths)
 						}
 						return nil
 					},
@@ -367,11 +372,11 @@ func TestValkeyClusterResource_StorageAutoscale(t *testing.T) {
 					}
 				},
 				Config: valkeyConfig(f, valkeyGroup("cache", 1, "4Gi", `
-        storage_autoscale = {
+        autoscale = {
           enabled     = true
           max_storage = "40Gi"
         }`)),
-				Check: resource.TestCheckResourceAttr("relay_valkey_cluster.this", "storage_status.0.size", "6Gi"),
+				Check: resource.TestCheckResourceAttr("relay_valkey_cluster.this", "storage_status.size", "6Gi"),
 			},
 		},
 	})
@@ -385,13 +390,13 @@ func TestValkeyClusterResource_ConfigValidation(t *testing.T) {
       cloud     = "aws"
       region    = "us-east-1"
       tier      = "RC10"
-      resources = { storage = "1Gi" }
+      resources = {}
     }
     b = {
       cloud     = "aws"
       region    = "us-east-1"
       tier      = "RC10"
-      resources = { storage = "1Gi" }
+      resources = {}
     }
   }
 `
@@ -411,7 +416,7 @@ func TestValkeyClusterResource_ConfigValidation(t *testing.T) {
       cloud     = "aws"
       region    = "us-east-1"
       tier      = "RC10"
-      resources = { storage = "1Gi" }
+      resources = {}
     }
   }
 `, `(?s)Count does not match the shards.*asks for 1`},
@@ -419,7 +424,7 @@ func TestValkeyClusterResource_ConfigValidation(t *testing.T) {
 		"too few shards":        {"  mode = \"cluster\"\n  shards = 2\n" + valkeyGroup("cache", 2, "1Gi", ""), "between 3 and 100"},
 		"two groups":            {two, "must contain at least 1 elements and at most 1"},
 		"group name":            {valkeyGroup("Cache_1", 1, "1Gi", ""), "lowercase letters, digits and hyphens"},
-		"autoscale without max": {valkeyGroup("cache", 1, "1Gi", "\n        storage_autoscale = { enabled = true }"), "Missing max_storage"},
+		"autoscale without max": {valkeyGroup("cache", 1, "1Gi", "\n        autoscale = { enabled = true }"), "Missing max_storage"},
 	}
 	for name, tc := range cases {
 		t.Run(name, func(t *testing.T) {
@@ -447,7 +452,7 @@ func TestValkeyClusterResource_UnknownValuesPlan(t *testing.T) {
       cloud     = "aws"
       region    = "us-east-1"
       tier      = "RC10"
-      resources = { storage = "1Gi" }
+      resources = {}
     }
   }
 `,
@@ -697,11 +702,12 @@ func TestValkeyClusterDataSource(t *testing.T) {
 			Valkey: &serverv1.ValkeyConfig{Mode: "cluster", Shards: 3, ReplicasPerShard: 1, Parameters: map[string]string{"maxmemory-policy": "allkeys-lru"}},
 			Nodes: []*serverv1.NodeSpec{{
 				Name: "main", Count: 6, Cloud: "aws", Region: "us-east-1", Tier: "RC10",
-				Resources: &serverv1.ResourceRequirements{
-					Cpu: "1", Memory: "2Gi", Storage: "10Gi",
-					StorageAutoscale: &serverv1.StorageAutoscale{Enabled: true, ThresholdPercent: 80, IncreasePercent: 20, MaxStorage: "50Gi"},
-				},
+				Resources: &serverv1.ResourceRequirements{Cpu: "1", Memory: "2Gi"},
 			}},
+			Storage: &serverv1.ClusterStorage{
+				Size:      "10Gi",
+				Autoscale: &serverv1.StorageAutoscale{Enabled: true, ThresholdPercent: 80, IncreasePercent: 20, MaxStorage: "50Gi"},
+			},
 		},
 		Status:             &serverv1.DatabaseStatus{Phase: "running", TotalNodes: 6, ReadyNodes: 6, Endpoint: &serverv1.Endpoint{Host: "cache.db", Port: 6379}},
 		DeletionProtection: true,
@@ -734,13 +740,14 @@ data "relay_valkey_cluster" "by_id" {
 				resource.TestCheckResourceAttr("data.relay_valkey_cluster.by_name", "replicas_per_shard", "1"),
 				resource.TestCheckResourceAttr("data.relay_valkey_cluster.by_name", "parameters.maxmemory-policy", "allkeys-lru"),
 				resource.TestCheckResourceAttr("data.relay_valkey_cluster.by_name", "nodes.main.tier", "RC10"),
-				resource.TestCheckResourceAttr("data.relay_valkey_cluster.by_name", "nodes.main.resources.storage_autoscale.max_storage", "50Gi"),
+				resource.TestCheckResourceAttr("data.relay_valkey_cluster.by_name", "storage.autoscale.max_storage", "50Gi"),
 				resource.TestCheckResourceAttr("data.relay_valkey_cluster.by_name", "endpoint_port", "6379"),
 				resource.TestCheckResourceAttr("data.relay_valkey_cluster.by_name", "ready_nodes", "6"),
 				resource.TestCheckResourceAttr("data.relay_valkey_cluster.by_id", "name", "plain"),
 				resource.TestCheckResourceAttr("data.relay_valkey_cluster.by_id", "mode", "replication"),
 				resource.TestCheckNoResourceAttr("data.relay_valkey_cluster.by_id", "shards"),
-				resource.TestCheckNoResourceAttr("data.relay_valkey_cluster.by_id", "nodes.main.resources.storage_autoscale.enabled"),
+				resource.TestCheckResourceAttr("data.relay_valkey_cluster.by_name", "storage.size", "10Gi"),
+				resource.TestCheckNoResourceAttr("data.relay_valkey_cluster.by_id", "storage"),
 			),
 		}},
 	})
@@ -809,7 +816,7 @@ func TestValkeyClusterResource_StorageRaisedByThePlatform(t *testing.T) {
 	f.valkeyFloor = "6Gi"
 	const storage = "relay_valkey_cluster.this"
 	autoscale := `
-        storage_autoscale = {
+        autoscale = {
           enabled     = true
           max_storage = "4Gi"
         }`
@@ -818,13 +825,13 @@ func TestValkeyClusterResource_StorageRaisedByThePlatform(t *testing.T) {
 		Steps: []resource.TestStep{
 			{
 				Config: valkeyConfig(f, valkeyGroup("cache", 1, "2Gi", autoscale)),
-				Check:  resource.TestCheckResourceAttr(storage, "nodes.cache.resources.storage", "2Gi"),
+				Check:  resource.TestCheckResourceAttr(storage, "storage.size", "2Gi"),
 			},
 			{
 				RefreshState: true,
 				Check: resource.ComposeAggregateTestCheckFunc(
-					resource.TestCheckResourceAttr(storage, "nodes.cache.resources.storage", "6Gi"),
-					resource.TestCheckResourceAttr(storage, "nodes.cache.resources.storage_autoscale.max_storage", "6Gi"),
+					resource.TestCheckResourceAttr(storage, "storage.size", "6Gi"),
+					resource.TestCheckResourceAttr(storage, "storage.autoscale.max_storage", "6Gi"),
 				),
 			},
 			{
@@ -833,7 +840,7 @@ func TestValkeyClusterResource_StorageRaisedByThePlatform(t *testing.T) {
 			},
 			{
 				Config: valkeyConfig(f, valkeyGroup("cache", 1, "6144Mi", `
-        storage_autoscale = {
+        autoscale = {
           enabled     = true
           max_storage = "6144Mi"
         }`)),
@@ -851,27 +858,27 @@ func TestValkeyClusterResource_StorageRaisedByThePlatform(t *testing.T) {
 						return fmt.Errorf("a parameters change must call UpdateDatabase once, got %d calls", n)
 					}
 					up := f.lastDBUpdate
-					if st := up.GetSpec().GetNodes()[0].GetResources().GetStorage(); st != "6Gi" {
+					if st := up.GetSpec().GetStorage().GetSize(); st != "6Gi" {
 						return fmt.Errorf("the update must carry the platform's storage, got %q", st)
 					}
 					if p := up.GetSpec().GetValkey().GetParameters()["maxmemory-policy"]; p != "allkeys-lru" {
 						return fmt.Errorf("the parameter must be applied, got %q", p)
 					}
-					if paths := up.GetUpdateMask().GetPaths(); slices.Contains(paths, "nodes") {
-						return fmt.Errorf("nodes must not be in the update mask, got %v", paths)
+					if paths := up.GetUpdateMask().GetPaths(); slices.Contains(paths, "nodes") || slices.Contains(paths, "storage") {
+						return fmt.Errorf("nodes and storage must not be in the update mask, got %v", paths)
 					}
 					return nil
 				},
 			},
 			{
 				Config: valkeyConfig(f, valkeyGroup("cache", 1, "8Gi", `
-        storage_autoscale = {
+        autoscale = {
           enabled     = true
           max_storage = "20Gi"
         }`)),
 				Check: resource.ComposeAggregateTestCheckFunc(
-					resource.TestCheckResourceAttr(storage, "nodes.cache.resources.storage", "8Gi"),
-					resource.TestCheckResourceAttr(storage, "nodes.cache.resources.storage_autoscale.max_storage", "20Gi"),
+					resource.TestCheckResourceAttr(storage, "storage.size", "8Gi"),
+					resource.TestCheckResourceAttr(storage, "storage.autoscale.max_storage", "20Gi"),
 				),
 			},
 		},
@@ -886,7 +893,7 @@ func TestValkeyClusterResource_OmittedStorageFollowsThePlatform(t *testing.T) {
 		Steps: []resource.TestStep{
 			{
 				Config: valkeyConfig(f, valkeyGroup("cache", 1, "", "")),
-				Check:  resource.TestCheckResourceAttr("relay_valkey_cluster.this", "nodes.cache.resources.storage", "6Gi"),
+				Check:  resource.TestCheckResourceAttr("relay_valkey_cluster.this", "storage.size", "6Gi"),
 			},
 			{
 				Config: valkeyConfig(f, valkeyGroup("cache", 1, "", "")),
@@ -901,66 +908,49 @@ func TestValkeyClusterResource_OmittedStorageFollowsThePlatform(t *testing.T) {
 	})
 }
 
+func clusterStorage(size types.String, autoscale types.Object) types.Object {
+	return types.ObjectValueMust(storageAttrTypes, map[string]attr.Value{"size": size, "autoscale": autoscale})
+}
+
+func enabledAutoscale(limit types.String) types.Object {
+	return types.ObjectValueMust(storageAutoscaleAttrTypes, map[string]attr.Value{
+		"enabled": types.BoolValue(true), "threshold_percent": types.Int64Value(80),
+		"increase_percent": types.Int64Value(20), "max_storage": limit,
+	})
+}
+
 func TestKeepPlannedStorage(t *testing.T) {
-	autoscale := func(limit types.String) types.Object {
-		return types.ObjectValueMust(storageAutoscaleAttrTypes, map[string]attr.Value{
-			"enabled": types.BoolValue(true), "threshold_percent": types.Int64Value(80),
-			"increase_percent": types.Int64Value(20), "max_storage": limit,
-		})
-	}
-	group := func(storage types.String, sa types.Object) valkeyNodeGroupModel {
-		return valkeyNodeGroupModel{Resources: valkeyResourcesModel{Storage: storage, StorageAutoscale: sa}}
-	}
 	null := types.ObjectNull(storageAutoscaleAttrTypes)
-	state := map[string]valkeyNodeGroupModel{
-		"a": group(types.StringValue("6Gi"), autoscale(types.StringValue("6Gi"))),
-		"b": group(types.StringValue("6Gi"), null),
-		"c": group(types.StringValue("6Gi"), autoscale(types.StringValue("6Gi"))),
+	state := clusterStorage(types.StringValue("6Gi"), enabledAutoscale(types.StringValue("6Gi")))
+	cases := map[string]struct {
+		state, plan types.Object
+		size, limit string
+	}{
+		"configured values stay": {state, clusterStorage(types.StringValue("2Gi"), enabledAutoscale(types.StringValue("4Gi"))), "2Gi", "4Gi"},
+		"unknown size":           {state, clusterStorage(types.StringUnknown(), enabledAutoscale(types.StringValue("4Gi"))), "6Gi", "4Gi"},
+		"null size":              {state, clusterStorage(types.StringNull(), enabledAutoscale(types.StringUnknown())), "6Gi", "6Gi"},
+		"no autoscale in state":  {clusterStorage(types.StringValue("6Gi"), null), clusterStorage(types.StringValue("2Gi"), enabledAutoscale(types.StringValue("4Gi"))), "2Gi", ""},
+		"no autoscale planned":   {state, clusterStorage(types.StringValue("2Gi"), null), "2Gi", "6Gi"},
 	}
-	plan := map[string]valkeyNodeGroupModel{
-		"a": group(types.StringValue("2Gi"), autoscale(types.StringValue("4Gi"))),
-		"b": group(types.StringUnknown(), autoscale(types.StringValue("4Gi"))),
-		"c": group(types.StringNull(), autoscale(types.StringUnknown())),
-		"d": group(types.StringValue("2Gi"), null),
-	}
-	keepPlannedStorage(state, plan)
-	if got := state["a"].Resources.Storage.ValueString(); got != "2Gi" {
-		t.Errorf("a configured storage must stay in state, got %q", got)
-	}
-	if got := maxStorageOf(state["a"].Resources.StorageAutoscale).ValueString(); got != "4Gi" {
-		t.Errorf("a configured max_storage must stay in state, got %q", got)
-	}
-	if got := state["b"].Resources.Storage.ValueString(); got != "6Gi" {
-		t.Errorf("an unknown plan must keep the platform's storage, got %q", got)
-	}
-	if !state["b"].Resources.StorageAutoscale.IsNull() {
-		t.Error("a platform without autoscale must stay null")
-	}
-	if got := state["c"].Resources.Storage.ValueString(); got != "6Gi" {
-		t.Errorf("a null plan must keep the platform's storage, got %q", got)
-	}
-	if got := maxStorageOf(state["c"].Resources.StorageAutoscale).ValueString(); got != "6Gi" {
-		t.Errorf("an unknown max_storage must keep the platform's, got %q", got)
-	}
-	if _, ok := state["d"]; ok {
-		t.Error("a group the platform does not return must not be added")
+	for name, c := range cases {
+		got := keepPlannedStorage(c.state, c.plan)
+		if size := storageSizeOf(got).ValueString(); size != c.size {
+			t.Errorf("%s: size = %q, want %q", name, size, c.size)
+		}
+		if limit := maxStorageOf(storageAutoscaleOf(got)).ValueString(); limit != c.limit {
+			t.Errorf("%s: max_storage = %q, want %q", name, limit, c.limit)
+		}
 	}
 }
 
 func TestKeepRaisedMaxStorage(t *testing.T) {
-	autoscale := func(limit types.String) types.Object {
-		return types.ObjectValueMust(storageAutoscaleAttrTypes, map[string]attr.Value{
-			"enabled": types.BoolValue(true), "threshold_percent": types.Int64Value(80),
-			"increase_percent": types.Int64Value(20), "max_storage": limit,
-		})
+	res := func(storage string, limit types.String) types.Object {
+		return clusterStorage(types.StringValue(storage), enabledAutoscale(limit))
 	}
-	res := func(storage string, limit types.String) valkeyResourcesModel {
-		return valkeyResourcesModel{Storage: types.StringValue(storage), StorageAutoscale: autoscale(limit)}
-	}
-	null := valkeyResourcesModel{Storage: types.StringValue("6Gi"), StorageAutoscale: types.ObjectNull(storageAutoscaleAttrTypes)}
+	null := clusterStorage(types.StringValue("6Gi"), types.ObjectNull(storageAutoscaleAttrTypes))
 	raised := res("6Gi", types.StringValue("6Gi"))
 	cases := map[string]struct {
-		planned, current valkeyResourcesModel
+		planned, current types.Object
 		want             string
 	}{
 		"below the volume":       {res("6Gi", types.StringValue("4Gi")), raised, "6Gi"},
@@ -986,7 +976,7 @@ func TestSameSettingsCoversEveryConfigurableAttribute(t *testing.T) {
 	(&valkeyClusterResource{}).Schema(context.Background(), fwresource.SchemaRequest{}, &resp)
 	covered := map[string]bool{
 		"workspace_id": true, "name": true, "version": true, "mode": true, "shards": true, "replicas_per_shard": true,
-		"nodes": true, "parameters": true, "keep_backups_on_destroy": true, "deletion_protection": true, "restore": true, "default_connections": true, "timeouts": true,
+		"nodes": true, "storage": true, "parameters": true, "keep_backups_on_destroy": true, "deletion_protection": true, "restore": true, "default_connections": true, "timeouts": true,
 	}
 	for name, a := range resp.Schema.Attributes {
 		if (a.IsRequired() || a.IsOptional()) && !covered[name] {
@@ -1030,7 +1020,7 @@ func TestValkeyClusterResource_TierChange(t *testing.T) {
       cloud     = "aws"
       region    = "us-east-1"
       tier      = "` + tier + `"
-      resources = { storage = "8Gi" }
+      resources = {}
     }
   }
 `
@@ -1117,4 +1107,22 @@ func TestChanging(t *testing.T) {
 			t.Errorf("%s: changing = %v, want %v", name, got, tc.want)
 		}
 	}
+}
+
+func TestValkeyClusterResource_UnknownConfigPlansAnUpdate(t *testing.T) {
+	f := startFakeServer(t)
+	unknown := valkeyConfig(f, `
+  parameters = { "maxmemory-policy" = terraform_data.policy.output }
+`+valkeyGroup("cache", 1, "", "")) + `
+resource "terraform_data" "policy" {
+  input = "allkeys-lru"
+}
+`
+	resource.UnitTest(t, resource.TestCase{
+		ProtoV6ProviderFactories: factories(relay.Dial),
+		Steps: []resource.TestStep{
+			{Config: valkeyConfig(f, valkeyGroup("cache", 1, "", ""))},
+			{Config: unknown, PlanOnly: true, ExpectNonEmptyPlan: true},
+		},
+	})
 }

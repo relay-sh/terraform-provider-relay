@@ -20,6 +20,14 @@ resource "relay_postgresql_cluster" "billing" {
 
   deletion_protection = true
 
+  storage = {
+    size = "200Gi"
+    autoscale = {
+      enabled     = true
+      max_storage = "1000Gi"
+    }
+  }
+
   nodes = {
     writers = {
       role   = "electable"
@@ -28,23 +36,18 @@ resource "relay_postgresql_cluster" "billing" {
       region = "us-east-1"
       tier   = "R30"
       resources = {
-        storage = "100Gi"
-        storage_autoscale = {
-          enabled     = true
-          max_storage = "500Gi"
-        }
+        disk_type = "gp3"
+        iops      = 6000
       }
     }
 
     readers = {
-      role   = "read_only"
-      count  = 2
-      cloud  = "aws"
-      region = "us-east-1"
-      tier   = "R40"
-      resources = {
-        storage = "200Gi"
-      }
+      role      = "read_only"
+      count     = 2
+      cloud     = "aws"
+      region    = "us-east-1"
+      tier      = "R40"
+      resources = {}
     }
   }
 
@@ -86,6 +89,7 @@ resource "relay_postgresql_cluster" "billing" {
 - `parameters` (Map of String) PostgreSQL settings (GUCs). An empty map resets them to defaults; omitting the attribute leaves them unmanaged. Some need a restart, which Relay orchestrates with a switchover.
 - `replication` (Attributes) Commit replication for the cluster. Patroni configures synchronous mode per cluster, not per node. (see [below for nested schema](#nestedatt--replication))
 - `restore` (Attributes) Creates the cluster from another cluster's backups instead of empty. The platform picks the backup and starts the cluster with the source's settings; the provider then applies the configured nodes and settings. `version`, when set, must match the source's, and `nodes` must keep the label of the source's primary group. Only read on create: changing it replaces the cluster, while adding it to or removing it from an existing cluster changes nothing. (see [below for nested schema](#nestedatt--restore))
+- `storage` (Attributes) Volume size and autoscaling for the whole cluster: every node holds the same data, so every node's volume has this size. Omit the block and the platform picks the size, which the next read reports; once it is set, removing the whole block keeps the current size and autoscaling, so remove `autoscale` alone to turn it off. Disk type, IOPS and throughput stay per node group. (see [below for nested schema](#nestedatt--storage))
 - `timeouts` (Block, Optional) (see [below for nested schema](#nestedblock--timeouts))
 - `version` (String) Major PostgreSQL version. Omit it and the platform picks one, which the next read reports. It cannot change here: major upgrades go through Relay's upgrade flow, and a plan that changes it fails.
 
@@ -102,7 +106,7 @@ resource "relay_postgresql_cluster" "billing" {
 - `public_endpoints` (Attributes List) Public endpoints by role, without aliases: see `shared_host`. (see [below for nested schema](#nestedatt--public_endpoints))
 - `ready_nodes` (Number) Nodes ready.
 - `shared_host` (String) The previous shared read-write address of a database upgraded from the Free plan. It keeps working next to the new names, but is never `endpoint_host` or an entry of `public_endpoints`. Empty when the database has no such alias.
-- `storage_status` (Attributes List) Per-group volume size the platform has grown to via `storage_autoscale`, when above the group's `storage` floor. (see [below for nested schema](#nestedatt--storage_status))
+- `storage_status` (Attributes) Volume size the platform has grown to via `storage.autoscale`, when above `storage.size`. Null until it grows. (see [below for nested schema](#nestedatt--storage_status))
 - `total_nodes` (Number) Nodes expected.
 - `updated_at` (String) Last change time, RFC 3339.
 
@@ -124,35 +128,16 @@ Optional:
 <a id="nestedatt--nodes--resources"></a>
 ### Nested Schema for `nodes.resources`
 
-Required:
-
-- `storage` (String) Volume size, Kubernetes quantity. It can only grow here; a plan that shrinks it fails. This is the floor: with `storage_autoscale` enabled the platform may grow the volume past it, reported in `storage_status`, and that growth never shows as drift, because `storage` always reads from the spec, never from status.
-
 Optional:
 
 - `disk_type` (String) Cloud volume type. AWS: `gp3` (default), `io1`, `io2` (min 4Gi). GCP: `pd-ssd`, `pd-balanced`, `hyperdisk-balanced`. Azure: `PremiumV2_LRS`, `UltraSSD_LRS`. Can change in place. `io1`/`io2` require `iops` within the per-GiB cap.
 - `iops` (Number) Provisioned IOPS. Can change in place. Required for `io1`/`io2`. AWS caps: gp3 3000–80000 (500/GiB above 3000), io1 100–64000 (50/GiB), io2 100–256000 (1000/GiB).
-- `storage_autoscale` (Attributes) Grows the group's volumes past `storage`, up to `max_storage`, when disk usage crosses `threshold_percent`. Omitting this block, or removing it from a config that had it, disables autoscaling. (see [below for nested schema](#nestedatt--nodes--resources--storage_autoscale))
 - `throughput` (Number) Provisioned throughput in MiB/s. Can change in place.
 
 Read-Only:
 
 - `cpu` (String) CPU request derived from `tier`.
 - `memory` (String) Memory request derived from `tier`.
-
-<a id="nestedatt--nodes--resources--storage_autoscale"></a>
-### Nested Schema for `nodes.resources.storage_autoscale`
-
-Required:
-
-- `enabled` (Boolean) Turn storage autoscaling on for this group.
-
-Optional:
-
-- `increase_percent` (Number) Percent to grow the volume by on each trigger. `0` or omitted uses the platform default of 20; otherwise 10-100.
-- `max_storage` (String) Ceiling the platform will not grow past, Kubernetes quantity. Required when `enabled` is true, and must be at least `storage`.
-- `threshold_percent` (Number) Disk-usage percent that triggers a grow. `0` or omitted uses the platform default of 80; otherwise 50-95.
-
 
 
 
@@ -185,6 +170,29 @@ Required:
 Optional:
 
 - `target_time` (String) Recover up to this instant, RFC 3339, for example `2026-10-31T12:00:00Z`, by replaying the source's archived WAL; the platform rejects an instant outside the source's backups. Omit it to restore the latest backup and replay all archived WAL.
+
+
+<a id="nestedatt--storage"></a>
+### Nested Schema for `storage`
+
+Optional:
+
+- `autoscale` (Attributes) Grows the cluster's volumes past `size`, up to `max_storage`, when disk usage crosses `threshold_percent`. Omitting this block, or removing it from a config that had it, disables autoscaling. (see [below for nested schema](#nestedatt--storage--autoscale))
+- `size` (String) Volume size of every node, Kubernetes quantity. Omit it and the platform picks the default size included with the groups' tiers, which the next read reports. It can only grow here; a plan that shrinks it fails. This is the floor: with `autoscale` enabled the platform may grow the volumes past it, reported in `storage_status`, and that growth never shows as drift, because `size` always reads from the spec, never from status.
+
+<a id="nestedatt--storage--autoscale"></a>
+### Nested Schema for `storage.autoscale`
+
+Required:
+
+- `enabled` (Boolean) Turn storage autoscaling on for the cluster.
+
+Optional:
+
+- `increase_percent` (Number) Percent to grow the volume by on each trigger. `0` or omitted uses the platform default of 20; otherwise 10-100.
+- `max_storage` (String) Ceiling the platform will not grow past, Kubernetes quantity. Required when `enabled` is true, and must be at least `size`.
+- `threshold_percent` (Number) Disk-usage percent that triggers a grow. `0` or omitted uses the platform default of 80; otherwise 50-95.
+
 
 
 <a id="nestedblock--timeouts"></a>
@@ -222,8 +230,8 @@ Read-Only:
 
 Read-Only:
 
-- `node_group` (String)
-- `size` (String)
+- `last_expanded_at` (String) When the platform last grew the volumes, RFC 3339.
+- `size` (String) Volume size the platform has grown the cluster to.
 
 ## Import
 

@@ -45,7 +45,8 @@ data "relay_valkey_cluster" "sessions" {
 - `ready_nodes` (Number)
 - `replicas_per_shard` (Number) Replicas behind each shard's primary. Null in `replication` mode.
 - `shards` (Number) Primaries the keyspace is split across. Null in `replication` mode.
-- `storage_status` (Attributes List) (see [below for nested schema](#nestedatt--storage_status))
+- `storage` (Attributes) Volume size and autoscaling of the whole cluster. (see [below for nested schema](#nestedatt--storage))
+- `storage_status` (Attributes) Volume size the platform has grown to via autoscaling, when above `storage.size`. Null until it grows. (see [below for nested schema](#nestedatt--storage_status))
 - `total_nodes` (Number)
 - `version` (String)
 
@@ -67,19 +68,6 @@ Read-Only:
 
 - `cpu` (String)
 - `memory` (String)
-- `storage` (String)
-- `storage_autoscale` (Attributes) (see [below for nested schema](#nestedatt--nodes--resources--storage_autoscale))
-
-<a id="nestedatt--nodes--resources--storage_autoscale"></a>
-### Nested Schema for `nodes.resources.storage_autoscale`
-
-Read-Only:
-
-- `enabled` (Boolean)
-- `increase_percent` (Number)
-- `max_storage` (String)
-- `threshold_percent` (Number)
-
 
 
 
@@ -103,10 +91,30 @@ Read-Only:
 - `role` (String)
 
 
+<a id="nestedatt--storage"></a>
+### Nested Schema for `storage`
+
+Read-Only:
+
+- `autoscale` (Attributes) (see [below for nested schema](#nestedatt--storage--autoscale))
+- `size` (String)
+
+<a id="nestedatt--storage--autoscale"></a>
+### Nested Schema for `storage.autoscale`
+
+Read-Only:
+
+- `enabled` (Boolean)
+- `increase_percent` (Number)
+- `max_storage` (String)
+- `threshold_percent` (Number)
+
+
+
 <a id="nestedatt--storage_status"></a>
 ### Nested Schema for `storage_status`
 
 Read-Only:
 
-- `node_group` (String)
+- `last_expanded_at` (String)
 - `size` (String)

@@ -211,7 +211,7 @@ resource "relay_postgresql_cluster" "this" {
       cloud     = %[3]q
       region    = %[4]q
       tier      = "R5"
-      resources = { storage = "5Gi" }
+      resources = {}
     }
   }
 }
@@ -273,7 +273,7 @@ resource "relay_valkey_cluster" "this" {
       cloud     = %[4]q
       region    = %[5]q
       tier      = %[6]q
-      resources = { storage = "5Gi" }
+      resources = {}
     }
   }
 }
@@ -343,7 +343,7 @@ resource "relay_valkey_cluster" "this" {
       cloud     = %[4]q
       region    = %[5]q
       tier      = %[6]q
-      resources = { storage = "5Gi" }
+      resources = {}
     }
   }
 }
@@ -396,7 +396,7 @@ resource "relay_postgresql_cluster" "this" {
       cloud     = %[3]q
       region    = %[4]q
       tier      = "R5"
-      resources = { storage = "5Gi" }
+      resources = {}
     }
   }
 }
@@ -413,7 +413,7 @@ resource "relay_valkey_cluster" "this" {
       cloud     = %[3]q
       region    = %[4]q
       tier      = %[6]q
-      resources = { storage = "5Gi" }
+      resources = {}
     }
   }
 }

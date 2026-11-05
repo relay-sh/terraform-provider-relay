@@ -6,11 +6,13 @@ import (
 	"regexp"
 	"slices"
 	"testing"
+	"time"
 
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
 	"github.com/hashicorp/terraform-plugin-testing/terraform"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
+	"google.golang.org/protobuf/types/known/timestamppb"
 
 	serverv1 "github.com/relay-sh/relay-go/gen/relay/server/v1"
 	"github.com/relay-sh/relay-go/relay"
@@ -25,6 +27,10 @@ resource "relay_postgresql_cluster" "this" {
   name         = "billing"
   version      = %q
 
+  storage = {
+    size = %q
+  }
+
   nodes = {
     writers = {
       role   = "electable"
@@ -33,8 +39,7 @@ resource "relay_postgresql_cluster" "this" {
       region = "us-east-1"
       tier   = "R10"
       resources = {
-        storage = %q
-        iops    = 3000
+        iops = 3000
       }
     }
 
@@ -44,9 +49,7 @@ resource "relay_postgresql_cluster" "this" {
       region = "us-east-1"
       count = 1
       tier  = "R20"
-      resources = {
-        storage = "20Gi"
-      }
+      resources = {}
     }
   }
 
@@ -112,6 +115,10 @@ func TestPostgreSQLClusterResource_Lifecycle(t *testing.T) {
 							return fmt.Errorf("engine = %q", spec.GetEngine())
 						case !spec.GetBackupsEnabled():
 							return errors.New("backups must always be requested on")
+						case spec.GetStorage().GetSize() != "10Gi" || spec.GetStorage().GetAutoscale().GetEnabled():
+							return fmt.Errorf("storage = %+v, want 10Gi with autoscale off", spec.GetStorage())
+						case spec.GetNodes()[0].GetResources().GetStorage() != "" || spec.GetNodes()[0].GetResources().GetStorageAutoscale() != nil:
+							return fmt.Errorf("per-node storage must not be sent, got %+v", spec.GetNodes()[0].GetResources())
 						case spec.GetNodes()[0].GetCloud() != "aws" || spec.GetNodes()[0].GetRegion() != "us-east-1":
 							return fmt.Errorf("placement = %s/%s, want aws/us-east-1", spec.GetNodes()[0].GetCloud(), spec.GetNodes()[0].GetRegion())
 						case spec.GetNodes()[0].GetRole() != "electable" || spec.GetNodes()[1].GetRole() != "read_only":
@@ -130,11 +137,11 @@ func TestPostgreSQLClusterResource_Lifecycle(t *testing.T) {
 			{
 				Config: clusterConfig(f, "18", "20Gi", `{}`, ""),
 				Check: resource.ComposeAggregateTestCheckFunc(
-					resource.TestCheckResourceAttr("relay_postgresql_cluster.this", "nodes.writers.resources.storage", "20Gi"),
+					resource.TestCheckResourceAttr("relay_postgresql_cluster.this", "storage.size", "20Gi"),
 					resource.TestCheckResourceAttr("relay_postgresql_cluster.this", "parameters.%", "0"),
 					func(*terraform.State) error {
 						paths := f.lastDBUpdate.GetUpdateMask().GetPaths()
-						if !slices.Equal(paths, []string{"nodes", "postgresql"}) {
+						if !slices.Equal(paths, []string{"storage", "postgresql"}) {
 							return fmt.Errorf("update mask = %v, want only the changed fields", paths)
 						}
 						if f.lastDBUpdate.GetSpec().GetPostgresql() == nil {
@@ -191,6 +198,10 @@ resource "relay_postgresql_cluster" "this" {
   name         = "billing"
   version      = "18"
 
+  storage = {
+    size = "10Gi"
+  }
+
   nodes = {
     writers = {
       role   = "electable"
@@ -199,8 +210,7 @@ resource "relay_postgresql_cluster" "this" {
       region = "us-east-1"
       tier   = "R10"
       resources = {
-        storage = "10Gi"
-        iops    = %d%s
+        iops = %d%s
       }
     }
   }
@@ -249,9 +259,7 @@ resource "relay_postgresql_cluster" "dev" {
       cloud  = "aws"
       region = "us-east-1"
       tier = "R5"
-      resources = {
-        storage = "5Gi"
-      }
+      resources = {}
     }
   }
 }
@@ -266,7 +274,12 @@ resource "relay_postgresql_cluster" "dev" {
 					resource.TestCheckResourceAttr("relay_postgresql_cluster.dev", "replication.mode", "async"),
 					resource.TestCheckResourceAttr("relay_postgresql_cluster.dev", "keep_backups_on_destroy", "false"),
 					resource.TestCheckResourceAttr("relay_postgresql_cluster.dev", "created_at", ""),
+					resource.TestCheckResourceAttr("relay_postgresql_cluster.dev", "storage.size", "10Gi"),
+					resource.TestCheckNoResourceAttr("relay_postgresql_cluster.dev", "storage.autoscale"),
 					func(*terraform.State) error {
+						if f.lastDBCreate.GetSpec().GetStorage() != nil {
+							return errors.New("storage must be left for the platform to default when it is not configured")
+						}
 						if f.lastDBCreate.GetSpec().GetReplication().GetMode() != "async" {
 							return errors.New("replication must always be sent, because omitting it does not clear it")
 						}
@@ -308,7 +321,7 @@ resource "relay_postgresql_cluster" "this" {
       cloud  = "aws"
       region = "us-east-1"
       tier = "R10"
-      resources = { storage = "5Gi" }
+      resources = {}
     }
   }
 %s
@@ -355,7 +368,7 @@ resource "relay_postgresql_cluster" "this" {
       cloud  = "aws"
       region = "us-east-1"
       tier = "R10"
-      resources = { storage = "5Gi" }
+      resources = {}
     }
   }
 }
@@ -381,7 +394,7 @@ resource "relay_postgresql_cluster" "this" {
       cloud  = "aws"
       region = "us-east-1"
       tier   = "R10"
-      resources = { storage = "5Gi" }
+      resources = {}
     }
   }
 }
@@ -420,7 +433,7 @@ resource "relay_postgresql_cluster" "this" {
       cloud  = "fly"
       region = "gru"
       tier = "R10"
-      resources = { storage = "5Gi" }
+      resources = {}
     }
   }
 }
@@ -447,14 +460,14 @@ resource "relay_postgresql_cluster" "this" {
       cloud  = "aws"
       region = "eu-west-1"
       tier   = "R10"
-      resources = { storage = "5Gi" }
+      resources = {}
     }
     readers = {
       role   = "read_only"
       cloud  = "aws"
       region = terraform_data.region.id
       tier   = "R10"
-      resources = { storage = "5Gi" }
+      resources = {}
     }
   }
 }
@@ -484,7 +497,7 @@ resource "relay_postgresql_cluster" "this" {
       cloud  = "aws"
       region = %q
       tier = "R10"
-      resources = { storage = "5Gi" }
+      resources = {}
     }
   }
 }
@@ -503,7 +516,7 @@ resource "relay_postgresql_cluster" "this" {
       cloud  = "aws"
       region = "us-east-1"
       tier = "R10"
-      resources = { storage = "5Gi" }
+      resources = {}
     }
 
     readers = {
@@ -511,7 +524,7 @@ resource "relay_postgresql_cluster" "this" {
       cloud  = %q
       region = %q
       tier = "R10"
-      resources = { storage = "5Gi" }
+      resources = {}
     }
   }
 }
@@ -821,73 +834,92 @@ func TestPostgreSQLClusterResource_DestroyAfterAFailedCreate(t *testing.T) {
 	}
 }
 
-func storageAutoscaleClusterConfig(f *fakeServer, resourcesBody string) string {
+func storageClusterConfig(f *fakeServer, storageBody string) string {
+	storage := ""
+	if storageBody != "" {
+		storage = "storage = {\n" + storageBody + "\n  }\n"
+	}
 	return providerBlock(f) + fmt.Sprintf(`
 resource "relay_postgresql_cluster" "this" {
   workspace_id = %q
   name         = "billing"
 
+  %s
   nodes = {
     writers = {
       role = "electable"
       cloud  = "aws"
       region = "us-east-1"
       tier = "R10"
-      resources = {
-%s
-      }
+      resources = {}
     }
   }
 }
-`, dbWorkspace, resourcesBody)
+`, dbWorkspace, storage)
+}
+
+const storageAutoscaleBody = `    size = "10Gi"
+    autoscale = {
+      enabled           = true
+      threshold_percent = 85
+      increase_percent  = 25
+      max_storage       = "50Gi"
+    }`
+
+func lastUpdateMask(f *fakeServer) []string {
+	f.mu.Lock()
+	defer f.mu.Unlock()
+	return f.lastDBUpdate.GetUpdateMask().GetPaths()
 }
 
 func TestPostgreSQLClusterResource_StorageAutoscale(t *testing.T) {
 	f := startFakeServer(t)
+	const addr = "relay_postgresql_cluster.this"
 	resource.UnitTest(t, resource.TestCase{
 		ProtoV6ProviderFactories: factories(relay.Dial),
 		Steps: []resource.TestStep{
 			{
-				Config: storageAutoscaleClusterConfig(f, `        storage = "10Gi"`),
+				Config: storageClusterConfig(f, `    size = "10Gi"`),
 				Check: resource.ComposeAggregateTestCheckFunc(
-					resource.TestCheckNoResourceAttr("relay_postgresql_cluster.this", "nodes.writers.resources.storage_autoscale.enabled"),
+					resource.TestCheckNoResourceAttr(addr, "storage.autoscale"),
 					func(*terraform.State) error {
-						sa := f.lastDBCreate.GetSpec().GetNodes()[0].GetResources().GetStorageAutoscale()
+						sa := f.lastDBCreate.GetSpec().GetStorage().GetAutoscale()
 						if sa == nil || sa.GetEnabled() {
-							return fmt.Errorf("an absent block must still send an explicit disabled StorageAutoscale, got %+v", sa)
+							return fmt.Errorf("an absent block must still send an explicit disabled autoscale, got %+v", sa)
 						}
 						return nil
 					},
 				),
 			},
 			{
-				Config: storageAutoscaleClusterConfig(f, `        storage = "10Gi"
-        storage_autoscale = {
-          enabled           = true
-          threshold_percent = 85
-          increase_percent  = 25
-          max_storage       = "50Gi"
-        }`),
+				Config: storageClusterConfig(f, storageAutoscaleBody),
 				Check: resource.ComposeAggregateTestCheckFunc(
-					resource.TestCheckResourceAttr("relay_postgresql_cluster.this", "nodes.writers.resources.storage_autoscale.enabled", "true"),
-					resource.TestCheckResourceAttr("relay_postgresql_cluster.this", "nodes.writers.resources.storage_autoscale.threshold_percent", "85"),
-					resource.TestCheckResourceAttr("relay_postgresql_cluster.this", "nodes.writers.resources.storage_autoscale.increase_percent", "25"),
-					resource.TestCheckResourceAttr("relay_postgresql_cluster.this", "nodes.writers.resources.storage_autoscale.max_storage", "50Gi"),
+					resource.TestCheckResourceAttr(addr, "storage.autoscale.enabled", "true"),
+					resource.TestCheckResourceAttr(addr, "storage.autoscale.threshold_percent", "85"),
+					resource.TestCheckResourceAttr(addr, "storage.autoscale.increase_percent", "25"),
+					resource.TestCheckResourceAttr(addr, "storage.autoscale.max_storage", "50Gi"),
 					func(*terraform.State) error {
-						sa := f.lastDBUpdate.GetSpec().GetNodes()[0].GetResources().GetStorageAutoscale()
+						sa := f.lastDBUpdate.GetSpec().GetStorage().GetAutoscale()
 						if !sa.GetEnabled() || sa.GetThresholdPercent() != 85 || sa.GetIncreasePercent() != 25 || sa.GetMaxStorage() != "50Gi" {
 							return fmt.Errorf("update must send the enabled block as configured, got %+v", sa)
 						}
+						if paths := f.lastDBUpdate.GetUpdateMask().GetPaths(); !slices.Equal(paths, []string{"storage"}) {
+							return fmt.Errorf("a storage-only change must send only the storage path, got %v", paths)
+						}
 						return nil
 					},
 				),
 			},
 			{
-				Config: storageAutoscaleClusterConfig(f, `        storage = "10Gi"`),
+				Config:   storageClusterConfig(f, storageAutoscaleBody),
+				PlanOnly: true,
+			},
+			{
+				Config: storageClusterConfig(f, `    size = "10Gi"`),
 				Check: resource.ComposeAggregateTestCheckFunc(
-					resource.TestCheckNoResourceAttr("relay_postgresql_cluster.this", "nodes.writers.resources.storage_autoscale.enabled"),
+					resource.TestCheckNoResourceAttr(addr, "storage.autoscale"),
 					func(*terraform.State) error {
-						sa := f.lastDBUpdate.GetSpec().GetNodes()[0].GetResources().GetStorageAutoscale()
+						sa := f.lastDBUpdate.GetSpec().GetStorage().GetAutoscale()
 						if sa == nil || sa.GetEnabled() {
 							return fmt.Errorf("removing the block must disable autoscaling explicitly, because the server keeps a nil field unchanged, got %+v", sa)
 						}
@@ -896,12 +928,11 @@ func TestPostgreSQLClusterResource_StorageAutoscale(t *testing.T) {
 				),
 			},
 			{
-				Config: storageAutoscaleClusterConfig(f, `        storage = "10Gi"
-        storage_autoscale = { enabled = false }`),
+				Config: storageClusterConfig(f, "    size = \"10Gi\"\n    autoscale = { enabled = false }"),
 				Check: resource.ComposeAggregateTestCheckFunc(
-					resource.TestCheckResourceAttr("relay_postgresql_cluster.this", "nodes.writers.resources.storage_autoscale.enabled", "false"),
+					resource.TestCheckResourceAttr(addr, "storage.autoscale.enabled", "false"),
 					func(*terraform.State) error {
-						sa := f.lastDBUpdate.GetSpec().GetNodes()[0].GetResources().GetStorageAutoscale()
+						sa := f.lastDBUpdate.GetSpec().GetStorage().GetAutoscale()
 						if sa == nil || sa.GetEnabled() {
 							return fmt.Errorf("an explicit disabled block must still send enabled=false, got %+v", sa)
 						}
@@ -913,75 +944,103 @@ func TestPostgreSQLClusterResource_StorageAutoscale(t *testing.T) {
 	})
 }
 
-func TestPostgreSQLClusterResource_StorageAutoscaleNewNodeGroup(t *testing.T) {
+func TestPostgreSQLClusterResource_StorageGrowsInPlace(t *testing.T) {
 	f := startFakeServer(t)
+	const addr = "relay_postgresql_cluster.this"
+	resource.UnitTest(t, resource.TestCase{
+		ProtoV6ProviderFactories: factories(relay.Dial),
+		Steps: []resource.TestStep{
+			{Config: storageClusterConfig(f, `    size = "10Gi"`)},
+			{
+				Config: storageClusterConfig(f, `    size = "30Gi"`),
+				Check: resource.ComposeAggregateTestCheckFunc(
+					resource.TestCheckResourceAttr(addr, "storage.size", "30Gi"),
+					func(*terraform.State) error {
+						if paths := lastUpdateMask(f); !slices.Equal(paths, []string{"storage"}) {
+							return fmt.Errorf("growing the volume must send only the storage path, got %v", paths)
+						}
+						f.mu.Lock()
+						defer f.mu.Unlock()
+						for _, db := range f.databases {
+							if got := db.GetSpec().GetNodes()[0].GetResources().GetStorage(); got != "30Gi" {
+								return fmt.Errorf("the platform must mirror the size onto the groups, got %q", got)
+							}
+						}
+						return nil
+					},
+				),
+			},
+			{
+				Config:      storageClusterConfig(f, `    size = "20Gi"`),
+				ExpectError: regexp.MustCompile("Storage cannot shrink"),
+			},
+		},
+	})
+}
+
+func TestPostgreSQLClusterResource_StorageFollowsThePlatformDefault(t *testing.T) {
+	f := startFakeServer(t)
+	const addr = "relay_postgresql_cluster.this"
 	resource.UnitTest(t, resource.TestCase{
 		ProtoV6ProviderFactories: factories(relay.Dial),
 		Steps: []resource.TestStep{
 			{
-				Config: providerBlock(f) + fmt.Sprintf(`
-resource "relay_postgresql_cluster" "this" {
-  workspace_id = %q
-  name         = "billing"
-
-  nodes = {
-    writers = {
-      role      = "electable"
-      cloud  = "aws"
-      region = "us-east-1"
-      tier      = "R10"
-      resources = { storage = "10Gi" }
-    }
-  }
-}
-`, dbWorkspace),
+				Config: storageClusterConfig(f, ""),
+				Check:  resource.TestCheckResourceAttr(addr, "storage.size", "20Gi"),
 			},
+			{Config: storageClusterConfig(f, ""), PlanOnly: true},
 			{
-				Config: providerBlock(f) + fmt.Sprintf(`
-resource "relay_postgresql_cluster" "this" {
-  workspace_id = %q
-  name         = "billing"
-
-  nodes = {
-    writers = {
-      role      = "electable"
-      cloud  = "aws"
-      region = "us-east-1"
-      tier      = "R10"
-      resources = { storage = "10Gi" }
-    }
-
-    readers = {
-      role = "read_only"
-      cloud  = "aws"
-      region = "us-east-1"
-      tier = "R10"
-      resources = {
-        storage = "20Gi"
-        storage_autoscale = {
-          enabled     = true
-          max_storage = "40Gi"
-        }
-      }
-    }
-  }
-}
-`, dbWorkspace),
+				Config: storageClusterConfig(f, "    autoscale = {\n      enabled     = true\n      max_storage = \"80Gi\"\n    }"),
 				Check: resource.ComposeAggregateTestCheckFunc(
-					resource.TestCheckResourceAttr("relay_postgresql_cluster.this", "nodes.readers.resources.storage_autoscale.enabled", "true"),
-					resource.TestCheckResourceAttr("relay_postgresql_cluster.this", "nodes.readers.resources.storage_autoscale.max_storage", "40Gi"),
+					resource.TestCheckResourceAttr(addr, "storage.size", "20Gi"),
+					resource.TestCheckResourceAttr(addr, "storage.autoscale.max_storage", "80Gi"),
 					func(*terraform.State) error {
-						for _, n := range f.lastDBUpdate.GetSpec().GetNodes() {
-							if n.GetName() == "readers" {
-								if sa := n.GetResources().GetStorageAutoscale(); !sa.GetEnabled() {
-									return fmt.Errorf("a new node group's storage_autoscale must reach the platform enabled, got %+v", sa)
-								}
-								return nil
-							}
+						if got := f.lastDBUpdate.GetSpec().GetStorage().GetSize(); got != "20Gi" {
+							return fmt.Errorf("an unset size must carry the size in state, got %q", got)
 						}
-						return errors.New("readers group missing from the update")
+						return nil
 					},
 				),
+			},
+			{Config: storageClusterConfig(f, ""), PlanOnly: true},
+		},
+	})
+}
+
+func TestPostgreSQLClusterResource_NodeGroupChangeLeavesStorageAlone(t *testing.T) {
+	f := startFakeServer(t)
+	body := func(tier string) string {
+		return providerBlock(f) + fmt.Sprintf(`
+resource "relay_postgresql_cluster" "this" {
+  workspace_id = %q
+  name         = "billing"
+
+  storage = { size = "10Gi" }
+
+  nodes = {
+    writers = {
+      role   = "electable"
+      cloud  = "aws"
+      region = "us-east-1"
+      tier   = %q
+      resources = {}
+    }
+  }
+}
+`, dbWorkspace, tier)
+	}
+	resource.UnitTest(t, resource.TestCase{
+		ProtoV6ProviderFactories: factories(relay.Dial),
+		Steps: []resource.TestStep{
+			{Config: body("R10")},
+			{
+				Config: body("R20"),
+				Check: func(*terraform.State) error {
+					if paths := lastUpdateMask(f); !slices.Equal(paths, []string{"nodes"}) {
+						return fmt.Errorf("a tier change must send only the nodes path, got %v", paths)
+					}
+					return nil
+				},
 			},
 		},
 	})
@@ -989,35 +1048,32 @@ resource "relay_postgresql_cluster" "this" {
 
 func TestPostgreSQLClusterResource_StorageStatusNoDrift(t *testing.T) {
 	f := startFakeServer(t)
+	const addr = "relay_postgresql_cluster.this"
 	resource.UnitTest(t, resource.TestCase{
 		ProtoV6ProviderFactories: factories(relay.Dial),
 		Steps: []resource.TestStep{
 			{
-				Config: storageAutoscaleClusterConfig(f, `        storage = "10Gi"
-        storage_autoscale = {
-          enabled     = true
-          max_storage = "50Gi"
-        }`),
+				Config: storageClusterConfig(f, storageAutoscaleBody),
+				Check:  resource.TestCheckNoResourceAttr(addr, "storage_status"),
 			},
 			{
 				PreConfig: func() {
 					f.mu.Lock()
 					defer f.mu.Unlock()
 					for _, db := range f.databases {
-						db.Status.Storage = []*serverv1.NodeGroupStorage{{NodeGroup: "writers", Size: "15Gi"}}
+						db.Status.Storage = []*serverv1.NodeGroupStorage{
+							{NodeGroup: "writers", Size: "15Gi", LastExpandedAt: timestamppb.New(time.Unix(1_700_000_000, 0))},
+							{NodeGroup: "readers", Size: "15Gi", LastExpandedAt: timestamppb.New(time.Unix(1_700_003_600, 0))},
+						}
 					}
 				},
-				Config: storageAutoscaleClusterConfig(f, `        storage = "10Gi"
-        storage_autoscale = {
-          enabled     = true
-          max_storage = "50Gi"
-        }`),
+				Config:             storageClusterConfig(f, storageAutoscaleBody),
 				PlanOnly:           true,
 				ExpectNonEmptyPlan: false,
 				Check: resource.ComposeAggregateTestCheckFunc(
-					resource.TestCheckResourceAttr("relay_postgresql_cluster.this", "storage_status.0.node_group", "writers"),
-					resource.TestCheckResourceAttr("relay_postgresql_cluster.this", "storage_status.0.size", "15Gi"),
-					resource.TestCheckResourceAttr("relay_postgresql_cluster.this", "nodes.writers.resources.storage", "10Gi"),
+					resource.TestCheckResourceAttr(addr, "storage_status.size", "15Gi"),
+					resource.TestCheckResourceAttr(addr, "storage_status.last_expanded_at", "2023-11-14T23:13:20Z"),
+					resource.TestCheckResourceAttr(addr, "storage.size", "10Gi"),
 				),
 			},
 		},
@@ -1026,57 +1082,57 @@ func TestPostgreSQLClusterResource_StorageStatusNoDrift(t *testing.T) {
 
 func TestPostgreSQLClusterResource_StorageAutoscaleUnknownCeilingPlans(t *testing.T) {
 	f := startFakeServer(t)
-	config := `
+	unknown := `
 resource "terraform_data" "ceiling" {
   input = "50Gi"
 }
-` + storageAutoscaleClusterConfig(f, `        storage = "10Gi"
-        storage_autoscale = {
-          enabled     = true
-          max_storage = terraform_data.ceiling.id
-        }`)
+` + storageClusterConfig(f, `    size = "10Gi"
+    autoscale = {
+      enabled     = true
+      max_storage = terraform_data.ceiling.id
+    }`)
 	resource.UnitTest(t, resource.TestCase{
 		ProtoV6ProviderFactories: factories(relay.Dial),
-		Steps: []resource.TestStep{{
-			Config:             config,
-			PlanOnly:           true,
-			ExpectNonEmptyPlan: true,
-		}},
+		Steps: []resource.TestStep{
+			{Config: unknown, PlanOnly: true, ExpectNonEmptyPlan: true},
+			{Config: storageClusterConfig(f, storageAutoscaleBody)},
+			{Config: unknown, PlanOnly: true, ExpectNonEmptyPlan: true},
+		},
 	})
 }
 
 func TestPostgreSQLClusterResource_StorageAutoscaleValidation(t *testing.T) {
 	f := startFakeServer(t)
 	cases := map[string]struct {
-		resources string
-		want      string
+		storage string
+		want    string
 	}{
-		"missing max_storage": {`        storage = "10Gi"
-        storage_autoscale = { enabled = true }`, "Missing max_storage"},
-		"max_storage below storage": {`        storage = "10Gi"
-        storage_autoscale = {
-          enabled     = true
-          max_storage = "5Gi"
-        }`, "max_storage is below storage"},
-		"threshold_percent out of range": {`        storage = "10Gi"
-        storage_autoscale = {
-          enabled           = true
-          threshold_percent = 40
-          max_storage       = "50Gi"
-        }`, "between 50 and 95"},
-		"increase_percent out of range": {`        storage = "10Gi"
-        storage_autoscale = {
-          enabled          = true
-          increase_percent = 5
-          max_storage      = "50Gi"
-        }`, "between 10 and 100"},
+		"missing max_storage": {`    size = "10Gi"
+    autoscale = { enabled = true }`, "Missing max_storage"},
+		"max_storage below size": {`    size = "10Gi"
+    autoscale = {
+      enabled     = true
+      max_storage = "5Gi"
+    }`, "max_storage is below size"},
+		"threshold_percent out of range": {`    size = "10Gi"
+    autoscale = {
+      enabled           = true
+      threshold_percent = 40
+      max_storage       = "50Gi"
+    }`, `between 50\s+and\s+95`},
+		"increase_percent out of range": {`    size = "10Gi"
+    autoscale = {
+      enabled          = true
+      increase_percent = 5
+      max_storage      = "50Gi"
+    }`, `between 10\s+and\s+100`},
 	}
 	for name, tc := range cases {
 		t.Run(name, func(t *testing.T) {
 			resource.UnitTest(t, resource.TestCase{
 				ProtoV6ProviderFactories: factories(relay.Dial),
 				Steps: []resource.TestStep{{
-					Config:      storageAutoscaleClusterConfig(f, tc.resources),
+					Config:      storageClusterConfig(f, tc.storage),
 					ExpectError: regexp.MustCompile(tc.want),
 				}},
 			})
@@ -1105,7 +1161,7 @@ resource "relay_postgresql_cluster" "this" {
       cloud     = "aws"
       region    = "us-east-1"
       tier      = "R10"
-      resources = { storage = "10Gi" }
+      resources = {}
     }
 
     tokyo = {
@@ -1113,7 +1169,7 @@ resource "relay_postgresql_cluster" "this" {
       cloud     = "aws"
       region    = "us-east-1"
       tier      = "R10"
-      resources = { storage = "10Gi" }
+      resources = {}
     }
   }
 
@@ -1176,9 +1232,7 @@ resource "relay_postgresql_cluster" "this" {
       cloud  = "aws"
       region = "us-east-1"
       tier   = %q
-      resources = {
-        storage = "10Gi"
-      }
+      resources = {}
     }
   }
 }

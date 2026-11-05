@@ -33,7 +33,8 @@ type valkeyClusterDataModel struct {
 	EndpointPort       types.Int64                     `tfsdk:"endpoint_port"`
 	PublicEndpoints    types.List                      `tfsdk:"public_endpoints"`
 	PrivateEndpoints   types.List                      `tfsdk:"private_endpoints"`
-	StorageStatus      types.List                      `tfsdk:"storage_status"`
+	Storage            types.Object                    `tfsdk:"storage"`
+	StorageStatus      types.Object                    `tfsdk:"storage_status"`
 	ReadyNodes         types.Int64                     `tfsdk:"ready_nodes"`
 	TotalNodes         types.Int64                     `tfsdk:"total_nodes"`
 }
@@ -72,18 +73,8 @@ func (d *valkeyClusterDataSource) Schema(_ context.Context, _ datasource.SchemaR
 					"resources": schema.SingleNestedAttribute{
 						Computed: true,
 						Attributes: map[string]schema.Attribute{
-							"cpu":     schema.StringAttribute{Computed: true},
-							"memory":  schema.StringAttribute{Computed: true},
-							"storage": schema.StringAttribute{Computed: true},
-							"storage_autoscale": schema.SingleNestedAttribute{
-								Computed: true,
-								Attributes: map[string]schema.Attribute{
-									"enabled":           schema.BoolAttribute{Computed: true},
-									"threshold_percent": schema.Int64Attribute{Computed: true},
-									"increase_percent":  schema.Int64Attribute{Computed: true},
-									"max_storage":       schema.StringAttribute{Computed: true},
-								},
-							},
+							"cpu":    schema.StringAttribute{Computed: true},
+							"memory": schema.StringAttribute{Computed: true},
 						},
 					},
 				}},
@@ -96,15 +87,10 @@ func (d *valkeyClusterDataSource) Schema(_ context.Context, _ datasource.SchemaR
 			"endpoint_port":       schema.Int64Attribute{Computed: true, MarkdownDescription: "Public read-write endpoint port."},
 			"public_endpoints":    schema.ListNestedAttribute{Computed: true, NestedObject: endpoint},
 			"private_endpoints":   schema.ListNestedAttribute{Computed: true, NestedObject: endpoint},
-			"storage_status": schema.ListNestedAttribute{
-				Computed: true,
-				NestedObject: schema.NestedAttributeObject{Attributes: map[string]schema.Attribute{
-					"node_group": schema.StringAttribute{Computed: true},
-					"size":       schema.StringAttribute{Computed: true},
-				}},
-			},
-			"ready_nodes": schema.Int64Attribute{Computed: true},
-			"total_nodes": schema.Int64Attribute{Computed: true},
+			"storage":             storageDataAttribute(),
+			"storage_status":      storageStatusDataAttribute(),
+			"ready_nodes":         schema.Int64Attribute{Computed: true},
+			"total_nodes":         schema.Int64Attribute{Computed: true},
 		},
 	}
 }
@@ -163,6 +149,7 @@ func (d *valkeyClusterDataSource) Read(ctx context.Context, req datasource.ReadR
 		EndpointPort:       full.EndpointPort,
 		PublicEndpoints:    full.PublicEndpoints,
 		PrivateEndpoints:   full.PrivateEndpoints,
+		Storage:            full.Storage,
 		StorageStatus:      full.StorageStatus,
 		ReadyNodes:         full.ReadyNodes,
 		TotalNodes:         full.TotalNodes,
