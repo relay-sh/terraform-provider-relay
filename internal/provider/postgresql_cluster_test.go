@@ -117,8 +117,6 @@ func TestPostgreSQLClusterResource_Lifecycle(t *testing.T) {
 							return errors.New("backups must always be requested on")
 						case spec.GetStorage().GetSize() != "10Gi" || spec.GetStorage().GetAutoscale().GetEnabled():
 							return fmt.Errorf("storage = %+v, want 10Gi with autoscale off", spec.GetStorage())
-						case spec.GetNodes()[0].GetResources().GetStorage() != "" || spec.GetNodes()[0].GetResources().GetStorageAutoscale() != nil:
-							return fmt.Errorf("per-node storage must not be sent, got %+v", spec.GetNodes()[0].GetResources())
 						case spec.GetNodes()[0].GetCloud() != "aws" || spec.GetNodes()[0].GetRegion() != "us-east-1":
 							return fmt.Errorf("placement = %s/%s, want aws/us-east-1", spec.GetNodes()[0].GetCloud(), spec.GetNodes()[0].GetRegion())
 						case spec.GetNodes()[0].GetRole() != "electable" || spec.GetNodes()[1].GetRole() != "read_only":
@@ -409,7 +407,7 @@ func TestFakeServerRejectsWhatThePlatformRejects(t *testing.T) {
 	req := &serverv1.CreateDatabaseRequest{Name: "billing", Spec: &serverv1.DatabaseSpec{
 		Engine: "postgresql",
 		Nodes: []*serverv1.NodeSpec{
-			{Role: "primary", Resources: &serverv1.ResourceRequirements{Storage: "5Gi"}},
+			{Role: "primary"},
 		},
 	}}
 	if _, err := f.CreateDatabase(t.Context(), req); status.Code(err) != codes.InvalidArgument {
@@ -962,8 +960,8 @@ func TestPostgreSQLClusterResource_StorageGrowsInPlace(t *testing.T) {
 						f.mu.Lock()
 						defer f.mu.Unlock()
 						for _, db := range f.databases {
-							if got := db.GetSpec().GetNodes()[0].GetResources().GetStorage(); got != "30Gi" {
-								return fmt.Errorf("the platform must mirror the size onto the groups, got %q", got)
+							if got := db.GetSpec().GetStorage().GetSize(); got != "30Gi" {
+								return fmt.Errorf("the platform must store the grown size, got %q", got)
 							}
 						}
 						return nil
