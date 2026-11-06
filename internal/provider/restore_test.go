@@ -40,7 +40,6 @@ func valkeySource(id, version, mode, label string, backups bool) *serverv1.Datab
 			Valkey:  &serverv1.ValkeyConfig{Mode: mode, Shards: shards, Parameters: map[string]string{"maxmemory-policy": "noeviction"}},
 			Nodes: []*serverv1.NodeSpec{{
 				Name: label, Role: roleElectable, Count: count, Cloud: "aws", Region: "us-east-1", Tier: "RC10",
-				Resources: &serverv1.ResourceRequirements{Storage: "8Gi"},
 			}},
 		},
 		Status: &serverv1.DatabaseStatus{Phase: phaseRunning},
@@ -57,7 +56,7 @@ func postgresSource(id, version string) *serverv1.Database {
 			Postgresql:  &serverv1.PostgreSQLConfig{Parameters: map[string]string{"work_mem": "4MB"}},
 			Nodes: []*serverv1.NodeSpec{{
 				Name: "writers", Role: roleElectable, Count: 1, Cloud: "aws", Region: "us-east-1", Tier: "R10",
-				Resources: &serverv1.ResourceRequirements{Cpu: "2", Memory: "4Gi", Storage: "10Gi", DiskType: "gp3", StorageClass: "standard"},
+				Resources: &serverv1.ResourceRequirements{Cpu: "2", Memory: "4Gi", DiskType: "gp3", StorageClass: "standard"},
 			}},
 		},
 		Status: &serverv1.DatabaseStatus{Phase: phaseRunning},

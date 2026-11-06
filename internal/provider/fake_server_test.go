@@ -640,9 +640,7 @@ func (f *fakeServer) CreateDatabase(ctx context.Context, req *serverv1.CreateDat
 	}
 	spec := proto.Clone(req.GetSpec()).(*serverv1.DatabaseSpec)
 	canonicalizeValkeyParameters(spec)
-	if err := f.resolveStorage(spec, nil); err != nil {
-		return nil, err
-	}
+	f.resolveStorage(spec, nil)
 	deriveTierResources(spec)
 	if err := f.bindPlacement(spec.GetNodes()); err != nil {
 		return nil, err
@@ -828,9 +826,7 @@ func (f *fakeServer) UpdateDatabase(ctx context.Context, req *serverv1.UpdateDat
 	if err := validateValkey(merged); err != nil {
 		return nil, err
 	}
-	if err := f.resolveStorage(merged, db.GetSpec()); err != nil {
-		return nil, err
-	}
+	f.resolveStorage(merged, db.GetSpec())
 	deriveTierResources(merged)
 	db.Spec = merged
 	if f.afterUpdate != nil {
@@ -1126,40 +1122,19 @@ func (f *fakeServer) DeleteLogicalDatabase(ctx context.Context, req *serverv1.De
 
 var tierStorage = map[string]string{"R5": "10Gi", "R10": "20Gi", "R20": "40Gi", "RC5": "2Gi", "RC10": "4Gi", "RC20": "8Gi"}
 
-func (f *fakeServer) resolveStorage(spec, stored *serverv1.DatabaseSpec) error {
+func (f *fakeServer) resolveStorage(spec, stored *serverv1.DatabaseSpec) {
 	if spec.Storage == nil {
 		spec.Storage = &serverv1.ClusterStorage{}
 	}
 	st := spec.Storage
-	if stored == nil {
-		sizes := map[string]bool{}
+	if stored == nil && st.Size == "" {
+		best, bestSize := "", -1.0
 		for _, n := range spec.GetNodes() {
-			if size := n.GetResources().GetStorage(); size != "" {
-				sizes[size] = true
-			}
-			if sa := n.GetResources().GetStorageAutoscale(); sa != nil && st.Autoscale == nil {
-				st.Autoscale = proto.Clone(sa).(*serverv1.StorageAutoscale)
+			if size, ok := parseQuantity(tierStorage[n.GetTier()]); ok && size > bestSize {
+				best, bestSize = tierStorage[n.GetTier()], size
 			}
 		}
-		if len(sizes) > 1 {
-			return status.Error(codes.InvalidArgument, "validate spec: node storage sizes disagree")
-		}
-		for size := range sizes {
-			if st.Size == "" {
-				st.Size = size
-			} else if st.Size != size {
-				return status.Error(codes.InvalidArgument, "validate spec: nodes[].resources.storage disagrees with storage.size")
-			}
-		}
-		if st.Size == "" {
-			best, bestSize := "", -1.0
-			for _, n := range spec.GetNodes() {
-				if size, ok := parseQuantity(tierStorage[n.GetTier()]); ok && size > bestSize {
-					best, bestSize = tierStorage[n.GetTier()], size
-				}
-			}
-			st.Size = best
-		}
+		st.Size = best
 	} else if stored.GetStorage().GetSize() != "" && st.Size == "" {
 		st.Size = stored.GetStorage().GetSize()
 	}
@@ -1178,12 +1153,4 @@ func (f *fakeServer) resolveStorage(spec, stored *serverv1.DatabaseSpec) error {
 			}
 		}
 	}
-	for _, n := range spec.GetNodes() {
-		if n.Resources == nil {
-			n.Resources = &serverv1.ResourceRequirements{}
-		}
-		n.Resources.Storage = st.Size
-		n.Resources.StorageAutoscale = proto.Clone(st.Autoscale).(*serverv1.StorageAutoscale)
-	}
-	return nil
 }
