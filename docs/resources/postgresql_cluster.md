@@ -39,6 +39,18 @@ resource "relay_postgresql_cluster" "billing" {
         disk_type = "gp3"
         iops      = 6000
       }
+      autoscaling = {
+        enabled  = true
+        min_tier = "R20"
+        max_tier = "R40"
+        rules = [
+          { metric = "cpu", scale_up_above = 75, scale_down_below = 30 },
+          { metric = "postgres.connections", scale_up_above = 80, scale_down_below = 40 },
+        ]
+        scale_up_window            = "5m"
+        scale_down_window          = "30m"
+        respect_maintenance_window = true
+      }
     }
 
     readers = {
@@ -119,11 +131,16 @@ Required:
 - `region` (String) Region the group runs in, for example `us-east-1`. Changing it moves the group to that region.
 - `resources` (Attributes) (see [below for nested schema](#nestedatt--nodes--resources))
 - `role` (String) How much of the cluster's consensus this group takes part in. `electable` acknowledges synchronous commits and can be promoted. `standby` never acknowledges a commit, which is how a remote group stays out of the commit path — and, since the engine has no per-member preference, how you pin the synchronous replica to the groups near the primary; under `replication.mode = "synchronous"` only a group that was acknowledging commits is promoted, so a standby group is a manual failover, not an automatic one. `read_only` is neither acknowledged nor promoted. The platform derives the `nosync` and `nofailover` tags from this.
-- `tier` (String) Machine catalog name, for example `R20`. CPU and memory are derived from it; an unknown name is rejected. Changing it restarts the group's pods.
+- `tier` (String) Machine catalog name, for example `R20`. CPU and memory are derived from it; an unknown name is rejected. Changing it restarts the group's pods. With `autoscaling` enabled the platform moves the group away from it without changing this value, reported in `current_tier`.
 
 Optional:
 
+- `autoscaling` (Attributes) Moves the group one tier at a time between `min_tier` and `max_tier`; the node count never changes. `tier` keeps the configured value, so a move never shows as drift; the tier the group runs at is `current_tier`. Omitting this block, or removing it from a config that had it, turns autoscaling off. Needs the `compute_autoscale` feature, and the Free plan cannot enable it. (see [below for nested schema](#nestedatt--nodes--autoscaling))
 - `count` (Number) Nodes in the group. Lowering it deletes the removed nodes' volumes without draining them first.
+
+Read-Only:
+
+- `current_tier` (String) Tier the group runs at after autoscaling moved it. Null while `autoscaling` is off or before the platform first reports it.
 
 <a id="nestedatt--nodes--resources"></a>
 ### Nested Schema for `nodes.resources`
@@ -138,6 +155,33 @@ Read-Only:
 
 - `cpu` (String) CPU request derived from `tier`.
 - `memory` (String) Memory request derived from `tier`.
+
+
+<a id="nestedatt--nodes--autoscaling"></a>
+### Nested Schema for `nodes.autoscaling`
+
+Required:
+
+- `enabled` (Boolean) Turn compute autoscaling on for the group.
+
+Optional:
+
+- `max_tier` (String) Highest tier the group may move up to. Required when `enabled` is true.
+- `min_tier` (String) Lowest tier the group may move down to. Required when `enabled` is true, and `tier` must lie between `min_tier` and `max_tier`.
+- `respect_maintenance_window` (Boolean) Hold moves up until the cluster's maintenance window too. Moves down always wait for it.
+- `rules` (Attributes List) Metrics that move the group, at most 8, each metric once. Omit it for the Relay default policy: `cpu` and the engine's memory metric, up above 75 and down below 40. The group moves up when any rule stays above `scale_up_above` for `scale_up_window`, and down when every rule stays below `scale_down_below` for `scale_down_window`. (see [below for nested schema](#nestedatt--nodes--autoscaling--rules))
+- `scale_down_window` (String) How long every rule must stay below its threshold before the group moves down, a duration such as `6h`. Omitted, the platform waits 24 hours.
+- `scale_up_window` (String) How long a rule must stay above its threshold before the group moves up, a duration such as `5m`. Omitted, the platform waits 10 minutes.
+
+<a id="nestedatt--nodes--autoscaling--rules"></a>
+### Nested Schema for `nodes.autoscaling.rules`
+
+Required:
+
+- `metric` (String) Metric from the engine's autoscaling catalog: `cpu`, `memory`, `postgres.connections` and `postgres.replica_lag`. The platform rejects any other.
+- `scale_down_below` (Number) Value below which the group moves one tier down. Must be lower than `scale_up_above`.
+- `scale_up_above` (Number) Value above which the group moves one tier up, in the metric's unit. A percentage is at most 100.
+
 
 
 

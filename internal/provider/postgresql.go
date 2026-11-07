@@ -25,12 +25,14 @@ const (
 )
 
 type nodeGroupModel struct {
-	Role      types.String   `tfsdk:"role"`
-	Count     types.Int64    `tfsdk:"count"`
-	Cloud     types.String   `tfsdk:"cloud"`
-	Region    types.String   `tfsdk:"region"`
-	Tier      types.String   `tfsdk:"tier"`
-	Resources resourcesModel `tfsdk:"resources"`
+	Role        types.String   `tfsdk:"role"`
+	Count       types.Int64    `tfsdk:"count"`
+	Cloud       types.String   `tfsdk:"cloud"`
+	Region      types.String   `tfsdk:"region"`
+	Tier        types.String   `tfsdk:"tier"`
+	Resources   resourcesModel `tfsdk:"resources"`
+	Autoscaling types.Object   `tfsdk:"autoscaling"`
+	CurrentTier types.String   `tfsdk:"current_tier"`
 }
 
 type resourcesModel struct {
@@ -81,13 +83,14 @@ func nodesToProto(nodes map[string]nodeGroupModel) []*serverv1.NodeSpec {
 			res.DiskType = v.ValueString()
 		}
 		out = append(out, &serverv1.NodeSpec{
-			Name:      name,
-			Role:      n.Role.ValueString(),
-			Count:     int32(n.Count.ValueInt64()),
-			Cloud:     n.Cloud.ValueString(),
-			Region:    n.Region.ValueString(),
-			Tier:      n.Tier.ValueString(),
-			Resources: res,
+			Name:        name,
+			Role:        n.Role.ValueString(),
+			Count:       int32(n.Count.ValueInt64()),
+			Cloud:       n.Cloud.ValueString(),
+			Region:      n.Region.ValueString(),
+			Tier:        n.Tier.ValueString(),
+			Resources:   res,
+			Autoscaling: computeAutoscalingToProto(n.Autoscaling),
 		})
 	}
 	return out
@@ -124,7 +127,7 @@ func roleOrder(n nodeGroupModel) int {
 	return 2
 }
 
-func nodesFromProto(nodes []*serverv1.NodeSpec) map[string]nodeGroupModel {
+func nodesFromProto(nodes []*serverv1.NodeSpec, compute []*serverv1.NodeGroupCompute, prior map[string]nodeGroupModel) map[string]nodeGroupModel {
 	out := make(map[string]nodeGroupModel, len(nodes))
 	for _, n := range nodes {
 		res := n.GetResources()
@@ -141,6 +144,8 @@ func nodesFromProto(nodes []*serverv1.NodeSpec) map[string]nodeGroupModel {
 				Throughput: optionalInt64(res.Throughput),
 				DiskType:   types.StringValue(res.GetDiskType()),
 			},
+			Autoscaling: computeAutoscalingFromProto(n.GetAutoscaling(), prior[n.GetName()].Autoscaling),
+			CurrentTier: currentTierFromProto(compute, n.GetName()),
 		}
 	}
 	return out

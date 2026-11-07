@@ -77,6 +77,8 @@ func (d *valkeyClusterDataSource) Schema(_ context.Context, _ datasource.SchemaR
 							"memory": schema.StringAttribute{Computed: true},
 						},
 					},
+					"autoscaling":  computeAutoscalingDataAttribute(),
+					"current_tier": schema.StringAttribute{Computed: true, MarkdownDescription: "Tier the group runs at after autoscaling moved it. Null while autoscaling is off."},
 				}},
 				MarkdownDescription: "The cluster's node group, keyed by its label.",
 			},

@@ -78,6 +78,7 @@ func upgradePostgreSQLClusterV0(ctx context.Context, req resource.UpgradeStateRe
 				CPU: g.Resources.CPU, Memory: g.Resources.Memory, IOPS: g.Resources.IOPS,
 				Throughput: g.Resources.Throughput, DiskType: g.Resources.DiskType,
 			},
+			Autoscaling: types.ObjectNull(computeAutoscalingAttrTypes), CurrentTier: types.StringNull(),
 		}
 	}
 	primary := types.ObjectNull(storageAutoscaleAttrTypes)

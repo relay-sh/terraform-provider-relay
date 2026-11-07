@@ -55,11 +55,37 @@ data "relay_valkey_cluster" "sessions" {
 
 Read-Only:
 
+- `autoscaling` (Attributes) Compute autoscaling of the group. Null when it was never enabled. (see [below for nested schema](#nestedatt--nodes--autoscaling))
 - `cloud` (String)
 - `count` (Number)
+- `current_tier` (String) Tier the group runs at after autoscaling moved it. Null while autoscaling is off.
 - `region` (String)
 - `resources` (Attributes) (see [below for nested schema](#nestedatt--nodes--resources))
 - `tier` (String)
+
+<a id="nestedatt--nodes--autoscaling"></a>
+### Nested Schema for `nodes.autoscaling`
+
+Read-Only:
+
+- `enabled` (Boolean)
+- `max_tier` (String)
+- `min_tier` (String)
+- `respect_maintenance_window` (Boolean)
+- `rules` (Attributes List) (see [below for nested schema](#nestedatt--nodes--autoscaling--rules))
+- `scale_down_window` (String)
+- `scale_up_window` (String)
+
+<a id="nestedatt--nodes--autoscaling--rules"></a>
+### Nested Schema for `nodes.autoscaling.rules`
+
+Read-Only:
+
+- `metric` (String)
+- `scale_down_below` (Number)
+- `scale_up_above` (Number)
+
+
 
 <a id="nestedatt--nodes--resources"></a>
 ### Nested Schema for `nodes.resources`

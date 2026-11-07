@@ -14,6 +14,11 @@ resource "relay_valkey_cluster" "sessions" {
       region    = "us-east-1"
       tier      = "RC20"
       resources = {}
+      autoscaling = {
+        enabled  = true
+        min_tier = "RC10"
+        max_tier = "RC40"
+      }
     }
   }
 

@@ -47,11 +47,13 @@ type valkeyClusterResource struct {
 }
 
 type valkeyNodeGroupModel struct {
-	Count     types.Int64          `tfsdk:"count"`
-	Cloud     types.String         `tfsdk:"cloud"`
-	Region    types.String         `tfsdk:"region"`
-	Tier      types.String         `tfsdk:"tier"`
-	Resources valkeyResourcesModel `tfsdk:"resources"`
+	Count       types.Int64          `tfsdk:"count"`
+	Cloud       types.String         `tfsdk:"cloud"`
+	Region      types.String         `tfsdk:"region"`
+	Tier        types.String         `tfsdk:"tier"`
+	Resources   valkeyResourcesModel `tfsdk:"resources"`
+	Autoscaling types.Object         `tfsdk:"autoscaling"`
+	CurrentTier types.String         `tfsdk:"current_tier"`
 }
 
 type valkeyResourcesModel struct {
@@ -165,8 +167,9 @@ func (r *valkeyClusterResource) Schema(ctx context.Context, _ resource.SchemaReq
 						MarkdownDescription: "Region the group runs in, for example `us-east-1`.",
 					},
 					"tier": schema.StringAttribute{
-						Required:            true,
-						MarkdownDescription: "Relay Cache machine catalog name, for example `RC10`. CPU and memory are derived from it; an unknown name is rejected.",
+						Required: true,
+						MarkdownDescription: "Relay Cache machine catalog name, for example `RC10`. CPU and memory are derived from it; an unknown name is rejected. " +
+							"With `autoscaling` enabled the platform moves the group away from it without changing this value, reported in `current_tier`.",
 					},
 					"resources": schema.SingleNestedAttribute{
 						Required: true,
@@ -175,6 +178,8 @@ func (r *valkeyClusterResource) Schema(ctx context.Context, _ resource.SchemaReq
 							"memory": schema.StringAttribute{Computed: true, PlanModifiers: keepString, MarkdownDescription: "Memory request derived from `tier`."},
 						},
 					},
+					"autoscaling":  computeAutoscalingAttribute("`cpu`, `memory`, `valkey.memory`, `valkey.ops` and `valkey.clients`"),
+					"current_tier": currentTierAttribute(),
 				}},
 			},
 			"parameters": schema.MapAttribute{
@@ -231,6 +236,7 @@ func (r *valkeyClusterResource) ValidateConfig(ctx context.Context, req resource
 	resp.Diagnostics.Append(req.Config.GetAttribute(ctx, path.Root("shards"), &shards)...)
 	resp.Diagnostics.Append(req.Config.GetAttribute(ctx, path.Root("replicas_per_shard"), &replicas)...)
 	resp.Diagnostics.Append(req.Config.GetAttribute(ctx, path.Root("nodes"), &nodes)...)
+	validateComputeAutoscaling(nodes, &resp.Diagnostics)
 	if resp.Diagnostics.HasError() || mode.IsUnknown() {
 		return
 	}
@@ -308,6 +314,7 @@ func (r *valkeyClusterResource) ModifyPlan(ctx context.Context, req resource.Mod
 		if !ok {
 			planned.Resources.CPU = types.StringUnknown()
 			planned.Resources.Memory = types.StringUnknown()
+			planned.CurrentTier = types.StringUnknown()
 			plan.Nodes[name] = planned
 			resp.RequiresReplace = append(resp.RequiresReplace, path.Root("nodes"))
 			continue
@@ -315,13 +322,17 @@ func (r *valkeyClusterResource) ModifyPlan(ctx context.Context, req resource.Mod
 		if !planned.Tier.IsUnknown() && !planned.Tier.Equal(current.Tier) {
 			planned.Resources.CPU = types.StringUnknown()
 			planned.Resources.Memory = types.StringUnknown()
-			plan.Nodes[name] = planned
 		}
+		if !planned.Tier.Equal(current.Tier) || !planned.Autoscaling.Equal(current.Autoscaling) {
+			planned.CurrentTier = types.StringUnknown()
+		}
+		plan.Nodes[name] = planned
 	}
-	if reflect.DeepEqual(plan.Nodes, prior.Nodes) && sameSettings(plan, prior) {
+	if reflect.DeepEqual(nodeSpecs(plan.Nodes), nodeSpecs(prior.Nodes)) && sameSettings(plan, prior) {
 		resp.Diagnostics.Append(resp.Plan.Set(ctx, &prior)...)
 		return
 	}
+	releaseCurrentTiers(plan.Nodes)
 	resp.Diagnostics.Append(resp.Plan.Set(ctx, &plan)...)
 }
 
@@ -624,13 +635,14 @@ func valkeySpecToProto(m valkeyClusterModel) *serverv1.DatabaseSpec {
 	for name, n := range m.Nodes {
 		spec.PrimaryNodeGroup = name
 		spec.Nodes = append(spec.Nodes, &serverv1.NodeSpec{
-			Name:      name,
-			Role:      roleElectable,
-			Count:     int32(n.Count.ValueInt64()),
-			Cloud:     n.Cloud.ValueString(),
-			Region:    n.Region.ValueString(),
-			Tier:      n.Tier.ValueString(),
-			Resources: &serverv1.ResourceRequirements{},
+			Name:        name,
+			Role:        roleElectable,
+			Count:       int32(n.Count.ValueInt64()),
+			Cloud:       n.Cloud.ValueString(),
+			Region:      n.Region.ValueString(),
+			Tier:        n.Tier.ValueString(),
+			Resources:   &serverv1.ResourceRequirements{},
+			Autoscaling: computeAutoscalingToProto(n.Autoscaling),
 		})
 	}
 	return spec
@@ -638,7 +650,7 @@ func valkeySpecToProto(m valkeyClusterModel) *serverv1.DatabaseSpec {
 
 func valkeyUpdateMask(plan, prior valkeyClusterModel) []string {
 	var paths []string
-	if !reflect.DeepEqual(plan.Nodes, prior.Nodes) {
+	if !reflect.DeepEqual(nodeSpecs(plan.Nodes), nodeSpecs(prior.Nodes)) {
 		paths = append(paths, "nodes")
 	}
 	if !plan.Storage.Equal(prior.Storage) {
@@ -653,7 +665,7 @@ func valkeyUpdateMask(plan, prior valkeyClusterModel) []string {
 	return paths
 }
 
-func valkeyNodesFromProto(nodes []*serverv1.NodeSpec) map[string]valkeyNodeGroupModel {
+func valkeyNodesFromProto(nodes []*serverv1.NodeSpec, compute []*serverv1.NodeGroupCompute, prior map[string]valkeyNodeGroupModel) map[string]valkeyNodeGroupModel {
 	out := make(map[string]valkeyNodeGroupModel, len(nodes))
 	for _, n := range nodes {
 		res := n.GetResources()
@@ -666,6 +678,8 @@ func valkeyNodesFromProto(nodes []*serverv1.NodeSpec) map[string]valkeyNodeGroup
 				CPU:    types.StringValue(res.GetCpu()),
 				Memory: types.StringValue(res.GetMemory()),
 			},
+			Autoscaling: computeAutoscalingFromProto(n.GetAutoscaling(), prior[n.GetName()].Autoscaling),
+			CurrentTier: currentTierFromProto(compute, n.GetName()),
 		}
 	}
 	return out
@@ -744,7 +758,7 @@ func valkeyClusterFromProto(db *serverv1.Database, prior valkeyClusterModel) val
 		Shards:               shards,
 		ReplicasPerShard:     replicas,
 		Storage:              storageFromProto(spec.GetStorage(), prior.Storage),
-		Nodes:                valkeyNodesFromProto(spec.GetNodes()),
+		Nodes:                valkeyNodesFromProto(spec.GetNodes(), st.GetCompute(), prior.Nodes),
 		Parameters:           keepConfiguredParameterNames(v.GetParameters(), prior.Parameters),
 		KeepBackupsOnDestroy: prior.KeepBackupsOnDestroy,
 		DeletionProtection:   types.BoolValue(db.GetDeletionProtection()),

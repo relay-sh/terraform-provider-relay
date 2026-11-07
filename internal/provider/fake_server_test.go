@@ -633,6 +633,9 @@ func (f *fakeServer) CreateDatabase(ctx context.Context, req *serverv1.CreateDat
 	if err := validateValkey(req.GetSpec()); err != nil {
 		return nil, err
 	}
+	if err := validateCompute(req.GetSpec()); err != nil {
+		return nil, err
+	}
 	for _, db := range f.databases {
 		if db.GetWorkspaceId() == workspaceOf(ctx) && db.GetName() == req.GetName() {
 			return nil, status.Error(codes.AlreadyExists, "database already exists")
@@ -709,9 +712,58 @@ func (f *fakeServer) storeDatabase(ctx context.Context, name string, spec *serve
 			TotalNodes:      1,
 		},
 	}
+	effectiveCompute(db)
 	f.databases[db.Id] = db
 	f.settle(db.Id, "provisioning")
 	return db
+}
+
+var tierLadders = map[string][]string{enginePostgreSQL: {"R5", "R10", "R20"}, engineValkey: {"RC5", "RC10", "RC20"}}
+
+func validateCompute(spec *serverv1.DatabaseSpec) error {
+	ladder := tierLadders[spec.GetEngine()]
+	for i, n := range spec.GetNodes() {
+		a := n.GetAutoscaling()
+		if !a.GetEnabled() {
+			continue
+		}
+		if a.GetMinTier() == "" || a.GetMaxTier() == "" {
+			return status.Errorf(codes.InvalidArgument, "nodes[%d].autoscaling: min_tier and max_tier are required when autoscaling is enabled", i)
+		}
+		lo, hi, at := slices.Index(ladder, a.GetMinTier()), slices.Index(ladder, a.GetMaxTier()), slices.Index(ladder, n.GetTier())
+		if lo < 0 || hi < 0 || at < lo || at > hi {
+			return status.Errorf(codes.InvalidArgument, "nodes[%d].autoscaling: tier %s must lie between min_tier %s and max_tier %s", i, n.GetTier(), a.GetMinTier(), a.GetMaxTier())
+		}
+	}
+	return nil
+}
+
+func keepComputeAutoscaling(nodes, stored []*serverv1.NodeSpec) []*serverv1.NodeSpec {
+	for _, n := range nodes {
+		for _, st := range stored {
+			if n.GetAutoscaling() == nil && st.GetName() == n.GetName() {
+				n.Autoscaling = st.GetAutoscaling()
+			}
+		}
+	}
+	return nodes
+}
+
+func effectiveCompute(db *serverv1.Database) {
+	var out []*serverv1.NodeGroupCompute
+	for _, n := range db.GetSpec().GetNodes() {
+		if !n.GetAutoscaling().GetEnabled() {
+			continue
+		}
+		c := &serverv1.NodeGroupCompute{NodeGroup: n.GetName(), Tier: n.GetTier(), SpecTier: n.GetTier()}
+		for _, seen := range db.GetStatus().GetCompute() {
+			if seen.GetNodeGroup() == n.GetName() && seen.GetSpecTier() == n.GetTier() {
+				c = seen
+			}
+		}
+		out = append(out, c)
+	}
+	db.Status.Compute = out
 }
 
 func (f *fakeServer) RestoreDatabase(ctx context.Context, req *serverv1.RestoreDatabaseRequest) (*serverv1.RestoreDatabaseResponse, error) {
@@ -802,7 +854,10 @@ func (f *fakeServer) UpdateDatabase(ctx context.Context, req *serverv1.UpdateDat
 			if err := f.bindPlacement(in.GetNodes()); err != nil {
 				return nil, err
 			}
-			merged.Nodes = in.GetNodes()
+			merged.Nodes = keepComputeAutoscaling(in.GetNodes(), merged.GetNodes())
+			if err := validateCompute(merged); err != nil {
+				return nil, err
+			}
 		case "storage":
 			if in.GetStorage().GetSize() != "" {
 				merged.Storage.Size = in.GetStorage().GetSize()
@@ -829,6 +884,7 @@ func (f *fakeServer) UpdateDatabase(ctx context.Context, req *serverv1.UpdateDat
 	f.resolveStorage(merged, db.GetSpec())
 	deriveTierResources(merged)
 	db.Spec = merged
+	effectiveCompute(db)
 	if f.afterUpdate != nil {
 		f.afterUpdate(db)
 	}

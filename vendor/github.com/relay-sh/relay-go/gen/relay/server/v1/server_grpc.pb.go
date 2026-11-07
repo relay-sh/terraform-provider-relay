@@ -176,6 +176,8 @@ const (
 	ServerService_UpdateDatabase_FullMethodName                 = "/relay.server.v1.ServerService/UpdateDatabase"
 	ServerService_ListPostgreSQLParameters_FullMethodName       = "/relay.server.v1.ServerService/ListPostgreSQLParameters"
 	ServerService_ListValkeyParameters_FullMethodName           = "/relay.server.v1.ServerService/ListValkeyParameters"
+	ServerService_ListAutoscaleMetrics_FullMethodName           = "/relay.server.v1.ServerService/ListAutoscaleMetrics"
+	ServerService_ListScaleEvents_FullMethodName                = "/relay.server.v1.ServerService/ListScaleEvents"
 	ServerService_WatchDatabase_FullMethodName                  = "/relay.server.v1.ServerService/WatchDatabase"
 	ServerService_ListPendingOperations_FullMethodName          = "/relay.server.v1.ServerService/ListPendingOperations"
 	ServerService_DeleteDatabase_FullMethodName                 = "/relay.server.v1.ServerService/DeleteDatabase"
@@ -222,6 +224,7 @@ const (
 	ServerService_CreateCheckoutSession_FullMethodName          = "/relay.server.v1.ServerService/CreateCheckoutSession"
 	ServerService_CreateBillingPortalSession_FullMethodName     = "/relay.server.v1.ServerService/CreateBillingPortalSession"
 	ServerService_ChangePlan_FullMethodName                     = "/relay.server.v1.ServerService/ChangePlan"
+	ServerService_RedeemPromoCode_FullMethodName                = "/relay.server.v1.ServerService/RedeemPromoCode"
 	ServerService_CreateSupportReport_FullMethodName            = "/relay.server.v1.ServerService/CreateSupportReport"
 	ServerService_ListSupportReports_FullMethodName             = "/relay.server.v1.ServerService/ListSupportReports"
 	ServerService_GetSupportReport_FullMethodName               = "/relay.server.v1.ServerService/GetSupportReport"
@@ -627,6 +630,9 @@ type ServerServiceClient interface {
 	ListPostgreSQLParameters(ctx context.Context, in *ListPostgreSQLParametersRequest, opts ...grpc.CallOption) (*ListPostgreSQLParametersResponse, error)
 	// ListValkeyParameters returns the Valkey version's catalog that valkey.parameters is validated against.
 	ListValkeyParameters(ctx context.Context, in *ListValkeyParametersRequest, opts ...grpc.CallOption) (*ListValkeyParametersResponse, error)
+	ListAutoscaleMetrics(ctx context.Context, in *ListAutoscaleMetricsRequest, opts ...grpc.CallOption) (*ListAutoscaleMetricsResponse, error)
+	// Newest first.
+	ListScaleEvents(ctx context.Context, in *ListScaleEventsRequest, opts ...grpc.CallOption) (*ListScaleEventsResponse, error)
 	// WatchDatabase streams a cluster's status transitions (snapshot first) so
 	// the dashboard can stop interval-polling. See WatchDatabaseRequest.
 	WatchDatabase(ctx context.Context, in *WatchDatabaseRequest, opts ...grpc.CallOption) (grpc.ServerStreamingClient[WatchDatabaseEvent], error)
@@ -749,6 +755,10 @@ type ServerServiceClient interface {
 	// for the end of the current billing period (no proration). Enterprise is
 	// managed by sales. Requires org.billing.manage.
 	ChangePlan(ctx context.Context, in *ChangePlanRequest, opts ...grpc.CallOption) (*ChangePlanResponse, error)
+	// RedeemPromoCode applies a promo campaign's credit to the org. The credit
+	// activates once a card is on file and that card has not funded another
+	// promo. Requires org.billing.manage and the promo_codes feature flag.
+	RedeemPromoCode(ctx context.Context, in *RedeemPromoCodeRequest, opts ...grpc.CallOption) (*RedeemPromoCodeResponse, error)
 	// CreateSupportReport files a support ticket for the caller's org.
 	CreateSupportReport(ctx context.Context, in *CreateSupportReportRequest, opts ...grpc.CallOption) (*CreateSupportReportResponse, error)
 	// ListSupportReports returns the org's reports; support staff see every
@@ -2413,6 +2423,26 @@ func (c *serverServiceClient) ListValkeyParameters(ctx context.Context, in *List
 	return out, nil
 }
 
+func (c *serverServiceClient) ListAutoscaleMetrics(ctx context.Context, in *ListAutoscaleMetricsRequest, opts ...grpc.CallOption) (*ListAutoscaleMetricsResponse, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(ListAutoscaleMetricsResponse)
+	err := c.cc.Invoke(ctx, ServerService_ListAutoscaleMetrics_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *serverServiceClient) ListScaleEvents(ctx context.Context, in *ListScaleEventsRequest, opts ...grpc.CallOption) (*ListScaleEventsResponse, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(ListScaleEventsResponse)
+	err := c.cc.Invoke(ctx, ServerService_ListScaleEvents_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
 func (c *serverServiceClient) WatchDatabase(ctx context.Context, in *WatchDatabaseRequest, opts ...grpc.CallOption) (grpc.ServerStreamingClient[WatchDatabaseEvent], error) {
 	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
 	stream, err := c.cc.NewStream(ctx, &ServerService_ServiceDesc.Streams[0], ServerService_WatchDatabase_FullMethodName, cOpts...)
@@ -2876,6 +2906,16 @@ func (c *serverServiceClient) ChangePlan(ctx context.Context, in *ChangePlanRequ
 	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
 	out := new(ChangePlanResponse)
 	err := c.cc.Invoke(ctx, ServerService_ChangePlan_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *serverServiceClient) RedeemPromoCode(ctx context.Context, in *RedeemPromoCodeRequest, opts ...grpc.CallOption) (*RedeemPromoCodeResponse, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(RedeemPromoCodeResponse)
+	err := c.cc.Invoke(ctx, ServerService_RedeemPromoCode_FullMethodName, in, out, cOpts...)
 	if err != nil {
 		return nil, err
 	}
@@ -3555,6 +3595,9 @@ type ServerServiceServer interface {
 	ListPostgreSQLParameters(context.Context, *ListPostgreSQLParametersRequest) (*ListPostgreSQLParametersResponse, error)
 	// ListValkeyParameters returns the Valkey version's catalog that valkey.parameters is validated against.
 	ListValkeyParameters(context.Context, *ListValkeyParametersRequest) (*ListValkeyParametersResponse, error)
+	ListAutoscaleMetrics(context.Context, *ListAutoscaleMetricsRequest) (*ListAutoscaleMetricsResponse, error)
+	// Newest first.
+	ListScaleEvents(context.Context, *ListScaleEventsRequest) (*ListScaleEventsResponse, error)
 	// WatchDatabase streams a cluster's status transitions (snapshot first) so
 	// the dashboard can stop interval-polling. See WatchDatabaseRequest.
 	WatchDatabase(*WatchDatabaseRequest, grpc.ServerStreamingServer[WatchDatabaseEvent]) error
@@ -3677,6 +3720,10 @@ type ServerServiceServer interface {
 	// for the end of the current billing period (no proration). Enterprise is
 	// managed by sales. Requires org.billing.manage.
 	ChangePlan(context.Context, *ChangePlanRequest) (*ChangePlanResponse, error)
+	// RedeemPromoCode applies a promo campaign's credit to the org. The credit
+	// activates once a card is on file and that card has not funded another
+	// promo. Requires org.billing.manage and the promo_codes feature flag.
+	RedeemPromoCode(context.Context, *RedeemPromoCodeRequest) (*RedeemPromoCodeResponse, error)
 	// CreateSupportReport files a support ticket for the caller's org.
 	CreateSupportReport(context.Context, *CreateSupportReportRequest) (*CreateSupportReportResponse, error)
 	// ListSupportReports returns the org's reports; support staff see every
@@ -4242,6 +4289,12 @@ func (UnimplementedServerServiceServer) ListPostgreSQLParameters(context.Context
 func (UnimplementedServerServiceServer) ListValkeyParameters(context.Context, *ListValkeyParametersRequest) (*ListValkeyParametersResponse, error) {
 	return nil, status.Error(codes.Unimplemented, "method ListValkeyParameters not implemented")
 }
+func (UnimplementedServerServiceServer) ListAutoscaleMetrics(context.Context, *ListAutoscaleMetricsRequest) (*ListAutoscaleMetricsResponse, error) {
+	return nil, status.Error(codes.Unimplemented, "method ListAutoscaleMetrics not implemented")
+}
+func (UnimplementedServerServiceServer) ListScaleEvents(context.Context, *ListScaleEventsRequest) (*ListScaleEventsResponse, error) {
+	return nil, status.Error(codes.Unimplemented, "method ListScaleEvents not implemented")
+}
 func (UnimplementedServerServiceServer) WatchDatabase(*WatchDatabaseRequest, grpc.ServerStreamingServer[WatchDatabaseEvent]) error {
 	return status.Error(codes.Unimplemented, "method WatchDatabase not implemented")
 }
@@ -4379,6 +4432,9 @@ func (UnimplementedServerServiceServer) CreateBillingPortalSession(context.Conte
 }
 func (UnimplementedServerServiceServer) ChangePlan(context.Context, *ChangePlanRequest) (*ChangePlanResponse, error) {
 	return nil, status.Error(codes.Unimplemented, "method ChangePlan not implemented")
+}
+func (UnimplementedServerServiceServer) RedeemPromoCode(context.Context, *RedeemPromoCodeRequest) (*RedeemPromoCodeResponse, error) {
+	return nil, status.Error(codes.Unimplemented, "method RedeemPromoCode not implemented")
 }
 func (UnimplementedServerServiceServer) CreateSupportReport(context.Context, *CreateSupportReportRequest) (*CreateSupportReportResponse, error) {
 	return nil, status.Error(codes.Unimplemented, "method CreateSupportReport not implemented")
@@ -7317,6 +7373,42 @@ func _ServerService_ListValkeyParameters_Handler(srv interface{}, ctx context.Co
 	return interceptor(ctx, in, info, handler)
 }
 
+func _ServerService_ListAutoscaleMetrics_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(ListAutoscaleMetricsRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(ServerServiceServer).ListAutoscaleMetrics(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: ServerService_ListAutoscaleMetrics_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(ServerServiceServer).ListAutoscaleMetrics(ctx, req.(*ListAutoscaleMetricsRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _ServerService_ListScaleEvents_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(ListScaleEventsRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(ServerServiceServer).ListScaleEvents(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: ServerService_ListScaleEvents_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(ServerServiceServer).ListScaleEvents(ctx, req.(*ListScaleEventsRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
 func _ServerService_WatchDatabase_Handler(srv interface{}, stream grpc.ServerStream) error {
 	m := new(WatchDatabaseRequest)
 	if err := stream.RecvMsg(m); err != nil {
@@ -8134,6 +8226,24 @@ func _ServerService_ChangePlan_Handler(srv interface{}, ctx context.Context, dec
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
 		return srv.(ServerServiceServer).ChangePlan(ctx, req.(*ChangePlanRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _ServerService_RedeemPromoCode_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(RedeemPromoCodeRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(ServerServiceServer).RedeemPromoCode(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: ServerService_RedeemPromoCode_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(ServerServiceServer).RedeemPromoCode(ctx, req.(*RedeemPromoCodeRequest))
 	}
 	return interceptor(ctx, in, info, handler)
 }
@@ -9314,6 +9424,14 @@ var ServerService_ServiceDesc = grpc.ServiceDesc{
 			Handler:    _ServerService_ListValkeyParameters_Handler,
 		},
 		{
+			MethodName: "ListAutoscaleMetrics",
+			Handler:    _ServerService_ListAutoscaleMetrics_Handler,
+		},
+		{
+			MethodName: "ListScaleEvents",
+			Handler:    _ServerService_ListScaleEvents_Handler,
+		},
+		{
 			MethodName: "ListPendingOperations",
 			Handler:    _ServerService_ListPendingOperations_Handler,
 		},
@@ -9494,6 +9612,10 @@ var ServerService_ServiceDesc = grpc.ServiceDesc{
 			Handler:    _ServerService_ChangePlan_Handler,
 		},
 		{
+			MethodName: "RedeemPromoCode",
+			Handler:    _ServerService_RedeemPromoCode_Handler,
+		},
+		{
 			MethodName: "CreateSupportReport",
 			Handler:    _ServerService_CreateSupportReport_Handler,
 		},
@@ -9638,6 +9760,11 @@ const (
 	AdminService_AdminRevokeOrganizationComp_FullMethodName       = "/relay.server.v1.AdminService/AdminRevokeOrganizationComp"
 	AdminService_AdminGrantOrganizationCredit_FullMethodName      = "/relay.server.v1.AdminService/AdminGrantOrganizationCredit"
 	AdminService_AdminRevokeOrganizationCredit_FullMethodName     = "/relay.server.v1.AdminService/AdminRevokeOrganizationCredit"
+	AdminService_AdminCreatePromoCampaign_FullMethodName          = "/relay.server.v1.AdminService/AdminCreatePromoCampaign"
+	AdminService_AdminListPromoCampaigns_FullMethodName           = "/relay.server.v1.AdminService/AdminListPromoCampaigns"
+	AdminService_AdminSetPromoCampaignActive_FullMethodName       = "/relay.server.v1.AdminService/AdminSetPromoCampaignActive"
+	AdminService_AdminListPromoRedemptions_FullMethodName         = "/relay.server.v1.AdminService/AdminListPromoRedemptions"
+	AdminService_AdminRevokePromoRedemption_FullMethodName        = "/relay.server.v1.AdminService/AdminRevokePromoRedemption"
 	AdminService_AdminGetOrganizationCost_FullMethodName          = "/relay.server.v1.AdminService/AdminGetOrganizationCost"
 	AdminService_AdminListAuditLog_FullMethodName                 = "/relay.server.v1.AdminService/AdminListAuditLog"
 	AdminService_AdminGetCloudCosts_FullMethodName                = "/relay.server.v1.AdminService/AdminGetCloudCosts"
@@ -9754,6 +9881,13 @@ type AdminServiceClient interface {
 	// AdminRevokeOrganizationCredit ends a credit so it stops applying to periods
 	// that have not yet closed.
 	AdminRevokeOrganizationCredit(ctx context.Context, in *AdminRevokeOrganizationCreditRequest, opts ...grpc.CallOption) (*AdminRevokeOrganizationCreditResponse, error)
+	AdminCreatePromoCampaign(ctx context.Context, in *AdminCreatePromoCampaignRequest, opts ...grpc.CallOption) (*AdminCreatePromoCampaignResponse, error)
+	AdminListPromoCampaigns(ctx context.Context, in *AdminListPromoCampaignsRequest, opts ...grpc.CallOption) (*AdminListPromoCampaignsResponse, error)
+	AdminSetPromoCampaignActive(ctx context.Context, in *AdminSetPromoCampaignActiveRequest, opts ...grpc.CallOption) (*AdminSetPromoCampaignActiveResponse, error)
+	AdminListPromoRedemptions(ctx context.Context, in *AdminListPromoRedemptionsRequest, opts ...grpc.CallOption) (*AdminListPromoRedemptionsResponse, error)
+	// AdminRevokePromoRedemption closes an open promo redemption and claws back
+	// the credit it has not spent.
+	AdminRevokePromoRedemption(ctx context.Context, in *AdminRevokePromoRedemptionRequest, opts ...grpc.CallOption) (*AdminRevokePromoRedemptionResponse, error)
 	// AdminGetOrganizationCost returns an organization's direct infra
 	// cost-to-serve over a window, from Kubecost, allocated by org. This is direct
 	// tenant cost only (shared/overhead is not attributed). Windows are limited by
@@ -10077,6 +10211,56 @@ func (c *adminServiceClient) AdminRevokeOrganizationCredit(ctx context.Context, 
 	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
 	out := new(AdminRevokeOrganizationCreditResponse)
 	err := c.cc.Invoke(ctx, AdminService_AdminRevokeOrganizationCredit_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *adminServiceClient) AdminCreatePromoCampaign(ctx context.Context, in *AdminCreatePromoCampaignRequest, opts ...grpc.CallOption) (*AdminCreatePromoCampaignResponse, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(AdminCreatePromoCampaignResponse)
+	err := c.cc.Invoke(ctx, AdminService_AdminCreatePromoCampaign_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *adminServiceClient) AdminListPromoCampaigns(ctx context.Context, in *AdminListPromoCampaignsRequest, opts ...grpc.CallOption) (*AdminListPromoCampaignsResponse, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(AdminListPromoCampaignsResponse)
+	err := c.cc.Invoke(ctx, AdminService_AdminListPromoCampaigns_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *adminServiceClient) AdminSetPromoCampaignActive(ctx context.Context, in *AdminSetPromoCampaignActiveRequest, opts ...grpc.CallOption) (*AdminSetPromoCampaignActiveResponse, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(AdminSetPromoCampaignActiveResponse)
+	err := c.cc.Invoke(ctx, AdminService_AdminSetPromoCampaignActive_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *adminServiceClient) AdminListPromoRedemptions(ctx context.Context, in *AdminListPromoRedemptionsRequest, opts ...grpc.CallOption) (*AdminListPromoRedemptionsResponse, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(AdminListPromoRedemptionsResponse)
+	err := c.cc.Invoke(ctx, AdminService_AdminListPromoRedemptions_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *adminServiceClient) AdminRevokePromoRedemption(ctx context.Context, in *AdminRevokePromoRedemptionRequest, opts ...grpc.CallOption) (*AdminRevokePromoRedemptionResponse, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(AdminRevokePromoRedemptionResponse)
+	err := c.cc.Invoke(ctx, AdminService_AdminRevokePromoRedemption_FullMethodName, in, out, cOpts...)
 	if err != nil {
 		return nil, err
 	}
@@ -10692,6 +10876,13 @@ type AdminServiceServer interface {
 	// AdminRevokeOrganizationCredit ends a credit so it stops applying to periods
 	// that have not yet closed.
 	AdminRevokeOrganizationCredit(context.Context, *AdminRevokeOrganizationCreditRequest) (*AdminRevokeOrganizationCreditResponse, error)
+	AdminCreatePromoCampaign(context.Context, *AdminCreatePromoCampaignRequest) (*AdminCreatePromoCampaignResponse, error)
+	AdminListPromoCampaigns(context.Context, *AdminListPromoCampaignsRequest) (*AdminListPromoCampaignsResponse, error)
+	AdminSetPromoCampaignActive(context.Context, *AdminSetPromoCampaignActiveRequest) (*AdminSetPromoCampaignActiveResponse, error)
+	AdminListPromoRedemptions(context.Context, *AdminListPromoRedemptionsRequest) (*AdminListPromoRedemptionsResponse, error)
+	// AdminRevokePromoRedemption closes an open promo redemption and claws back
+	// the credit it has not spent.
+	AdminRevokePromoRedemption(context.Context, *AdminRevokePromoRedemptionRequest) (*AdminRevokePromoRedemptionResponse, error)
 	// AdminGetOrganizationCost returns an organization's direct infra
 	// cost-to-serve over a window, from Kubecost, allocated by org. This is direct
 	// tenant cost only (shared/overhead is not attributed). Windows are limited by
@@ -10929,6 +11120,21 @@ func (UnimplementedAdminServiceServer) AdminGrantOrganizationCredit(context.Cont
 }
 func (UnimplementedAdminServiceServer) AdminRevokeOrganizationCredit(context.Context, *AdminRevokeOrganizationCreditRequest) (*AdminRevokeOrganizationCreditResponse, error) {
 	return nil, status.Error(codes.Unimplemented, "method AdminRevokeOrganizationCredit not implemented")
+}
+func (UnimplementedAdminServiceServer) AdminCreatePromoCampaign(context.Context, *AdminCreatePromoCampaignRequest) (*AdminCreatePromoCampaignResponse, error) {
+	return nil, status.Error(codes.Unimplemented, "method AdminCreatePromoCampaign not implemented")
+}
+func (UnimplementedAdminServiceServer) AdminListPromoCampaigns(context.Context, *AdminListPromoCampaignsRequest) (*AdminListPromoCampaignsResponse, error) {
+	return nil, status.Error(codes.Unimplemented, "method AdminListPromoCampaigns not implemented")
+}
+func (UnimplementedAdminServiceServer) AdminSetPromoCampaignActive(context.Context, *AdminSetPromoCampaignActiveRequest) (*AdminSetPromoCampaignActiveResponse, error) {
+	return nil, status.Error(codes.Unimplemented, "method AdminSetPromoCampaignActive not implemented")
+}
+func (UnimplementedAdminServiceServer) AdminListPromoRedemptions(context.Context, *AdminListPromoRedemptionsRequest) (*AdminListPromoRedemptionsResponse, error) {
+	return nil, status.Error(codes.Unimplemented, "method AdminListPromoRedemptions not implemented")
+}
+func (UnimplementedAdminServiceServer) AdminRevokePromoRedemption(context.Context, *AdminRevokePromoRedemptionRequest) (*AdminRevokePromoRedemptionResponse, error) {
+	return nil, status.Error(codes.Unimplemented, "method AdminRevokePromoRedemption not implemented")
 }
 func (UnimplementedAdminServiceServer) AdminGetOrganizationCost(context.Context, *AdminGetOrganizationCostRequest) (*AdminGetOrganizationCostResponse, error) {
 	return nil, status.Error(codes.Unimplemented, "method AdminGetOrganizationCost not implemented")
@@ -11346,6 +11552,96 @@ func _AdminService_AdminRevokeOrganizationCredit_Handler(srv interface{}, ctx co
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
 		return srv.(AdminServiceServer).AdminRevokeOrganizationCredit(ctx, req.(*AdminRevokeOrganizationCreditRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _AdminService_AdminCreatePromoCampaign_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(AdminCreatePromoCampaignRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(AdminServiceServer).AdminCreatePromoCampaign(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: AdminService_AdminCreatePromoCampaign_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(AdminServiceServer).AdminCreatePromoCampaign(ctx, req.(*AdminCreatePromoCampaignRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _AdminService_AdminListPromoCampaigns_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(AdminListPromoCampaignsRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(AdminServiceServer).AdminListPromoCampaigns(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: AdminService_AdminListPromoCampaigns_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(AdminServiceServer).AdminListPromoCampaigns(ctx, req.(*AdminListPromoCampaignsRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _AdminService_AdminSetPromoCampaignActive_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(AdminSetPromoCampaignActiveRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(AdminServiceServer).AdminSetPromoCampaignActive(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: AdminService_AdminSetPromoCampaignActive_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(AdminServiceServer).AdminSetPromoCampaignActive(ctx, req.(*AdminSetPromoCampaignActiveRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _AdminService_AdminListPromoRedemptions_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(AdminListPromoRedemptionsRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(AdminServiceServer).AdminListPromoRedemptions(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: AdminService_AdminListPromoRedemptions_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(AdminServiceServer).AdminListPromoRedemptions(ctx, req.(*AdminListPromoRedemptionsRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _AdminService_AdminRevokePromoRedemption_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(AdminRevokePromoRedemptionRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(AdminServiceServer).AdminRevokePromoRedemption(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: AdminService_AdminRevokePromoRedemption_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(AdminServiceServer).AdminRevokePromoRedemption(ctx, req.(*AdminRevokePromoRedemptionRequest))
 	}
 	return interceptor(ctx, in, info, handler)
 }
@@ -12398,6 +12694,26 @@ var AdminService_ServiceDesc = grpc.ServiceDesc{
 		{
 			MethodName: "AdminRevokeOrganizationCredit",
 			Handler:    _AdminService_AdminRevokeOrganizationCredit_Handler,
+		},
+		{
+			MethodName: "AdminCreatePromoCampaign",
+			Handler:    _AdminService_AdminCreatePromoCampaign_Handler,
+		},
+		{
+			MethodName: "AdminListPromoCampaigns",
+			Handler:    _AdminService_AdminListPromoCampaigns_Handler,
+		},
+		{
+			MethodName: "AdminSetPromoCampaignActive",
+			Handler:    _AdminService_AdminSetPromoCampaignActive_Handler,
+		},
+		{
+			MethodName: "AdminListPromoRedemptions",
+			Handler:    _AdminService_AdminListPromoRedemptions_Handler,
+		},
+		{
+			MethodName: "AdminRevokePromoRedemption",
+			Handler:    _AdminService_AdminRevokePromoRedemption_Handler,
 		},
 		{
 			MethodName: "AdminGetOrganizationCost",

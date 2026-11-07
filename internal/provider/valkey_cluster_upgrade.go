@@ -72,7 +72,8 @@ func upgradeValkeyClusterV0(ctx context.Context, req resource.UpgradeStateReques
 		primary = g.Resources.StorageAutoscale
 		nodes[name] = valkeyNodeGroupModel{
 			Count: g.Count, Cloud: g.Cloud, Region: g.Region, Tier: g.Tier,
-			Resources: valkeyResourcesModel{CPU: g.Resources.CPU, Memory: g.Resources.Memory},
+			Resources:   valkeyResourcesModel{CPU: g.Resources.CPU, Memory: g.Resources.Memory},
+			Autoscaling: types.ObjectNull(computeAutoscalingAttrTypes), CurrentTier: types.StringNull(),
 		}
 	}
 	upgraded := valkeyClusterModel{
