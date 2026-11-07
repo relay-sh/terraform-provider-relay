@@ -1,9 +1,9 @@
-## 0.1.1 (Unreleased)
+## 0.1.1 (November 7, 2026)
 
 FEATURES:
 
-* resource/relay_postgresql_cluster, resource/relay_valkey_cluster: `nodes.<group>.autoscaling = { enabled, min_tier, max_tier, rules = [{ metric, scale_up_above, scale_down_below }], scale_up_window, scale_down_window, respect_maintenance_window }` moves a group one tier at a time between `min_tier` and `max_tier`. Without `rules` the Relay default policy applies. `tier` keeps the configured value, so a move never shows as drift; the computed `nodes.<group>.current_tier` reports the tier the group runs at. Removing the block turns autoscaling off. Needs the `compute_autoscale` feature, and the Free plan cannot enable it
-* data-source/relay_valkey_cluster: `nodes.<group>.autoscaling` and `nodes.<group>.current_tier`
+* resource/relay_postgresql_cluster, resource/relay_valkey_cluster: `nodes.<group>.autoscaling = { enabled, min_tier, max_tier, rules = [{ metric, scale_up_above, scale_down_below }], scale_up_window, scale_down_window, respect_maintenance_window }` moves a group one tier at a time between `min_tier` and `max_tier`. Without `rules` the Relay default policy applies. `tier` keeps the configured value, so a move never shows as drift; the computed `nodes.<group>.current_tier` reports the tier the group runs at. Removing the block turns autoscaling off. Needs the `compute_autoscale` feature, and the Free plan cannot enable it ([#118](https://github.com/relay-sh/terraform-provider-relay/pull/118))
+* data-source/relay_valkey_cluster: `nodes.<group>.autoscaling` and `nodes.<group>.current_tier` ([#118](https://github.com/relay-sh/terraform-provider-relay/pull/118))
 
 ## 0.1.0 (November 4, 2026)
 
