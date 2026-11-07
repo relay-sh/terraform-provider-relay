@@ -84,7 +84,7 @@ func TestNodesRoundTrip(t *testing.T) {
 	if out[1].GetResources().GetDiskType() != "io1" {
 		t.Errorf("readers disk_type = %q, want io1", out[1].GetResources().GetDiskType())
 	}
-	back := nodesFromProto(out)
+	back := nodesFromProto(out, nil, nil)
 	if g := back["readers"]; g.Role.ValueString() != roleReadOnly || g.Resources.IOPS.ValueInt64() != 3000 || g.Tier.ValueString() != "R20" || g.Resources.DiskType.ValueString() != "io1" {
 		t.Errorf("readers round trip = %+v", g)
 	}

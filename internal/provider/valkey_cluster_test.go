@@ -702,14 +702,18 @@ func TestValkeyClusterDataSource(t *testing.T) {
 			Valkey: &serverv1.ValkeyConfig{Mode: "cluster", Shards: 3, ReplicasPerShard: 1, Parameters: map[string]string{"maxmemory-policy": "allkeys-lru"}},
 			Nodes: []*serverv1.NodeSpec{{
 				Name: "main", Count: 6, Cloud: "aws", Region: "us-east-1", Tier: "RC10",
-				Resources: &serverv1.ResourceRequirements{Cpu: "1", Memory: "2Gi"},
+				Resources:   &serverv1.ResourceRequirements{Cpu: "1", Memory: "2Gi"},
+				Autoscaling: &serverv1.ComputeAutoscaling{Enabled: true, MinTier: "RC5", MaxTier: "RC20"},
 			}},
 			Storage: &serverv1.ClusterStorage{
 				Size:      "10Gi",
 				Autoscale: &serverv1.StorageAutoscale{Enabled: true, ThresholdPercent: 80, IncreasePercent: 20, MaxStorage: "50Gi"},
 			},
 		},
-		Status:             &serverv1.DatabaseStatus{Phase: "running", TotalNodes: 6, ReadyNodes: 6, Endpoint: &serverv1.Endpoint{Host: "cache.db", Port: 6379}},
+		Status: &serverv1.DatabaseStatus{
+			Phase: "running", TotalNodes: 6, ReadyNodes: 6, Endpoint: &serverv1.Endpoint{Host: "cache.db", Port: 6379},
+			Compute: []*serverv1.NodeGroupCompute{{NodeGroup: "main", Tier: "RC20", SpecTier: "RC10"}},
+		},
 		DeletionProtection: true,
 	}
 	f.databases["db-plain"] = &serverv1.Database{
@@ -740,6 +744,9 @@ data "relay_valkey_cluster" "by_id" {
 				resource.TestCheckResourceAttr("data.relay_valkey_cluster.by_name", "replicas_per_shard", "1"),
 				resource.TestCheckResourceAttr("data.relay_valkey_cluster.by_name", "parameters.maxmemory-policy", "allkeys-lru"),
 				resource.TestCheckResourceAttr("data.relay_valkey_cluster.by_name", "nodes.main.tier", "RC10"),
+				resource.TestCheckResourceAttr("data.relay_valkey_cluster.by_name", "nodes.main.current_tier", "RC20"),
+				resource.TestCheckResourceAttr("data.relay_valkey_cluster.by_name", "nodes.main.autoscaling.max_tier", "RC20"),
+				resource.TestCheckNoResourceAttr("data.relay_valkey_cluster.by_id", "nodes.main.autoscaling"),
 				resource.TestCheckResourceAttr("data.relay_valkey_cluster.by_name", "storage.autoscale.max_storage", "50Gi"),
 				resource.TestCheckResourceAttr("data.relay_valkey_cluster.by_name", "endpoint_port", "6379"),
 				resource.TestCheckResourceAttr("data.relay_valkey_cluster.by_name", "ready_nodes", "6"),
@@ -1123,6 +1130,105 @@ resource "terraform_data" "policy" {
 		Steps: []resource.TestStep{
 			{Config: valkeyConfig(f, valkeyGroup("cache", 1, "", ""))},
 			{Config: unknown, PlanOnly: true, ExpectNonEmptyPlan: true},
+		},
+	})
+}
+
+func valkeyComputeConfig(f *fakeServer, tier, parameters, autoscaling string) string {
+	return valkeyConfig(f, fmt.Sprintf(`
+  parameters = %s
+  nodes = {
+    cache = {
+      cloud     = "aws"
+      region    = "us-east-1"
+      tier      = %q
+      resources = {}
+      %s
+    }
+  }
+`, parameters, tier, autoscaling))
+}
+
+func TestValkeyClusterResource_ComputeAutoscaling(t *testing.T) {
+	f := startFakeServer(t)
+	const addr = "relay_valkey_cluster.this"
+	on := `autoscaling = {
+        enabled  = true
+        min_tier = "RC5"
+        max_tier = "RC20"
+        rules    = [{ metric = "valkey.memory", scale_up_above = 85, scale_down_below = 40 }]
+        respect_maintenance_window = true
+      }`
+	resource.UnitTest(t, resource.TestCase{
+		ProtoV6ProviderFactories: factories(relay.Dial),
+		Steps: []resource.TestStep{
+			{
+				Config: valkeyComputeConfig(f, "RC10", `{}`, on),
+				Check: resource.ComposeAggregateTestCheckFunc(
+					resource.TestCheckResourceAttr(addr, "nodes.cache.autoscaling.rules.0.metric", "valkey.memory"),
+					resource.TestCheckResourceAttr(addr, "nodes.cache.autoscaling.respect_maintenance_window", "true"),
+					resource.TestCheckNoResourceAttr(addr, "nodes.cache.autoscaling.scale_up_window"),
+					resource.TestCheckResourceAttr(addr, "nodes.cache.current_tier", "RC10"),
+				),
+			},
+			{
+				PreConfig: func() { moveTier(f, "cache", "RC20") },
+				Config:    valkeyComputeConfig(f, "RC10", `{}`, on),
+				Check: resource.ComposeAggregateTestCheckFunc(
+					resource.TestCheckResourceAttr(addr, "nodes.cache.tier", "RC10"),
+					resource.TestCheckResourceAttr(addr, "nodes.cache.current_tier", "RC20"),
+					func(*terraform.State) error {
+						if n := len(f.callsTo("UpdateDatabase")); n != 0 {
+							return fmt.Errorf("a tier the autoscaler moved must not plan an update, got %d calls", n)
+						}
+						return nil
+					},
+				),
+			},
+			{
+				PreConfig: func() {
+					f.set(func() {
+						f.afterUpdate = func(db *serverv1.Database) {
+							for _, c := range db.Status.Compute {
+								c.Tier = "RC5"
+							}
+						}
+					})
+				},
+				Config: valkeyComputeConfig(f, "RC10", `{ "maxmemory-policy" = "allkeys-lru" }`, on),
+				Check: resource.ComposeAggregateTestCheckFunc(
+					resource.TestCheckResourceAttr(addr, "nodes.cache.current_tier", "RC5"),
+					func(*terraform.State) error {
+						if paths := lastUpdateMask(f); !slices.Equal(paths, []string{"valkey.parameters"}) {
+							return fmt.Errorf("a parameters-only change must not send nodes, got %v", paths)
+						}
+						return nil
+					},
+				),
+			},
+			{
+				PreConfig: func() { f.set(func() { f.afterUpdate = nil }) },
+				Config:    valkeyComputeConfig(f, "RC20", `{ "maxmemory-policy" = "allkeys-lru" }`, on),
+				Check:     resource.TestCheckResourceAttr(addr, "nodes.cache.current_tier", "RC20"),
+			},
+			{
+				Config:      valkeyComputeConfig(f, "RC20", `{ "maxmemory-policy" = "allkeys-lru" }`, `autoscaling = { enabled = true }`),
+				PlanOnly:    true,
+				ExpectError: regexp.MustCompile("Missing max_tier"),
+			},
+			{
+				Config: valkeyComputeConfig(f, "RC20", `{ "maxmemory-policy" = "allkeys-lru" }`, ""),
+				Check: resource.ComposeAggregateTestCheckFunc(
+					resource.TestCheckNoResourceAttr(addr, "nodes.cache.autoscaling"),
+					resource.TestCheckNoResourceAttr(addr, "nodes.cache.current_tier"),
+					func(*terraform.State) error {
+						if a := f.lastDBUpdate.GetSpec().GetNodes()[0].GetAutoscaling(); a == nil || a.GetEnabled() {
+							return fmt.Errorf("removing the block must disable autoscaling explicitly, got %+v", a)
+						}
+						return nil
+					},
+				),
+			},
 		},
 	})
 }

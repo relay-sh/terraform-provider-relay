@@ -138,7 +138,8 @@ func (r *postgresqlClusterResource) Schema(ctx context.Context, _ resource.Schem
 					},
 					"tier": schema.StringAttribute{
 						Required:            true,
-						MarkdownDescription: "Machine catalog name, for example `R20`. CPU and memory are derived from it; an unknown name is rejected. Changing it restarts the group's pods.",
+						MarkdownDescription: "Machine catalog name, for example `R20`. CPU and memory are derived from it; an unknown name is rejected. Changing it restarts the group's pods. " +
+							"With `autoscaling` enabled the platform moves the group away from it without changing this value, reported in `current_tier`.",
 					},
 					"resources": schema.SingleNestedAttribute{
 						Required: true,
@@ -159,6 +160,8 @@ func (r *postgresqlClusterResource) Schema(ctx context.Context, _ resource.Schem
 							},
 						},
 					},
+					"autoscaling":  computeAutoscalingAttribute("`cpu`, `memory`, `postgres.connections` and `postgres.replica_lag`"),
+					"current_tier": currentTierAttribute(),
 				}},
 			},
 			"parameters": schema.MapAttribute{
@@ -244,6 +247,7 @@ func (r *postgresqlClusterResource) ValidateConfig(ctx context.Context, req reso
 
 	var nodes types.Map
 	resp.Diagnostics.Append(req.Config.GetAttribute(ctx, path.Root("nodes"), &nodes)...)
+	validateComputeAutoscaling(nodes, &resp.Diagnostics)
 	if nodes.IsNull() || nodes.IsUnknown() {
 		return
 	}
@@ -331,14 +335,21 @@ func (r *postgresqlClusterResource) ModifyPlan(ctx context.Context, req resource
 			plan.Nodes[name] = planned
 			changed = true
 		}
+		if !planned.Tier.Equal(current.Tier) || !planned.Autoscaling.Equal(current.Autoscaling) {
+			planned.CurrentTier = types.StringUnknown()
+			plan.Nodes[name] = planned
+			changed = true
+		}
 	}
 	if changed {
 		resp.Diagnostics.Append(resp.Plan.Set(ctx, &plan)...)
-	} else if !req.Config.Raw.IsFullyKnown() {
+	}
+	if (changed || req.Config.Raw.IsFullyKnown()) && satisfies(resp.Plan.Raw, req.State.Raw) {
+		resp.Diagnostics.Append(resp.Plan.Set(ctx, &prior)...)
 		return
 	}
-	if satisfies(resp.Plan.Raw, req.State.Raw) {
-		resp.Diagnostics.Append(resp.Plan.Set(ctx, &prior)...)
+	if releaseCurrentTiers(plan.Nodes) {
+		resp.Diagnostics.Append(resp.Plan.Set(ctx, &plan)...)
 	}
 }
 
@@ -360,6 +371,7 @@ func unknownComputed(g nodeGroupModel) nodeGroupModel {
 	g.Region = unknownIfNull(g.Region)
 	g.Resources.CPU = types.StringUnknown()
 	g.Resources.Memory = types.StringUnknown()
+	g.CurrentTier = types.StringUnknown()
 	g.Resources.DiskType = unknownIfNull(g.Resources.DiskType)
 	if g.Resources.IOPS.IsNull() {
 		g.Resources.IOPS = types.Int64Unknown()
@@ -636,7 +648,7 @@ func clusterUpdateMask(plan, prior postgresqlClusterModel) []string {
 			paths = append(paths, p)
 		}
 	}
-	add(!reflect.DeepEqual(plan.Nodes, prior.Nodes), "nodes")
+	add(!reflect.DeepEqual(nodeSpecs(plan.Nodes), nodeSpecs(prior.Nodes)), "nodes")
 	add(!plan.Storage.Equal(prior.Storage), "storage")
 	add(!plan.Replication.Equal(prior.Replication), "replication")
 	add(!plan.Parameters.Equal(prior.Parameters), "postgresql")
@@ -652,7 +664,7 @@ func clusterFromProto(db *serverv1.Database, prior postgresqlClusterModel) postg
 		Name:                 types.StringValue(db.GetName()),
 		Version:              types.StringValue(spec.GetVersion()),
 		Storage:              storageFromProto(spec.GetStorage(), prior.Storage),
-		Nodes:                nodesFromProto(spec.GetNodes()),
+		Nodes:                nodesFromProto(spec.GetNodes(), st.GetCompute(), prior.Nodes),
 		PrimaryNodeGroup:     types.StringValue(spec.GetPrimaryNodeGroup()),
 		Parameters:           stringMapFromGo(spec.GetPostgresql().GetParameters()),
 		Replication:          replicationFromProto(spec.GetReplication()),

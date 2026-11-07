@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"regexp"
 	"slices"
+	"strings"
 	"testing"
 	"time"
 
@@ -1369,5 +1370,215 @@ data "relay_postgresql_cluster" "solo" {
 				resource.TestCheckResourceAttr("data.relay_postgresql_cluster.this", "public_endpoints.#", "2"),
 			),
 		}},
+	})
+}
+
+func computeClusterConfig(f *fakeServer, tier, size, autoscaling string) string {
+	return providerBlock(f) + fmt.Sprintf(`
+resource "relay_postgresql_cluster" "this" {
+  workspace_id = %q
+  name         = "billing"
+
+  storage = {
+    size = %q
+  }
+
+  nodes = {
+    writers = {
+      role      = "electable"
+      cloud     = "aws"
+      region    = "us-east-1"
+      tier      = %q
+      resources = {}
+      %s
+    }
+  }
+}
+`, dbWorkspace, size, tier, autoscaling)
+}
+
+const computeAutoscalingBody = `autoscaling = {
+        enabled           = true
+        min_tier          = "R5"
+        max_tier          = "R20"
+        rules             = [{ metric = "cpu", scale_up_above = 80, scale_down_below = 30 }]
+        scale_up_window   = "5m"
+        scale_down_window = "30m"
+      }`
+
+func moveTier(f *fakeServer, group, tier string) {
+	f.mu.Lock()
+	defer f.mu.Unlock()
+	for _, db := range f.databases {
+		for _, c := range db.Status.Compute {
+			if c.NodeGroup == group {
+				c.Tier, c.LastReason = tier, "cpu above 80"
+			}
+		}
+	}
+}
+
+func TestPostgreSQLClusterResource_ComputeAutoscaling(t *testing.T) {
+	f := startFakeServer(t)
+	const addr = "relay_postgresql_cluster.this"
+	moveDuringUpdate := func(tier string) func() {
+		return func() {
+			f.set(func() {
+				f.afterUpdate = func(db *serverv1.Database) {
+					effectiveCompute(db)
+					for _, c := range db.Status.Compute {
+						c.Tier = tier
+					}
+				}
+			})
+		}
+	}
+	resource.UnitTest(t, resource.TestCase{
+		ProtoV6ProviderFactories: factories(relay.Dial),
+		Steps: []resource.TestStep{
+			{
+				Config: computeClusterConfig(f, "R10", "10Gi", computeAutoscalingBody),
+				Check: resource.ComposeAggregateTestCheckFunc(
+					resource.TestCheckResourceAttr(addr, "nodes.writers.autoscaling.enabled", "true"),
+					resource.TestCheckResourceAttr(addr, "nodes.writers.autoscaling.min_tier", "R5"),
+					resource.TestCheckResourceAttr(addr, "nodes.writers.autoscaling.max_tier", "R20"),
+					resource.TestCheckResourceAttr(addr, "nodes.writers.autoscaling.rules.0.metric", "cpu"),
+					resource.TestCheckResourceAttr(addr, "nodes.writers.autoscaling.rules.0.scale_up_above", "80"),
+					resource.TestCheckResourceAttr(addr, "nodes.writers.autoscaling.rules.0.scale_down_below", "30"),
+					resource.TestCheckResourceAttr(addr, "nodes.writers.autoscaling.scale_up_window", "5m"),
+					resource.TestCheckResourceAttr(addr, "nodes.writers.autoscaling.scale_down_window", "30m"),
+					resource.TestCheckResourceAttr(addr, "nodes.writers.autoscaling.respect_maintenance_window", "false"),
+					resource.TestCheckResourceAttr(addr, "nodes.writers.current_tier", "R10"),
+					func(*terraform.State) error {
+						a := f.lastDBCreate.GetSpec().GetNodes()[0].GetAutoscaling()
+						if !a.GetEnabled() || a.GetMinTier() != "R5" || a.GetMaxTier() != "R20" || a.GetScaleUpWindow().AsDuration() != 5*time.Minute ||
+							a.GetScaleDownWindow().AsDuration() != 30*time.Minute || len(a.GetRules()) != 1 {
+							return fmt.Errorf("create must send the block as configured, got %+v", a)
+						}
+						return nil
+					},
+				),
+			},
+			{
+				PreConfig: func() { moveTier(f, "writers", "R20") },
+				Config:    computeClusterConfig(f, "R10", "10Gi", computeAutoscalingBody),
+				Check: resource.ComposeAggregateTestCheckFunc(
+					resource.TestCheckResourceAttr(addr, "nodes.writers.tier", "R10"),
+					resource.TestCheckResourceAttr(addr, "nodes.writers.current_tier", "R20"),
+					func(*terraform.State) error {
+						if n := len(f.callsTo("UpdateDatabase")); n != 0 {
+							return fmt.Errorf("a tier the autoscaler moved must not plan an update, got %d calls", n)
+						}
+						return nil
+					},
+				),
+			},
+			{
+				PreConfig: moveDuringUpdate("R5"),
+				Config:    computeClusterConfig(f, "R10", "20Gi", computeAutoscalingBody),
+				Check: resource.ComposeAggregateTestCheckFunc(
+					resource.TestCheckResourceAttr(addr, "nodes.writers.current_tier", "R5"),
+					func(*terraform.State) error {
+						if paths := lastUpdateMask(f); !slices.Equal(paths, []string{"storage"}) {
+							return fmt.Errorf("a storage-only change must not send nodes, got %v", paths)
+						}
+						return nil
+					},
+				),
+			},
+			{
+				PreConfig: moveDuringUpdate("R10"),
+				Config:    computeClusterConfig(f, "R10", "20Gi", strings.Replace(computeAutoscalingBody, `"5m"`, `"10m"`, 1)),
+				Check: resource.ComposeAggregateTestCheckFunc(
+					resource.TestCheckResourceAttr(addr, "nodes.writers.autoscaling.scale_up_window", "10m"),
+					resource.TestCheckResourceAttr(addr, "nodes.writers.current_tier", "R10"),
+					func(*terraform.State) error {
+						if paths := lastUpdateMask(f); !slices.Equal(paths, []string{"nodes"}) {
+							return fmt.Errorf("a window change must send only nodes, got %v", paths)
+						}
+						return nil
+					},
+				),
+			},
+			{
+				PreConfig: func() { f.set(func() { f.afterUpdate = nil }) },
+				Config:    computeClusterConfig(f, "R20", "20Gi", strings.Replace(computeAutoscalingBody, `"5m"`, `"10m"`, 1)),
+				Check:     resource.TestCheckResourceAttr(addr, "nodes.writers.current_tier", "R20"),
+			},
+			{
+				ResourceName: addr,
+				ImportState:  true,
+				ImportStateIdFunc: func(s *terraform.State) (string, error) {
+					return dbWorkspace + "/" + s.RootModule().Resources[addr].Primary.ID, nil
+				},
+				ImportStateVerify:       true,
+				ImportStateVerifyIgnore: []string{"keep_backups_on_destroy", "timeouts"},
+			},
+			{
+				Config: computeClusterConfig(f, "R20", "20Gi", ""),
+				Check: resource.ComposeAggregateTestCheckFunc(
+					resource.TestCheckNoResourceAttr(addr, "nodes.writers.autoscaling"),
+					resource.TestCheckNoResourceAttr(addr, "nodes.writers.current_tier"),
+					func(*terraform.State) error {
+						a := f.lastDBUpdate.GetSpec().GetNodes()[0].GetAutoscaling()
+						if a == nil || a.GetEnabled() {
+							return fmt.Errorf("removing the block must disable autoscaling explicitly, because the server keeps a nil block, got %+v", a)
+						}
+						return nil
+					},
+				),
+			},
+			{
+				Config: computeClusterConfig(f, "R20", "20Gi", "autoscaling = { enabled = false }"),
+				Check: resource.ComposeAggregateTestCheckFunc(
+					resource.TestCheckResourceAttr(addr, "nodes.writers.autoscaling.enabled", "false"),
+					resource.TestCheckNoResourceAttr(addr, "nodes.writers.autoscaling.min_tier"),
+					resource.TestCheckNoResourceAttr(addr, "nodes.writers.current_tier"),
+				),
+			},
+		},
+	})
+}
+
+func TestPostgreSQLClusterResource_ComputeAutoscalingRejections(t *testing.T) {
+	f := startFakeServer(t)
+	rules := func(body string) string {
+		return "autoscaling = {\n enabled = true\n min_tier = \"R5\"\n max_tier = \"R20\"\n" + body + "\n}"
+	}
+	resource.UnitTest(t, resource.TestCase{
+		ProtoV6ProviderFactories: factories(relay.Dial),
+		Steps: []resource.TestStep{
+			{
+				Config:      computeClusterConfig(f, "R10", "10Gi", "autoscaling = { enabled = true }"),
+				PlanOnly:    true,
+				ExpectError: regexp.MustCompile("Missing min_tier"),
+			},
+			{
+				Config:      computeClusterConfig(f, "R10", "10Gi", rules(`rules = [{ metric = "cpu", scale_up_above = 80, scale_down_below = 30 }, { metric = "cpu", scale_up_above = 90, scale_down_below = 90 }]`)),
+				PlanOnly:    true,
+				ExpectError: regexp.MustCompile("(?s)Duplicate metric.*scale_down_below is not below"),
+			},
+			{
+				Config:      computeClusterConfig(f, "R10", "10Gi", rules(`scale_up_window = "0s"`)),
+				PlanOnly:    true,
+				ExpectError: regexp.MustCompile("Invalid window"),
+			},
+			{
+				Config:      computeClusterConfig(f, "R10", "10Gi", rules(`rules = [`+strings.Repeat(`{ metric = "cpu", scale_up_above = 80, scale_down_below = 30 },`, 9)+`]`)),
+				PlanOnly:    true,
+				ExpectError: regexp.MustCompile("at most 8"),
+			},
+			{
+				Config:      computeClusterConfig(f, "R10", "10Gi", strings.Replace(rules(""), `"R20"`, `"R5"`, 1)),
+				ExpectError: regexp.MustCompile(`tier R10 must\s+lie between min_tier R5`),
+			},
+			{
+				PreConfig: func() {
+					f.failWith("CreateDatabase", status.Error(codes.FailedPrecondition, "Compute autoscaling is not available on the free plan"))
+				},
+				Config:      computeClusterConfig(f, "R10", "10Gi", rules("")),
+				ExpectError: regexp.MustCompile("(?s)Cannot create cluster.*free plan"),
+			},
+		},
 	})
 }
