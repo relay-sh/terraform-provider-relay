@@ -1,3 +1,9 @@
+## 0.1.2 (November 17, 2026)
+
+FEATURES:
+
+* resource/relay_postgresql_user: `auth_method = "aws_iam"` with `principal_arn` creates a user bound to an AWS IAM role or user, which logs in with a short-lived token instead of a password (see [relay-sh/dbauth](https://github.com/relay-sh/dbauth)). `principal_arn` changes in place; `password` and `generate_password` are refused on such a user. Needs the `iam_database_users` feature and a dedicated PostgreSQL cluster ([#121](https://github.com/relay-sh/terraform-provider-relay/pull/121))
+
 ## 0.1.1 (November 7, 2026)
 
 FEATURES:
