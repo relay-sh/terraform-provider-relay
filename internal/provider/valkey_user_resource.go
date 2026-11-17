@@ -15,6 +15,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/booldefault"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/boolplanmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/planmodifier"
+	"github.com/hashicorp/terraform-plugin-framework/resource/schema/stringdefault"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/stringplanmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/schema/validator"
 	"github.com/hashicorp/terraform-plugin-framework/types"
@@ -38,6 +39,8 @@ type valkeyUserModel struct {
 	Password          types.String   `tfsdk:"password"`
 	GeneratePassword  types.Bool     `tfsdk:"generate_password"`
 	GeneratedPassword types.String   `tfsdk:"generated_password"`
+	AuthMethod        types.String   `tfsdk:"auth_method"`
+	PrincipalARN      types.String   `tfsdk:"principal_arn"`
 	Role              types.String   `tfsdk:"role"`
 	Description       types.String   `tfsdk:"description"`
 	ExpiresAt         types.String   `tfsdk:"expires_at"`
@@ -62,7 +65,7 @@ func (r *valkeyUserResource) Schema(ctx context.Context, _ resource.SchemaReques
 	keep := []planmodifier.String{stringplanmodifier.UseStateForUnknown()}
 
 	resp.Schema = schema.Schema{
-		MarkdownDescription: "A Valkey ACL user on a managed cluster. The username cannot change in place; the role, password and expiry can. " +
+		MarkdownDescription: "A Valkey ACL user on a managed cluster, authenticated by password or by an AWS IAM role or user. The username and auth method cannot change in place; the role, password, principal ARN and expiry can. " +
 			"`description` can be changed but not cleared.",
 		Attributes: map[string]schema.Attribute{
 			"id":           schema.StringAttribute{Computed: true, PlanModifiers: keep, MarkdownDescription: "`<cluster_id>/<username>`."},
@@ -96,6 +99,16 @@ func (r *valkeyUserResource) Schema(ctx context.Context, _ resource.SchemaReques
 				Computed: true, Sensitive: true, PlanModifiers: keep,
 				MarkdownDescription: "Generated password, stored in state. Not recoverable from the API.",
 			},
+			"auth_method": schema.StringAttribute{
+				Optional: true, Computed: true, Default: stringdefault.StaticString(authMethodPassword),
+				PlanModifiers:       replace,
+				Validators:          []validator.String{stringvalidator.OneOf(authMethodPassword, authMethodAWSIAM)},
+				MarkdownDescription: "`password` or `aws_iam`. An `aws_iam` user has no password: the application logs in with `AUTH <username> <token>`, a short-lived token signed by `principal_arn` (see the [dbauth](https://github.com/relay-sh/dbauth) packages).",
+			},
+			"principal_arn": schema.StringAttribute{
+				Optional:            true,
+				MarkdownDescription: "ARN of the IAM role (`arn:aws:iam::<account>:role/<name>`) or IAM user allowed to log in as an `aws_iam` user; required for `aws_iam` and not allowed for `password`. Use the role ARN, not an assumed-role session. Changing it updates the user in place.",
+			},
 			"role": schema.StringAttribute{
 				Required:            true,
 				Validators:          []validator.String{stringvalidator.OneOf("readOnly", "readWrite", "admin")},
@@ -125,8 +138,26 @@ func (r *valkeyUserResource) ValidateConfig(ctx context.Context, req resource.Va
 	if !password.IsNull() && generate.ValueBool() {
 		resp.Diagnostics.AddAttributeError(path.Root("generate_password"), "Conflicting password settings", "Set password or generate_password = true, not both.")
 	}
-	if password.IsNull() && !generate.IsUnknown() && !generate.ValueBool() {
-		resp.Diagnostics.AddAttributeError(path.Root("password"), "Missing password", "A Valkey user authenticates with a password: set password or generate_password = true.")
+
+	var method, principal types.String
+	resp.Diagnostics.Append(req.Config.GetAttribute(ctx, path.Root("auth_method"), &method)...)
+	resp.Diagnostics.Append(req.Config.GetAttribute(ctx, path.Root("principal_arn"), &principal)...)
+	switch {
+	case method.IsUnknown():
+	case method.ValueString() == authMethodAWSIAM:
+		if principal.IsNull() {
+			resp.Diagnostics.AddAttributeError(path.Root("principal_arn"), "Missing principal_arn", "An aws_iam user is bound to an IAM role or user: set principal_arn.")
+		}
+		if !password.IsNull() || generate.ValueBool() {
+			resp.Diagnostics.AddAttributeError(path.Root("password"), "Password on an aws_iam user", "An aws_iam user logs in with a token, never a password: drop password and generate_password.")
+		}
+	default:
+		if !principal.IsNull() {
+			resp.Diagnostics.AddAttributeError(path.Root("principal_arn"), "principal_arn on a password user", "principal_arn applies only to auth_method = \"aws_iam\".")
+		}
+		if password.IsNull() && !generate.IsUnknown() && !generate.ValueBool() {
+			resp.Diagnostics.AddAttributeError(path.Root("password"), "Missing password", "A password Valkey user needs password or generate_password = true.")
+		}
 	}
 }
 
@@ -154,7 +185,8 @@ func (r *valkeyUserResource) Create(ctx context.Context, req resource.CreateRequ
 		Password:         plan.Password.ValueString(),
 		GeneratePassword: plan.GeneratePassword.ValueBool(),
 		Description:      plan.Description.ValueString(),
-		AuthMethod:       "password",
+		AuthMethod:       plan.AuthMethod.ValueString(),
+		PrincipalArn:     plan.PrincipalARN.ValueString(),
 		Roles:            []*serverv1.DatabaseUserRole{{Role: plan.Role.ValueString()}},
 		ExpiresAt:        expires,
 	})
@@ -245,6 +277,9 @@ func (r *valkeyUserResource) Update(ctx context.Context, req resource.UpdateRequ
 	if !plan.Role.Equal(prior.Role) {
 		update.Roles = []*serverv1.DatabaseUserRole{{Role: plan.Role.ValueString()}}
 	}
+	if !plan.PrincipalARN.Equal(prior.PrincipalARN) {
+		update.PrincipalArn = stringPtr(plan.PrincipalARN.ValueString())
+	}
 	if !plan.ExpiresAt.Equal(prior.ExpiresAt) {
 		update.ExpiresAt = expires
 		if expires == nil {
@@ -292,6 +327,11 @@ func valkeyUserFromProto(u *serverv1.DatabaseUser, prior valkeyUserModel) valkey
 	out.ID = types.StringValue(prior.ClusterID.ValueString() + "/" + u.GetUsername())
 	out.Username = types.StringValue(u.GetUsername())
 	out.Description = types.StringValue(u.GetDescription())
+	out.AuthMethod = types.StringValue(strings.ToLower(u.GetAuthMethod()))
+	out.PrincipalARN = types.StringNull()
+	if arn := u.GetPrincipalArn(); arn != "" {
+		out.PrincipalARN = types.StringValue(arn)
+	}
 	if roles := u.GetRoles(); len(roles) > 0 {
 		out.Role = types.StringValue(roles[0].GetRole())
 	}

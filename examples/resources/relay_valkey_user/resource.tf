@@ -10,3 +10,12 @@ output "app_password" {
   value     = relay_valkey_user.app.generated_password
   sensitive = true
 }
+
+resource "relay_valkey_user" "orders_api" {
+  workspace_id  = relay_workspace.prod.id
+  cluster_id    = relay_valkey_cluster.sessions.id
+  username      = "orders-api"
+  role          = "readWrite"
+  auth_method   = "aws_iam"
+  principal_arn = aws_iam_role.orders_api.arn
+}
