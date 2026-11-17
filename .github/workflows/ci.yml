@@ -1,16 +1,20 @@
 name: CI
 
 on:
-  push:
-    branches: [main]
   pull_request:
+    types: [opened, synchronize, reopened, ready_for_review]
     branches: [main]
 
 permissions:
   contents: read
 
+concurrency:
+  group: ${{ github.workflow }}-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
+
 jobs:
   go:
+    if: ${{ !github.event.pull_request.draft }}
     uses: relay-sh/terraform-ci/.github/workflows/go-ci.yaml@main
     with:
       golangci-lint-version: v2.12.2
@@ -19,6 +23,7 @@ jobs:
       coverage-threshold: "100"
 
   docs:
+    if: ${{ !github.event.pull_request.draft }}
     name: Docs are current
     runs-on: ubuntu-latest
     steps:
@@ -33,6 +38,7 @@ jobs:
       - run: git diff --exit-code docs/
 
   release-config:
+    if: ${{ !github.event.pull_request.draft }}
     name: Release config builds
     runs-on: ubuntu-latest
     steps:
