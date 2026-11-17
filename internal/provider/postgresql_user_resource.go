@@ -30,6 +30,11 @@ import (
 	"github.com/relay-sh/terraform-provider-relay/internal/client"
 )
 
+const (
+	authMethodPassword = "password"
+	authMethodAWSIAM   = "aws_iam"
+)
+
 type postgresqlUserResource struct {
 	client *client.Client
 }
@@ -44,6 +49,7 @@ type postgresqlUserModel struct {
 	GeneratedPassword   types.String   `tfsdk:"generated_password"`
 	Description         types.String   `tfsdk:"description"`
 	AuthMethod          types.String   `tfsdk:"auth_method"`
+	PrincipalARN        types.String   `tfsdk:"principal_arn"`
 	Roles               types.List     `tfsdk:"roles"`
 	RestrictedResources types.List     `tfsdk:"restricted_resources"`
 	ExpiresAt           types.String   `tfsdk:"expires_at"`
@@ -81,7 +87,7 @@ func (r *postgresqlUserResource) Schema(ctx context.Context, _ resource.SchemaRe
 	keep := []planmodifier.String{stringplanmodifier.UseStateForUnknown()}
 
 	resp.Schema = schema.Schema{
-		MarkdownDescription: "A PostgreSQL user on a managed cluster. Username and auth method cannot change in place. Roles and databases can: the operator revokes the previous preset before granting the new one. `description`, `connection_limit` and `statement_timeout` can be changed but not cleared.",
+		MarkdownDescription: "A PostgreSQL user on a managed cluster, authenticated by password or by an AWS IAM role or user. Username and auth method cannot change in place. Roles and databases can: the operator revokes the previous preset before granting the new one. `description`, `connection_limit` and `statement_timeout` can be changed but not cleared.",
 		Attributes: map[string]schema.Attribute{
 			"id":           schema.StringAttribute{Computed: true, PlanModifiers: keep, MarkdownDescription: "`<cluster_id>/<username>`."},
 			"workspace_id": schema.StringAttribute{Required: true, PlanModifiers: replace, MarkdownDescription: "Workspace of the cluster."},
@@ -110,8 +116,12 @@ func (r *postgresqlUserResource) Schema(ctx context.Context, _ resource.SchemaRe
 			"auth_method": schema.StringAttribute{
 				Optional: true, Computed: true, Default: stringdefault.StaticString("password"),
 				PlanModifiers:       replace,
-				Validators:          []validator.String{stringvalidator.OneOf("password")},
-				MarkdownDescription: "Authentication method. Only `password` is supported.",
+				Validators:          []validator.String{stringvalidator.OneOf(authMethodPassword, authMethodAWSIAM)},
+				MarkdownDescription: "`password` or `aws_iam`. An `aws_iam` user has no password: the application logs in with a short-lived token signed by `principal_arn` (see the [dbauth](https://github.com/relay-sh/dbauth) packages).",
+			},
+			"principal_arn": schema.StringAttribute{
+				Optional:            true,
+				MarkdownDescription: "ARN of the IAM role (`arn:aws:iam::<account>:role/<name>`) or IAM user allowed to log in as an `aws_iam` user; required for `aws_iam` and not allowed for `password`. Use the role ARN, not an assumed-role session. Changing it updates the user in place.",
 			},
 			"roles": schema.ListNestedAttribute{
 				Required:            true,
@@ -165,6 +175,22 @@ func (r *postgresqlUserResource) ValidateConfig(ctx context.Context, req resourc
 		resp.Diagnostics.AddAttributeError(path.Root("generate_password"), "Conflicting password settings", "Set password or generate_password = true, not both.")
 	}
 
+	var method, principal types.String
+	resp.Diagnostics.Append(req.Config.GetAttribute(ctx, path.Root("auth_method"), &method)...)
+	resp.Diagnostics.Append(req.Config.GetAttribute(ctx, path.Root("principal_arn"), &principal)...)
+	switch {
+	case method.IsUnknown():
+	case method.ValueString() == authMethodAWSIAM:
+		if principal.IsNull() {
+			resp.Diagnostics.AddAttributeError(path.Root("principal_arn"), "Missing principal_arn", "An aws_iam user is bound to an IAM role or user: set principal_arn.")
+		}
+		if !password.IsNull() || generate.ValueBool() {
+			resp.Diagnostics.AddAttributeError(path.Root("password"), "Password on an aws_iam user", "An aws_iam user logs in with a token, never a password: drop password and generate_password.")
+		}
+	case !principal.IsNull():
+		resp.Diagnostics.AddAttributeError(path.Root("principal_arn"), "principal_arn on a password user", "principal_arn applies only to auth_method = \"aws_iam\".")
+	}
+
 	var roles types.List
 	resp.Diagnostics.Append(req.Config.GetAttribute(ctx, path.Root("roles"), &roles)...)
 	forKnownUserRoles(ctx, roles, func(i int, role userRoleModel) {
@@ -200,6 +226,7 @@ func (r *postgresqlUserResource) Create(ctx context.Context, req resource.Create
 		GeneratePassword:    plan.GeneratePassword.ValueBool(),
 		Description:         plan.Description.ValueString(),
 		AuthMethod:          plan.AuthMethod.ValueString(),
+		PrincipalArn:        plan.PrincipalARN.ValueString(),
 		Roles:               rolesToProto(plan.Roles),
 		RestrictedResources: stringListToGo(plan.RestrictedResources),
 		ExpiresAt:           expires,
@@ -300,6 +327,9 @@ func (r *postgresqlUserResource) Update(ctx context.Context, req resource.Update
 	if !plan.Roles.Equal(prior.Roles) {
 		update.Roles = rolesToProto(plan.Roles)
 	}
+	if !plan.PrincipalARN.Equal(prior.PrincipalARN) {
+		update.PrincipalArn = stringPtr(plan.PrincipalARN.ValueString())
+	}
 	if !plan.ExpiresAt.Equal(prior.ExpiresAt) {
 		update.ExpiresAt = expires
 		if expires == nil {
@@ -349,7 +379,11 @@ func userFromProto(u *serverv1.DatabaseUser, prior postgresqlUserModel) postgres
 	out.ID = types.StringValue(prior.ClusterID.ValueString() + "/" + u.GetUsername())
 	out.Username = types.StringValue(u.GetUsername())
 	out.Description = types.StringValue(u.GetDescription())
-	out.AuthMethod = types.StringValue(u.GetAuthMethod())
+	out.AuthMethod = types.StringValue(strings.ToLower(u.GetAuthMethod()))
+	out.PrincipalARN = types.StringNull()
+	if arn := u.GetPrincipalArn(); arn != "" {
+		out.PrincipalARN = types.StringValue(arn)
+	}
 	out.Roles = rolesFromProto(u.GetRoles())
 	out.RestrictedResources = stringListFromGo(u.GetRestrictedResources(), prior.RestrictedResources)
 	out.ExpiresAt = expiryFromProto(u.GetExpiresAt(), prior.ExpiresAt)

@@ -42,3 +42,12 @@ resource "relay_postgresql_user" "ro" {
   generate_password = true
   roles             = [{ role = "readOnly", database = relay_postgresql_database.balance.name, schema = "balance" }]
 }
+
+resource "relay_postgresql_user" "orders_api" {
+  workspace_id  = relay_postgresql_database.billing.workspace_id
+  cluster_id    = relay_postgresql_database.billing.cluster_id
+  username      = "orders_api"
+  auth_method   = "aws_iam"
+  principal_arn = aws_iam_role.orders_api.arn
+  roles         = [{ role = "readWrite", database = relay_postgresql_database.billing.name }]
+}

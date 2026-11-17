@@ -968,6 +968,7 @@ func (f *fakeServer) CreateDatabaseUser(ctx context.Context, req *serverv1.Creat
 		Username:            req.GetUsername(),
 		Description:         req.GetDescription(),
 		AuthMethod:          "password",
+		PrincipalArn:        req.GetPrincipalArn(),
 		Roles:               req.GetRoles(),
 		RestrictedResources: req.GetRestrictedResources(),
 		ExpiresAt:           req.GetExpiresAt(),
@@ -975,6 +976,9 @@ func (f *fakeServer) CreateDatabaseUser(ctx context.Context, req *serverv1.Creat
 		StatementTimeout:    req.GetStatementTimeout(),
 		Phase:               "Pending",
 		CreatedAt:           timestamppb.New(time.Unix(1_700_000_000, 0)),
+	}
+	if req.GetAuthMethod() != "" {
+		f.users[key].AuthMethod = req.GetAuthMethod()
 	}
 	if f.userWithoutTimes {
 		f.users[key].CreatedAt = nil
@@ -1032,6 +1036,9 @@ func (f *fakeServer) UpdateDatabaseUser(ctx context.Context, req *serverv1.Updat
 	}
 	if req.ConnectionLimit != nil {
 		u.ConnectionLimit = req.ConnectionLimit
+	}
+	if req.PrincipalArn != nil {
+		u.PrincipalArn = req.GetPrincipalArn()
 	}
 	if t := req.GetExpiresAt(); t != nil {
 		u.ExpiresAt = t
