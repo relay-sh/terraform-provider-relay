@@ -1,3 +1,9 @@
+## 0.1.3 (November 17, 2026)
+
+FEATURES:
+
+* resource/relay_valkey_user: `auth_method = "aws_iam"` with `principal_arn` creates a Valkey user bound to an AWS IAM role or user, which logs in with `AUTH <username> <token>` instead of a password (see [relay-sh/dbauth](https://github.com/relay-sh/dbauth)). `principal_arn` changes in place; `password` and `generate_password` are refused on such a user ([#124](https://github.com/relay-sh/terraform-provider-relay/pull/124))
+
 ## 0.1.2 (November 17, 2026)
 
 FEATURES:
