@@ -107,6 +107,11 @@ type fakeServer struct {
 	assumeRoleError   string
 	autoExport        *serverv1.BackupAutoExport
 	lastAutoExport    *serverv1.UpsertBackupAutoExportRequest
+
+	checkStatus     *serverv1.MigrationSourceCheckStatus
+	checkPendingFor int
+	checkPolls      map[string]int
+	lastCheck       *serverv1.CheckMigrationSourceRequest
 }
 
 func startFakeServer(t *testing.T) *fakeServer {
@@ -138,6 +143,7 @@ func startFakeServer(t *testing.T) *fakeServer {
 		svcCountdown:      map[string]int{},
 		epCountdown:       map[string]int{},
 		schedules:         map[string]*serverv1.BackupScheduleSpec{},
+		checkPolls:        map[string]int{},
 		relayAWSAccountID: "111122223333",
 		peRegions:         []*serverv1.PrivateEndpointRegion{{Provider: "aws", Region: "us-east-1"}},
 		providers: []*serverv1.DatabaseProvider{

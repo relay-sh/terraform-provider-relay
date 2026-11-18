@@ -19,242 +19,298 @@ import (
 const _ = grpc.SupportPackageIsVersion9
 
 const (
-	ServerService_WhoAmI_FullMethodName                         = "/relay.server.v1.ServerService/WhoAmI"
-	ServerService_SetUserFlags_FullMethodName                   = "/relay.server.v1.ServerService/SetUserFlags"
-	ServerService_Logout_FullMethodName                         = "/relay.server.v1.ServerService/Logout"
-	ServerService_ListSessions_FullMethodName                   = "/relay.server.v1.ServerService/ListSessions"
-	ServerService_RevokeSession_FullMethodName                  = "/relay.server.v1.ServerService/RevokeSession"
-	ServerService_GetMaintenanceBanner_FullMethodName           = "/relay.server.v1.ServerService/GetMaintenanceBanner"
-	ServerService_CreateAPIKey_FullMethodName                   = "/relay.server.v1.ServerService/CreateAPIKey"
-	ServerService_ListAPIKeys_FullMethodName                    = "/relay.server.v1.ServerService/ListAPIKeys"
-	ServerService_UpdateAPIKey_FullMethodName                   = "/relay.server.v1.ServerService/UpdateAPIKey"
-	ServerService_RevokeAPIKey_FullMethodName                   = "/relay.server.v1.ServerService/RevokeAPIKey"
-	ServerService_ListConnections_FullMethodName                = "/relay.server.v1.ServerService/ListConnections"
-	ServerService_ListManagedDatabaseConnections_FullMethodName = "/relay.server.v1.ServerService/ListManagedDatabaseConnections"
-	ServerService_GetConnections_FullMethodName                 = "/relay.server.v1.ServerService/GetConnections"
-	ServerService_CreateConnection_FullMethodName               = "/relay.server.v1.ServerService/CreateConnection"
-	ServerService_DeleteConnection_FullMethodName               = "/relay.server.v1.ServerService/DeleteConnection"
-	ServerService_UpdateConnection_FullMethodName               = "/relay.server.v1.ServerService/UpdateConnection"
-	ServerService_SetConnectionPools_FullMethodName             = "/relay.server.v1.ServerService/SetConnectionPools"
-	ServerService_IssueTunnelToken_FullMethodName               = "/relay.server.v1.ServerService/IssueTunnelToken"
-	ServerService_ResolveTunnelToken_FullMethodName             = "/relay.server.v1.ServerService/ResolveTunnelToken"
-	ServerService_ReportTunnelSessions_FullMethodName           = "/relay.server.v1.ServerService/ReportTunnelSessions"
-	ServerService_ListTunnelSessions_FullMethodName             = "/relay.server.v1.ServerService/ListTunnelSessions"
-	ServerService_ReportMaskingClassifications_FullMethodName   = "/relay.server.v1.ServerService/ReportMaskingClassifications"
-	ServerService_ListMaskingClassifications_FullMethodName     = "/relay.server.v1.ServerService/ListMaskingClassifications"
-	ServerService_ResolveMaskingClassification_FullMethodName   = "/relay.server.v1.ServerService/ResolveMaskingClassification"
-	ServerService_ListConnectionGroups_FullMethodName           = "/relay.server.v1.ServerService/ListConnectionGroups"
-	ServerService_CreateConnectionGroup_FullMethodName          = "/relay.server.v1.ServerService/CreateConnectionGroup"
-	ServerService_DeleteConnectionGroup_FullMethodName          = "/relay.server.v1.ServerService/DeleteConnectionGroup"
-	ServerService_UpdateConnectionGroup_FullMethodName          = "/relay.server.v1.ServerService/UpdateConnectionGroup"
-	ServerService_AddConnectionToGroup_FullMethodName           = "/relay.server.v1.ServerService/AddConnectionToGroup"
-	ServerService_RemoveConnectionFromGroup_FullMethodName      = "/relay.server.v1.ServerService/RemoveConnectionFromGroup"
-	ServerService_ListPolicies_FullMethodName                   = "/relay.server.v1.ServerService/ListPolicies"
-	ServerService_GetPolicy_FullMethodName                      = "/relay.server.v1.ServerService/GetPolicy"
-	ServerService_CreatePolicy_FullMethodName                   = "/relay.server.v1.ServerService/CreatePolicy"
-	ServerService_UpdatePolicy_FullMethodName                   = "/relay.server.v1.ServerService/UpdatePolicy"
-	ServerService_DeletePolicy_FullMethodName                   = "/relay.server.v1.ServerService/DeletePolicy"
-	ServerService_SetConnectionPolicies_FullMethodName          = "/relay.server.v1.ServerService/SetConnectionPolicies"
-	ServerService_ListConnectionPolicies_FullMethodName         = "/relay.server.v1.ServerService/ListConnectionPolicies"
-	ServerService_RequestQueryApproval_FullMethodName           = "/relay.server.v1.ServerService/RequestQueryApproval"
-	ServerService_WaitQueryApproval_FullMethodName              = "/relay.server.v1.ServerService/WaitQueryApproval"
-	ServerService_ListQueryApprovals_FullMethodName             = "/relay.server.v1.ServerService/ListQueryApprovals"
-	ServerService_GetQueryApproval_FullMethodName               = "/relay.server.v1.ServerService/GetQueryApproval"
-	ServerService_ApproveQueryApproval_FullMethodName           = "/relay.server.v1.ServerService/ApproveQueryApproval"
-	ServerService_DenyQueryApproval_FullMethodName              = "/relay.server.v1.ServerService/DenyQueryApproval"
-	ServerService_DetachQueryApproval_FullMethodName            = "/relay.server.v1.ServerService/DetachQueryApproval"
-	ServerService_CancelQueryApproval_FullMethodName            = "/relay.server.v1.ServerService/CancelQueryApproval"
-	ServerService_ListApprovalIntegrations_FullMethodName       = "/relay.server.v1.ServerService/ListApprovalIntegrations"
-	ServerService_UpsertApprovalIntegration_FullMethodName      = "/relay.server.v1.ServerService/UpsertApprovalIntegration"
-	ServerService_DeleteApprovalIntegration_FullMethodName      = "/relay.server.v1.ServerService/DeleteApprovalIntegration"
-	ServerService_ListAccessGrants_FullMethodName               = "/relay.server.v1.ServerService/ListAccessGrants"
-	ServerService_CreateAccessGrant_FullMethodName              = "/relay.server.v1.ServerService/CreateAccessGrant"
-	ServerService_DeleteAccessGrant_FullMethodName              = "/relay.server.v1.ServerService/DeleteAccessGrant"
-	ServerService_RequestAccessGrant_FullMethodName             = "/relay.server.v1.ServerService/RequestAccessGrant"
-	ServerService_ListAccessGrantRequests_FullMethodName        = "/relay.server.v1.ServerService/ListAccessGrantRequests"
-	ServerService_GetAccessGrantRequest_FullMethodName          = "/relay.server.v1.ServerService/GetAccessGrantRequest"
-	ServerService_ApproveAccessGrantRequest_FullMethodName      = "/relay.server.v1.ServerService/ApproveAccessGrantRequest"
-	ServerService_DenyAccessGrantRequest_FullMethodName         = "/relay.server.v1.ServerService/DenyAccessGrantRequest"
-	ServerService_CancelAccessGrantRequest_FullMethodName       = "/relay.server.v1.ServerService/CancelAccessGrantRequest"
-	ServerService_RevokeAccessGrantRequest_FullMethodName       = "/relay.server.v1.ServerService/RevokeAccessGrantRequest"
-	ServerService_ListRequestableConnections_FullMethodName     = "/relay.server.v1.ServerService/ListRequestableConnections"
-	ServerService_GetAccessRequestSettings_FullMethodName       = "/relay.server.v1.ServerService/GetAccessRequestSettings"
-	ServerService_UpdateAccessRequestSettings_FullMethodName    = "/relay.server.v1.ServerService/UpdateAccessRequestSettings"
-	ServerService_ListTeams_FullMethodName                      = "/relay.server.v1.ServerService/ListTeams"
-	ServerService_CreateTeam_FullMethodName                     = "/relay.server.v1.ServerService/CreateTeam"
-	ServerService_DeleteTeam_FullMethodName                     = "/relay.server.v1.ServerService/DeleteTeam"
-	ServerService_AddTeamMember_FullMethodName                  = "/relay.server.v1.ServerService/AddTeamMember"
-	ServerService_RemoveTeamMember_FullMethodName               = "/relay.server.v1.ServerService/RemoveTeamMember"
-	ServerService_ListMembers_FullMethodName                    = "/relay.server.v1.ServerService/ListMembers"
-	ServerService_SetMemberRole_FullMethodName                  = "/relay.server.v1.ServerService/SetMemberRole"
-	ServerService_TransferOwnership_FullMethodName              = "/relay.server.v1.ServerService/TransferOwnership"
-	ServerService_RemoveMember_FullMethodName                   = "/relay.server.v1.ServerService/RemoveMember"
-	ServerService_UpdateMember_FullMethodName                   = "/relay.server.v1.ServerService/UpdateMember"
-	ServerService_RevokeUserSessions_FullMethodName             = "/relay.server.v1.ServerService/RevokeUserSessions"
-	ServerService_InviteMember_FullMethodName                   = "/relay.server.v1.ServerService/InviteMember"
-	ServerService_ListInvitations_FullMethodName                = "/relay.server.v1.ServerService/ListInvitations"
-	ServerService_RevokeInvitation_FullMethodName               = "/relay.server.v1.ServerService/RevokeInvitation"
-	ServerService_GetInvitation_FullMethodName                  = "/relay.server.v1.ServerService/GetInvitation"
-	ServerService_AcceptInvitation_FullMethodName               = "/relay.server.v1.ServerService/AcceptInvitation"
-	ServerService_ListAgents_FullMethodName                     = "/relay.server.v1.ServerService/ListAgents"
-	ServerService_DeleteAgent_FullMethodName                    = "/relay.server.v1.ServerService/DeleteAgent"
-	ServerService_CreateEnrollmentToken_FullMethodName          = "/relay.server.v1.ServerService/CreateEnrollmentToken"
-	ServerService_ListEnrollmentTokens_FullMethodName           = "/relay.server.v1.ServerService/ListEnrollmentTokens"
-	ServerService_DeleteEnrollmentToken_FullMethodName          = "/relay.server.v1.ServerService/DeleteEnrollmentToken"
-	ServerService_EnrollAgent_FullMethodName                    = "/relay.server.v1.ServerService/EnrollAgent"
-	ServerService_Heartbeat_FullMethodName                      = "/relay.server.v1.ServerService/Heartbeat"
-	ServerService_Deregister_FullMethodName                     = "/relay.server.v1.ServerService/Deregister"
-	ServerService_ListAgentPools_FullMethodName                 = "/relay.server.v1.ServerService/ListAgentPools"
-	ServerService_CreateAgentPool_FullMethodName                = "/relay.server.v1.ServerService/CreateAgentPool"
-	ServerService_DeleteAgentPool_FullMethodName                = "/relay.server.v1.ServerService/DeleteAgentPool"
-	ServerService_UpdateAgentPool_FullMethodName                = "/relay.server.v1.ServerService/UpdateAgentPool"
-	ServerService_SetAgentPoolTeams_FullMethodName              = "/relay.server.v1.ServerService/SetAgentPoolTeams"
-	ServerService_WakeAgentPool_FullMethodName                  = "/relay.server.v1.ServerService/WakeAgentPool"
-	ServerService_ResolveConnectionCredential_FullMethodName    = "/relay.server.v1.ServerService/ResolveConnectionCredential"
-	ServerService_ResolveExternalSecretSource_FullMethodName    = "/relay.server.v1.ServerService/ResolveExternalSecretSource"
-	ServerService_ListExternalSecretSources_FullMethodName      = "/relay.server.v1.ServerService/ListExternalSecretSources"
-	ServerService_GetExternalSecretSource_FullMethodName        = "/relay.server.v1.ServerService/GetExternalSecretSource"
-	ServerService_UpsertExternalSecretSource_FullMethodName     = "/relay.server.v1.ServerService/UpsertExternalSecretSource"
-	ServerService_DeleteExternalSecretSource_FullMethodName     = "/relay.server.v1.ServerService/DeleteExternalSecretSource"
-	ServerService_GetCloudIntegrationSetup_FullMethodName       = "/relay.server.v1.ServerService/GetCloudIntegrationSetup"
-	ServerService_ListCloudIntegrations_FullMethodName          = "/relay.server.v1.ServerService/ListCloudIntegrations"
-	ServerService_GetCloudIntegration_FullMethodName            = "/relay.server.v1.ServerService/GetCloudIntegration"
-	ServerService_CreateCloudIntegration_FullMethodName         = "/relay.server.v1.ServerService/CreateCloudIntegration"
-	ServerService_UpdateCloudIntegration_FullMethodName         = "/relay.server.v1.ServerService/UpdateCloudIntegration"
-	ServerService_DeleteCloudIntegration_FullMethodName         = "/relay.server.v1.ServerService/DeleteCloudIntegration"
-	ServerService_TestCloudIntegration_FullMethodName           = "/relay.server.v1.ServerService/TestCloudIntegration"
-	ServerService_GetLogStream_FullMethodName                   = "/relay.server.v1.ServerService/GetLogStream"
-	ServerService_UpsertLogStream_FullMethodName                = "/relay.server.v1.ServerService/UpsertLogStream"
-	ServerService_DeleteLogStream_FullMethodName                = "/relay.server.v1.ServerService/DeleteLogStream"
-	ServerService_GetBackupAutoExport_FullMethodName            = "/relay.server.v1.ServerService/GetBackupAutoExport"
-	ServerService_UpsertBackupAutoExport_FullMethodName         = "/relay.server.v1.ServerService/UpsertBackupAutoExport"
-	ServerService_DeleteBackupAutoExport_FullMethodName         = "/relay.server.v1.ServerService/DeleteBackupAutoExport"
-	ServerService_ExportToCloud_FullMethodName                  = "/relay.server.v1.ServerService/ExportToCloud"
-	ServerService_ListLogDestinations_FullMethodName            = "/relay.server.v1.ServerService/ListLogDestinations"
-	ServerService_CreateLogDestination_FullMethodName           = "/relay.server.v1.ServerService/CreateLogDestination"
-	ServerService_UpdateLogDestination_FullMethodName           = "/relay.server.v1.ServerService/UpdateLogDestination"
-	ServerService_DeleteLogDestination_FullMethodName           = "/relay.server.v1.ServerService/DeleteLogDestination"
-	ServerService_TestLogDestination_FullMethodName             = "/relay.server.v1.ServerService/TestLogDestination"
-	ServerService_IngestAuditEvents_FullMethodName              = "/relay.server.v1.ServerService/IngestAuditEvents"
-	ServerService_ListAuditLogs_FullMethodName                  = "/relay.server.v1.ServerService/ListAuditLogs"
-	ServerService_GetAuditMetrics_FullMethodName                = "/relay.server.v1.ServerService/GetAuditMetrics"
-	ServerService_ListActivityLogs_FullMethodName               = "/relay.server.v1.ServerService/ListActivityLogs"
-	ServerService_ListOrgActivityLogs_FullMethodName            = "/relay.server.v1.ServerService/ListOrgActivityLogs"
-	ServerService_EmitActivity_FullMethodName                   = "/relay.server.v1.ServerService/EmitActivity"
-	ServerService_ListUserOrganizations_FullMethodName          = "/relay.server.v1.ServerService/ListUserOrganizations"
-	ServerService_GetOrganization_FullMethodName                = "/relay.server.v1.ServerService/GetOrganization"
-	ServerService_CreateOrganization_FullMethodName             = "/relay.server.v1.ServerService/CreateOrganization"
-	ServerService_UpdateOrganization_FullMethodName             = "/relay.server.v1.ServerService/UpdateOrganization"
-	ServerService_UpdateOrganizationSettings_FullMethodName     = "/relay.server.v1.ServerService/UpdateOrganizationSettings"
-	ServerService_DeleteOrganization_FullMethodName             = "/relay.server.v1.ServerService/DeleteOrganization"
-	ServerService_SwitchOrganization_FullMethodName             = "/relay.server.v1.ServerService/SwitchOrganization"
-	ServerService_GetOrgOverview_FullMethodName                 = "/relay.server.v1.ServerService/GetOrgOverview"
-	ServerService_ListWorkspaces_FullMethodName                 = "/relay.server.v1.ServerService/ListWorkspaces"
-	ServerService_GetWorkspace_FullMethodName                   = "/relay.server.v1.ServerService/GetWorkspace"
-	ServerService_CreateWorkspace_FullMethodName                = "/relay.server.v1.ServerService/CreateWorkspace"
-	ServerService_UpdateWorkspace_FullMethodName                = "/relay.server.v1.ServerService/UpdateWorkspace"
-	ServerService_DeleteWorkspace_FullMethodName                = "/relay.server.v1.ServerService/DeleteWorkspace"
-	ServerService_AddWorkspaceMember_FullMethodName             = "/relay.server.v1.ServerService/AddWorkspaceMember"
-	ServerService_RemoveWorkspaceMember_FullMethodName          = "/relay.server.v1.ServerService/RemoveWorkspaceMember"
-	ServerService_ListWorkspaceMembers_FullMethodName           = "/relay.server.v1.ServerService/ListWorkspaceMembers"
-	ServerService_AddWorkspaceTeam_FullMethodName               = "/relay.server.v1.ServerService/AddWorkspaceTeam"
-	ServerService_RemoveWorkspaceTeam_FullMethodName            = "/relay.server.v1.ServerService/RemoveWorkspaceTeam"
-	ServerService_ListWorkspaceTeams_FullMethodName             = "/relay.server.v1.ServerService/ListWorkspaceTeams"
-	ServerService_SetWorkspaceMemberRole_FullMethodName         = "/relay.server.v1.ServerService/SetWorkspaceMemberRole"
-	ServerService_SetWorkspaceTeamRole_FullMethodName           = "/relay.server.v1.ServerService/SetWorkspaceTeamRole"
-	ServerService_ListRoles_FullMethodName                      = "/relay.server.v1.ServerService/ListRoles"
-	ServerService_CreateRole_FullMethodName                     = "/relay.server.v1.ServerService/CreateRole"
-	ServerService_UpdateRole_FullMethodName                     = "/relay.server.v1.ServerService/UpdateRole"
-	ServerService_DeleteRole_FullMethodName                     = "/relay.server.v1.ServerService/DeleteRole"
-	ServerService_ListRoleBindings_FullMethodName               = "/relay.server.v1.ServerService/ListRoleBindings"
-	ServerService_CreateRoleBinding_FullMethodName              = "/relay.server.v1.ServerService/CreateRoleBinding"
-	ServerService_DeleteRoleBinding_FullMethodName              = "/relay.server.v1.ServerService/DeleteRoleBinding"
-	ServerService_ListDatabases_FullMethodName                  = "/relay.server.v1.ServerService/ListDatabases"
-	ServerService_CreateDatabase_FullMethodName                 = "/relay.server.v1.ServerService/CreateDatabase"
-	ServerService_RestoreDatabase_FullMethodName                = "/relay.server.v1.ServerService/RestoreDatabase"
-	ServerService_GetDatabase_FullMethodName                    = "/relay.server.v1.ServerService/GetDatabase"
-	ServerService_UpdateDatabase_FullMethodName                 = "/relay.server.v1.ServerService/UpdateDatabase"
-	ServerService_ListPostgreSQLParameters_FullMethodName       = "/relay.server.v1.ServerService/ListPostgreSQLParameters"
-	ServerService_ListValkeyParameters_FullMethodName           = "/relay.server.v1.ServerService/ListValkeyParameters"
-	ServerService_ListAutoscaleMetrics_FullMethodName           = "/relay.server.v1.ServerService/ListAutoscaleMetrics"
-	ServerService_ListScaleEvents_FullMethodName                = "/relay.server.v1.ServerService/ListScaleEvents"
-	ServerService_WatchDatabase_FullMethodName                  = "/relay.server.v1.ServerService/WatchDatabase"
-	ServerService_ListPendingOperations_FullMethodName          = "/relay.server.v1.ServerService/ListPendingOperations"
-	ServerService_DeleteDatabase_FullMethodName                 = "/relay.server.v1.ServerService/DeleteDatabase"
-	ServerService_RetryDeleteDatabase_FullMethodName            = "/relay.server.v1.ServerService/RetryDeleteDatabase"
-	ServerService_PauseDatabase_FullMethodName                  = "/relay.server.v1.ServerService/PauseDatabase"
-	ServerService_SetDefaultConnections_FullMethodName          = "/relay.server.v1.ServerService/SetDefaultConnections"
-	ServerService_SetDeletionProtection_FullMethodName          = "/relay.server.v1.ServerService/SetDeletionProtection"
-	ServerService_ResumeDatabase_FullMethodName                 = "/relay.server.v1.ServerService/ResumeDatabase"
-	ServerService_GetDatabaseStatus_FullMethodName              = "/relay.server.v1.ServerService/GetDatabaseStatus"
-	ServerService_ListDatabaseNodes_FullMethodName              = "/relay.server.v1.ServerService/ListDatabaseNodes"
-	ServerService_GetDatabaseLogs_FullMethodName                = "/relay.server.v1.ServerService/GetDatabaseLogs"
-	ServerService_GetDatabaseAnalytics_FullMethodName           = "/relay.server.v1.ServerService/GetDatabaseAnalytics"
-	ServerService_GetDatabaseConnection_FullMethodName          = "/relay.server.v1.ServerService/GetDatabaseConnection"
-	ServerService_ListIPAllowlist_FullMethodName                = "/relay.server.v1.ServerService/ListIPAllowlist"
-	ServerService_AddIPAllowlistEntry_FullMethodName            = "/relay.server.v1.ServerService/AddIPAllowlistEntry"
-	ServerService_UpdateIPAllowlistEntry_FullMethodName         = "/relay.server.v1.ServerService/UpdateIPAllowlistEntry"
-	ServerService_RemoveIPAllowlistEntry_FullMethodName         = "/relay.server.v1.ServerService/RemoveIPAllowlistEntry"
-	ServerService_ListPrivateEndpointRegions_FullMethodName     = "/relay.server.v1.ServerService/ListPrivateEndpointRegions"
-	ServerService_CreatePrivateEndpointService_FullMethodName   = "/relay.server.v1.ServerService/CreatePrivateEndpointService"
-	ServerService_ListPrivateEndpointServices_FullMethodName    = "/relay.server.v1.ServerService/ListPrivateEndpointServices"
-	ServerService_GetPrivateEndpointService_FullMethodName      = "/relay.server.v1.ServerService/GetPrivateEndpointService"
-	ServerService_DeletePrivateEndpointService_FullMethodName   = "/relay.server.v1.ServerService/DeletePrivateEndpointService"
-	ServerService_CreatePrivateEndpoint_FullMethodName          = "/relay.server.v1.ServerService/CreatePrivateEndpoint"
-	ServerService_GetPrivateEndpoint_FullMethodName             = "/relay.server.v1.ServerService/GetPrivateEndpoint"
-	ServerService_DeletePrivateEndpoint_FullMethodName          = "/relay.server.v1.ServerService/DeletePrivateEndpoint"
-	ServerService_ListBackupSchedules_FullMethodName            = "/relay.server.v1.ServerService/ListBackupSchedules"
-	ServerService_ListBackups_FullMethodName                    = "/relay.server.v1.ServerService/ListBackups"
-	ServerService_GetBackupSchedule_FullMethodName              = "/relay.server.v1.ServerService/GetBackupSchedule"
-	ServerService_UpsertBackupSchedule_FullMethodName           = "/relay.server.v1.ServerService/UpsertBackupSchedule"
-	ServerService_ResetBackupSchedule_FullMethodName            = "/relay.server.v1.ServerService/ResetBackupSchedule"
-	ServerService_CreateBackup_FullMethodName                   = "/relay.server.v1.ServerService/CreateBackup"
-	ServerService_DeleteBackup_FullMethodName                   = "/relay.server.v1.ServerService/DeleteBackup"
-	ServerService_ListDatabaseUsers_FullMethodName              = "/relay.server.v1.ServerService/ListDatabaseUsers"
-	ServerService_GetDatabaseUser_FullMethodName                = "/relay.server.v1.ServerService/GetDatabaseUser"
-	ServerService_CreateDatabaseUser_FullMethodName             = "/relay.server.v1.ServerService/CreateDatabaseUser"
-	ServerService_UpdateDatabaseUser_FullMethodName             = "/relay.server.v1.ServerService/UpdateDatabaseUser"
-	ServerService_DeleteDatabaseUser_FullMethodName             = "/relay.server.v1.ServerService/DeleteDatabaseUser"
-	ServerService_ListLogicalDatabases_FullMethodName           = "/relay.server.v1.ServerService/ListLogicalDatabases"
-	ServerService_CreateLogicalDatabase_FullMethodName          = "/relay.server.v1.ServerService/CreateLogicalDatabase"
-	ServerService_UpdateLogicalDatabase_FullMethodName          = "/relay.server.v1.ServerService/UpdateLogicalDatabase"
-	ServerService_DeleteLogicalDatabase_FullMethodName          = "/relay.server.v1.ServerService/DeleteLogicalDatabase"
-	ServerService_ListDatabaseProviders_FullMethodName          = "/relay.server.v1.ServerService/ListDatabaseProviders"
-	ServerService_GetBillingState_FullMethodName                = "/relay.server.v1.ServerService/GetBillingState"
-	ServerService_CreateCheckoutSession_FullMethodName          = "/relay.server.v1.ServerService/CreateCheckoutSession"
-	ServerService_CreateBillingPortalSession_FullMethodName     = "/relay.server.v1.ServerService/CreateBillingPortalSession"
-	ServerService_ChangePlan_FullMethodName                     = "/relay.server.v1.ServerService/ChangePlan"
-	ServerService_RedeemPromoCode_FullMethodName                = "/relay.server.v1.ServerService/RedeemPromoCode"
-	ServerService_CreateSupportReport_FullMethodName            = "/relay.server.v1.ServerService/CreateSupportReport"
-	ServerService_ListSupportReports_FullMethodName             = "/relay.server.v1.ServerService/ListSupportReports"
-	ServerService_GetSupportReport_FullMethodName               = "/relay.server.v1.ServerService/GetSupportReport"
-	ServerService_AddSupportReportComment_FullMethodName        = "/relay.server.v1.ServerService/AddSupportReportComment"
-	ServerService_GetSupportAttachment_FullMethodName           = "/relay.server.v1.ServerService/GetSupportAttachment"
-	ServerService_UpdateSupportReportStatus_FullMethodName      = "/relay.server.v1.ServerService/UpdateSupportReportStatus"
-	ServerService_GetOrgSSOConnection_FullMethodName            = "/relay.server.v1.ServerService/GetOrgSSOConnection"
-	ServerService_UpsertOrgSSOConnection_FullMethodName         = "/relay.server.v1.ServerService/UpsertOrgSSOConnection"
-	ServerService_DeleteOrgSSOConnection_FullMethodName         = "/relay.server.v1.ServerService/DeleteOrgSSOConnection"
-	ServerService_TestOrgSSOConnection_FullMethodName           = "/relay.server.v1.ServerService/TestOrgSSOConnection"
-	ServerService_ListOrgDomains_FullMethodName                 = "/relay.server.v1.ServerService/ListOrgDomains"
-	ServerService_AddOrgDomain_FullMethodName                   = "/relay.server.v1.ServerService/AddOrgDomain"
-	ServerService_VerifyOrgDomain_FullMethodName                = "/relay.server.v1.ServerService/VerifyOrgDomain"
-	ServerService_RemoveOrgDomain_FullMethodName                = "/relay.server.v1.ServerService/RemoveOrgDomain"
-	ServerService_ListPostgreSQLExtensions_FullMethodName       = "/relay.server.v1.ServerService/ListPostgreSQLExtensions"
-	ServerService_GetLicenseStatus_FullMethodName               = "/relay.server.v1.ServerService/GetLicenseStatus"
-	ServerService_ExportLicenseUsageReport_FullMethodName       = "/relay.server.v1.ServerService/ExportLicenseUsageReport"
-	ServerService_GetRunbookSource_FullMethodName               = "/relay.server.v1.ServerService/GetRunbookSource"
-	ServerService_UpsertRunbookSource_FullMethodName            = "/relay.server.v1.ServerService/UpsertRunbookSource"
-	ServerService_DeleteRunbookSource_FullMethodName            = "/relay.server.v1.ServerService/DeleteRunbookSource"
-	ServerService_SyncRunbooks_FullMethodName                   = "/relay.server.v1.ServerService/SyncRunbooks"
-	ServerService_RotateRunbookWebhookSecret_FullMethodName     = "/relay.server.v1.ServerService/RotateRunbookWebhookSecret"
-	ServerService_FetchRunbookHostKey_FullMethodName            = "/relay.server.v1.ServerService/FetchRunbookHostKey"
-	ServerService_ListRunbooks_FullMethodName                   = "/relay.server.v1.ServerService/ListRunbooks"
-	ServerService_GetRunbook_FullMethodName                     = "/relay.server.v1.ServerService/GetRunbook"
-	ServerService_RunRunbook_FullMethodName                     = "/relay.server.v1.ServerService/RunRunbook"
-	ServerService_GetRunbookExecution_FullMethodName            = "/relay.server.v1.ServerService/GetRunbookExecution"
-	ServerService_ListRunbookExecutions_FullMethodName          = "/relay.server.v1.ServerService/ListRunbookExecutions"
-	ServerService_ClaimRunbookExecutions_FullMethodName         = "/relay.server.v1.ServerService/ClaimRunbookExecutions"
-	ServerService_ReportRunbookExecution_FullMethodName         = "/relay.server.v1.ServerService/ReportRunbookExecution"
+	ServerService_WhoAmI_FullMethodName                          = "/relay.server.v1.ServerService/WhoAmI"
+	ServerService_SetUserFlags_FullMethodName                    = "/relay.server.v1.ServerService/SetUserFlags"
+	ServerService_Logout_FullMethodName                          = "/relay.server.v1.ServerService/Logout"
+	ServerService_ListSessions_FullMethodName                    = "/relay.server.v1.ServerService/ListSessions"
+	ServerService_RevokeSession_FullMethodName                   = "/relay.server.v1.ServerService/RevokeSession"
+	ServerService_GetMaintenanceBanner_FullMethodName            = "/relay.server.v1.ServerService/GetMaintenanceBanner"
+	ServerService_CreateAPIKey_FullMethodName                    = "/relay.server.v1.ServerService/CreateAPIKey"
+	ServerService_ListAPIKeys_FullMethodName                     = "/relay.server.v1.ServerService/ListAPIKeys"
+	ServerService_UpdateAPIKey_FullMethodName                    = "/relay.server.v1.ServerService/UpdateAPIKey"
+	ServerService_RevokeAPIKey_FullMethodName                    = "/relay.server.v1.ServerService/RevokeAPIKey"
+	ServerService_ListServiceAccounts_FullMethodName             = "/relay.server.v1.ServerService/ListServiceAccounts"
+	ServerService_CreateServiceAccount_FullMethodName            = "/relay.server.v1.ServerService/CreateServiceAccount"
+	ServerService_UpdateServiceAccount_FullMethodName            = "/relay.server.v1.ServerService/UpdateServiceAccount"
+	ServerService_DeleteServiceAccount_FullMethodName            = "/relay.server.v1.ServerService/DeleteServiceAccount"
+	ServerService_MoveAPIKeyToServiceAccount_FullMethodName      = "/relay.server.v1.ServerService/MoveAPIKeyToServiceAccount"
+	ServerService_ListConnections_FullMethodName                 = "/relay.server.v1.ServerService/ListConnections"
+	ServerService_ListManagedDatabaseConnections_FullMethodName  = "/relay.server.v1.ServerService/ListManagedDatabaseConnections"
+	ServerService_GetConnections_FullMethodName                  = "/relay.server.v1.ServerService/GetConnections"
+	ServerService_CreateConnection_FullMethodName                = "/relay.server.v1.ServerService/CreateConnection"
+	ServerService_DeleteConnection_FullMethodName                = "/relay.server.v1.ServerService/DeleteConnection"
+	ServerService_UpdateConnection_FullMethodName                = "/relay.server.v1.ServerService/UpdateConnection"
+	ServerService_SetConnectionPools_FullMethodName              = "/relay.server.v1.ServerService/SetConnectionPools"
+	ServerService_IssueTunnelToken_FullMethodName                = "/relay.server.v1.ServerService/IssueTunnelToken"
+	ServerService_ResolveTunnelToken_FullMethodName              = "/relay.server.v1.ServerService/ResolveTunnelToken"
+	ServerService_ReportTunnelSessions_FullMethodName            = "/relay.server.v1.ServerService/ReportTunnelSessions"
+	ServerService_ListTunnelSessions_FullMethodName              = "/relay.server.v1.ServerService/ListTunnelSessions"
+	ServerService_ReportMaskingClassifications_FullMethodName    = "/relay.server.v1.ServerService/ReportMaskingClassifications"
+	ServerService_ListMaskingClassifications_FullMethodName      = "/relay.server.v1.ServerService/ListMaskingClassifications"
+	ServerService_ResolveMaskingClassification_FullMethodName    = "/relay.server.v1.ServerService/ResolveMaskingClassification"
+	ServerService_ListConnectionGroups_FullMethodName            = "/relay.server.v1.ServerService/ListConnectionGroups"
+	ServerService_CreateConnectionGroup_FullMethodName           = "/relay.server.v1.ServerService/CreateConnectionGroup"
+	ServerService_DeleteConnectionGroup_FullMethodName           = "/relay.server.v1.ServerService/DeleteConnectionGroup"
+	ServerService_UpdateConnectionGroup_FullMethodName           = "/relay.server.v1.ServerService/UpdateConnectionGroup"
+	ServerService_AddConnectionToGroup_FullMethodName            = "/relay.server.v1.ServerService/AddConnectionToGroup"
+	ServerService_RemoveConnectionFromGroup_FullMethodName       = "/relay.server.v1.ServerService/RemoveConnectionFromGroup"
+	ServerService_ListPolicies_FullMethodName                    = "/relay.server.v1.ServerService/ListPolicies"
+	ServerService_GetPolicy_FullMethodName                       = "/relay.server.v1.ServerService/GetPolicy"
+	ServerService_CreatePolicy_FullMethodName                    = "/relay.server.v1.ServerService/CreatePolicy"
+	ServerService_UpdatePolicy_FullMethodName                    = "/relay.server.v1.ServerService/UpdatePolicy"
+	ServerService_DeletePolicy_FullMethodName                    = "/relay.server.v1.ServerService/DeletePolicy"
+	ServerService_SetConnectionPolicies_FullMethodName           = "/relay.server.v1.ServerService/SetConnectionPolicies"
+	ServerService_ListConnectionPolicies_FullMethodName          = "/relay.server.v1.ServerService/ListConnectionPolicies"
+	ServerService_RequestQueryApproval_FullMethodName            = "/relay.server.v1.ServerService/RequestQueryApproval"
+	ServerService_WaitQueryApproval_FullMethodName               = "/relay.server.v1.ServerService/WaitQueryApproval"
+	ServerService_ListQueryApprovals_FullMethodName              = "/relay.server.v1.ServerService/ListQueryApprovals"
+	ServerService_GetQueryApproval_FullMethodName                = "/relay.server.v1.ServerService/GetQueryApproval"
+	ServerService_ApproveQueryApproval_FullMethodName            = "/relay.server.v1.ServerService/ApproveQueryApproval"
+	ServerService_DenyQueryApproval_FullMethodName               = "/relay.server.v1.ServerService/DenyQueryApproval"
+	ServerService_DetachQueryApproval_FullMethodName             = "/relay.server.v1.ServerService/DetachQueryApproval"
+	ServerService_CancelQueryApproval_FullMethodName             = "/relay.server.v1.ServerService/CancelQueryApproval"
+	ServerService_ListApprovalIntegrations_FullMethodName        = "/relay.server.v1.ServerService/ListApprovalIntegrations"
+	ServerService_UpsertApprovalIntegration_FullMethodName       = "/relay.server.v1.ServerService/UpsertApprovalIntegration"
+	ServerService_DeleteApprovalIntegration_FullMethodName       = "/relay.server.v1.ServerService/DeleteApprovalIntegration"
+	ServerService_ListAccessGrants_FullMethodName                = "/relay.server.v1.ServerService/ListAccessGrants"
+	ServerService_CreateAccessGrant_FullMethodName               = "/relay.server.v1.ServerService/CreateAccessGrant"
+	ServerService_DeleteAccessGrant_FullMethodName               = "/relay.server.v1.ServerService/DeleteAccessGrant"
+	ServerService_RequestAccessGrant_FullMethodName              = "/relay.server.v1.ServerService/RequestAccessGrant"
+	ServerService_ListAccessGrantRequests_FullMethodName         = "/relay.server.v1.ServerService/ListAccessGrantRequests"
+	ServerService_GetAccessGrantRequest_FullMethodName           = "/relay.server.v1.ServerService/GetAccessGrantRequest"
+	ServerService_ApproveAccessGrantRequest_FullMethodName       = "/relay.server.v1.ServerService/ApproveAccessGrantRequest"
+	ServerService_DenyAccessGrantRequest_FullMethodName          = "/relay.server.v1.ServerService/DenyAccessGrantRequest"
+	ServerService_CancelAccessGrantRequest_FullMethodName        = "/relay.server.v1.ServerService/CancelAccessGrantRequest"
+	ServerService_RevokeAccessGrantRequest_FullMethodName        = "/relay.server.v1.ServerService/RevokeAccessGrantRequest"
+	ServerService_ListRequestableConnections_FullMethodName      = "/relay.server.v1.ServerService/ListRequestableConnections"
+	ServerService_GetAccessRequestSettings_FullMethodName        = "/relay.server.v1.ServerService/GetAccessRequestSettings"
+	ServerService_UpdateAccessRequestSettings_FullMethodName     = "/relay.server.v1.ServerService/UpdateAccessRequestSettings"
+	ServerService_ListTeams_FullMethodName                       = "/relay.server.v1.ServerService/ListTeams"
+	ServerService_CreateTeam_FullMethodName                      = "/relay.server.v1.ServerService/CreateTeam"
+	ServerService_DeleteTeam_FullMethodName                      = "/relay.server.v1.ServerService/DeleteTeam"
+	ServerService_AddTeamMember_FullMethodName                   = "/relay.server.v1.ServerService/AddTeamMember"
+	ServerService_RemoveTeamMember_FullMethodName                = "/relay.server.v1.ServerService/RemoveTeamMember"
+	ServerService_ListMembers_FullMethodName                     = "/relay.server.v1.ServerService/ListMembers"
+	ServerService_SetMemberRole_FullMethodName                   = "/relay.server.v1.ServerService/SetMemberRole"
+	ServerService_TransferOwnership_FullMethodName               = "/relay.server.v1.ServerService/TransferOwnership"
+	ServerService_RemoveMember_FullMethodName                    = "/relay.server.v1.ServerService/RemoveMember"
+	ServerService_UpdateMember_FullMethodName                    = "/relay.server.v1.ServerService/UpdateMember"
+	ServerService_RevokeUserSessions_FullMethodName              = "/relay.server.v1.ServerService/RevokeUserSessions"
+	ServerService_InviteMember_FullMethodName                    = "/relay.server.v1.ServerService/InviteMember"
+	ServerService_ListInvitations_FullMethodName                 = "/relay.server.v1.ServerService/ListInvitations"
+	ServerService_RevokeInvitation_FullMethodName                = "/relay.server.v1.ServerService/RevokeInvitation"
+	ServerService_GetInvitation_FullMethodName                   = "/relay.server.v1.ServerService/GetInvitation"
+	ServerService_AcceptInvitation_FullMethodName                = "/relay.server.v1.ServerService/AcceptInvitation"
+	ServerService_ListAgents_FullMethodName                      = "/relay.server.v1.ServerService/ListAgents"
+	ServerService_DeleteAgent_FullMethodName                     = "/relay.server.v1.ServerService/DeleteAgent"
+	ServerService_CreateEnrollmentToken_FullMethodName           = "/relay.server.v1.ServerService/CreateEnrollmentToken"
+	ServerService_ListEnrollmentTokens_FullMethodName            = "/relay.server.v1.ServerService/ListEnrollmentTokens"
+	ServerService_DeleteEnrollmentToken_FullMethodName           = "/relay.server.v1.ServerService/DeleteEnrollmentToken"
+	ServerService_EnrollAgent_FullMethodName                     = "/relay.server.v1.ServerService/EnrollAgent"
+	ServerService_Heartbeat_FullMethodName                       = "/relay.server.v1.ServerService/Heartbeat"
+	ServerService_Deregister_FullMethodName                      = "/relay.server.v1.ServerService/Deregister"
+	ServerService_ListAgentPools_FullMethodName                  = "/relay.server.v1.ServerService/ListAgentPools"
+	ServerService_CreateAgentPool_FullMethodName                 = "/relay.server.v1.ServerService/CreateAgentPool"
+	ServerService_DeleteAgentPool_FullMethodName                 = "/relay.server.v1.ServerService/DeleteAgentPool"
+	ServerService_UpdateAgentPool_FullMethodName                 = "/relay.server.v1.ServerService/UpdateAgentPool"
+	ServerService_WakeAgentPool_FullMethodName                   = "/relay.server.v1.ServerService/WakeAgentPool"
+	ServerService_ResolveConnectionCredential_FullMethodName     = "/relay.server.v1.ServerService/ResolveConnectionCredential"
+	ServerService_ResolveExternalSecretSource_FullMethodName     = "/relay.server.v1.ServerService/ResolveExternalSecretSource"
+	ServerService_ListExternalSecretSources_FullMethodName       = "/relay.server.v1.ServerService/ListExternalSecretSources"
+	ServerService_GetExternalSecretSource_FullMethodName         = "/relay.server.v1.ServerService/GetExternalSecretSource"
+	ServerService_UpsertExternalSecretSource_FullMethodName      = "/relay.server.v1.ServerService/UpsertExternalSecretSource"
+	ServerService_DeleteExternalSecretSource_FullMethodName      = "/relay.server.v1.ServerService/DeleteExternalSecretSource"
+	ServerService_GetCloudIntegrationSetup_FullMethodName        = "/relay.server.v1.ServerService/GetCloudIntegrationSetup"
+	ServerService_ListCloudIntegrations_FullMethodName           = "/relay.server.v1.ServerService/ListCloudIntegrations"
+	ServerService_GetCloudIntegration_FullMethodName             = "/relay.server.v1.ServerService/GetCloudIntegration"
+	ServerService_CreateCloudIntegration_FullMethodName          = "/relay.server.v1.ServerService/CreateCloudIntegration"
+	ServerService_UpdateCloudIntegration_FullMethodName          = "/relay.server.v1.ServerService/UpdateCloudIntegration"
+	ServerService_DeleteCloudIntegration_FullMethodName          = "/relay.server.v1.ServerService/DeleteCloudIntegration"
+	ServerService_TestCloudIntegration_FullMethodName            = "/relay.server.v1.ServerService/TestCloudIntegration"
+	ServerService_GetLogStream_FullMethodName                    = "/relay.server.v1.ServerService/GetLogStream"
+	ServerService_UpsertLogStream_FullMethodName                 = "/relay.server.v1.ServerService/UpsertLogStream"
+	ServerService_DeleteLogStream_FullMethodName                 = "/relay.server.v1.ServerService/DeleteLogStream"
+	ServerService_GetBackupAutoExport_FullMethodName             = "/relay.server.v1.ServerService/GetBackupAutoExport"
+	ServerService_UpsertBackupAutoExport_FullMethodName          = "/relay.server.v1.ServerService/UpsertBackupAutoExport"
+	ServerService_DeleteBackupAutoExport_FullMethodName          = "/relay.server.v1.ServerService/DeleteBackupAutoExport"
+	ServerService_ExportToCloud_FullMethodName                   = "/relay.server.v1.ServerService/ExportToCloud"
+	ServerService_ListLogDestinations_FullMethodName             = "/relay.server.v1.ServerService/ListLogDestinations"
+	ServerService_CreateLogDestination_FullMethodName            = "/relay.server.v1.ServerService/CreateLogDestination"
+	ServerService_UpdateLogDestination_FullMethodName            = "/relay.server.v1.ServerService/UpdateLogDestination"
+	ServerService_DeleteLogDestination_FullMethodName            = "/relay.server.v1.ServerService/DeleteLogDestination"
+	ServerService_TestLogDestination_FullMethodName              = "/relay.server.v1.ServerService/TestLogDestination"
+	ServerService_IngestAuditEvents_FullMethodName               = "/relay.server.v1.ServerService/IngestAuditEvents"
+	ServerService_ListAuditLogs_FullMethodName                   = "/relay.server.v1.ServerService/ListAuditLogs"
+	ServerService_GetAuditMetrics_FullMethodName                 = "/relay.server.v1.ServerService/GetAuditMetrics"
+	ServerService_GetAccessUsage_FullMethodName                  = "/relay.server.v1.ServerService/GetAccessUsage"
+	ServerService_ListActivityLogs_FullMethodName                = "/relay.server.v1.ServerService/ListActivityLogs"
+	ServerService_ListOrgActivityLogs_FullMethodName             = "/relay.server.v1.ServerService/ListOrgActivityLogs"
+	ServerService_EmitActivity_FullMethodName                    = "/relay.server.v1.ServerService/EmitActivity"
+	ServerService_ListUserOrganizations_FullMethodName           = "/relay.server.v1.ServerService/ListUserOrganizations"
+	ServerService_GetOrganization_FullMethodName                 = "/relay.server.v1.ServerService/GetOrganization"
+	ServerService_CreateOrganization_FullMethodName              = "/relay.server.v1.ServerService/CreateOrganization"
+	ServerService_UpdateOrganization_FullMethodName              = "/relay.server.v1.ServerService/UpdateOrganization"
+	ServerService_UpdateOrganizationSettings_FullMethodName      = "/relay.server.v1.ServerService/UpdateOrganizationSettings"
+	ServerService_DeleteOrganization_FullMethodName              = "/relay.server.v1.ServerService/DeleteOrganization"
+	ServerService_SwitchOrganization_FullMethodName              = "/relay.server.v1.ServerService/SwitchOrganization"
+	ServerService_GetOrgOverview_FullMethodName                  = "/relay.server.v1.ServerService/GetOrgOverview"
+	ServerService_ListWorkspaces_FullMethodName                  = "/relay.server.v1.ServerService/ListWorkspaces"
+	ServerService_GetWorkspace_FullMethodName                    = "/relay.server.v1.ServerService/GetWorkspace"
+	ServerService_CreateWorkspace_FullMethodName                 = "/relay.server.v1.ServerService/CreateWorkspace"
+	ServerService_UpdateWorkspace_FullMethodName                 = "/relay.server.v1.ServerService/UpdateWorkspace"
+	ServerService_DeleteWorkspace_FullMethodName                 = "/relay.server.v1.ServerService/DeleteWorkspace"
+	ServerService_AddWorkspaceMember_FullMethodName              = "/relay.server.v1.ServerService/AddWorkspaceMember"
+	ServerService_RemoveWorkspaceMember_FullMethodName           = "/relay.server.v1.ServerService/RemoveWorkspaceMember"
+	ServerService_ListWorkspaceMembers_FullMethodName            = "/relay.server.v1.ServerService/ListWorkspaceMembers"
+	ServerService_AddWorkspaceTeam_FullMethodName                = "/relay.server.v1.ServerService/AddWorkspaceTeam"
+	ServerService_RemoveWorkspaceTeam_FullMethodName             = "/relay.server.v1.ServerService/RemoveWorkspaceTeam"
+	ServerService_ListWorkspaceTeams_FullMethodName              = "/relay.server.v1.ServerService/ListWorkspaceTeams"
+	ServerService_SetWorkspaceMemberRole_FullMethodName          = "/relay.server.v1.ServerService/SetWorkspaceMemberRole"
+	ServerService_SetWorkspaceTeamRole_FullMethodName            = "/relay.server.v1.ServerService/SetWorkspaceTeamRole"
+	ServerService_ListRoles_FullMethodName                       = "/relay.server.v1.ServerService/ListRoles"
+	ServerService_CreateRole_FullMethodName                      = "/relay.server.v1.ServerService/CreateRole"
+	ServerService_UpdateRole_FullMethodName                      = "/relay.server.v1.ServerService/UpdateRole"
+	ServerService_DeleteRole_FullMethodName                      = "/relay.server.v1.ServerService/DeleteRole"
+	ServerService_ListRoleBindings_FullMethodName                = "/relay.server.v1.ServerService/ListRoleBindings"
+	ServerService_CreateRoleBinding_FullMethodName               = "/relay.server.v1.ServerService/CreateRoleBinding"
+	ServerService_DeleteRoleBinding_FullMethodName               = "/relay.server.v1.ServerService/DeleteRoleBinding"
+	ServerService_ListDatabases_FullMethodName                   = "/relay.server.v1.ServerService/ListDatabases"
+	ServerService_CreateDatabase_FullMethodName                  = "/relay.server.v1.ServerService/CreateDatabase"
+	ServerService_RestoreDatabase_FullMethodName                 = "/relay.server.v1.ServerService/RestoreDatabase"
+	ServerService_GetDatabase_FullMethodName                     = "/relay.server.v1.ServerService/GetDatabase"
+	ServerService_UpdateDatabase_FullMethodName                  = "/relay.server.v1.ServerService/UpdateDatabase"
+	ServerService_ListPostgreSQLParameters_FullMethodName        = "/relay.server.v1.ServerService/ListPostgreSQLParameters"
+	ServerService_ListValkeyParameters_FullMethodName            = "/relay.server.v1.ServerService/ListValkeyParameters"
+	ServerService_ListAutoscaleMetrics_FullMethodName            = "/relay.server.v1.ServerService/ListAutoscaleMetrics"
+	ServerService_ListScaleEvents_FullMethodName                 = "/relay.server.v1.ServerService/ListScaleEvents"
+	ServerService_WatchDatabase_FullMethodName                   = "/relay.server.v1.ServerService/WatchDatabase"
+	ServerService_ListPendingOperations_FullMethodName           = "/relay.server.v1.ServerService/ListPendingOperations"
+	ServerService_DeleteDatabase_FullMethodName                  = "/relay.server.v1.ServerService/DeleteDatabase"
+	ServerService_RetryDeleteDatabase_FullMethodName             = "/relay.server.v1.ServerService/RetryDeleteDatabase"
+	ServerService_PauseDatabase_FullMethodName                   = "/relay.server.v1.ServerService/PauseDatabase"
+	ServerService_SetDefaultConnections_FullMethodName           = "/relay.server.v1.ServerService/SetDefaultConnections"
+	ServerService_SetDeletionProtection_FullMethodName           = "/relay.server.v1.ServerService/SetDeletionProtection"
+	ServerService_ResumeDatabase_FullMethodName                  = "/relay.server.v1.ServerService/ResumeDatabase"
+	ServerService_GetDatabaseStatus_FullMethodName               = "/relay.server.v1.ServerService/GetDatabaseStatus"
+	ServerService_ListDatabaseNodes_FullMethodName               = "/relay.server.v1.ServerService/ListDatabaseNodes"
+	ServerService_GetDatabaseLogs_FullMethodName                 = "/relay.server.v1.ServerService/GetDatabaseLogs"
+	ServerService_SearchDatabaseLogs_FullMethodName              = "/relay.server.v1.ServerService/SearchDatabaseLogs"
+	ServerService_GetDatabaseAnalytics_FullMethodName            = "/relay.server.v1.ServerService/GetDatabaseAnalytics"
+	ServerService_GetDatabaseTopSQL_FullMethodName               = "/relay.server.v1.ServerService/GetDatabaseTopSQL"
+	ServerService_GetDatabaseLoad_FullMethodName                 = "/relay.server.v1.ServerService/GetDatabaseLoad"
+	ServerService_RecordDatabaseEvent_FullMethodName             = "/relay.server.v1.ServerService/RecordDatabaseEvent"
+	ServerService_ListDatabaseEvents_FullMethodName              = "/relay.server.v1.ServerService/ListDatabaseEvents"
+	ServerService_CreateDatabaseEventSubscription_FullMethodName = "/relay.server.v1.ServerService/CreateDatabaseEventSubscription"
+	ServerService_UpdateDatabaseEventSubscription_FullMethodName = "/relay.server.v1.ServerService/UpdateDatabaseEventSubscription"
+	ServerService_DeleteDatabaseEventSubscription_FullMethodName = "/relay.server.v1.ServerService/DeleteDatabaseEventSubscription"
+	ServerService_ListDatabaseEventSubscriptions_FullMethodName  = "/relay.server.v1.ServerService/ListDatabaseEventSubscriptions"
+	ServerService_ListDatabaseAlarmMetrics_FullMethodName        = "/relay.server.v1.ServerService/ListDatabaseAlarmMetrics"
+	ServerService_CreateDatabaseAlarm_FullMethodName             = "/relay.server.v1.ServerService/CreateDatabaseAlarm"
+	ServerService_UpdateDatabaseAlarm_FullMethodName             = "/relay.server.v1.ServerService/UpdateDatabaseAlarm"
+	ServerService_DeleteDatabaseAlarm_FullMethodName             = "/relay.server.v1.ServerService/DeleteDatabaseAlarm"
+	ServerService_GetDatabaseAlarm_FullMethodName                = "/relay.server.v1.ServerService/GetDatabaseAlarm"
+	ServerService_ListDatabaseAlarms_FullMethodName              = "/relay.server.v1.ServerService/ListDatabaseAlarms"
+	ServerService_ListDatabaseAlarmEvents_FullMethodName         = "/relay.server.v1.ServerService/ListDatabaseAlarmEvents"
+	ServerService_ListRecommendedDatabaseAlarms_FullMethodName   = "/relay.server.v1.ServerService/ListRecommendedDatabaseAlarms"
+	ServerService_ApplyRecommendedDatabaseAlarms_FullMethodName  = "/relay.server.v1.ServerService/ApplyRecommendedDatabaseAlarms"
+	ServerService_SetRecommendedAlarmsOnCreate_FullMethodName    = "/relay.server.v1.ServerService/SetRecommendedAlarmsOnCreate"
+	ServerService_GetDatabaseLocks_FullMethodName                = "/relay.server.v1.ServerService/GetDatabaseLocks"
+	ServerService_GetDatabaseConnection_FullMethodName           = "/relay.server.v1.ServerService/GetDatabaseConnection"
+	ServerService_ListIPAllowlist_FullMethodName                 = "/relay.server.v1.ServerService/ListIPAllowlist"
+	ServerService_AddIPAllowlistEntry_FullMethodName             = "/relay.server.v1.ServerService/AddIPAllowlistEntry"
+	ServerService_UpdateIPAllowlistEntry_FullMethodName          = "/relay.server.v1.ServerService/UpdateIPAllowlistEntry"
+	ServerService_RemoveIPAllowlistEntry_FullMethodName          = "/relay.server.v1.ServerService/RemoveIPAllowlistEntry"
+	ServerService_ListPrivateEndpointRegions_FullMethodName      = "/relay.server.v1.ServerService/ListPrivateEndpointRegions"
+	ServerService_CreatePrivateEndpointService_FullMethodName    = "/relay.server.v1.ServerService/CreatePrivateEndpointService"
+	ServerService_ListPrivateEndpointServices_FullMethodName     = "/relay.server.v1.ServerService/ListPrivateEndpointServices"
+	ServerService_GetPrivateEndpointService_FullMethodName       = "/relay.server.v1.ServerService/GetPrivateEndpointService"
+	ServerService_DeletePrivateEndpointService_FullMethodName    = "/relay.server.v1.ServerService/DeletePrivateEndpointService"
+	ServerService_CreatePrivateEndpoint_FullMethodName           = "/relay.server.v1.ServerService/CreatePrivateEndpoint"
+	ServerService_GetPrivateEndpoint_FullMethodName              = "/relay.server.v1.ServerService/GetPrivateEndpoint"
+	ServerService_DeletePrivateEndpoint_FullMethodName           = "/relay.server.v1.ServerService/DeletePrivateEndpoint"
+	ServerService_CheckMigrationSource_FullMethodName            = "/relay.server.v1.ServerService/CheckMigrationSource"
+	ServerService_GetMigrationSourceCheck_FullMethodName         = "/relay.server.v1.ServerService/GetMigrationSourceCheck"
+	ServerService_CreateMigration_FullMethodName                 = "/relay.server.v1.ServerService/CreateMigration"
+	ServerService_GetMigration_FullMethodName                    = "/relay.server.v1.ServerService/GetMigration"
+	ServerService_ListMigrations_FullMethodName                  = "/relay.server.v1.ServerService/ListMigrations"
+	ServerService_RequestMigrationCutover_FullMethodName         = "/relay.server.v1.ServerService/RequestMigrationCutover"
+	ServerService_AbortMigration_FullMethodName                  = "/relay.server.v1.ServerService/AbortMigration"
+	ServerService_CompleteMigration_FullMethodName               = "/relay.server.v1.ServerService/CompleteMigration"
+	ServerService_ListBackupSchedules_FullMethodName             = "/relay.server.v1.ServerService/ListBackupSchedules"
+	ServerService_ListBackups_FullMethodName                     = "/relay.server.v1.ServerService/ListBackups"
+	ServerService_GetBackupSchedule_FullMethodName               = "/relay.server.v1.ServerService/GetBackupSchedule"
+	ServerService_UpsertBackupSchedule_FullMethodName            = "/relay.server.v1.ServerService/UpsertBackupSchedule"
+	ServerService_ResetBackupSchedule_FullMethodName             = "/relay.server.v1.ServerService/ResetBackupSchedule"
+	ServerService_CreateBackup_FullMethodName                    = "/relay.server.v1.ServerService/CreateBackup"
+	ServerService_DeleteBackup_FullMethodName                    = "/relay.server.v1.ServerService/DeleteBackup"
+	ServerService_ListDatabaseUsers_FullMethodName               = "/relay.server.v1.ServerService/ListDatabaseUsers"
+	ServerService_GetDatabaseUser_FullMethodName                 = "/relay.server.v1.ServerService/GetDatabaseUser"
+	ServerService_CreateDatabaseUser_FullMethodName              = "/relay.server.v1.ServerService/CreateDatabaseUser"
+	ServerService_UpdateDatabaseUser_FullMethodName              = "/relay.server.v1.ServerService/UpdateDatabaseUser"
+	ServerService_DeleteDatabaseUser_FullMethodName              = "/relay.server.v1.ServerService/DeleteDatabaseUser"
+	ServerService_ListLogicalDatabases_FullMethodName            = "/relay.server.v1.ServerService/ListLogicalDatabases"
+	ServerService_CreateLogicalDatabase_FullMethodName           = "/relay.server.v1.ServerService/CreateLogicalDatabase"
+	ServerService_UpdateLogicalDatabase_FullMethodName           = "/relay.server.v1.ServerService/UpdateLogicalDatabase"
+	ServerService_DeleteLogicalDatabase_FullMethodName           = "/relay.server.v1.ServerService/DeleteLogicalDatabase"
+	ServerService_ListDatabaseProviders_FullMethodName           = "/relay.server.v1.ServerService/ListDatabaseProviders"
+	ServerService_GetBillingState_FullMethodName                 = "/relay.server.v1.ServerService/GetBillingState"
+	ServerService_CreateCheckoutSession_FullMethodName           = "/relay.server.v1.ServerService/CreateCheckoutSession"
+	ServerService_CreateBillingPortalSession_FullMethodName      = "/relay.server.v1.ServerService/CreateBillingPortalSession"
+	ServerService_ChangePlan_FullMethodName                      = "/relay.server.v1.ServerService/ChangePlan"
+	ServerService_RedeemPromoCode_FullMethodName                 = "/relay.server.v1.ServerService/RedeemPromoCode"
+	ServerService_CreateSupportReport_FullMethodName             = "/relay.server.v1.ServerService/CreateSupportReport"
+	ServerService_ListSupportReports_FullMethodName              = "/relay.server.v1.ServerService/ListSupportReports"
+	ServerService_GetSupportReport_FullMethodName                = "/relay.server.v1.ServerService/GetSupportReport"
+	ServerService_AddSupportReportComment_FullMethodName         = "/relay.server.v1.ServerService/AddSupportReportComment"
+	ServerService_GetSupportAttachment_FullMethodName            = "/relay.server.v1.ServerService/GetSupportAttachment"
+	ServerService_UpdateSupportReportStatus_FullMethodName       = "/relay.server.v1.ServerService/UpdateSupportReportStatus"
+	ServerService_GetOrgSSOConnection_FullMethodName             = "/relay.server.v1.ServerService/GetOrgSSOConnection"
+	ServerService_UpsertOrgSSOConnection_FullMethodName          = "/relay.server.v1.ServerService/UpsertOrgSSOConnection"
+	ServerService_DeleteOrgSSOConnection_FullMethodName          = "/relay.server.v1.ServerService/DeleteOrgSSOConnection"
+	ServerService_ListOrgSSOConnections_FullMethodName           = "/relay.server.v1.ServerService/ListOrgSSOConnections"
+	ServerService_CreateOrgSSOConnection_FullMethodName          = "/relay.server.v1.ServerService/CreateOrgSSOConnection"
+	ServerService_AssignOrgDomainSSOConnection_FullMethodName    = "/relay.server.v1.ServerService/AssignOrgDomainSSOConnection"
+	ServerService_TestOrgSSOConnection_FullMethodName            = "/relay.server.v1.ServerService/TestOrgSSOConnection"
+	ServerService_ListSSOProviderPresets_FullMethodName          = "/relay.server.v1.ServerService/ListSSOProviderPresets"
+	ServerService_GetOrgSignInPolicy_FullMethodName              = "/relay.server.v1.ServerService/GetOrgSignInPolicy"
+	ServerService_PreviewOrgSignInPolicy_FullMethodName          = "/relay.server.v1.ServerService/PreviewOrgSignInPolicy"
+	ServerService_UpdateOrgSignInPolicy_FullMethodName           = "/relay.server.v1.ServerService/UpdateOrgSignInPolicy"
+	ServerService_ListOrgDomains_FullMethodName                  = "/relay.server.v1.ServerService/ListOrgDomains"
+	ServerService_AddOrgDomain_FullMethodName                    = "/relay.server.v1.ServerService/AddOrgDomain"
+	ServerService_VerifyOrgDomain_FullMethodName                 = "/relay.server.v1.ServerService/VerifyOrgDomain"
+	ServerService_RemoveOrgDomain_FullMethodName                 = "/relay.server.v1.ServerService/RemoveOrgDomain"
+	ServerService_CreateSCIMToken_FullMethodName                 = "/relay.server.v1.ServerService/CreateSCIMToken"
+	ServerService_ListSCIMTokens_FullMethodName                  = "/relay.server.v1.ServerService/ListSCIMTokens"
+	ServerService_RotateSCIMToken_FullMethodName                 = "/relay.server.v1.ServerService/RotateSCIMToken"
+	ServerService_RevokeSCIMToken_FullMethodName                 = "/relay.server.v1.ServerService/RevokeSCIMToken"
+	ServerService_ListIdPGroupMappings_FullMethodName            = "/relay.server.v1.ServerService/ListIdPGroupMappings"
+	ServerService_UpsertIdPGroupMapping_FullMethodName           = "/relay.server.v1.ServerService/UpsertIdPGroupMapping"
+	ServerService_DeleteIdPGroupMapping_FullMethodName           = "/relay.server.v1.ServerService/DeleteIdPGroupMapping"
+	ServerService_ListPostgreSQLExtensions_FullMethodName        = "/relay.server.v1.ServerService/ListPostgreSQLExtensions"
+	ServerService_GetLicenseStatus_FullMethodName                = "/relay.server.v1.ServerService/GetLicenseStatus"
+	ServerService_ExportLicenseUsageReport_FullMethodName        = "/relay.server.v1.ServerService/ExportLicenseUsageReport"
+	ServerService_GetRunbookSource_FullMethodName                = "/relay.server.v1.ServerService/GetRunbookSource"
+	ServerService_UpsertRunbookSource_FullMethodName             = "/relay.server.v1.ServerService/UpsertRunbookSource"
+	ServerService_DeleteRunbookSource_FullMethodName             = "/relay.server.v1.ServerService/DeleteRunbookSource"
+	ServerService_SyncRunbooks_FullMethodName                    = "/relay.server.v1.ServerService/SyncRunbooks"
+	ServerService_RotateRunbookWebhookSecret_FullMethodName      = "/relay.server.v1.ServerService/RotateRunbookWebhookSecret"
+	ServerService_FetchRunbookHostKey_FullMethodName             = "/relay.server.v1.ServerService/FetchRunbookHostKey"
+	ServerService_ListRunbooks_FullMethodName                    = "/relay.server.v1.ServerService/ListRunbooks"
+	ServerService_GetRunbook_FullMethodName                      = "/relay.server.v1.ServerService/GetRunbook"
+	ServerService_RunRunbook_FullMethodName                      = "/relay.server.v1.ServerService/RunRunbook"
+	ServerService_GetRunbookExecution_FullMethodName             = "/relay.server.v1.ServerService/GetRunbookExecution"
+	ServerService_ListRunbookExecutions_FullMethodName           = "/relay.server.v1.ServerService/ListRunbookExecutions"
+	ServerService_ClaimRunbookExecutions_FullMethodName          = "/relay.server.v1.ServerService/ClaimRunbookExecutions"
+	ServerService_ReportRunbookExecution_FullMethodName          = "/relay.server.v1.ServerService/ReportRunbookExecution"
+	ServerService_CreateQueryTemplate_FullMethodName             = "/relay.server.v1.ServerService/CreateQueryTemplate"
+	ServerService_UpdateQueryTemplate_FullMethodName             = "/relay.server.v1.ServerService/UpdateQueryTemplate"
+	ServerService_GetQueryTemplate_FullMethodName                = "/relay.server.v1.ServerService/GetQueryTemplate"
+	ServerService_ListQueryTemplates_FullMethodName              = "/relay.server.v1.ServerService/ListQueryTemplates"
+	ServerService_ListQueryTemplateVersions_FullMethodName       = "/relay.server.v1.ServerService/ListQueryTemplateVersions"
+	ServerService_ApproveQueryTemplateVersion_FullMethodName     = "/relay.server.v1.ServerService/ApproveQueryTemplateVersion"
+	ServerService_WithdrawQueryTemplateVersion_FullMethodName    = "/relay.server.v1.ServerService/WithdrawQueryTemplateVersion"
+	ServerService_RevokeQueryTemplate_FullMethodName             = "/relay.server.v1.ServerService/RevokeQueryTemplate"
+	ServerService_RunQueryTemplate_FullMethodName                = "/relay.server.v1.ServerService/RunQueryTemplate"
 )
 
 // ServerServiceClient is the client API for ServerService service.
@@ -292,6 +348,18 @@ type ServerServiceClient interface {
 	ListAPIKeys(ctx context.Context, in *ListAPIKeysRequest, opts ...grpc.CallOption) (*ListAPIKeysResponse, error)
 	UpdateAPIKey(ctx context.Context, in *UpdateAPIKeyRequest, opts ...grpc.CallOption) (*UpdateAPIKeyResponse, error)
 	RevokeAPIKey(ctx context.Context, in *RevokeAPIKeyRequest, opts ...grpc.CallOption) (*RevokeAPIKeyResponse, error)
+	// Service accounts are org-owned principals that own API keys, so a key
+	// outlives the person who created it. Enterprise plan; every call needs
+	// org.service_accounts.manage.
+	ListServiceAccounts(ctx context.Context, in *ListServiceAccountsRequest, opts ...grpc.CallOption) (*ListServiceAccountsResponse, error)
+	CreateServiceAccount(ctx context.Context, in *CreateServiceAccountRequest, opts ...grpc.CallOption) (*CreateServiceAccountResponse, error)
+	UpdateServiceAccount(ctx context.Context, in *UpdateServiceAccountRequest, opts ...grpc.CallOption) (*UpdateServiceAccountResponse, error)
+	// DeleteServiceAccount also revokes every API key the service account owns.
+	DeleteServiceAccount(ctx context.Context, in *DeleteServiceAccountRequest, opts ...grpc.CallOption) (*DeleteServiceAccountResponse, error)
+	// MoveAPIKeyToServiceAccount hands an existing key to a service account. The
+	// key keeps its token and role; from then on it no longer follows the person
+	// who created it. Recorded in the activity log with who moved it.
+	MoveAPIKeyToServiceAccount(ctx context.Context, in *MoveAPIKeyToServiceAccountRequest, opts ...grpc.CallOption) (*MoveAPIKeyToServiceAccountResponse, error)
 	// ListConnections returns all connections in the user's organization.
 	ListConnections(ctx context.Context, in *ListConnectionsRequest, opts ...grpc.CallOption) (*ListConnectionsResponse, error)
 	// ListManagedDatabaseConnections returns every connection bound to a managed
@@ -486,7 +554,6 @@ type ServerServiceClient interface {
 	DeleteAgentPool(ctx context.Context, in *DeleteAgentPoolRequest, opts ...grpc.CallOption) (*DeleteAgentPoolResponse, error)
 	// UpdateAgentPool updates an existing agent pool.
 	UpdateAgentPool(ctx context.Context, in *UpdateAgentPoolRequest, opts ...grpc.CallOption) (*UpdateAgentPoolResponse, error)
-	SetAgentPoolTeams(ctx context.Context, in *SetAgentPoolTeamsRequest, opts ...grpc.CallOption) (*SetAgentPoolTeamsResponse, error)
 	// WakeAgentPool starts a sleeping managed agent pool.
 	WakeAgentPool(ctx context.Context, in *WakeAgentPoolRequest, opts ...grpc.CallOption) (*WakeAgentPoolResponse, error)
 	// ResolveConnectionCredential returns a connection's stored password to the
@@ -542,6 +609,10 @@ type ServerServiceClient interface {
 	ListAuditLogs(ctx context.Context, in *ListAuditLogsRequest, opts ...grpc.CallOption) (*ListAuditLogsResponse, error)
 	// GetAuditMetrics returns pre-aggregated hourly metrics for the overview chart.
 	GetAuditMetrics(ctx context.Context, in *GetAuditMetricsRequest, opts ...grpc.CallOption) (*GetAuditMetricsResponse, error)
+	// GetAccessUsage aggregates who connects, how much and how often it fails for
+	// the workspace: sessions, duration, statements and policy outcomes, grouped
+	// by user, connection or team. Gated by the access_usage feature flag.
+	GetAccessUsage(ctx context.Context, in *GetAccessUsageRequest, opts ...grpc.CallOption) (*GetAccessUsageResponse, error)
 	// ListActivityLogs returns control-plane activity logs for the user's workspace.
 	ListActivityLogs(ctx context.Context, in *ListActivityLogsRequest, opts ...grpc.CallOption) (*ListActivityLogsResponse, error)
 	// ListOrgActivityLogs returns org-level activity logs (workspace_id IS NULL).
@@ -663,9 +734,71 @@ type ServerServiceClient interface {
 	// GetDatabaseLogs returns the raw log tail of a managed database's data
 	// pods (proxied to maestro; one NodeLogs entry per pod).
 	GetDatabaseLogs(ctx context.Context, in *GetDatabaseLogsRequest, opts ...grpc.CallOption) (*GetDatabaseLogsResponse, error)
+	// SearchDatabaseLogs reads structured log entries in a time range with level,
+	// text, node and source filters and cursor pagination, plus a slow-queries view
+	// built on the parsed duration records. Gated by the db_insights flag and plan
+	// feature; the range is clamped to the plan's insights retention.
+	SearchDatabaseLogs(ctx context.Context, in *SearchDatabaseLogsRequest, opts ...grpc.CallOption) (*SearchDatabaseLogsResponse, error)
 	// GetDatabaseAnalytics returns time-bucketed resource metrics for a managed
 	// database from the org's analytics store (proxied to maestro).
 	GetDatabaseAnalytics(ctx context.Context, in *GetDatabaseAnalyticsRequest, opts ...grpc.CallOption) (*GetDatabaseAnalyticsResponse, error)
+	// GetDatabaseTopSQL returns the statements that consumed the most time in a
+	// window, from pg_stat_statements deltas collected into the analytics store.
+	// Gated by the db_insights flag and the db_insights plan feature; the window is
+	// clamped to the plan's insights retention.
+	GetDatabaseTopSQL(ctx context.Context, in *GetDatabaseTopSQLRequest, opts ...grpc.CallOption) (*GetDatabaseTopSQLResponse, error)
+	// GetDatabaseLoad returns the database load (average active sessions) over a
+	// window, broken down by wait event, SQL, user, client host or application,
+	// from pg_stat_activity samples collected into the analytics store. It rides the
+	// Top SQL opt-in and has the same gating: db_insights flag and plan feature,
+	// window clamped to the plan's insights retention.
+	GetDatabaseLoad(ctx context.Context, in *GetDatabaseLoadRequest, opts ...grpc.CallOption) (*GetDatabaseLoadResponse, error)
+	// RecordDatabaseEvent stores one managed-database event (failover, backup,
+	// restart, storage warning...). System principals only (maestro); idempotent
+	// per (database_id, source_event_id). Dropped silently while the org lacks
+	// the db_insights flag or plan feature.
+	RecordDatabaseEvent(ctx context.Context, in *RecordDatabaseEventRequest, opts ...grpc.CallOption) (*RecordDatabaseEventResponse, error)
+	// ListDatabaseEvents is the managed-database event feed, newest first, for
+	// one database or the whole workspace. Gated by the db_insights flag and plan
+	// feature; the window is clamped to the plan's insights retention.
+	ListDatabaseEvents(ctx context.Context, in *ListDatabaseEventsRequest, opts ...grpc.CallOption) (*ListDatabaseEventsResponse, error)
+	// CreateDatabaseEventSubscription notifies integrations and organization
+	// members about events matching a category and severity filter.
+	CreateDatabaseEventSubscription(ctx context.Context, in *CreateDatabaseEventSubscriptionRequest, opts ...grpc.CallOption) (*CreateDatabaseEventSubscriptionResponse, error)
+	UpdateDatabaseEventSubscription(ctx context.Context, in *UpdateDatabaseEventSubscriptionRequest, opts ...grpc.CallOption) (*UpdateDatabaseEventSubscriptionResponse, error)
+	DeleteDatabaseEventSubscription(ctx context.Context, in *DeleteDatabaseEventSubscriptionRequest, opts ...grpc.CallOption) (*DeleteDatabaseEventSubscriptionResponse, error)
+	ListDatabaseEventSubscriptions(ctx context.Context, in *ListDatabaseEventSubscriptionsRequest, opts ...grpc.CallOption) (*ListDatabaseEventSubscriptionsResponse, error)
+	// ListDatabaseAlarmMetrics returns the metrics alarms are usually defined on.
+	// Any other metric name in the analytics store is accepted too.
+	ListDatabaseAlarmMetrics(ctx context.Context, in *ListDatabaseAlarmMetricsRequest, opts ...grpc.CallOption) (*ListDatabaseAlarmMetricsResponse, error)
+	// CreateDatabaseAlarm defines a threshold alarm on a managed database metric.
+	// Gated by the db_insights flag and plan feature.
+	CreateDatabaseAlarm(ctx context.Context, in *CreateDatabaseAlarmRequest, opts ...grpc.CallOption) (*CreateDatabaseAlarmResponse, error)
+	UpdateDatabaseAlarm(ctx context.Context, in *UpdateDatabaseAlarmRequest, opts ...grpc.CallOption) (*UpdateDatabaseAlarmResponse, error)
+	DeleteDatabaseAlarm(ctx context.Context, in *DeleteDatabaseAlarmRequest, opts ...grpc.CallOption) (*DeleteDatabaseAlarmResponse, error)
+	GetDatabaseAlarm(ctx context.Context, in *GetDatabaseAlarmRequest, opts ...grpc.CallOption) (*GetDatabaseAlarmResponse, error)
+	// ListDatabaseAlarms lists the workspace's alarms with their current state,
+	// optionally for one database.
+	ListDatabaseAlarms(ctx context.Context, in *ListDatabaseAlarmsRequest, opts ...grpc.CallOption) (*ListDatabaseAlarmsResponse, error)
+	// ListDatabaseAlarmEvents is the alarm state-change history, newest first.
+	ListDatabaseAlarmEvents(ctx context.Context, in *ListDatabaseAlarmEventsRequest, opts ...grpc.CallOption) (*ListDatabaseAlarmEventsResponse, error)
+	// ListRecommendedDatabaseAlarms returns the recommended alarm templates and,
+	// when database_id is set, what applying each would do to that database.
+	ListRecommendedDatabaseAlarms(ctx context.Context, in *ListRecommendedDatabaseAlarmsRequest, opts ...grpc.CallOption) (*ListRecommendedDatabaseAlarmsResponse, error)
+	// ApplyRecommendedDatabaseAlarms creates the selected recommended alarms on a
+	// database. It is idempotent: alarms that already exist are reported, not changed.
+	ApplyRecommendedDatabaseAlarms(ctx context.Context, in *ApplyRecommendedDatabaseAlarmsRequest, opts ...grpc.CallOption) (*ApplyRecommendedDatabaseAlarmsResponse, error)
+	// SetRecommendedAlarmsOnCreate turns the org-wide "apply recommended alarms
+	// to new clusters" setting on or off. It is off by default.
+	SetRecommendedAlarmsOnCreate(ctx context.Context, in *SetRecommendedAlarmsOnCreateRequest, opts ...grpc.CallOption) (*SetRecommendedAlarmsOnCreateResponse, error)
+	// GetDatabaseLocks returns the blocking-session picture of a managed database:
+	// the latest snapshot at or before a point in time (blocking chains, long
+	// transactions, idle-in-transaction sessions, all as pg_stat_activity/pg_locks
+	// sampled by the collector) and the history of the window. Read-only; there is
+	// no terminate or cancel action. It rides the Top SQL opt-in and has the same
+	// gating: db_insights flag and plan feature, window clamped to the plan's
+	// insights retention (at most 14 days for lock events).
+	GetDatabaseLocks(ctx context.Context, in *GetDatabaseLocksRequest, opts ...grpc.CallOption) (*GetDatabaseLocksResponse, error)
 	// GetDatabaseConnection returns everything a client needs to dial the database:
 	// ready-to-use, password-less URIs per endpoint role. It is the single source of
 	// truth for connection strings — callers must render these rather than assembling
@@ -696,6 +829,26 @@ type ServerServiceClient interface {
 	CreatePrivateEndpoint(ctx context.Context, in *CreatePrivateEndpointRequest, opts ...grpc.CallOption) (*CreatePrivateEndpointResponse, error)
 	GetPrivateEndpoint(ctx context.Context, in *GetPrivateEndpointRequest, opts ...grpc.CallOption) (*GetPrivateEndpointResponse, error)
 	DeletePrivateEndpoint(ctx context.Context, in *DeletePrivateEndpointRequest, opts ...grpc.CallOption) (*DeletePrivateEndpointResponse, error)
+	// CheckMigrationSource probes a source database from the network path the migration will
+	// use. The source credentials are write-only: they are never returned or logged. Gated on
+	// the database_migration feature flag.
+	CheckMigrationSource(ctx context.Context, in *CheckMigrationSourceRequest, opts ...grpc.CallOption) (*CheckMigrationSourceResponse, error)
+	// GetMigrationSourceCheck returns the outcome of a source check by id.
+	GetMigrationSourceCheck(ctx context.Context, in *GetMigrationSourceCheckRequest, opts ...grpc.CallOption) (*GetMigrationSourceCheckResponse, error)
+	// CreateMigration starts a migration of the source into an existing target database. The
+	// acknowledgements must list every source check warning that names one. Gated on the
+	// database_migration feature flag, the concurrent_migrations plan limit and, for online
+	// mode, the online_migration plan feature.
+	CreateMigration(ctx context.Context, in *CreateMigrationRequest, opts ...grpc.CallOption) (*CreateMigrationResponse, error)
+	// GetMigration also returns the target's connection details once the migration is cut over.
+	GetMigration(ctx context.Context, in *GetMigrationRequest, opts ...grpc.CallOption) (*GetMigrationResponse, error)
+	ListMigrations(ctx context.Context, in *ListMigrationsRequest, opts ...grpc.CallOption) (*ListMigrationsResponse, error)
+	// RequestMigrationCutover asks the migration to fence the source and switch over.
+	RequestMigrationCutover(ctx context.Context, in *RequestMigrationCutoverRequest, opts ...grpc.CallOption) (*RequestMigrationCutoverResponse, error)
+	// AbortMigration stops a migration before cutover and cleans up the source.
+	AbortMigration(ctx context.Context, in *AbortMigrationRequest, opts ...grpc.CallOption) (*AbortMigrationResponse, error)
+	// CompleteMigration ends a migration after cutover.
+	CompleteMigration(ctx context.Context, in *CompleteMigrationRequest, opts ...grpc.CallOption) (*CompleteMigrationResponse, error)
 	// ListBackupSchedules returns backup schedules for a managed database.
 	ListBackupSchedules(ctx context.Context, in *ListBackupSchedulesRequest, opts ...grpc.CallOption) (*ListBackupSchedulesResponse, error)
 	// ListBackups returns the backup snapshots taken for a managed database.
@@ -781,12 +934,40 @@ type ServerServiceClient interface {
 	// client_secret, when present, is sealed at rest; omit it to keep the stored
 	// one. Enterprise-gated (org.sso.manage + the SSO plan feature).
 	UpsertOrgSSOConnection(ctx context.Context, in *UpsertOrgSSOConnectionRequest, opts ...grpc.CallOption) (*UpsertOrgSSOConnectionResponse, error)
-	// DeleteOrgSSOConnection removes the org's SSO connection and its domains.
+	// DeleteOrgSSOConnection removes a connection of the org (the primary one when
+	// the request has no id), refused while domains route to it.
 	DeleteOrgSSOConnection(ctx context.Context, in *DeleteOrgSSOConnectionRequest, opts ...grpc.CallOption) (*DeleteOrgSSOConnectionResponse, error)
+	// ListOrgSSOConnections returns every SSO connection of the org, the primary
+	// (oldest) first. Requires org.sso.manage.
+	ListOrgSSOConnections(ctx context.Context, in *ListOrgSSOConnectionsRequest, opts ...grpc.CallOption) (*ListOrgSSOConnectionsResponse, error)
+	// CreateOrgSSOConnection always adds a connection, up to 10 per org. From the
+	// second one on a unique name is required. Enterprise-gated like the upsert.
+	CreateOrgSSOConnection(ctx context.Context, in *CreateOrgSSOConnectionRequest, opts ...grpc.CallOption) (*CreateOrgSSOConnectionResponse, error)
+	// AssignOrgDomainSSOConnection routes a verified domain of the org to one of
+	// its connections, or to the primary when connection_id is empty. A domain
+	// routed to a disabled connection is not routed and does not require SSO.
+	AssignOrgDomainSSOConnection(ctx context.Context, in *AssignOrgDomainSSOConnectionRequest, opts ...grpc.CallOption) (*AssignOrgDomainSSOConnectionResponse, error)
 	// TestOrgSSOConnection performs OIDC discovery against the given issuer and
 	// returns the resolved endpoints, so an admin can validate configuration
 	// before enabling it. Does not persist anything.
 	TestOrgSSOConnection(ctx context.Context, in *TestOrgSSOConnectionRequest, opts ...grpc.CallOption) (*TestOrgSSOConnectionResponse, error)
+	// ListSSOProviderPresets returns the identity providers the SSO form offers:
+	// issuer template, default scopes and attribute mapping of each. Requires
+	// org.sso.manage.
+	ListSSOProviderPresets(ctx context.Context, in *ListSSOProviderPresetsRequest, opts ...grpc.CallOption) (*ListSSOProviderPresetsResponse, error)
+	// GetOrgSignInPolicy returns the org's sign-in policy: the defaults when none
+	// was saved. Requires org.sso.manage.
+	GetOrgSignInPolicy(ctx context.Context, in *GetOrgSignInPolicyRequest, opts ...grpc.CallOption) (*GetOrgSignInPolicyResponse, error)
+	// PreviewOrgSignInPolicy lists the members of the org's verified domains whose
+	// existing sessions the policy would refuse. It saves nothing. Requires
+	// org.sso.manage.
+	PreviewOrgSignInPolicy(ctx context.Context, in *PreviewOrgSignInPolicyRequest, opts ...grpc.CallOption) (*PreviewOrgSignInPolicyResponse, error)
+	// UpdateOrgSignInPolicy saves the policy. When it would refuse sessions of
+	// members of the org's verified domains, it answers FailedPrecondition with
+	// SIGN_IN_POLICY_REVOKES_SESSIONS and saves nothing until
+	// revoke_sessions_confirmed is set; those sessions are then revoked. Requires
+	// org.sso.manage and the SSO plan feature.
+	UpdateOrgSignInPolicy(ctx context.Context, in *UpdateOrgSignInPolicyRequest, opts ...grpc.CallOption) (*UpdateOrgSignInPolicyResponse, error)
 	// ListOrgDomains returns the email domains the org claims, each with its
 	// verification status. Requires org.sso.manage and the Enterprise plan.
 	ListOrgDomains(ctx context.Context, in *ListOrgDomainsRequest, opts ...grpc.CallOption) (*ListOrgDomainsResponse, error)
@@ -801,6 +982,35 @@ type ServerServiceClient interface {
 	// RemoveOrgDomain drops the org's claim on a domain. Not gated, so an org can
 	// clean up after the plan is off.
 	RemoveOrgDomain(ctx context.Context, in *RemoveOrgDomainRequest, opts ...grpc.CallOption) (*RemoveOrgDomainResponse, error)
+	// CreateSCIMToken mints a bearer token for the org's SCIM endpoint. The secret
+	// is returned only here. Requires org.scim.manage and the SCIM plan feature.
+	CreateSCIMToken(ctx context.Context, in *CreateSCIMTokenRequest, opts ...grpc.CallOption) (*CreateSCIMTokenResponse, error)
+	// ListSCIMTokens returns the org's tokens that are not revoked, newest first,
+	// and the base URL of its SCIM endpoint. Requires org.scim.manage; not gated by
+	// the plan, so an org can clean up after a downgrade.
+	ListSCIMTokens(ctx context.Context, in *ListSCIMTokensRequest, opts ...grpc.CallOption) (*ListSCIMTokensResponse, error)
+	// RotateSCIMToken mints a new token with the name and lifetime choice of the
+	// given one. The old token stays valid until it is revoked or expires, so the
+	// IdP can switch over. Requires org.scim.manage and the SCIM plan feature.
+	RotateSCIMToken(ctx context.Context, in *RotateSCIMTokenRequest, opts ...grpc.CallOption) (*RotateSCIMTokenResponse, error)
+	// RevokeSCIMToken stops a token from working at once. Requires org.scim.manage;
+	// not gated by the plan, so an org can clean up after a downgrade.
+	RevokeSCIMToken(ctx context.Context, in *RevokeSCIMTokenRequest, opts ...grpc.CallOption) (*RevokeSCIMTokenResponse, error)
+	// ListIdPGroupMappings returns every identity provider group the org knows,
+	// mapped to a team or not, with its team, role and member count, and the
+	// sign-in group mappings of its SSO connections. Requires
+	// org.scim.manage; not gated by the plan, so an org can clean up after a downgrade.
+	ListIdPGroupMappings(ctx context.Context, in *ListIdPGroupMappingsRequest, opts ...grpc.CallOption) (*ListIdPGroupMappingsResponse, error)
+	// UpsertIdPGroupMapping maps a group to an existing team, optionally with a role
+	// (never owner). The team becomes managed and read-only; its manual members stay.
+	// With source "sso" the group is a value of an SSO connection's groups claim and
+	// team_name may name a team that does not exist yet, which is then created.
+	// Requires org.scim.manage and the SCIM plan feature.
+	UpsertIdPGroupMapping(ctx context.Context, in *UpsertIdPGroupMappingRequest, opts ...grpc.CallOption) (*UpsertIdPGroupMappingResponse, error)
+	// DeleteIdPGroupMapping detaches a group: the team stays, its IdP members and
+	// the role binding of the mapping go, and the team is no longer managed.
+	// Requires org.scim.manage; not gated by the plan.
+	DeleteIdPGroupMapping(ctx context.Context, in *DeleteIdPGroupMappingRequest, opts ...grpc.CallOption) (*DeleteIdPGroupMappingResponse, error)
 	// ListPostgreSQLExtensions returns the curated extension set bundled for a
 	// PostgreSQL major.
 	ListPostgreSQLExtensions(ctx context.Context, in *ListPostgreSQLExtensionsRequest, opts ...grpc.CallOption) (*ListPostgreSQLExtensionsResponse, error)
@@ -843,6 +1053,27 @@ type ServerServiceClient interface {
 	// ReportRunbookExecution records the outcome of a claimed execution
 	// (agent-only auth).
 	ReportRunbookExecution(ctx context.Context, in *ReportRunbookExecutionRequest, opts ...grpc.CallOption) (*ReportRunbookExecutionResponse, error)
+	// CreateQueryTemplate stores a new template with its first version, pending
+	// approval. Requires org.query_templates.manage.
+	CreateQueryTemplate(ctx context.Context, in *CreateQueryTemplateRequest, opts ...grpc.CallOption) (*CreateQueryTemplateResponse, error)
+	// UpdateQueryTemplate records a new pending version. The approved version
+	// stays in force until the new one is approved.
+	UpdateQueryTemplate(ctx context.Context, in *UpdateQueryTemplateRequest, opts ...grpc.CallOption) (*UpdateQueryTemplateResponse, error)
+	GetQueryTemplate(ctx context.Context, in *GetQueryTemplateRequest, opts ...grpc.CallOption) (*GetQueryTemplateResponse, error)
+	ListQueryTemplates(ctx context.Context, in *ListQueryTemplatesRequest, opts ...grpc.CallOption) (*ListQueryTemplatesResponse, error)
+	ListQueryTemplateVersions(ctx context.Context, in *ListQueryTemplateVersionsRequest, opts ...grpc.CallOption) (*ListQueryTemplateVersionsResponse, error)
+	// ApproveQueryTemplateVersion approves a pending version and supersedes the
+	// approved one. Requires org.query_approvals.decide; the author of a version
+	// cannot approve it.
+	ApproveQueryTemplateVersion(ctx context.Context, in *ApproveQueryTemplateVersionRequest, opts ...grpc.CallOption) (*ApproveQueryTemplateVersionResponse, error)
+	// WithdrawQueryTemplateVersion withdraws a pending version.
+	WithdrawQueryTemplateVersion(ctx context.Context, in *WithdrawQueryTemplateVersionRequest, opts ...grpc.CallOption) (*WithdrawQueryTemplateVersionResponse, error)
+	// RevokeQueryTemplate revokes the approved version at once: no new run
+	// starts under it. Executions already queued or running finish.
+	RevokeQueryTemplate(ctx context.Context, in *RevokeQueryTemplateRequest, opts ...grpc.CallOption) (*RevokeQueryTemplateResponse, error)
+	// RunQueryTemplate queues one execution of an approved version, recorded as
+	// auto-approved by the template. Poll it with GetRunbookExecution.
+	RunQueryTemplate(ctx context.Context, in *RunQueryTemplateRequest, opts ...grpc.CallOption) (*RunQueryTemplateResponse, error)
 }
 
 type serverServiceClient struct {
@@ -947,6 +1178,56 @@ func (c *serverServiceClient) RevokeAPIKey(ctx context.Context, in *RevokeAPIKey
 	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
 	out := new(RevokeAPIKeyResponse)
 	err := c.cc.Invoke(ctx, ServerService_RevokeAPIKey_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *serverServiceClient) ListServiceAccounts(ctx context.Context, in *ListServiceAccountsRequest, opts ...grpc.CallOption) (*ListServiceAccountsResponse, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(ListServiceAccountsResponse)
+	err := c.cc.Invoke(ctx, ServerService_ListServiceAccounts_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *serverServiceClient) CreateServiceAccount(ctx context.Context, in *CreateServiceAccountRequest, opts ...grpc.CallOption) (*CreateServiceAccountResponse, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(CreateServiceAccountResponse)
+	err := c.cc.Invoke(ctx, ServerService_CreateServiceAccount_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *serverServiceClient) UpdateServiceAccount(ctx context.Context, in *UpdateServiceAccountRequest, opts ...grpc.CallOption) (*UpdateServiceAccountResponse, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(UpdateServiceAccountResponse)
+	err := c.cc.Invoke(ctx, ServerService_UpdateServiceAccount_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *serverServiceClient) DeleteServiceAccount(ctx context.Context, in *DeleteServiceAccountRequest, opts ...grpc.CallOption) (*DeleteServiceAccountResponse, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(DeleteServiceAccountResponse)
+	err := c.cc.Invoke(ctx, ServerService_DeleteServiceAccount_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *serverServiceClient) MoveAPIKeyToServiceAccount(ctx context.Context, in *MoveAPIKeyToServiceAccountRequest, opts ...grpc.CallOption) (*MoveAPIKeyToServiceAccountResponse, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(MoveAPIKeyToServiceAccountResponse)
+	err := c.cc.Invoke(ctx, ServerService_MoveAPIKeyToServiceAccount_FullMethodName, in, out, cOpts...)
 	if err != nil {
 		return nil, err
 	}
@@ -1743,16 +2024,6 @@ func (c *serverServiceClient) UpdateAgentPool(ctx context.Context, in *UpdateAge
 	return out, nil
 }
 
-func (c *serverServiceClient) SetAgentPoolTeams(ctx context.Context, in *SetAgentPoolTeamsRequest, opts ...grpc.CallOption) (*SetAgentPoolTeamsResponse, error) {
-	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
-	out := new(SetAgentPoolTeamsResponse)
-	err := c.cc.Invoke(ctx, ServerService_SetAgentPoolTeams_FullMethodName, in, out, cOpts...)
-	if err != nil {
-		return nil, err
-	}
-	return out, nil
-}
-
 func (c *serverServiceClient) WakeAgentPool(ctx context.Context, in *WakeAgentPoolRequest, opts ...grpc.CallOption) (*WakeAgentPoolResponse, error) {
 	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
 	out := new(WakeAgentPoolResponse)
@@ -2037,6 +2308,16 @@ func (c *serverServiceClient) GetAuditMetrics(ctx context.Context, in *GetAuditM
 	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
 	out := new(GetAuditMetricsResponse)
 	err := c.cc.Invoke(ctx, ServerService_GetAuditMetrics_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *serverServiceClient) GetAccessUsage(ctx context.Context, in *GetAccessUsageRequest, opts ...grpc.CallOption) (*GetAccessUsageResponse, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(GetAccessUsageResponse)
+	err := c.cc.Invoke(ctx, ServerService_GetAccessUsage_FullMethodName, in, out, cOpts...)
 	if err != nil {
 		return nil, err
 	}
@@ -2562,10 +2843,210 @@ func (c *serverServiceClient) GetDatabaseLogs(ctx context.Context, in *GetDataba
 	return out, nil
 }
 
+func (c *serverServiceClient) SearchDatabaseLogs(ctx context.Context, in *SearchDatabaseLogsRequest, opts ...grpc.CallOption) (*SearchDatabaseLogsResponse, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(SearchDatabaseLogsResponse)
+	err := c.cc.Invoke(ctx, ServerService_SearchDatabaseLogs_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
 func (c *serverServiceClient) GetDatabaseAnalytics(ctx context.Context, in *GetDatabaseAnalyticsRequest, opts ...grpc.CallOption) (*GetDatabaseAnalyticsResponse, error) {
 	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
 	out := new(GetDatabaseAnalyticsResponse)
 	err := c.cc.Invoke(ctx, ServerService_GetDatabaseAnalytics_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *serverServiceClient) GetDatabaseTopSQL(ctx context.Context, in *GetDatabaseTopSQLRequest, opts ...grpc.CallOption) (*GetDatabaseTopSQLResponse, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(GetDatabaseTopSQLResponse)
+	err := c.cc.Invoke(ctx, ServerService_GetDatabaseTopSQL_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *serverServiceClient) GetDatabaseLoad(ctx context.Context, in *GetDatabaseLoadRequest, opts ...grpc.CallOption) (*GetDatabaseLoadResponse, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(GetDatabaseLoadResponse)
+	err := c.cc.Invoke(ctx, ServerService_GetDatabaseLoad_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *serverServiceClient) RecordDatabaseEvent(ctx context.Context, in *RecordDatabaseEventRequest, opts ...grpc.CallOption) (*RecordDatabaseEventResponse, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(RecordDatabaseEventResponse)
+	err := c.cc.Invoke(ctx, ServerService_RecordDatabaseEvent_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *serverServiceClient) ListDatabaseEvents(ctx context.Context, in *ListDatabaseEventsRequest, opts ...grpc.CallOption) (*ListDatabaseEventsResponse, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(ListDatabaseEventsResponse)
+	err := c.cc.Invoke(ctx, ServerService_ListDatabaseEvents_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *serverServiceClient) CreateDatabaseEventSubscription(ctx context.Context, in *CreateDatabaseEventSubscriptionRequest, opts ...grpc.CallOption) (*CreateDatabaseEventSubscriptionResponse, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(CreateDatabaseEventSubscriptionResponse)
+	err := c.cc.Invoke(ctx, ServerService_CreateDatabaseEventSubscription_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *serverServiceClient) UpdateDatabaseEventSubscription(ctx context.Context, in *UpdateDatabaseEventSubscriptionRequest, opts ...grpc.CallOption) (*UpdateDatabaseEventSubscriptionResponse, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(UpdateDatabaseEventSubscriptionResponse)
+	err := c.cc.Invoke(ctx, ServerService_UpdateDatabaseEventSubscription_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *serverServiceClient) DeleteDatabaseEventSubscription(ctx context.Context, in *DeleteDatabaseEventSubscriptionRequest, opts ...grpc.CallOption) (*DeleteDatabaseEventSubscriptionResponse, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(DeleteDatabaseEventSubscriptionResponse)
+	err := c.cc.Invoke(ctx, ServerService_DeleteDatabaseEventSubscription_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *serverServiceClient) ListDatabaseEventSubscriptions(ctx context.Context, in *ListDatabaseEventSubscriptionsRequest, opts ...grpc.CallOption) (*ListDatabaseEventSubscriptionsResponse, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(ListDatabaseEventSubscriptionsResponse)
+	err := c.cc.Invoke(ctx, ServerService_ListDatabaseEventSubscriptions_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *serverServiceClient) ListDatabaseAlarmMetrics(ctx context.Context, in *ListDatabaseAlarmMetricsRequest, opts ...grpc.CallOption) (*ListDatabaseAlarmMetricsResponse, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(ListDatabaseAlarmMetricsResponse)
+	err := c.cc.Invoke(ctx, ServerService_ListDatabaseAlarmMetrics_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *serverServiceClient) CreateDatabaseAlarm(ctx context.Context, in *CreateDatabaseAlarmRequest, opts ...grpc.CallOption) (*CreateDatabaseAlarmResponse, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(CreateDatabaseAlarmResponse)
+	err := c.cc.Invoke(ctx, ServerService_CreateDatabaseAlarm_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *serverServiceClient) UpdateDatabaseAlarm(ctx context.Context, in *UpdateDatabaseAlarmRequest, opts ...grpc.CallOption) (*UpdateDatabaseAlarmResponse, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(UpdateDatabaseAlarmResponse)
+	err := c.cc.Invoke(ctx, ServerService_UpdateDatabaseAlarm_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *serverServiceClient) DeleteDatabaseAlarm(ctx context.Context, in *DeleteDatabaseAlarmRequest, opts ...grpc.CallOption) (*DeleteDatabaseAlarmResponse, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(DeleteDatabaseAlarmResponse)
+	err := c.cc.Invoke(ctx, ServerService_DeleteDatabaseAlarm_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *serverServiceClient) GetDatabaseAlarm(ctx context.Context, in *GetDatabaseAlarmRequest, opts ...grpc.CallOption) (*GetDatabaseAlarmResponse, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(GetDatabaseAlarmResponse)
+	err := c.cc.Invoke(ctx, ServerService_GetDatabaseAlarm_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *serverServiceClient) ListDatabaseAlarms(ctx context.Context, in *ListDatabaseAlarmsRequest, opts ...grpc.CallOption) (*ListDatabaseAlarmsResponse, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(ListDatabaseAlarmsResponse)
+	err := c.cc.Invoke(ctx, ServerService_ListDatabaseAlarms_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *serverServiceClient) ListDatabaseAlarmEvents(ctx context.Context, in *ListDatabaseAlarmEventsRequest, opts ...grpc.CallOption) (*ListDatabaseAlarmEventsResponse, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(ListDatabaseAlarmEventsResponse)
+	err := c.cc.Invoke(ctx, ServerService_ListDatabaseAlarmEvents_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *serverServiceClient) ListRecommendedDatabaseAlarms(ctx context.Context, in *ListRecommendedDatabaseAlarmsRequest, opts ...grpc.CallOption) (*ListRecommendedDatabaseAlarmsResponse, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(ListRecommendedDatabaseAlarmsResponse)
+	err := c.cc.Invoke(ctx, ServerService_ListRecommendedDatabaseAlarms_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *serverServiceClient) ApplyRecommendedDatabaseAlarms(ctx context.Context, in *ApplyRecommendedDatabaseAlarmsRequest, opts ...grpc.CallOption) (*ApplyRecommendedDatabaseAlarmsResponse, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(ApplyRecommendedDatabaseAlarmsResponse)
+	err := c.cc.Invoke(ctx, ServerService_ApplyRecommendedDatabaseAlarms_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *serverServiceClient) SetRecommendedAlarmsOnCreate(ctx context.Context, in *SetRecommendedAlarmsOnCreateRequest, opts ...grpc.CallOption) (*SetRecommendedAlarmsOnCreateResponse, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(SetRecommendedAlarmsOnCreateResponse)
+	err := c.cc.Invoke(ctx, ServerService_SetRecommendedAlarmsOnCreate_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *serverServiceClient) GetDatabaseLocks(ctx context.Context, in *GetDatabaseLocksRequest, opts ...grpc.CallOption) (*GetDatabaseLocksResponse, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(GetDatabaseLocksResponse)
+	err := c.cc.Invoke(ctx, ServerService_GetDatabaseLocks_FullMethodName, in, out, cOpts...)
 	if err != nil {
 		return nil, err
 	}
@@ -2696,6 +3177,86 @@ func (c *serverServiceClient) DeletePrivateEndpoint(ctx context.Context, in *Del
 	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
 	out := new(DeletePrivateEndpointResponse)
 	err := c.cc.Invoke(ctx, ServerService_DeletePrivateEndpoint_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *serverServiceClient) CheckMigrationSource(ctx context.Context, in *CheckMigrationSourceRequest, opts ...grpc.CallOption) (*CheckMigrationSourceResponse, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(CheckMigrationSourceResponse)
+	err := c.cc.Invoke(ctx, ServerService_CheckMigrationSource_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *serverServiceClient) GetMigrationSourceCheck(ctx context.Context, in *GetMigrationSourceCheckRequest, opts ...grpc.CallOption) (*GetMigrationSourceCheckResponse, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(GetMigrationSourceCheckResponse)
+	err := c.cc.Invoke(ctx, ServerService_GetMigrationSourceCheck_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *serverServiceClient) CreateMigration(ctx context.Context, in *CreateMigrationRequest, opts ...grpc.CallOption) (*CreateMigrationResponse, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(CreateMigrationResponse)
+	err := c.cc.Invoke(ctx, ServerService_CreateMigration_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *serverServiceClient) GetMigration(ctx context.Context, in *GetMigrationRequest, opts ...grpc.CallOption) (*GetMigrationResponse, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(GetMigrationResponse)
+	err := c.cc.Invoke(ctx, ServerService_GetMigration_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *serverServiceClient) ListMigrations(ctx context.Context, in *ListMigrationsRequest, opts ...grpc.CallOption) (*ListMigrationsResponse, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(ListMigrationsResponse)
+	err := c.cc.Invoke(ctx, ServerService_ListMigrations_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *serverServiceClient) RequestMigrationCutover(ctx context.Context, in *RequestMigrationCutoverRequest, opts ...grpc.CallOption) (*RequestMigrationCutoverResponse, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(RequestMigrationCutoverResponse)
+	err := c.cc.Invoke(ctx, ServerService_RequestMigrationCutover_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *serverServiceClient) AbortMigration(ctx context.Context, in *AbortMigrationRequest, opts ...grpc.CallOption) (*AbortMigrationResponse, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(AbortMigrationResponse)
+	err := c.cc.Invoke(ctx, ServerService_AbortMigration_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *serverServiceClient) CompleteMigration(ctx context.Context, in *CompleteMigrationRequest, opts ...grpc.CallOption) (*CompleteMigrationResponse, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(CompleteMigrationResponse)
+	err := c.cc.Invoke(ctx, ServerService_CompleteMigration_FullMethodName, in, out, cOpts...)
 	if err != nil {
 		return nil, err
 	}
@@ -3012,10 +3573,80 @@ func (c *serverServiceClient) DeleteOrgSSOConnection(ctx context.Context, in *De
 	return out, nil
 }
 
+func (c *serverServiceClient) ListOrgSSOConnections(ctx context.Context, in *ListOrgSSOConnectionsRequest, opts ...grpc.CallOption) (*ListOrgSSOConnectionsResponse, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(ListOrgSSOConnectionsResponse)
+	err := c.cc.Invoke(ctx, ServerService_ListOrgSSOConnections_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *serverServiceClient) CreateOrgSSOConnection(ctx context.Context, in *CreateOrgSSOConnectionRequest, opts ...grpc.CallOption) (*CreateOrgSSOConnectionResponse, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(CreateOrgSSOConnectionResponse)
+	err := c.cc.Invoke(ctx, ServerService_CreateOrgSSOConnection_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *serverServiceClient) AssignOrgDomainSSOConnection(ctx context.Context, in *AssignOrgDomainSSOConnectionRequest, opts ...grpc.CallOption) (*AssignOrgDomainSSOConnectionResponse, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(AssignOrgDomainSSOConnectionResponse)
+	err := c.cc.Invoke(ctx, ServerService_AssignOrgDomainSSOConnection_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
 func (c *serverServiceClient) TestOrgSSOConnection(ctx context.Context, in *TestOrgSSOConnectionRequest, opts ...grpc.CallOption) (*TestOrgSSOConnectionResponse, error) {
 	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
 	out := new(TestOrgSSOConnectionResponse)
 	err := c.cc.Invoke(ctx, ServerService_TestOrgSSOConnection_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *serverServiceClient) ListSSOProviderPresets(ctx context.Context, in *ListSSOProviderPresetsRequest, opts ...grpc.CallOption) (*ListSSOProviderPresetsResponse, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(ListSSOProviderPresetsResponse)
+	err := c.cc.Invoke(ctx, ServerService_ListSSOProviderPresets_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *serverServiceClient) GetOrgSignInPolicy(ctx context.Context, in *GetOrgSignInPolicyRequest, opts ...grpc.CallOption) (*GetOrgSignInPolicyResponse, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(GetOrgSignInPolicyResponse)
+	err := c.cc.Invoke(ctx, ServerService_GetOrgSignInPolicy_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *serverServiceClient) PreviewOrgSignInPolicy(ctx context.Context, in *PreviewOrgSignInPolicyRequest, opts ...grpc.CallOption) (*PreviewOrgSignInPolicyResponse, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(PreviewOrgSignInPolicyResponse)
+	err := c.cc.Invoke(ctx, ServerService_PreviewOrgSignInPolicy_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *serverServiceClient) UpdateOrgSignInPolicy(ctx context.Context, in *UpdateOrgSignInPolicyRequest, opts ...grpc.CallOption) (*UpdateOrgSignInPolicyResponse, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(UpdateOrgSignInPolicyResponse)
+	err := c.cc.Invoke(ctx, ServerService_UpdateOrgSignInPolicy_FullMethodName, in, out, cOpts...)
 	if err != nil {
 		return nil, err
 	}
@@ -3056,6 +3687,76 @@ func (c *serverServiceClient) RemoveOrgDomain(ctx context.Context, in *RemoveOrg
 	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
 	out := new(RemoveOrgDomainResponse)
 	err := c.cc.Invoke(ctx, ServerService_RemoveOrgDomain_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *serverServiceClient) CreateSCIMToken(ctx context.Context, in *CreateSCIMTokenRequest, opts ...grpc.CallOption) (*CreateSCIMTokenResponse, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(CreateSCIMTokenResponse)
+	err := c.cc.Invoke(ctx, ServerService_CreateSCIMToken_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *serverServiceClient) ListSCIMTokens(ctx context.Context, in *ListSCIMTokensRequest, opts ...grpc.CallOption) (*ListSCIMTokensResponse, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(ListSCIMTokensResponse)
+	err := c.cc.Invoke(ctx, ServerService_ListSCIMTokens_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *serverServiceClient) RotateSCIMToken(ctx context.Context, in *RotateSCIMTokenRequest, opts ...grpc.CallOption) (*RotateSCIMTokenResponse, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(RotateSCIMTokenResponse)
+	err := c.cc.Invoke(ctx, ServerService_RotateSCIMToken_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *serverServiceClient) RevokeSCIMToken(ctx context.Context, in *RevokeSCIMTokenRequest, opts ...grpc.CallOption) (*RevokeSCIMTokenResponse, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(RevokeSCIMTokenResponse)
+	err := c.cc.Invoke(ctx, ServerService_RevokeSCIMToken_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *serverServiceClient) ListIdPGroupMappings(ctx context.Context, in *ListIdPGroupMappingsRequest, opts ...grpc.CallOption) (*ListIdPGroupMappingsResponse, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(ListIdPGroupMappingsResponse)
+	err := c.cc.Invoke(ctx, ServerService_ListIdPGroupMappings_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *serverServiceClient) UpsertIdPGroupMapping(ctx context.Context, in *UpsertIdPGroupMappingRequest, opts ...grpc.CallOption) (*UpsertIdPGroupMappingResponse, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(UpsertIdPGroupMappingResponse)
+	err := c.cc.Invoke(ctx, ServerService_UpsertIdPGroupMapping_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *serverServiceClient) DeleteIdPGroupMapping(ctx context.Context, in *DeleteIdPGroupMappingRequest, opts ...grpc.CallOption) (*DeleteIdPGroupMappingResponse, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(DeleteIdPGroupMappingResponse)
+	err := c.cc.Invoke(ctx, ServerService_DeleteIdPGroupMapping_FullMethodName, in, out, cOpts...)
 	if err != nil {
 		return nil, err
 	}
@@ -3222,6 +3923,96 @@ func (c *serverServiceClient) ReportRunbookExecution(ctx context.Context, in *Re
 	return out, nil
 }
 
+func (c *serverServiceClient) CreateQueryTemplate(ctx context.Context, in *CreateQueryTemplateRequest, opts ...grpc.CallOption) (*CreateQueryTemplateResponse, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(CreateQueryTemplateResponse)
+	err := c.cc.Invoke(ctx, ServerService_CreateQueryTemplate_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *serverServiceClient) UpdateQueryTemplate(ctx context.Context, in *UpdateQueryTemplateRequest, opts ...grpc.CallOption) (*UpdateQueryTemplateResponse, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(UpdateQueryTemplateResponse)
+	err := c.cc.Invoke(ctx, ServerService_UpdateQueryTemplate_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *serverServiceClient) GetQueryTemplate(ctx context.Context, in *GetQueryTemplateRequest, opts ...grpc.CallOption) (*GetQueryTemplateResponse, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(GetQueryTemplateResponse)
+	err := c.cc.Invoke(ctx, ServerService_GetQueryTemplate_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *serverServiceClient) ListQueryTemplates(ctx context.Context, in *ListQueryTemplatesRequest, opts ...grpc.CallOption) (*ListQueryTemplatesResponse, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(ListQueryTemplatesResponse)
+	err := c.cc.Invoke(ctx, ServerService_ListQueryTemplates_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *serverServiceClient) ListQueryTemplateVersions(ctx context.Context, in *ListQueryTemplateVersionsRequest, opts ...grpc.CallOption) (*ListQueryTemplateVersionsResponse, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(ListQueryTemplateVersionsResponse)
+	err := c.cc.Invoke(ctx, ServerService_ListQueryTemplateVersions_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *serverServiceClient) ApproveQueryTemplateVersion(ctx context.Context, in *ApproveQueryTemplateVersionRequest, opts ...grpc.CallOption) (*ApproveQueryTemplateVersionResponse, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(ApproveQueryTemplateVersionResponse)
+	err := c.cc.Invoke(ctx, ServerService_ApproveQueryTemplateVersion_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *serverServiceClient) WithdrawQueryTemplateVersion(ctx context.Context, in *WithdrawQueryTemplateVersionRequest, opts ...grpc.CallOption) (*WithdrawQueryTemplateVersionResponse, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(WithdrawQueryTemplateVersionResponse)
+	err := c.cc.Invoke(ctx, ServerService_WithdrawQueryTemplateVersion_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *serverServiceClient) RevokeQueryTemplate(ctx context.Context, in *RevokeQueryTemplateRequest, opts ...grpc.CallOption) (*RevokeQueryTemplateResponse, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(RevokeQueryTemplateResponse)
+	err := c.cc.Invoke(ctx, ServerService_RevokeQueryTemplate_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *serverServiceClient) RunQueryTemplate(ctx context.Context, in *RunQueryTemplateRequest, opts ...grpc.CallOption) (*RunQueryTemplateResponse, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(RunQueryTemplateResponse)
+	err := c.cc.Invoke(ctx, ServerService_RunQueryTemplate_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
 // ServerServiceServer is the server API for ServerService service.
 // All implementations must embed UnimplementedServerServiceServer
 // for forward compatibility.
@@ -3257,6 +4048,18 @@ type ServerServiceServer interface {
 	ListAPIKeys(context.Context, *ListAPIKeysRequest) (*ListAPIKeysResponse, error)
 	UpdateAPIKey(context.Context, *UpdateAPIKeyRequest) (*UpdateAPIKeyResponse, error)
 	RevokeAPIKey(context.Context, *RevokeAPIKeyRequest) (*RevokeAPIKeyResponse, error)
+	// Service accounts are org-owned principals that own API keys, so a key
+	// outlives the person who created it. Enterprise plan; every call needs
+	// org.service_accounts.manage.
+	ListServiceAccounts(context.Context, *ListServiceAccountsRequest) (*ListServiceAccountsResponse, error)
+	CreateServiceAccount(context.Context, *CreateServiceAccountRequest) (*CreateServiceAccountResponse, error)
+	UpdateServiceAccount(context.Context, *UpdateServiceAccountRequest) (*UpdateServiceAccountResponse, error)
+	// DeleteServiceAccount also revokes every API key the service account owns.
+	DeleteServiceAccount(context.Context, *DeleteServiceAccountRequest) (*DeleteServiceAccountResponse, error)
+	// MoveAPIKeyToServiceAccount hands an existing key to a service account. The
+	// key keeps its token and role; from then on it no longer follows the person
+	// who created it. Recorded in the activity log with who moved it.
+	MoveAPIKeyToServiceAccount(context.Context, *MoveAPIKeyToServiceAccountRequest) (*MoveAPIKeyToServiceAccountResponse, error)
 	// ListConnections returns all connections in the user's organization.
 	ListConnections(context.Context, *ListConnectionsRequest) (*ListConnectionsResponse, error)
 	// ListManagedDatabaseConnections returns every connection bound to a managed
@@ -3451,7 +4254,6 @@ type ServerServiceServer interface {
 	DeleteAgentPool(context.Context, *DeleteAgentPoolRequest) (*DeleteAgentPoolResponse, error)
 	// UpdateAgentPool updates an existing agent pool.
 	UpdateAgentPool(context.Context, *UpdateAgentPoolRequest) (*UpdateAgentPoolResponse, error)
-	SetAgentPoolTeams(context.Context, *SetAgentPoolTeamsRequest) (*SetAgentPoolTeamsResponse, error)
 	// WakeAgentPool starts a sleeping managed agent pool.
 	WakeAgentPool(context.Context, *WakeAgentPoolRequest) (*WakeAgentPoolResponse, error)
 	// ResolveConnectionCredential returns a connection's stored password to the
@@ -3507,6 +4309,10 @@ type ServerServiceServer interface {
 	ListAuditLogs(context.Context, *ListAuditLogsRequest) (*ListAuditLogsResponse, error)
 	// GetAuditMetrics returns pre-aggregated hourly metrics for the overview chart.
 	GetAuditMetrics(context.Context, *GetAuditMetricsRequest) (*GetAuditMetricsResponse, error)
+	// GetAccessUsage aggregates who connects, how much and how often it fails for
+	// the workspace: sessions, duration, statements and policy outcomes, grouped
+	// by user, connection or team. Gated by the access_usage feature flag.
+	GetAccessUsage(context.Context, *GetAccessUsageRequest) (*GetAccessUsageResponse, error)
 	// ListActivityLogs returns control-plane activity logs for the user's workspace.
 	ListActivityLogs(context.Context, *ListActivityLogsRequest) (*ListActivityLogsResponse, error)
 	// ListOrgActivityLogs returns org-level activity logs (workspace_id IS NULL).
@@ -3628,9 +4434,71 @@ type ServerServiceServer interface {
 	// GetDatabaseLogs returns the raw log tail of a managed database's data
 	// pods (proxied to maestro; one NodeLogs entry per pod).
 	GetDatabaseLogs(context.Context, *GetDatabaseLogsRequest) (*GetDatabaseLogsResponse, error)
+	// SearchDatabaseLogs reads structured log entries in a time range with level,
+	// text, node and source filters and cursor pagination, plus a slow-queries view
+	// built on the parsed duration records. Gated by the db_insights flag and plan
+	// feature; the range is clamped to the plan's insights retention.
+	SearchDatabaseLogs(context.Context, *SearchDatabaseLogsRequest) (*SearchDatabaseLogsResponse, error)
 	// GetDatabaseAnalytics returns time-bucketed resource metrics for a managed
 	// database from the org's analytics store (proxied to maestro).
 	GetDatabaseAnalytics(context.Context, *GetDatabaseAnalyticsRequest) (*GetDatabaseAnalyticsResponse, error)
+	// GetDatabaseTopSQL returns the statements that consumed the most time in a
+	// window, from pg_stat_statements deltas collected into the analytics store.
+	// Gated by the db_insights flag and the db_insights plan feature; the window is
+	// clamped to the plan's insights retention.
+	GetDatabaseTopSQL(context.Context, *GetDatabaseTopSQLRequest) (*GetDatabaseTopSQLResponse, error)
+	// GetDatabaseLoad returns the database load (average active sessions) over a
+	// window, broken down by wait event, SQL, user, client host or application,
+	// from pg_stat_activity samples collected into the analytics store. It rides the
+	// Top SQL opt-in and has the same gating: db_insights flag and plan feature,
+	// window clamped to the plan's insights retention.
+	GetDatabaseLoad(context.Context, *GetDatabaseLoadRequest) (*GetDatabaseLoadResponse, error)
+	// RecordDatabaseEvent stores one managed-database event (failover, backup,
+	// restart, storage warning...). System principals only (maestro); idempotent
+	// per (database_id, source_event_id). Dropped silently while the org lacks
+	// the db_insights flag or plan feature.
+	RecordDatabaseEvent(context.Context, *RecordDatabaseEventRequest) (*RecordDatabaseEventResponse, error)
+	// ListDatabaseEvents is the managed-database event feed, newest first, for
+	// one database or the whole workspace. Gated by the db_insights flag and plan
+	// feature; the window is clamped to the plan's insights retention.
+	ListDatabaseEvents(context.Context, *ListDatabaseEventsRequest) (*ListDatabaseEventsResponse, error)
+	// CreateDatabaseEventSubscription notifies integrations and organization
+	// members about events matching a category and severity filter.
+	CreateDatabaseEventSubscription(context.Context, *CreateDatabaseEventSubscriptionRequest) (*CreateDatabaseEventSubscriptionResponse, error)
+	UpdateDatabaseEventSubscription(context.Context, *UpdateDatabaseEventSubscriptionRequest) (*UpdateDatabaseEventSubscriptionResponse, error)
+	DeleteDatabaseEventSubscription(context.Context, *DeleteDatabaseEventSubscriptionRequest) (*DeleteDatabaseEventSubscriptionResponse, error)
+	ListDatabaseEventSubscriptions(context.Context, *ListDatabaseEventSubscriptionsRequest) (*ListDatabaseEventSubscriptionsResponse, error)
+	// ListDatabaseAlarmMetrics returns the metrics alarms are usually defined on.
+	// Any other metric name in the analytics store is accepted too.
+	ListDatabaseAlarmMetrics(context.Context, *ListDatabaseAlarmMetricsRequest) (*ListDatabaseAlarmMetricsResponse, error)
+	// CreateDatabaseAlarm defines a threshold alarm on a managed database metric.
+	// Gated by the db_insights flag and plan feature.
+	CreateDatabaseAlarm(context.Context, *CreateDatabaseAlarmRequest) (*CreateDatabaseAlarmResponse, error)
+	UpdateDatabaseAlarm(context.Context, *UpdateDatabaseAlarmRequest) (*UpdateDatabaseAlarmResponse, error)
+	DeleteDatabaseAlarm(context.Context, *DeleteDatabaseAlarmRequest) (*DeleteDatabaseAlarmResponse, error)
+	GetDatabaseAlarm(context.Context, *GetDatabaseAlarmRequest) (*GetDatabaseAlarmResponse, error)
+	// ListDatabaseAlarms lists the workspace's alarms with their current state,
+	// optionally for one database.
+	ListDatabaseAlarms(context.Context, *ListDatabaseAlarmsRequest) (*ListDatabaseAlarmsResponse, error)
+	// ListDatabaseAlarmEvents is the alarm state-change history, newest first.
+	ListDatabaseAlarmEvents(context.Context, *ListDatabaseAlarmEventsRequest) (*ListDatabaseAlarmEventsResponse, error)
+	// ListRecommendedDatabaseAlarms returns the recommended alarm templates and,
+	// when database_id is set, what applying each would do to that database.
+	ListRecommendedDatabaseAlarms(context.Context, *ListRecommendedDatabaseAlarmsRequest) (*ListRecommendedDatabaseAlarmsResponse, error)
+	// ApplyRecommendedDatabaseAlarms creates the selected recommended alarms on a
+	// database. It is idempotent: alarms that already exist are reported, not changed.
+	ApplyRecommendedDatabaseAlarms(context.Context, *ApplyRecommendedDatabaseAlarmsRequest) (*ApplyRecommendedDatabaseAlarmsResponse, error)
+	// SetRecommendedAlarmsOnCreate turns the org-wide "apply recommended alarms
+	// to new clusters" setting on or off. It is off by default.
+	SetRecommendedAlarmsOnCreate(context.Context, *SetRecommendedAlarmsOnCreateRequest) (*SetRecommendedAlarmsOnCreateResponse, error)
+	// GetDatabaseLocks returns the blocking-session picture of a managed database:
+	// the latest snapshot at or before a point in time (blocking chains, long
+	// transactions, idle-in-transaction sessions, all as pg_stat_activity/pg_locks
+	// sampled by the collector) and the history of the window. Read-only; there is
+	// no terminate or cancel action. It rides the Top SQL opt-in and has the same
+	// gating: db_insights flag and plan feature, window clamped to the plan's
+	// insights retention (at most 14 days for lock events).
+	GetDatabaseLocks(context.Context, *GetDatabaseLocksRequest) (*GetDatabaseLocksResponse, error)
 	// GetDatabaseConnection returns everything a client needs to dial the database:
 	// ready-to-use, password-less URIs per endpoint role. It is the single source of
 	// truth for connection strings — callers must render these rather than assembling
@@ -3661,6 +4529,26 @@ type ServerServiceServer interface {
 	CreatePrivateEndpoint(context.Context, *CreatePrivateEndpointRequest) (*CreatePrivateEndpointResponse, error)
 	GetPrivateEndpoint(context.Context, *GetPrivateEndpointRequest) (*GetPrivateEndpointResponse, error)
 	DeletePrivateEndpoint(context.Context, *DeletePrivateEndpointRequest) (*DeletePrivateEndpointResponse, error)
+	// CheckMigrationSource probes a source database from the network path the migration will
+	// use. The source credentials are write-only: they are never returned or logged. Gated on
+	// the database_migration feature flag.
+	CheckMigrationSource(context.Context, *CheckMigrationSourceRequest) (*CheckMigrationSourceResponse, error)
+	// GetMigrationSourceCheck returns the outcome of a source check by id.
+	GetMigrationSourceCheck(context.Context, *GetMigrationSourceCheckRequest) (*GetMigrationSourceCheckResponse, error)
+	// CreateMigration starts a migration of the source into an existing target database. The
+	// acknowledgements must list every source check warning that names one. Gated on the
+	// database_migration feature flag, the concurrent_migrations plan limit and, for online
+	// mode, the online_migration plan feature.
+	CreateMigration(context.Context, *CreateMigrationRequest) (*CreateMigrationResponse, error)
+	// GetMigration also returns the target's connection details once the migration is cut over.
+	GetMigration(context.Context, *GetMigrationRequest) (*GetMigrationResponse, error)
+	ListMigrations(context.Context, *ListMigrationsRequest) (*ListMigrationsResponse, error)
+	// RequestMigrationCutover asks the migration to fence the source and switch over.
+	RequestMigrationCutover(context.Context, *RequestMigrationCutoverRequest) (*RequestMigrationCutoverResponse, error)
+	// AbortMigration stops a migration before cutover and cleans up the source.
+	AbortMigration(context.Context, *AbortMigrationRequest) (*AbortMigrationResponse, error)
+	// CompleteMigration ends a migration after cutover.
+	CompleteMigration(context.Context, *CompleteMigrationRequest) (*CompleteMigrationResponse, error)
 	// ListBackupSchedules returns backup schedules for a managed database.
 	ListBackupSchedules(context.Context, *ListBackupSchedulesRequest) (*ListBackupSchedulesResponse, error)
 	// ListBackups returns the backup snapshots taken for a managed database.
@@ -3746,12 +4634,40 @@ type ServerServiceServer interface {
 	// client_secret, when present, is sealed at rest; omit it to keep the stored
 	// one. Enterprise-gated (org.sso.manage + the SSO plan feature).
 	UpsertOrgSSOConnection(context.Context, *UpsertOrgSSOConnectionRequest) (*UpsertOrgSSOConnectionResponse, error)
-	// DeleteOrgSSOConnection removes the org's SSO connection and its domains.
+	// DeleteOrgSSOConnection removes a connection of the org (the primary one when
+	// the request has no id), refused while domains route to it.
 	DeleteOrgSSOConnection(context.Context, *DeleteOrgSSOConnectionRequest) (*DeleteOrgSSOConnectionResponse, error)
+	// ListOrgSSOConnections returns every SSO connection of the org, the primary
+	// (oldest) first. Requires org.sso.manage.
+	ListOrgSSOConnections(context.Context, *ListOrgSSOConnectionsRequest) (*ListOrgSSOConnectionsResponse, error)
+	// CreateOrgSSOConnection always adds a connection, up to 10 per org. From the
+	// second one on a unique name is required. Enterprise-gated like the upsert.
+	CreateOrgSSOConnection(context.Context, *CreateOrgSSOConnectionRequest) (*CreateOrgSSOConnectionResponse, error)
+	// AssignOrgDomainSSOConnection routes a verified domain of the org to one of
+	// its connections, or to the primary when connection_id is empty. A domain
+	// routed to a disabled connection is not routed and does not require SSO.
+	AssignOrgDomainSSOConnection(context.Context, *AssignOrgDomainSSOConnectionRequest) (*AssignOrgDomainSSOConnectionResponse, error)
 	// TestOrgSSOConnection performs OIDC discovery against the given issuer and
 	// returns the resolved endpoints, so an admin can validate configuration
 	// before enabling it. Does not persist anything.
 	TestOrgSSOConnection(context.Context, *TestOrgSSOConnectionRequest) (*TestOrgSSOConnectionResponse, error)
+	// ListSSOProviderPresets returns the identity providers the SSO form offers:
+	// issuer template, default scopes and attribute mapping of each. Requires
+	// org.sso.manage.
+	ListSSOProviderPresets(context.Context, *ListSSOProviderPresetsRequest) (*ListSSOProviderPresetsResponse, error)
+	// GetOrgSignInPolicy returns the org's sign-in policy: the defaults when none
+	// was saved. Requires org.sso.manage.
+	GetOrgSignInPolicy(context.Context, *GetOrgSignInPolicyRequest) (*GetOrgSignInPolicyResponse, error)
+	// PreviewOrgSignInPolicy lists the members of the org's verified domains whose
+	// existing sessions the policy would refuse. It saves nothing. Requires
+	// org.sso.manage.
+	PreviewOrgSignInPolicy(context.Context, *PreviewOrgSignInPolicyRequest) (*PreviewOrgSignInPolicyResponse, error)
+	// UpdateOrgSignInPolicy saves the policy. When it would refuse sessions of
+	// members of the org's verified domains, it answers FailedPrecondition with
+	// SIGN_IN_POLICY_REVOKES_SESSIONS and saves nothing until
+	// revoke_sessions_confirmed is set; those sessions are then revoked. Requires
+	// org.sso.manage and the SSO plan feature.
+	UpdateOrgSignInPolicy(context.Context, *UpdateOrgSignInPolicyRequest) (*UpdateOrgSignInPolicyResponse, error)
 	// ListOrgDomains returns the email domains the org claims, each with its
 	// verification status. Requires org.sso.manage and the Enterprise plan.
 	ListOrgDomains(context.Context, *ListOrgDomainsRequest) (*ListOrgDomainsResponse, error)
@@ -3766,6 +4682,35 @@ type ServerServiceServer interface {
 	// RemoveOrgDomain drops the org's claim on a domain. Not gated, so an org can
 	// clean up after the plan is off.
 	RemoveOrgDomain(context.Context, *RemoveOrgDomainRequest) (*RemoveOrgDomainResponse, error)
+	// CreateSCIMToken mints a bearer token for the org's SCIM endpoint. The secret
+	// is returned only here. Requires org.scim.manage and the SCIM plan feature.
+	CreateSCIMToken(context.Context, *CreateSCIMTokenRequest) (*CreateSCIMTokenResponse, error)
+	// ListSCIMTokens returns the org's tokens that are not revoked, newest first,
+	// and the base URL of its SCIM endpoint. Requires org.scim.manage; not gated by
+	// the plan, so an org can clean up after a downgrade.
+	ListSCIMTokens(context.Context, *ListSCIMTokensRequest) (*ListSCIMTokensResponse, error)
+	// RotateSCIMToken mints a new token with the name and lifetime choice of the
+	// given one. The old token stays valid until it is revoked or expires, so the
+	// IdP can switch over. Requires org.scim.manage and the SCIM plan feature.
+	RotateSCIMToken(context.Context, *RotateSCIMTokenRequest) (*RotateSCIMTokenResponse, error)
+	// RevokeSCIMToken stops a token from working at once. Requires org.scim.manage;
+	// not gated by the plan, so an org can clean up after a downgrade.
+	RevokeSCIMToken(context.Context, *RevokeSCIMTokenRequest) (*RevokeSCIMTokenResponse, error)
+	// ListIdPGroupMappings returns every identity provider group the org knows,
+	// mapped to a team or not, with its team, role and member count, and the
+	// sign-in group mappings of its SSO connections. Requires
+	// org.scim.manage; not gated by the plan, so an org can clean up after a downgrade.
+	ListIdPGroupMappings(context.Context, *ListIdPGroupMappingsRequest) (*ListIdPGroupMappingsResponse, error)
+	// UpsertIdPGroupMapping maps a group to an existing team, optionally with a role
+	// (never owner). The team becomes managed and read-only; its manual members stay.
+	// With source "sso" the group is a value of an SSO connection's groups claim and
+	// team_name may name a team that does not exist yet, which is then created.
+	// Requires org.scim.manage and the SCIM plan feature.
+	UpsertIdPGroupMapping(context.Context, *UpsertIdPGroupMappingRequest) (*UpsertIdPGroupMappingResponse, error)
+	// DeleteIdPGroupMapping detaches a group: the team stays, its IdP members and
+	// the role binding of the mapping go, and the team is no longer managed.
+	// Requires org.scim.manage; not gated by the plan.
+	DeleteIdPGroupMapping(context.Context, *DeleteIdPGroupMappingRequest) (*DeleteIdPGroupMappingResponse, error)
 	// ListPostgreSQLExtensions returns the curated extension set bundled for a
 	// PostgreSQL major.
 	ListPostgreSQLExtensions(context.Context, *ListPostgreSQLExtensionsRequest) (*ListPostgreSQLExtensionsResponse, error)
@@ -3808,6 +4753,27 @@ type ServerServiceServer interface {
 	// ReportRunbookExecution records the outcome of a claimed execution
 	// (agent-only auth).
 	ReportRunbookExecution(context.Context, *ReportRunbookExecutionRequest) (*ReportRunbookExecutionResponse, error)
+	// CreateQueryTemplate stores a new template with its first version, pending
+	// approval. Requires org.query_templates.manage.
+	CreateQueryTemplate(context.Context, *CreateQueryTemplateRequest) (*CreateQueryTemplateResponse, error)
+	// UpdateQueryTemplate records a new pending version. The approved version
+	// stays in force until the new one is approved.
+	UpdateQueryTemplate(context.Context, *UpdateQueryTemplateRequest) (*UpdateQueryTemplateResponse, error)
+	GetQueryTemplate(context.Context, *GetQueryTemplateRequest) (*GetQueryTemplateResponse, error)
+	ListQueryTemplates(context.Context, *ListQueryTemplatesRequest) (*ListQueryTemplatesResponse, error)
+	ListQueryTemplateVersions(context.Context, *ListQueryTemplateVersionsRequest) (*ListQueryTemplateVersionsResponse, error)
+	// ApproveQueryTemplateVersion approves a pending version and supersedes the
+	// approved one. Requires org.query_approvals.decide; the author of a version
+	// cannot approve it.
+	ApproveQueryTemplateVersion(context.Context, *ApproveQueryTemplateVersionRequest) (*ApproveQueryTemplateVersionResponse, error)
+	// WithdrawQueryTemplateVersion withdraws a pending version.
+	WithdrawQueryTemplateVersion(context.Context, *WithdrawQueryTemplateVersionRequest) (*WithdrawQueryTemplateVersionResponse, error)
+	// RevokeQueryTemplate revokes the approved version at once: no new run
+	// starts under it. Executions already queued or running finish.
+	RevokeQueryTemplate(context.Context, *RevokeQueryTemplateRequest) (*RevokeQueryTemplateResponse, error)
+	// RunQueryTemplate queues one execution of an approved version, recorded as
+	// auto-approved by the template. Poll it with GetRunbookExecution.
+	RunQueryTemplate(context.Context, *RunQueryTemplateRequest) (*RunQueryTemplateResponse, error)
 	mustEmbedUnimplementedServerServiceServer()
 }
 
@@ -3847,6 +4813,21 @@ func (UnimplementedServerServiceServer) UpdateAPIKey(context.Context, *UpdateAPI
 }
 func (UnimplementedServerServiceServer) RevokeAPIKey(context.Context, *RevokeAPIKeyRequest) (*RevokeAPIKeyResponse, error) {
 	return nil, status.Error(codes.Unimplemented, "method RevokeAPIKey not implemented")
+}
+func (UnimplementedServerServiceServer) ListServiceAccounts(context.Context, *ListServiceAccountsRequest) (*ListServiceAccountsResponse, error) {
+	return nil, status.Error(codes.Unimplemented, "method ListServiceAccounts not implemented")
+}
+func (UnimplementedServerServiceServer) CreateServiceAccount(context.Context, *CreateServiceAccountRequest) (*CreateServiceAccountResponse, error) {
+	return nil, status.Error(codes.Unimplemented, "method CreateServiceAccount not implemented")
+}
+func (UnimplementedServerServiceServer) UpdateServiceAccount(context.Context, *UpdateServiceAccountRequest) (*UpdateServiceAccountResponse, error) {
+	return nil, status.Error(codes.Unimplemented, "method UpdateServiceAccount not implemented")
+}
+func (UnimplementedServerServiceServer) DeleteServiceAccount(context.Context, *DeleteServiceAccountRequest) (*DeleteServiceAccountResponse, error) {
+	return nil, status.Error(codes.Unimplemented, "method DeleteServiceAccount not implemented")
+}
+func (UnimplementedServerServiceServer) MoveAPIKeyToServiceAccount(context.Context, *MoveAPIKeyToServiceAccountRequest) (*MoveAPIKeyToServiceAccountResponse, error) {
+	return nil, status.Error(codes.Unimplemented, "method MoveAPIKeyToServiceAccount not implemented")
 }
 func (UnimplementedServerServiceServer) ListConnections(context.Context, *ListConnectionsRequest) (*ListConnectionsResponse, error) {
 	return nil, status.Error(codes.Unimplemented, "method ListConnections not implemented")
@@ -4085,9 +5066,6 @@ func (UnimplementedServerServiceServer) DeleteAgentPool(context.Context, *Delete
 func (UnimplementedServerServiceServer) UpdateAgentPool(context.Context, *UpdateAgentPoolRequest) (*UpdateAgentPoolResponse, error) {
 	return nil, status.Error(codes.Unimplemented, "method UpdateAgentPool not implemented")
 }
-func (UnimplementedServerServiceServer) SetAgentPoolTeams(context.Context, *SetAgentPoolTeamsRequest) (*SetAgentPoolTeamsResponse, error) {
-	return nil, status.Error(codes.Unimplemented, "method SetAgentPoolTeams not implemented")
-}
 func (UnimplementedServerServiceServer) WakeAgentPool(context.Context, *WakeAgentPoolRequest) (*WakeAgentPoolResponse, error) {
 	return nil, status.Error(codes.Unimplemented, "method WakeAgentPool not implemented")
 }
@@ -4174,6 +5152,9 @@ func (UnimplementedServerServiceServer) ListAuditLogs(context.Context, *ListAudi
 }
 func (UnimplementedServerServiceServer) GetAuditMetrics(context.Context, *GetAuditMetricsRequest) (*GetAuditMetricsResponse, error) {
 	return nil, status.Error(codes.Unimplemented, "method GetAuditMetrics not implemented")
+}
+func (UnimplementedServerServiceServer) GetAccessUsage(context.Context, *GetAccessUsageRequest) (*GetAccessUsageResponse, error) {
+	return nil, status.Error(codes.Unimplemented, "method GetAccessUsage not implemented")
 }
 func (UnimplementedServerServiceServer) ListActivityLogs(context.Context, *ListActivityLogsRequest) (*ListActivityLogsResponse, error) {
 	return nil, status.Error(codes.Unimplemented, "method ListActivityLogs not implemented")
@@ -4328,8 +5309,68 @@ func (UnimplementedServerServiceServer) ListDatabaseNodes(context.Context, *List
 func (UnimplementedServerServiceServer) GetDatabaseLogs(context.Context, *GetDatabaseLogsRequest) (*GetDatabaseLogsResponse, error) {
 	return nil, status.Error(codes.Unimplemented, "method GetDatabaseLogs not implemented")
 }
+func (UnimplementedServerServiceServer) SearchDatabaseLogs(context.Context, *SearchDatabaseLogsRequest) (*SearchDatabaseLogsResponse, error) {
+	return nil, status.Error(codes.Unimplemented, "method SearchDatabaseLogs not implemented")
+}
 func (UnimplementedServerServiceServer) GetDatabaseAnalytics(context.Context, *GetDatabaseAnalyticsRequest) (*GetDatabaseAnalyticsResponse, error) {
 	return nil, status.Error(codes.Unimplemented, "method GetDatabaseAnalytics not implemented")
+}
+func (UnimplementedServerServiceServer) GetDatabaseTopSQL(context.Context, *GetDatabaseTopSQLRequest) (*GetDatabaseTopSQLResponse, error) {
+	return nil, status.Error(codes.Unimplemented, "method GetDatabaseTopSQL not implemented")
+}
+func (UnimplementedServerServiceServer) GetDatabaseLoad(context.Context, *GetDatabaseLoadRequest) (*GetDatabaseLoadResponse, error) {
+	return nil, status.Error(codes.Unimplemented, "method GetDatabaseLoad not implemented")
+}
+func (UnimplementedServerServiceServer) RecordDatabaseEvent(context.Context, *RecordDatabaseEventRequest) (*RecordDatabaseEventResponse, error) {
+	return nil, status.Error(codes.Unimplemented, "method RecordDatabaseEvent not implemented")
+}
+func (UnimplementedServerServiceServer) ListDatabaseEvents(context.Context, *ListDatabaseEventsRequest) (*ListDatabaseEventsResponse, error) {
+	return nil, status.Error(codes.Unimplemented, "method ListDatabaseEvents not implemented")
+}
+func (UnimplementedServerServiceServer) CreateDatabaseEventSubscription(context.Context, *CreateDatabaseEventSubscriptionRequest) (*CreateDatabaseEventSubscriptionResponse, error) {
+	return nil, status.Error(codes.Unimplemented, "method CreateDatabaseEventSubscription not implemented")
+}
+func (UnimplementedServerServiceServer) UpdateDatabaseEventSubscription(context.Context, *UpdateDatabaseEventSubscriptionRequest) (*UpdateDatabaseEventSubscriptionResponse, error) {
+	return nil, status.Error(codes.Unimplemented, "method UpdateDatabaseEventSubscription not implemented")
+}
+func (UnimplementedServerServiceServer) DeleteDatabaseEventSubscription(context.Context, *DeleteDatabaseEventSubscriptionRequest) (*DeleteDatabaseEventSubscriptionResponse, error) {
+	return nil, status.Error(codes.Unimplemented, "method DeleteDatabaseEventSubscription not implemented")
+}
+func (UnimplementedServerServiceServer) ListDatabaseEventSubscriptions(context.Context, *ListDatabaseEventSubscriptionsRequest) (*ListDatabaseEventSubscriptionsResponse, error) {
+	return nil, status.Error(codes.Unimplemented, "method ListDatabaseEventSubscriptions not implemented")
+}
+func (UnimplementedServerServiceServer) ListDatabaseAlarmMetrics(context.Context, *ListDatabaseAlarmMetricsRequest) (*ListDatabaseAlarmMetricsResponse, error) {
+	return nil, status.Error(codes.Unimplemented, "method ListDatabaseAlarmMetrics not implemented")
+}
+func (UnimplementedServerServiceServer) CreateDatabaseAlarm(context.Context, *CreateDatabaseAlarmRequest) (*CreateDatabaseAlarmResponse, error) {
+	return nil, status.Error(codes.Unimplemented, "method CreateDatabaseAlarm not implemented")
+}
+func (UnimplementedServerServiceServer) UpdateDatabaseAlarm(context.Context, *UpdateDatabaseAlarmRequest) (*UpdateDatabaseAlarmResponse, error) {
+	return nil, status.Error(codes.Unimplemented, "method UpdateDatabaseAlarm not implemented")
+}
+func (UnimplementedServerServiceServer) DeleteDatabaseAlarm(context.Context, *DeleteDatabaseAlarmRequest) (*DeleteDatabaseAlarmResponse, error) {
+	return nil, status.Error(codes.Unimplemented, "method DeleteDatabaseAlarm not implemented")
+}
+func (UnimplementedServerServiceServer) GetDatabaseAlarm(context.Context, *GetDatabaseAlarmRequest) (*GetDatabaseAlarmResponse, error) {
+	return nil, status.Error(codes.Unimplemented, "method GetDatabaseAlarm not implemented")
+}
+func (UnimplementedServerServiceServer) ListDatabaseAlarms(context.Context, *ListDatabaseAlarmsRequest) (*ListDatabaseAlarmsResponse, error) {
+	return nil, status.Error(codes.Unimplemented, "method ListDatabaseAlarms not implemented")
+}
+func (UnimplementedServerServiceServer) ListDatabaseAlarmEvents(context.Context, *ListDatabaseAlarmEventsRequest) (*ListDatabaseAlarmEventsResponse, error) {
+	return nil, status.Error(codes.Unimplemented, "method ListDatabaseAlarmEvents not implemented")
+}
+func (UnimplementedServerServiceServer) ListRecommendedDatabaseAlarms(context.Context, *ListRecommendedDatabaseAlarmsRequest) (*ListRecommendedDatabaseAlarmsResponse, error) {
+	return nil, status.Error(codes.Unimplemented, "method ListRecommendedDatabaseAlarms not implemented")
+}
+func (UnimplementedServerServiceServer) ApplyRecommendedDatabaseAlarms(context.Context, *ApplyRecommendedDatabaseAlarmsRequest) (*ApplyRecommendedDatabaseAlarmsResponse, error) {
+	return nil, status.Error(codes.Unimplemented, "method ApplyRecommendedDatabaseAlarms not implemented")
+}
+func (UnimplementedServerServiceServer) SetRecommendedAlarmsOnCreate(context.Context, *SetRecommendedAlarmsOnCreateRequest) (*SetRecommendedAlarmsOnCreateResponse, error) {
+	return nil, status.Error(codes.Unimplemented, "method SetRecommendedAlarmsOnCreate not implemented")
+}
+func (UnimplementedServerServiceServer) GetDatabaseLocks(context.Context, *GetDatabaseLocksRequest) (*GetDatabaseLocksResponse, error) {
+	return nil, status.Error(codes.Unimplemented, "method GetDatabaseLocks not implemented")
 }
 func (UnimplementedServerServiceServer) GetDatabaseConnection(context.Context, *GetDatabaseConnectionRequest) (*GetDatabaseConnectionResponse, error) {
 	return nil, status.Error(codes.Unimplemented, "method GetDatabaseConnection not implemented")
@@ -4369,6 +5410,30 @@ func (UnimplementedServerServiceServer) GetPrivateEndpoint(context.Context, *Get
 }
 func (UnimplementedServerServiceServer) DeletePrivateEndpoint(context.Context, *DeletePrivateEndpointRequest) (*DeletePrivateEndpointResponse, error) {
 	return nil, status.Error(codes.Unimplemented, "method DeletePrivateEndpoint not implemented")
+}
+func (UnimplementedServerServiceServer) CheckMigrationSource(context.Context, *CheckMigrationSourceRequest) (*CheckMigrationSourceResponse, error) {
+	return nil, status.Error(codes.Unimplemented, "method CheckMigrationSource not implemented")
+}
+func (UnimplementedServerServiceServer) GetMigrationSourceCheck(context.Context, *GetMigrationSourceCheckRequest) (*GetMigrationSourceCheckResponse, error) {
+	return nil, status.Error(codes.Unimplemented, "method GetMigrationSourceCheck not implemented")
+}
+func (UnimplementedServerServiceServer) CreateMigration(context.Context, *CreateMigrationRequest) (*CreateMigrationResponse, error) {
+	return nil, status.Error(codes.Unimplemented, "method CreateMigration not implemented")
+}
+func (UnimplementedServerServiceServer) GetMigration(context.Context, *GetMigrationRequest) (*GetMigrationResponse, error) {
+	return nil, status.Error(codes.Unimplemented, "method GetMigration not implemented")
+}
+func (UnimplementedServerServiceServer) ListMigrations(context.Context, *ListMigrationsRequest) (*ListMigrationsResponse, error) {
+	return nil, status.Error(codes.Unimplemented, "method ListMigrations not implemented")
+}
+func (UnimplementedServerServiceServer) RequestMigrationCutover(context.Context, *RequestMigrationCutoverRequest) (*RequestMigrationCutoverResponse, error) {
+	return nil, status.Error(codes.Unimplemented, "method RequestMigrationCutover not implemented")
+}
+func (UnimplementedServerServiceServer) AbortMigration(context.Context, *AbortMigrationRequest) (*AbortMigrationResponse, error) {
+	return nil, status.Error(codes.Unimplemented, "method AbortMigration not implemented")
+}
+func (UnimplementedServerServiceServer) CompleteMigration(context.Context, *CompleteMigrationRequest) (*CompleteMigrationResponse, error) {
+	return nil, status.Error(codes.Unimplemented, "method CompleteMigration not implemented")
 }
 func (UnimplementedServerServiceServer) ListBackupSchedules(context.Context, *ListBackupSchedulesRequest) (*ListBackupSchedulesResponse, error) {
 	return nil, status.Error(codes.Unimplemented, "method ListBackupSchedules not implemented")
@@ -4463,8 +5528,29 @@ func (UnimplementedServerServiceServer) UpsertOrgSSOConnection(context.Context, 
 func (UnimplementedServerServiceServer) DeleteOrgSSOConnection(context.Context, *DeleteOrgSSOConnectionRequest) (*DeleteOrgSSOConnectionResponse, error) {
 	return nil, status.Error(codes.Unimplemented, "method DeleteOrgSSOConnection not implemented")
 }
+func (UnimplementedServerServiceServer) ListOrgSSOConnections(context.Context, *ListOrgSSOConnectionsRequest) (*ListOrgSSOConnectionsResponse, error) {
+	return nil, status.Error(codes.Unimplemented, "method ListOrgSSOConnections not implemented")
+}
+func (UnimplementedServerServiceServer) CreateOrgSSOConnection(context.Context, *CreateOrgSSOConnectionRequest) (*CreateOrgSSOConnectionResponse, error) {
+	return nil, status.Error(codes.Unimplemented, "method CreateOrgSSOConnection not implemented")
+}
+func (UnimplementedServerServiceServer) AssignOrgDomainSSOConnection(context.Context, *AssignOrgDomainSSOConnectionRequest) (*AssignOrgDomainSSOConnectionResponse, error) {
+	return nil, status.Error(codes.Unimplemented, "method AssignOrgDomainSSOConnection not implemented")
+}
 func (UnimplementedServerServiceServer) TestOrgSSOConnection(context.Context, *TestOrgSSOConnectionRequest) (*TestOrgSSOConnectionResponse, error) {
 	return nil, status.Error(codes.Unimplemented, "method TestOrgSSOConnection not implemented")
+}
+func (UnimplementedServerServiceServer) ListSSOProviderPresets(context.Context, *ListSSOProviderPresetsRequest) (*ListSSOProviderPresetsResponse, error) {
+	return nil, status.Error(codes.Unimplemented, "method ListSSOProviderPresets not implemented")
+}
+func (UnimplementedServerServiceServer) GetOrgSignInPolicy(context.Context, *GetOrgSignInPolicyRequest) (*GetOrgSignInPolicyResponse, error) {
+	return nil, status.Error(codes.Unimplemented, "method GetOrgSignInPolicy not implemented")
+}
+func (UnimplementedServerServiceServer) PreviewOrgSignInPolicy(context.Context, *PreviewOrgSignInPolicyRequest) (*PreviewOrgSignInPolicyResponse, error) {
+	return nil, status.Error(codes.Unimplemented, "method PreviewOrgSignInPolicy not implemented")
+}
+func (UnimplementedServerServiceServer) UpdateOrgSignInPolicy(context.Context, *UpdateOrgSignInPolicyRequest) (*UpdateOrgSignInPolicyResponse, error) {
+	return nil, status.Error(codes.Unimplemented, "method UpdateOrgSignInPolicy not implemented")
 }
 func (UnimplementedServerServiceServer) ListOrgDomains(context.Context, *ListOrgDomainsRequest) (*ListOrgDomainsResponse, error) {
 	return nil, status.Error(codes.Unimplemented, "method ListOrgDomains not implemented")
@@ -4477,6 +5563,27 @@ func (UnimplementedServerServiceServer) VerifyOrgDomain(context.Context, *Verify
 }
 func (UnimplementedServerServiceServer) RemoveOrgDomain(context.Context, *RemoveOrgDomainRequest) (*RemoveOrgDomainResponse, error) {
 	return nil, status.Error(codes.Unimplemented, "method RemoveOrgDomain not implemented")
+}
+func (UnimplementedServerServiceServer) CreateSCIMToken(context.Context, *CreateSCIMTokenRequest) (*CreateSCIMTokenResponse, error) {
+	return nil, status.Error(codes.Unimplemented, "method CreateSCIMToken not implemented")
+}
+func (UnimplementedServerServiceServer) ListSCIMTokens(context.Context, *ListSCIMTokensRequest) (*ListSCIMTokensResponse, error) {
+	return nil, status.Error(codes.Unimplemented, "method ListSCIMTokens not implemented")
+}
+func (UnimplementedServerServiceServer) RotateSCIMToken(context.Context, *RotateSCIMTokenRequest) (*RotateSCIMTokenResponse, error) {
+	return nil, status.Error(codes.Unimplemented, "method RotateSCIMToken not implemented")
+}
+func (UnimplementedServerServiceServer) RevokeSCIMToken(context.Context, *RevokeSCIMTokenRequest) (*RevokeSCIMTokenResponse, error) {
+	return nil, status.Error(codes.Unimplemented, "method RevokeSCIMToken not implemented")
+}
+func (UnimplementedServerServiceServer) ListIdPGroupMappings(context.Context, *ListIdPGroupMappingsRequest) (*ListIdPGroupMappingsResponse, error) {
+	return nil, status.Error(codes.Unimplemented, "method ListIdPGroupMappings not implemented")
+}
+func (UnimplementedServerServiceServer) UpsertIdPGroupMapping(context.Context, *UpsertIdPGroupMappingRequest) (*UpsertIdPGroupMappingResponse, error) {
+	return nil, status.Error(codes.Unimplemented, "method UpsertIdPGroupMapping not implemented")
+}
+func (UnimplementedServerServiceServer) DeleteIdPGroupMapping(context.Context, *DeleteIdPGroupMappingRequest) (*DeleteIdPGroupMappingResponse, error) {
+	return nil, status.Error(codes.Unimplemented, "method DeleteIdPGroupMapping not implemented")
 }
 func (UnimplementedServerServiceServer) ListPostgreSQLExtensions(context.Context, *ListPostgreSQLExtensionsRequest) (*ListPostgreSQLExtensionsResponse, error) {
 	return nil, status.Error(codes.Unimplemented, "method ListPostgreSQLExtensions not implemented")
@@ -4525,6 +5632,33 @@ func (UnimplementedServerServiceServer) ClaimRunbookExecutions(context.Context, 
 }
 func (UnimplementedServerServiceServer) ReportRunbookExecution(context.Context, *ReportRunbookExecutionRequest) (*ReportRunbookExecutionResponse, error) {
 	return nil, status.Error(codes.Unimplemented, "method ReportRunbookExecution not implemented")
+}
+func (UnimplementedServerServiceServer) CreateQueryTemplate(context.Context, *CreateQueryTemplateRequest) (*CreateQueryTemplateResponse, error) {
+	return nil, status.Error(codes.Unimplemented, "method CreateQueryTemplate not implemented")
+}
+func (UnimplementedServerServiceServer) UpdateQueryTemplate(context.Context, *UpdateQueryTemplateRequest) (*UpdateQueryTemplateResponse, error) {
+	return nil, status.Error(codes.Unimplemented, "method UpdateQueryTemplate not implemented")
+}
+func (UnimplementedServerServiceServer) GetQueryTemplate(context.Context, *GetQueryTemplateRequest) (*GetQueryTemplateResponse, error) {
+	return nil, status.Error(codes.Unimplemented, "method GetQueryTemplate not implemented")
+}
+func (UnimplementedServerServiceServer) ListQueryTemplates(context.Context, *ListQueryTemplatesRequest) (*ListQueryTemplatesResponse, error) {
+	return nil, status.Error(codes.Unimplemented, "method ListQueryTemplates not implemented")
+}
+func (UnimplementedServerServiceServer) ListQueryTemplateVersions(context.Context, *ListQueryTemplateVersionsRequest) (*ListQueryTemplateVersionsResponse, error) {
+	return nil, status.Error(codes.Unimplemented, "method ListQueryTemplateVersions not implemented")
+}
+func (UnimplementedServerServiceServer) ApproveQueryTemplateVersion(context.Context, *ApproveQueryTemplateVersionRequest) (*ApproveQueryTemplateVersionResponse, error) {
+	return nil, status.Error(codes.Unimplemented, "method ApproveQueryTemplateVersion not implemented")
+}
+func (UnimplementedServerServiceServer) WithdrawQueryTemplateVersion(context.Context, *WithdrawQueryTemplateVersionRequest) (*WithdrawQueryTemplateVersionResponse, error) {
+	return nil, status.Error(codes.Unimplemented, "method WithdrawQueryTemplateVersion not implemented")
+}
+func (UnimplementedServerServiceServer) RevokeQueryTemplate(context.Context, *RevokeQueryTemplateRequest) (*RevokeQueryTemplateResponse, error) {
+	return nil, status.Error(codes.Unimplemented, "method RevokeQueryTemplate not implemented")
+}
+func (UnimplementedServerServiceServer) RunQueryTemplate(context.Context, *RunQueryTemplateRequest) (*RunQueryTemplateResponse, error) {
+	return nil, status.Error(codes.Unimplemented, "method RunQueryTemplate not implemented")
 }
 func (UnimplementedServerServiceServer) mustEmbedUnimplementedServerServiceServer() {}
 func (UnimplementedServerServiceServer) testEmbeddedByValue()                       {}
@@ -4723,6 +5857,96 @@ func _ServerService_RevokeAPIKey_Handler(srv interface{}, ctx context.Context, d
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
 		return srv.(ServerServiceServer).RevokeAPIKey(ctx, req.(*RevokeAPIKeyRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _ServerService_ListServiceAccounts_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(ListServiceAccountsRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(ServerServiceServer).ListServiceAccounts(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: ServerService_ListServiceAccounts_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(ServerServiceServer).ListServiceAccounts(ctx, req.(*ListServiceAccountsRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _ServerService_CreateServiceAccount_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(CreateServiceAccountRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(ServerServiceServer).CreateServiceAccount(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: ServerService_CreateServiceAccount_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(ServerServiceServer).CreateServiceAccount(ctx, req.(*CreateServiceAccountRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _ServerService_UpdateServiceAccount_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(UpdateServiceAccountRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(ServerServiceServer).UpdateServiceAccount(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: ServerService_UpdateServiceAccount_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(ServerServiceServer).UpdateServiceAccount(ctx, req.(*UpdateServiceAccountRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _ServerService_DeleteServiceAccount_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(DeleteServiceAccountRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(ServerServiceServer).DeleteServiceAccount(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: ServerService_DeleteServiceAccount_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(ServerServiceServer).DeleteServiceAccount(ctx, req.(*DeleteServiceAccountRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _ServerService_MoveAPIKeyToServiceAccount_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(MoveAPIKeyToServiceAccountRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(ServerServiceServer).MoveAPIKeyToServiceAccount(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: ServerService_MoveAPIKeyToServiceAccount_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(ServerServiceServer).MoveAPIKeyToServiceAccount(ctx, req.(*MoveAPIKeyToServiceAccountRequest))
 	}
 	return interceptor(ctx, in, info, handler)
 }
@@ -6149,24 +7373,6 @@ func _ServerService_UpdateAgentPool_Handler(srv interface{}, ctx context.Context
 	return interceptor(ctx, in, info, handler)
 }
 
-func _ServerService_SetAgentPoolTeams_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(SetAgentPoolTeamsRequest)
-	if err := dec(in); err != nil {
-		return nil, err
-	}
-	if interceptor == nil {
-		return srv.(ServerServiceServer).SetAgentPoolTeams(ctx, in)
-	}
-	info := &grpc.UnaryServerInfo{
-		Server:     srv,
-		FullMethod: ServerService_SetAgentPoolTeams_FullMethodName,
-	}
-	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(ServerServiceServer).SetAgentPoolTeams(ctx, req.(*SetAgentPoolTeamsRequest))
-	}
-	return interceptor(ctx, in, info, handler)
-}
-
 func _ServerService_WakeAgentPool_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
 	in := new(WakeAgentPoolRequest)
 	if err := dec(in); err != nil {
@@ -6685,6 +7891,24 @@ func _ServerService_GetAuditMetrics_Handler(srv interface{}, ctx context.Context
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
 		return srv.(ServerServiceServer).GetAuditMetrics(ctx, req.(*GetAuditMetricsRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _ServerService_GetAccessUsage_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(GetAccessUsageRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(ServerServiceServer).GetAccessUsage(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: ServerService_GetAccessUsage_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(ServerServiceServer).GetAccessUsage(ctx, req.(*GetAccessUsageRequest))
 	}
 	return interceptor(ctx, in, info, handler)
 }
@@ -7600,6 +8824,24 @@ func _ServerService_GetDatabaseLogs_Handler(srv interface{}, ctx context.Context
 	return interceptor(ctx, in, info, handler)
 }
 
+func _ServerService_SearchDatabaseLogs_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(SearchDatabaseLogsRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(ServerServiceServer).SearchDatabaseLogs(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: ServerService_SearchDatabaseLogs_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(ServerServiceServer).SearchDatabaseLogs(ctx, req.(*SearchDatabaseLogsRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
 func _ServerService_GetDatabaseAnalytics_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
 	in := new(GetDatabaseAnalyticsRequest)
 	if err := dec(in); err != nil {
@@ -7614,6 +8856,348 @@ func _ServerService_GetDatabaseAnalytics_Handler(srv interface{}, ctx context.Co
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
 		return srv.(ServerServiceServer).GetDatabaseAnalytics(ctx, req.(*GetDatabaseAnalyticsRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _ServerService_GetDatabaseTopSQL_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(GetDatabaseTopSQLRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(ServerServiceServer).GetDatabaseTopSQL(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: ServerService_GetDatabaseTopSQL_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(ServerServiceServer).GetDatabaseTopSQL(ctx, req.(*GetDatabaseTopSQLRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _ServerService_GetDatabaseLoad_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(GetDatabaseLoadRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(ServerServiceServer).GetDatabaseLoad(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: ServerService_GetDatabaseLoad_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(ServerServiceServer).GetDatabaseLoad(ctx, req.(*GetDatabaseLoadRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _ServerService_RecordDatabaseEvent_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(RecordDatabaseEventRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(ServerServiceServer).RecordDatabaseEvent(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: ServerService_RecordDatabaseEvent_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(ServerServiceServer).RecordDatabaseEvent(ctx, req.(*RecordDatabaseEventRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _ServerService_ListDatabaseEvents_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(ListDatabaseEventsRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(ServerServiceServer).ListDatabaseEvents(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: ServerService_ListDatabaseEvents_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(ServerServiceServer).ListDatabaseEvents(ctx, req.(*ListDatabaseEventsRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _ServerService_CreateDatabaseEventSubscription_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(CreateDatabaseEventSubscriptionRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(ServerServiceServer).CreateDatabaseEventSubscription(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: ServerService_CreateDatabaseEventSubscription_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(ServerServiceServer).CreateDatabaseEventSubscription(ctx, req.(*CreateDatabaseEventSubscriptionRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _ServerService_UpdateDatabaseEventSubscription_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(UpdateDatabaseEventSubscriptionRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(ServerServiceServer).UpdateDatabaseEventSubscription(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: ServerService_UpdateDatabaseEventSubscription_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(ServerServiceServer).UpdateDatabaseEventSubscription(ctx, req.(*UpdateDatabaseEventSubscriptionRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _ServerService_DeleteDatabaseEventSubscription_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(DeleteDatabaseEventSubscriptionRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(ServerServiceServer).DeleteDatabaseEventSubscription(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: ServerService_DeleteDatabaseEventSubscription_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(ServerServiceServer).DeleteDatabaseEventSubscription(ctx, req.(*DeleteDatabaseEventSubscriptionRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _ServerService_ListDatabaseEventSubscriptions_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(ListDatabaseEventSubscriptionsRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(ServerServiceServer).ListDatabaseEventSubscriptions(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: ServerService_ListDatabaseEventSubscriptions_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(ServerServiceServer).ListDatabaseEventSubscriptions(ctx, req.(*ListDatabaseEventSubscriptionsRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _ServerService_ListDatabaseAlarmMetrics_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(ListDatabaseAlarmMetricsRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(ServerServiceServer).ListDatabaseAlarmMetrics(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: ServerService_ListDatabaseAlarmMetrics_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(ServerServiceServer).ListDatabaseAlarmMetrics(ctx, req.(*ListDatabaseAlarmMetricsRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _ServerService_CreateDatabaseAlarm_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(CreateDatabaseAlarmRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(ServerServiceServer).CreateDatabaseAlarm(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: ServerService_CreateDatabaseAlarm_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(ServerServiceServer).CreateDatabaseAlarm(ctx, req.(*CreateDatabaseAlarmRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _ServerService_UpdateDatabaseAlarm_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(UpdateDatabaseAlarmRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(ServerServiceServer).UpdateDatabaseAlarm(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: ServerService_UpdateDatabaseAlarm_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(ServerServiceServer).UpdateDatabaseAlarm(ctx, req.(*UpdateDatabaseAlarmRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _ServerService_DeleteDatabaseAlarm_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(DeleteDatabaseAlarmRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(ServerServiceServer).DeleteDatabaseAlarm(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: ServerService_DeleteDatabaseAlarm_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(ServerServiceServer).DeleteDatabaseAlarm(ctx, req.(*DeleteDatabaseAlarmRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _ServerService_GetDatabaseAlarm_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(GetDatabaseAlarmRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(ServerServiceServer).GetDatabaseAlarm(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: ServerService_GetDatabaseAlarm_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(ServerServiceServer).GetDatabaseAlarm(ctx, req.(*GetDatabaseAlarmRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _ServerService_ListDatabaseAlarms_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(ListDatabaseAlarmsRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(ServerServiceServer).ListDatabaseAlarms(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: ServerService_ListDatabaseAlarms_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(ServerServiceServer).ListDatabaseAlarms(ctx, req.(*ListDatabaseAlarmsRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _ServerService_ListDatabaseAlarmEvents_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(ListDatabaseAlarmEventsRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(ServerServiceServer).ListDatabaseAlarmEvents(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: ServerService_ListDatabaseAlarmEvents_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(ServerServiceServer).ListDatabaseAlarmEvents(ctx, req.(*ListDatabaseAlarmEventsRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _ServerService_ListRecommendedDatabaseAlarms_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(ListRecommendedDatabaseAlarmsRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(ServerServiceServer).ListRecommendedDatabaseAlarms(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: ServerService_ListRecommendedDatabaseAlarms_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(ServerServiceServer).ListRecommendedDatabaseAlarms(ctx, req.(*ListRecommendedDatabaseAlarmsRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _ServerService_ApplyRecommendedDatabaseAlarms_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(ApplyRecommendedDatabaseAlarmsRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(ServerServiceServer).ApplyRecommendedDatabaseAlarms(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: ServerService_ApplyRecommendedDatabaseAlarms_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(ServerServiceServer).ApplyRecommendedDatabaseAlarms(ctx, req.(*ApplyRecommendedDatabaseAlarmsRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _ServerService_SetRecommendedAlarmsOnCreate_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(SetRecommendedAlarmsOnCreateRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(ServerServiceServer).SetRecommendedAlarmsOnCreate(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: ServerService_SetRecommendedAlarmsOnCreate_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(ServerServiceServer).SetRecommendedAlarmsOnCreate(ctx, req.(*SetRecommendedAlarmsOnCreateRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _ServerService_GetDatabaseLocks_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(GetDatabaseLocksRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(ServerServiceServer).GetDatabaseLocks(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: ServerService_GetDatabaseLocks_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(ServerServiceServer).GetDatabaseLocks(ctx, req.(*GetDatabaseLocksRequest))
 	}
 	return interceptor(ctx, in, info, handler)
 }
@@ -7848,6 +9432,150 @@ func _ServerService_DeletePrivateEndpoint_Handler(srv interface{}, ctx context.C
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
 		return srv.(ServerServiceServer).DeletePrivateEndpoint(ctx, req.(*DeletePrivateEndpointRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _ServerService_CheckMigrationSource_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(CheckMigrationSourceRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(ServerServiceServer).CheckMigrationSource(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: ServerService_CheckMigrationSource_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(ServerServiceServer).CheckMigrationSource(ctx, req.(*CheckMigrationSourceRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _ServerService_GetMigrationSourceCheck_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(GetMigrationSourceCheckRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(ServerServiceServer).GetMigrationSourceCheck(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: ServerService_GetMigrationSourceCheck_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(ServerServiceServer).GetMigrationSourceCheck(ctx, req.(*GetMigrationSourceCheckRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _ServerService_CreateMigration_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(CreateMigrationRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(ServerServiceServer).CreateMigration(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: ServerService_CreateMigration_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(ServerServiceServer).CreateMigration(ctx, req.(*CreateMigrationRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _ServerService_GetMigration_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(GetMigrationRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(ServerServiceServer).GetMigration(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: ServerService_GetMigration_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(ServerServiceServer).GetMigration(ctx, req.(*GetMigrationRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _ServerService_ListMigrations_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(ListMigrationsRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(ServerServiceServer).ListMigrations(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: ServerService_ListMigrations_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(ServerServiceServer).ListMigrations(ctx, req.(*ListMigrationsRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _ServerService_RequestMigrationCutover_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(RequestMigrationCutoverRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(ServerServiceServer).RequestMigrationCutover(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: ServerService_RequestMigrationCutover_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(ServerServiceServer).RequestMigrationCutover(ctx, req.(*RequestMigrationCutoverRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _ServerService_AbortMigration_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(AbortMigrationRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(ServerServiceServer).AbortMigration(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: ServerService_AbortMigration_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(ServerServiceServer).AbortMigration(ctx, req.(*AbortMigrationRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _ServerService_CompleteMigration_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(CompleteMigrationRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(ServerServiceServer).CompleteMigration(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: ServerService_CompleteMigration_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(ServerServiceServer).CompleteMigration(ctx, req.(*CompleteMigrationRequest))
 	}
 	return interceptor(ctx, in, info, handler)
 }
@@ -8410,6 +10138,60 @@ func _ServerService_DeleteOrgSSOConnection_Handler(srv interface{}, ctx context.
 	return interceptor(ctx, in, info, handler)
 }
 
+func _ServerService_ListOrgSSOConnections_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(ListOrgSSOConnectionsRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(ServerServiceServer).ListOrgSSOConnections(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: ServerService_ListOrgSSOConnections_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(ServerServiceServer).ListOrgSSOConnections(ctx, req.(*ListOrgSSOConnectionsRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _ServerService_CreateOrgSSOConnection_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(CreateOrgSSOConnectionRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(ServerServiceServer).CreateOrgSSOConnection(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: ServerService_CreateOrgSSOConnection_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(ServerServiceServer).CreateOrgSSOConnection(ctx, req.(*CreateOrgSSOConnectionRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _ServerService_AssignOrgDomainSSOConnection_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(AssignOrgDomainSSOConnectionRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(ServerServiceServer).AssignOrgDomainSSOConnection(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: ServerService_AssignOrgDomainSSOConnection_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(ServerServiceServer).AssignOrgDomainSSOConnection(ctx, req.(*AssignOrgDomainSSOConnectionRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
 func _ServerService_TestOrgSSOConnection_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
 	in := new(TestOrgSSOConnectionRequest)
 	if err := dec(in); err != nil {
@@ -8424,6 +10206,78 @@ func _ServerService_TestOrgSSOConnection_Handler(srv interface{}, ctx context.Co
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
 		return srv.(ServerServiceServer).TestOrgSSOConnection(ctx, req.(*TestOrgSSOConnectionRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _ServerService_ListSSOProviderPresets_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(ListSSOProviderPresetsRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(ServerServiceServer).ListSSOProviderPresets(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: ServerService_ListSSOProviderPresets_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(ServerServiceServer).ListSSOProviderPresets(ctx, req.(*ListSSOProviderPresetsRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _ServerService_GetOrgSignInPolicy_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(GetOrgSignInPolicyRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(ServerServiceServer).GetOrgSignInPolicy(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: ServerService_GetOrgSignInPolicy_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(ServerServiceServer).GetOrgSignInPolicy(ctx, req.(*GetOrgSignInPolicyRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _ServerService_PreviewOrgSignInPolicy_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(PreviewOrgSignInPolicyRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(ServerServiceServer).PreviewOrgSignInPolicy(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: ServerService_PreviewOrgSignInPolicy_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(ServerServiceServer).PreviewOrgSignInPolicy(ctx, req.(*PreviewOrgSignInPolicyRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _ServerService_UpdateOrgSignInPolicy_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(UpdateOrgSignInPolicyRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(ServerServiceServer).UpdateOrgSignInPolicy(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: ServerService_UpdateOrgSignInPolicy_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(ServerServiceServer).UpdateOrgSignInPolicy(ctx, req.(*UpdateOrgSignInPolicyRequest))
 	}
 	return interceptor(ctx, in, info, handler)
 }
@@ -8496,6 +10350,132 @@ func _ServerService_RemoveOrgDomain_Handler(srv interface{}, ctx context.Context
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
 		return srv.(ServerServiceServer).RemoveOrgDomain(ctx, req.(*RemoveOrgDomainRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _ServerService_CreateSCIMToken_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(CreateSCIMTokenRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(ServerServiceServer).CreateSCIMToken(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: ServerService_CreateSCIMToken_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(ServerServiceServer).CreateSCIMToken(ctx, req.(*CreateSCIMTokenRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _ServerService_ListSCIMTokens_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(ListSCIMTokensRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(ServerServiceServer).ListSCIMTokens(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: ServerService_ListSCIMTokens_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(ServerServiceServer).ListSCIMTokens(ctx, req.(*ListSCIMTokensRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _ServerService_RotateSCIMToken_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(RotateSCIMTokenRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(ServerServiceServer).RotateSCIMToken(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: ServerService_RotateSCIMToken_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(ServerServiceServer).RotateSCIMToken(ctx, req.(*RotateSCIMTokenRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _ServerService_RevokeSCIMToken_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(RevokeSCIMTokenRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(ServerServiceServer).RevokeSCIMToken(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: ServerService_RevokeSCIMToken_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(ServerServiceServer).RevokeSCIMToken(ctx, req.(*RevokeSCIMTokenRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _ServerService_ListIdPGroupMappings_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(ListIdPGroupMappingsRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(ServerServiceServer).ListIdPGroupMappings(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: ServerService_ListIdPGroupMappings_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(ServerServiceServer).ListIdPGroupMappings(ctx, req.(*ListIdPGroupMappingsRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _ServerService_UpsertIdPGroupMapping_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(UpsertIdPGroupMappingRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(ServerServiceServer).UpsertIdPGroupMapping(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: ServerService_UpsertIdPGroupMapping_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(ServerServiceServer).UpsertIdPGroupMapping(ctx, req.(*UpsertIdPGroupMappingRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _ServerService_DeleteIdPGroupMapping_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(DeleteIdPGroupMappingRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(ServerServiceServer).DeleteIdPGroupMapping(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: ServerService_DeleteIdPGroupMapping_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(ServerServiceServer).DeleteIdPGroupMapping(ctx, req.(*DeleteIdPGroupMappingRequest))
 	}
 	return interceptor(ctx, in, info, handler)
 }
@@ -8788,6 +10768,168 @@ func _ServerService_ReportRunbookExecution_Handler(srv interface{}, ctx context.
 	return interceptor(ctx, in, info, handler)
 }
 
+func _ServerService_CreateQueryTemplate_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(CreateQueryTemplateRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(ServerServiceServer).CreateQueryTemplate(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: ServerService_CreateQueryTemplate_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(ServerServiceServer).CreateQueryTemplate(ctx, req.(*CreateQueryTemplateRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _ServerService_UpdateQueryTemplate_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(UpdateQueryTemplateRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(ServerServiceServer).UpdateQueryTemplate(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: ServerService_UpdateQueryTemplate_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(ServerServiceServer).UpdateQueryTemplate(ctx, req.(*UpdateQueryTemplateRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _ServerService_GetQueryTemplate_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(GetQueryTemplateRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(ServerServiceServer).GetQueryTemplate(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: ServerService_GetQueryTemplate_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(ServerServiceServer).GetQueryTemplate(ctx, req.(*GetQueryTemplateRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _ServerService_ListQueryTemplates_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(ListQueryTemplatesRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(ServerServiceServer).ListQueryTemplates(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: ServerService_ListQueryTemplates_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(ServerServiceServer).ListQueryTemplates(ctx, req.(*ListQueryTemplatesRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _ServerService_ListQueryTemplateVersions_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(ListQueryTemplateVersionsRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(ServerServiceServer).ListQueryTemplateVersions(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: ServerService_ListQueryTemplateVersions_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(ServerServiceServer).ListQueryTemplateVersions(ctx, req.(*ListQueryTemplateVersionsRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _ServerService_ApproveQueryTemplateVersion_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(ApproveQueryTemplateVersionRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(ServerServiceServer).ApproveQueryTemplateVersion(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: ServerService_ApproveQueryTemplateVersion_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(ServerServiceServer).ApproveQueryTemplateVersion(ctx, req.(*ApproveQueryTemplateVersionRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _ServerService_WithdrawQueryTemplateVersion_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(WithdrawQueryTemplateVersionRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(ServerServiceServer).WithdrawQueryTemplateVersion(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: ServerService_WithdrawQueryTemplateVersion_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(ServerServiceServer).WithdrawQueryTemplateVersion(ctx, req.(*WithdrawQueryTemplateVersionRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _ServerService_RevokeQueryTemplate_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(RevokeQueryTemplateRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(ServerServiceServer).RevokeQueryTemplate(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: ServerService_RevokeQueryTemplate_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(ServerServiceServer).RevokeQueryTemplate(ctx, req.(*RevokeQueryTemplateRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _ServerService_RunQueryTemplate_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(RunQueryTemplateRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(ServerServiceServer).RunQueryTemplate(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: ServerService_RunQueryTemplate_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(ServerServiceServer).RunQueryTemplate(ctx, req.(*RunQueryTemplateRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
 // ServerService_ServiceDesc is the grpc.ServiceDesc for ServerService service.
 // It's only intended for direct use with grpc.RegisterService,
 // and not to be introspected or modified (even as a copy)
@@ -8834,6 +10976,26 @@ var ServerService_ServiceDesc = grpc.ServiceDesc{
 		{
 			MethodName: "RevokeAPIKey",
 			Handler:    _ServerService_RevokeAPIKey_Handler,
+		},
+		{
+			MethodName: "ListServiceAccounts",
+			Handler:    _ServerService_ListServiceAccounts_Handler,
+		},
+		{
+			MethodName: "CreateServiceAccount",
+			Handler:    _ServerService_CreateServiceAccount_Handler,
+		},
+		{
+			MethodName: "UpdateServiceAccount",
+			Handler:    _ServerService_UpdateServiceAccount_Handler,
+		},
+		{
+			MethodName: "DeleteServiceAccount",
+			Handler:    _ServerService_DeleteServiceAccount_Handler,
+		},
+		{
+			MethodName: "MoveAPIKeyToServiceAccount",
+			Handler:    _ServerService_MoveAPIKeyToServiceAccount_Handler,
 		},
 		{
 			MethodName: "ListConnections",
@@ -9152,10 +11314,6 @@ var ServerService_ServiceDesc = grpc.ServiceDesc{
 			Handler:    _ServerService_UpdateAgentPool_Handler,
 		},
 		{
-			MethodName: "SetAgentPoolTeams",
-			Handler:    _ServerService_SetAgentPoolTeams_Handler,
-		},
-		{
 			MethodName: "WakeAgentPool",
 			Handler:    _ServerService_WakeAgentPool_Handler,
 		},
@@ -9270,6 +11428,10 @@ var ServerService_ServiceDesc = grpc.ServiceDesc{
 		{
 			MethodName: "GetAuditMetrics",
 			Handler:    _ServerService_GetAuditMetrics_Handler,
+		},
+		{
+			MethodName: "GetAccessUsage",
+			Handler:    _ServerService_GetAccessUsage_Handler,
 		},
 		{
 			MethodName: "ListActivityLogs",
@@ -9472,8 +11634,88 @@ var ServerService_ServiceDesc = grpc.ServiceDesc{
 			Handler:    _ServerService_GetDatabaseLogs_Handler,
 		},
 		{
+			MethodName: "SearchDatabaseLogs",
+			Handler:    _ServerService_SearchDatabaseLogs_Handler,
+		},
+		{
 			MethodName: "GetDatabaseAnalytics",
 			Handler:    _ServerService_GetDatabaseAnalytics_Handler,
+		},
+		{
+			MethodName: "GetDatabaseTopSQL",
+			Handler:    _ServerService_GetDatabaseTopSQL_Handler,
+		},
+		{
+			MethodName: "GetDatabaseLoad",
+			Handler:    _ServerService_GetDatabaseLoad_Handler,
+		},
+		{
+			MethodName: "RecordDatabaseEvent",
+			Handler:    _ServerService_RecordDatabaseEvent_Handler,
+		},
+		{
+			MethodName: "ListDatabaseEvents",
+			Handler:    _ServerService_ListDatabaseEvents_Handler,
+		},
+		{
+			MethodName: "CreateDatabaseEventSubscription",
+			Handler:    _ServerService_CreateDatabaseEventSubscription_Handler,
+		},
+		{
+			MethodName: "UpdateDatabaseEventSubscription",
+			Handler:    _ServerService_UpdateDatabaseEventSubscription_Handler,
+		},
+		{
+			MethodName: "DeleteDatabaseEventSubscription",
+			Handler:    _ServerService_DeleteDatabaseEventSubscription_Handler,
+		},
+		{
+			MethodName: "ListDatabaseEventSubscriptions",
+			Handler:    _ServerService_ListDatabaseEventSubscriptions_Handler,
+		},
+		{
+			MethodName: "ListDatabaseAlarmMetrics",
+			Handler:    _ServerService_ListDatabaseAlarmMetrics_Handler,
+		},
+		{
+			MethodName: "CreateDatabaseAlarm",
+			Handler:    _ServerService_CreateDatabaseAlarm_Handler,
+		},
+		{
+			MethodName: "UpdateDatabaseAlarm",
+			Handler:    _ServerService_UpdateDatabaseAlarm_Handler,
+		},
+		{
+			MethodName: "DeleteDatabaseAlarm",
+			Handler:    _ServerService_DeleteDatabaseAlarm_Handler,
+		},
+		{
+			MethodName: "GetDatabaseAlarm",
+			Handler:    _ServerService_GetDatabaseAlarm_Handler,
+		},
+		{
+			MethodName: "ListDatabaseAlarms",
+			Handler:    _ServerService_ListDatabaseAlarms_Handler,
+		},
+		{
+			MethodName: "ListDatabaseAlarmEvents",
+			Handler:    _ServerService_ListDatabaseAlarmEvents_Handler,
+		},
+		{
+			MethodName: "ListRecommendedDatabaseAlarms",
+			Handler:    _ServerService_ListRecommendedDatabaseAlarms_Handler,
+		},
+		{
+			MethodName: "ApplyRecommendedDatabaseAlarms",
+			Handler:    _ServerService_ApplyRecommendedDatabaseAlarms_Handler,
+		},
+		{
+			MethodName: "SetRecommendedAlarmsOnCreate",
+			Handler:    _ServerService_SetRecommendedAlarmsOnCreate_Handler,
+		},
+		{
+			MethodName: "GetDatabaseLocks",
+			Handler:    _ServerService_GetDatabaseLocks_Handler,
 		},
 		{
 			MethodName: "GetDatabaseConnection",
@@ -9526,6 +11768,38 @@ var ServerService_ServiceDesc = grpc.ServiceDesc{
 		{
 			MethodName: "DeletePrivateEndpoint",
 			Handler:    _ServerService_DeletePrivateEndpoint_Handler,
+		},
+		{
+			MethodName: "CheckMigrationSource",
+			Handler:    _ServerService_CheckMigrationSource_Handler,
+		},
+		{
+			MethodName: "GetMigrationSourceCheck",
+			Handler:    _ServerService_GetMigrationSourceCheck_Handler,
+		},
+		{
+			MethodName: "CreateMigration",
+			Handler:    _ServerService_CreateMigration_Handler,
+		},
+		{
+			MethodName: "GetMigration",
+			Handler:    _ServerService_GetMigration_Handler,
+		},
+		{
+			MethodName: "ListMigrations",
+			Handler:    _ServerService_ListMigrations_Handler,
+		},
+		{
+			MethodName: "RequestMigrationCutover",
+			Handler:    _ServerService_RequestMigrationCutover_Handler,
+		},
+		{
+			MethodName: "AbortMigration",
+			Handler:    _ServerService_AbortMigration_Handler,
+		},
+		{
+			MethodName: "CompleteMigration",
+			Handler:    _ServerService_CompleteMigration_Handler,
 		},
 		{
 			MethodName: "ListBackupSchedules",
@@ -9652,8 +11926,36 @@ var ServerService_ServiceDesc = grpc.ServiceDesc{
 			Handler:    _ServerService_DeleteOrgSSOConnection_Handler,
 		},
 		{
+			MethodName: "ListOrgSSOConnections",
+			Handler:    _ServerService_ListOrgSSOConnections_Handler,
+		},
+		{
+			MethodName: "CreateOrgSSOConnection",
+			Handler:    _ServerService_CreateOrgSSOConnection_Handler,
+		},
+		{
+			MethodName: "AssignOrgDomainSSOConnection",
+			Handler:    _ServerService_AssignOrgDomainSSOConnection_Handler,
+		},
+		{
 			MethodName: "TestOrgSSOConnection",
 			Handler:    _ServerService_TestOrgSSOConnection_Handler,
+		},
+		{
+			MethodName: "ListSSOProviderPresets",
+			Handler:    _ServerService_ListSSOProviderPresets_Handler,
+		},
+		{
+			MethodName: "GetOrgSignInPolicy",
+			Handler:    _ServerService_GetOrgSignInPolicy_Handler,
+		},
+		{
+			MethodName: "PreviewOrgSignInPolicy",
+			Handler:    _ServerService_PreviewOrgSignInPolicy_Handler,
+		},
+		{
+			MethodName: "UpdateOrgSignInPolicy",
+			Handler:    _ServerService_UpdateOrgSignInPolicy_Handler,
 		},
 		{
 			MethodName: "ListOrgDomains",
@@ -9670,6 +11972,34 @@ var ServerService_ServiceDesc = grpc.ServiceDesc{
 		{
 			MethodName: "RemoveOrgDomain",
 			Handler:    _ServerService_RemoveOrgDomain_Handler,
+		},
+		{
+			MethodName: "CreateSCIMToken",
+			Handler:    _ServerService_CreateSCIMToken_Handler,
+		},
+		{
+			MethodName: "ListSCIMTokens",
+			Handler:    _ServerService_ListSCIMTokens_Handler,
+		},
+		{
+			MethodName: "RotateSCIMToken",
+			Handler:    _ServerService_RotateSCIMToken_Handler,
+		},
+		{
+			MethodName: "RevokeSCIMToken",
+			Handler:    _ServerService_RevokeSCIMToken_Handler,
+		},
+		{
+			MethodName: "ListIdPGroupMappings",
+			Handler:    _ServerService_ListIdPGroupMappings_Handler,
+		},
+		{
+			MethodName: "UpsertIdPGroupMapping",
+			Handler:    _ServerService_UpsertIdPGroupMapping_Handler,
+		},
+		{
+			MethodName: "DeleteIdPGroupMapping",
+			Handler:    _ServerService_DeleteIdPGroupMapping_Handler,
 		},
 		{
 			MethodName: "ListPostgreSQLExtensions",
@@ -9735,6 +12065,42 @@ var ServerService_ServiceDesc = grpc.ServiceDesc{
 			MethodName: "ReportRunbookExecution",
 			Handler:    _ServerService_ReportRunbookExecution_Handler,
 		},
+		{
+			MethodName: "CreateQueryTemplate",
+			Handler:    _ServerService_CreateQueryTemplate_Handler,
+		},
+		{
+			MethodName: "UpdateQueryTemplate",
+			Handler:    _ServerService_UpdateQueryTemplate_Handler,
+		},
+		{
+			MethodName: "GetQueryTemplate",
+			Handler:    _ServerService_GetQueryTemplate_Handler,
+		},
+		{
+			MethodName: "ListQueryTemplates",
+			Handler:    _ServerService_ListQueryTemplates_Handler,
+		},
+		{
+			MethodName: "ListQueryTemplateVersions",
+			Handler:    _ServerService_ListQueryTemplateVersions_Handler,
+		},
+		{
+			MethodName: "ApproveQueryTemplateVersion",
+			Handler:    _ServerService_ApproveQueryTemplateVersion_Handler,
+		},
+		{
+			MethodName: "WithdrawQueryTemplateVersion",
+			Handler:    _ServerService_WithdrawQueryTemplateVersion_Handler,
+		},
+		{
+			MethodName: "RevokeQueryTemplate",
+			Handler:    _ServerService_RevokeQueryTemplate_Handler,
+		},
+		{
+			MethodName: "RunQueryTemplate",
+			Handler:    _ServerService_RunQueryTemplate_Handler,
+		},
 	},
 	Streams: []grpc.StreamDesc{
 		{
@@ -9760,14 +12126,20 @@ const (
 	AdminService_AdminRevokeOrganizationComp_FullMethodName       = "/relay.server.v1.AdminService/AdminRevokeOrganizationComp"
 	AdminService_AdminGrantOrganizationCredit_FullMethodName      = "/relay.server.v1.AdminService/AdminGrantOrganizationCredit"
 	AdminService_AdminRevokeOrganizationCredit_FullMethodName     = "/relay.server.v1.AdminService/AdminRevokeOrganizationCredit"
+	AdminService_AdminListOrganizationGrants_FullMethodName       = "/relay.server.v1.AdminService/AdminListOrganizationGrants"
 	AdminService_AdminCreatePromoCampaign_FullMethodName          = "/relay.server.v1.AdminService/AdminCreatePromoCampaign"
 	AdminService_AdminListPromoCampaigns_FullMethodName           = "/relay.server.v1.AdminService/AdminListPromoCampaigns"
 	AdminService_AdminSetPromoCampaignActive_FullMethodName       = "/relay.server.v1.AdminService/AdminSetPromoCampaignActive"
+	AdminService_AdminUpdatePromoCampaign_FullMethodName          = "/relay.server.v1.AdminService/AdminUpdatePromoCampaign"
 	AdminService_AdminListPromoRedemptions_FullMethodName         = "/relay.server.v1.AdminService/AdminListPromoRedemptions"
 	AdminService_AdminRevokePromoRedemption_FullMethodName        = "/relay.server.v1.AdminService/AdminRevokePromoRedemption"
 	AdminService_AdminGetOrganizationCost_FullMethodName          = "/relay.server.v1.AdminService/AdminGetOrganizationCost"
 	AdminService_AdminListAuditLog_FullMethodName                 = "/relay.server.v1.AdminService/AdminListAuditLog"
 	AdminService_AdminGetCloudCosts_FullMethodName                = "/relay.server.v1.AdminService/AdminGetCloudCosts"
+	AdminService_AdminListPlatformExpenses_FullMethodName         = "/relay.server.v1.AdminService/AdminListPlatformExpenses"
+	AdminService_AdminCreatePlatformExpense_FullMethodName        = "/relay.server.v1.AdminService/AdminCreatePlatformExpense"
+	AdminService_AdminUpdatePlatformExpense_FullMethodName        = "/relay.server.v1.AdminService/AdminUpdatePlatformExpense"
+	AdminService_AdminDeletePlatformExpense_FullMethodName        = "/relay.server.v1.AdminService/AdminDeletePlatformExpense"
 	AdminService_AdminGetRevenueOverview_FullMethodName           = "/relay.server.v1.AdminService/AdminGetRevenueOverview"
 	AdminService_AdminListSupportReports_FullMethodName           = "/relay.server.v1.AdminService/AdminListSupportReports"
 	AdminService_AdminGetSupportReport_FullMethodName             = "/relay.server.v1.AdminService/AdminGetSupportReport"
@@ -9881,9 +12253,16 @@ type AdminServiceClient interface {
 	// AdminRevokeOrganizationCredit ends a credit so it stops applying to periods
 	// that have not yet closed.
 	AdminRevokeOrganizationCredit(ctx context.Context, in *AdminRevokeOrganizationCreditRequest, opts ...grpc.CallOption) (*AdminRevokeOrganizationCreditResponse, error)
+	// AdminListOrganizationGrants lists an organization's comps and credits,
+	// newest first, with credit balances. Revoked grants are included only with
+	// include_revoked.
+	AdminListOrganizationGrants(ctx context.Context, in *AdminListOrganizationGrantsRequest, opts ...grpc.CallOption) (*AdminListOrganizationGrantsResponse, error)
 	AdminCreatePromoCampaign(ctx context.Context, in *AdminCreatePromoCampaignRequest, opts ...grpc.CallOption) (*AdminCreatePromoCampaignResponse, error)
 	AdminListPromoCampaigns(ctx context.Context, in *AdminListPromoCampaignsRequest, opts ...grpc.CallOption) (*AdminListPromoCampaignsResponse, error)
 	AdminSetPromoCampaignActive(ctx context.Context, in *AdminSetPromoCampaignActiveRequest, opts ...grpc.CallOption) (*AdminSetPromoCampaignActiveResponse, error)
+	// AdminUpdatePromoCampaign sets the credit a USD campaign grants to orgs
+	// billed in BRL (0 clears it).
+	AdminUpdatePromoCampaign(ctx context.Context, in *AdminUpdatePromoCampaignRequest, opts ...grpc.CallOption) (*AdminUpdatePromoCampaignResponse, error)
 	AdminListPromoRedemptions(ctx context.Context, in *AdminListPromoRedemptionsRequest, opts ...grpc.CallOption) (*AdminListPromoRedemptionsResponse, error)
 	// AdminRevokePromoRedemption closes an open promo redemption and claws back
 	// the credit it has not spent.
@@ -9903,6 +12282,14 @@ type AdminServiceClient interface {
 	// daily/monthly series, and breakdowns by service and linked account.
 	// Windows: "mtd" (default, with month-end forecast), "30d", "90d", "12m".
 	AdminGetCloudCosts(ctx context.Context, in *AdminGetCloudCostsRequest, opts ...grpc.CallOption) (*AdminGetCloudCostsResponse, error)
+	// AdminListPlatformExpenses returns Relay's own spend outside AWS that staff
+	// entered (Cloudflare, GitHub, Google Workspace, certificates...) and its
+	// current monthly run rate.
+	AdminListPlatformExpenses(ctx context.Context, in *AdminListPlatformExpensesRequest, opts ...grpc.CallOption) (*AdminListPlatformExpensesResponse, error)
+	AdminCreatePlatformExpense(ctx context.Context, in *AdminCreatePlatformExpenseRequest, opts ...grpc.CallOption) (*AdminCreatePlatformExpenseResponse, error)
+	// AdminUpdatePlatformExpense replaces every editable field of an expense.
+	AdminUpdatePlatformExpense(ctx context.Context, in *AdminUpdatePlatformExpenseRequest, opts ...grpc.CallOption) (*AdminUpdatePlatformExpenseResponse, error)
+	AdminDeletePlatformExpense(ctx context.Context, in *AdminDeletePlatformExpenseRequest, opts ...grpc.CallOption) (*AdminDeletePlatformExpenseResponse, error)
 	// AdminGetRevenueOverview joins revenue (payments), cost to serve (Kubecost)
 	// and Relay's own AWS bill into MRR/ARR, per-organization margins and the
 	// platform gross margin over the trailing 30 days. Cached briefly server-side.
@@ -10217,6 +12604,16 @@ func (c *adminServiceClient) AdminRevokeOrganizationCredit(ctx context.Context, 
 	return out, nil
 }
 
+func (c *adminServiceClient) AdminListOrganizationGrants(ctx context.Context, in *AdminListOrganizationGrantsRequest, opts ...grpc.CallOption) (*AdminListOrganizationGrantsResponse, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(AdminListOrganizationGrantsResponse)
+	err := c.cc.Invoke(ctx, AdminService_AdminListOrganizationGrants_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
 func (c *adminServiceClient) AdminCreatePromoCampaign(ctx context.Context, in *AdminCreatePromoCampaignRequest, opts ...grpc.CallOption) (*AdminCreatePromoCampaignResponse, error) {
 	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
 	out := new(AdminCreatePromoCampaignResponse)
@@ -10241,6 +12638,16 @@ func (c *adminServiceClient) AdminSetPromoCampaignActive(ctx context.Context, in
 	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
 	out := new(AdminSetPromoCampaignActiveResponse)
 	err := c.cc.Invoke(ctx, AdminService_AdminSetPromoCampaignActive_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *adminServiceClient) AdminUpdatePromoCampaign(ctx context.Context, in *AdminUpdatePromoCampaignRequest, opts ...grpc.CallOption) (*AdminUpdatePromoCampaignResponse, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(AdminUpdatePromoCampaignResponse)
+	err := c.cc.Invoke(ctx, AdminService_AdminUpdatePromoCampaign_FullMethodName, in, out, cOpts...)
 	if err != nil {
 		return nil, err
 	}
@@ -10291,6 +12698,46 @@ func (c *adminServiceClient) AdminGetCloudCosts(ctx context.Context, in *AdminGe
 	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
 	out := new(AdminGetCloudCostsResponse)
 	err := c.cc.Invoke(ctx, AdminService_AdminGetCloudCosts_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *adminServiceClient) AdminListPlatformExpenses(ctx context.Context, in *AdminListPlatformExpensesRequest, opts ...grpc.CallOption) (*AdminListPlatformExpensesResponse, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(AdminListPlatformExpensesResponse)
+	err := c.cc.Invoke(ctx, AdminService_AdminListPlatformExpenses_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *adminServiceClient) AdminCreatePlatformExpense(ctx context.Context, in *AdminCreatePlatformExpenseRequest, opts ...grpc.CallOption) (*AdminCreatePlatformExpenseResponse, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(AdminCreatePlatformExpenseResponse)
+	err := c.cc.Invoke(ctx, AdminService_AdminCreatePlatformExpense_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *adminServiceClient) AdminUpdatePlatformExpense(ctx context.Context, in *AdminUpdatePlatformExpenseRequest, opts ...grpc.CallOption) (*AdminUpdatePlatformExpenseResponse, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(AdminUpdatePlatformExpenseResponse)
+	err := c.cc.Invoke(ctx, AdminService_AdminUpdatePlatformExpense_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *adminServiceClient) AdminDeletePlatformExpense(ctx context.Context, in *AdminDeletePlatformExpenseRequest, opts ...grpc.CallOption) (*AdminDeletePlatformExpenseResponse, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(AdminDeletePlatformExpenseResponse)
+	err := c.cc.Invoke(ctx, AdminService_AdminDeletePlatformExpense_FullMethodName, in, out, cOpts...)
 	if err != nil {
 		return nil, err
 	}
@@ -10876,9 +13323,16 @@ type AdminServiceServer interface {
 	// AdminRevokeOrganizationCredit ends a credit so it stops applying to periods
 	// that have not yet closed.
 	AdminRevokeOrganizationCredit(context.Context, *AdminRevokeOrganizationCreditRequest) (*AdminRevokeOrganizationCreditResponse, error)
+	// AdminListOrganizationGrants lists an organization's comps and credits,
+	// newest first, with credit balances. Revoked grants are included only with
+	// include_revoked.
+	AdminListOrganizationGrants(context.Context, *AdminListOrganizationGrantsRequest) (*AdminListOrganizationGrantsResponse, error)
 	AdminCreatePromoCampaign(context.Context, *AdminCreatePromoCampaignRequest) (*AdminCreatePromoCampaignResponse, error)
 	AdminListPromoCampaigns(context.Context, *AdminListPromoCampaignsRequest) (*AdminListPromoCampaignsResponse, error)
 	AdminSetPromoCampaignActive(context.Context, *AdminSetPromoCampaignActiveRequest) (*AdminSetPromoCampaignActiveResponse, error)
+	// AdminUpdatePromoCampaign sets the credit a USD campaign grants to orgs
+	// billed in BRL (0 clears it).
+	AdminUpdatePromoCampaign(context.Context, *AdminUpdatePromoCampaignRequest) (*AdminUpdatePromoCampaignResponse, error)
 	AdminListPromoRedemptions(context.Context, *AdminListPromoRedemptionsRequest) (*AdminListPromoRedemptionsResponse, error)
 	// AdminRevokePromoRedemption closes an open promo redemption and claws back
 	// the credit it has not spent.
@@ -10898,6 +13352,14 @@ type AdminServiceServer interface {
 	// daily/monthly series, and breakdowns by service and linked account.
 	// Windows: "mtd" (default, with month-end forecast), "30d", "90d", "12m".
 	AdminGetCloudCosts(context.Context, *AdminGetCloudCostsRequest) (*AdminGetCloudCostsResponse, error)
+	// AdminListPlatformExpenses returns Relay's own spend outside AWS that staff
+	// entered (Cloudflare, GitHub, Google Workspace, certificates...) and its
+	// current monthly run rate.
+	AdminListPlatformExpenses(context.Context, *AdminListPlatformExpensesRequest) (*AdminListPlatformExpensesResponse, error)
+	AdminCreatePlatformExpense(context.Context, *AdminCreatePlatformExpenseRequest) (*AdminCreatePlatformExpenseResponse, error)
+	// AdminUpdatePlatformExpense replaces every editable field of an expense.
+	AdminUpdatePlatformExpense(context.Context, *AdminUpdatePlatformExpenseRequest) (*AdminUpdatePlatformExpenseResponse, error)
+	AdminDeletePlatformExpense(context.Context, *AdminDeletePlatformExpenseRequest) (*AdminDeletePlatformExpenseResponse, error)
 	// AdminGetRevenueOverview joins revenue (payments), cost to serve (Kubecost)
 	// and Relay's own AWS bill into MRR/ARR, per-organization margins and the
 	// platform gross margin over the trailing 30 days. Cached briefly server-side.
@@ -11121,6 +13583,9 @@ func (UnimplementedAdminServiceServer) AdminGrantOrganizationCredit(context.Cont
 func (UnimplementedAdminServiceServer) AdminRevokeOrganizationCredit(context.Context, *AdminRevokeOrganizationCreditRequest) (*AdminRevokeOrganizationCreditResponse, error) {
 	return nil, status.Error(codes.Unimplemented, "method AdminRevokeOrganizationCredit not implemented")
 }
+func (UnimplementedAdminServiceServer) AdminListOrganizationGrants(context.Context, *AdminListOrganizationGrantsRequest) (*AdminListOrganizationGrantsResponse, error) {
+	return nil, status.Error(codes.Unimplemented, "method AdminListOrganizationGrants not implemented")
+}
 func (UnimplementedAdminServiceServer) AdminCreatePromoCampaign(context.Context, *AdminCreatePromoCampaignRequest) (*AdminCreatePromoCampaignResponse, error) {
 	return nil, status.Error(codes.Unimplemented, "method AdminCreatePromoCampaign not implemented")
 }
@@ -11129,6 +13594,9 @@ func (UnimplementedAdminServiceServer) AdminListPromoCampaigns(context.Context, 
 }
 func (UnimplementedAdminServiceServer) AdminSetPromoCampaignActive(context.Context, *AdminSetPromoCampaignActiveRequest) (*AdminSetPromoCampaignActiveResponse, error) {
 	return nil, status.Error(codes.Unimplemented, "method AdminSetPromoCampaignActive not implemented")
+}
+func (UnimplementedAdminServiceServer) AdminUpdatePromoCampaign(context.Context, *AdminUpdatePromoCampaignRequest) (*AdminUpdatePromoCampaignResponse, error) {
+	return nil, status.Error(codes.Unimplemented, "method AdminUpdatePromoCampaign not implemented")
 }
 func (UnimplementedAdminServiceServer) AdminListPromoRedemptions(context.Context, *AdminListPromoRedemptionsRequest) (*AdminListPromoRedemptionsResponse, error) {
 	return nil, status.Error(codes.Unimplemented, "method AdminListPromoRedemptions not implemented")
@@ -11144,6 +13612,18 @@ func (UnimplementedAdminServiceServer) AdminListAuditLog(context.Context, *Admin
 }
 func (UnimplementedAdminServiceServer) AdminGetCloudCosts(context.Context, *AdminGetCloudCostsRequest) (*AdminGetCloudCostsResponse, error) {
 	return nil, status.Error(codes.Unimplemented, "method AdminGetCloudCosts not implemented")
+}
+func (UnimplementedAdminServiceServer) AdminListPlatformExpenses(context.Context, *AdminListPlatformExpensesRequest) (*AdminListPlatformExpensesResponse, error) {
+	return nil, status.Error(codes.Unimplemented, "method AdminListPlatformExpenses not implemented")
+}
+func (UnimplementedAdminServiceServer) AdminCreatePlatformExpense(context.Context, *AdminCreatePlatformExpenseRequest) (*AdminCreatePlatformExpenseResponse, error) {
+	return nil, status.Error(codes.Unimplemented, "method AdminCreatePlatformExpense not implemented")
+}
+func (UnimplementedAdminServiceServer) AdminUpdatePlatformExpense(context.Context, *AdminUpdatePlatformExpenseRequest) (*AdminUpdatePlatformExpenseResponse, error) {
+	return nil, status.Error(codes.Unimplemented, "method AdminUpdatePlatformExpense not implemented")
+}
+func (UnimplementedAdminServiceServer) AdminDeletePlatformExpense(context.Context, *AdminDeletePlatformExpenseRequest) (*AdminDeletePlatformExpenseResponse, error) {
+	return nil, status.Error(codes.Unimplemented, "method AdminDeletePlatformExpense not implemented")
 }
 func (UnimplementedAdminServiceServer) AdminGetRevenueOverview(context.Context, *AdminGetRevenueOverviewRequest) (*AdminGetRevenueOverviewResponse, error) {
 	return nil, status.Error(codes.Unimplemented, "method AdminGetRevenueOverview not implemented")
@@ -11556,6 +14036,24 @@ func _AdminService_AdminRevokeOrganizationCredit_Handler(srv interface{}, ctx co
 	return interceptor(ctx, in, info, handler)
 }
 
+func _AdminService_AdminListOrganizationGrants_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(AdminListOrganizationGrantsRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(AdminServiceServer).AdminListOrganizationGrants(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: AdminService_AdminListOrganizationGrants_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(AdminServiceServer).AdminListOrganizationGrants(ctx, req.(*AdminListOrganizationGrantsRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
 func _AdminService_AdminCreatePromoCampaign_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
 	in := new(AdminCreatePromoCampaignRequest)
 	if err := dec(in); err != nil {
@@ -11606,6 +14104,24 @@ func _AdminService_AdminSetPromoCampaignActive_Handler(srv interface{}, ctx cont
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
 		return srv.(AdminServiceServer).AdminSetPromoCampaignActive(ctx, req.(*AdminSetPromoCampaignActiveRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _AdminService_AdminUpdatePromoCampaign_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(AdminUpdatePromoCampaignRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(AdminServiceServer).AdminUpdatePromoCampaign(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: AdminService_AdminUpdatePromoCampaign_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(AdminServiceServer).AdminUpdatePromoCampaign(ctx, req.(*AdminUpdatePromoCampaignRequest))
 	}
 	return interceptor(ctx, in, info, handler)
 }
@@ -11696,6 +14212,78 @@ func _AdminService_AdminGetCloudCosts_Handler(srv interface{}, ctx context.Conte
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
 		return srv.(AdminServiceServer).AdminGetCloudCosts(ctx, req.(*AdminGetCloudCostsRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _AdminService_AdminListPlatformExpenses_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(AdminListPlatformExpensesRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(AdminServiceServer).AdminListPlatformExpenses(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: AdminService_AdminListPlatformExpenses_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(AdminServiceServer).AdminListPlatformExpenses(ctx, req.(*AdminListPlatformExpensesRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _AdminService_AdminCreatePlatformExpense_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(AdminCreatePlatformExpenseRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(AdminServiceServer).AdminCreatePlatformExpense(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: AdminService_AdminCreatePlatformExpense_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(AdminServiceServer).AdminCreatePlatformExpense(ctx, req.(*AdminCreatePlatformExpenseRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _AdminService_AdminUpdatePlatformExpense_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(AdminUpdatePlatformExpenseRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(AdminServiceServer).AdminUpdatePlatformExpense(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: AdminService_AdminUpdatePlatformExpense_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(AdminServiceServer).AdminUpdatePlatformExpense(ctx, req.(*AdminUpdatePlatformExpenseRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _AdminService_AdminDeletePlatformExpense_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(AdminDeletePlatformExpenseRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(AdminServiceServer).AdminDeletePlatformExpense(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: AdminService_AdminDeletePlatformExpense_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(AdminServiceServer).AdminDeletePlatformExpense(ctx, req.(*AdminDeletePlatformExpenseRequest))
 	}
 	return interceptor(ctx, in, info, handler)
 }
@@ -12696,6 +15284,10 @@ var AdminService_ServiceDesc = grpc.ServiceDesc{
 			Handler:    _AdminService_AdminRevokeOrganizationCredit_Handler,
 		},
 		{
+			MethodName: "AdminListOrganizationGrants",
+			Handler:    _AdminService_AdminListOrganizationGrants_Handler,
+		},
+		{
 			MethodName: "AdminCreatePromoCampaign",
 			Handler:    _AdminService_AdminCreatePromoCampaign_Handler,
 		},
@@ -12706,6 +15298,10 @@ var AdminService_ServiceDesc = grpc.ServiceDesc{
 		{
 			MethodName: "AdminSetPromoCampaignActive",
 			Handler:    _AdminService_AdminSetPromoCampaignActive_Handler,
+		},
+		{
+			MethodName: "AdminUpdatePromoCampaign",
+			Handler:    _AdminService_AdminUpdatePromoCampaign_Handler,
 		},
 		{
 			MethodName: "AdminListPromoRedemptions",
@@ -12726,6 +15322,22 @@ var AdminService_ServiceDesc = grpc.ServiceDesc{
 		{
 			MethodName: "AdminGetCloudCosts",
 			Handler:    _AdminService_AdminGetCloudCosts_Handler,
+		},
+		{
+			MethodName: "AdminListPlatformExpenses",
+			Handler:    _AdminService_AdminListPlatformExpenses_Handler,
+		},
+		{
+			MethodName: "AdminCreatePlatformExpense",
+			Handler:    _AdminService_AdminCreatePlatformExpense_Handler,
+		},
+		{
+			MethodName: "AdminUpdatePlatformExpense",
+			Handler:    _AdminService_AdminUpdatePlatformExpense_Handler,
+		},
+		{
+			MethodName: "AdminDeletePlatformExpense",
+			Handler:    _AdminService_AdminDeletePlatformExpense_Handler,
 		},
 		{
 			MethodName: "AdminGetRevenueOverview",
