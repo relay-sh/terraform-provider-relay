@@ -506,6 +506,9 @@ func (f *fakeServer) DeleteConnection(ctx context.Context, req *serverv1.DeleteC
 }
 
 func validateNodes(spec *serverv1.DatabaseSpec) error {
+	if spec.GetEngine() == engineDocumentDB {
+		return validateDocumentDB(spec)
+	}
 	for _, n := range spec.GetNodes() {
 		if n.GetRole() != roleElectable && n.GetRole() != roleStandby && n.GetRole() != roleReadOnly {
 			return status.Errorf(codes.InvalidArgument, "validate spec: invalid role %q", n.GetRole())
@@ -534,6 +537,31 @@ func validateNodes(spec *serverv1.DatabaseSpec) error {
 	}
 	if primary.GetRole() != roleElectable {
 		return status.Errorf(codes.InvalidArgument, "validate spec: primaryNodeGroup %q must have role %q, got %q", primary.GetName(), roleElectable, primary.GetRole())
+	}
+	return nil
+}
+
+func validateDocumentDB(spec *serverv1.DatabaseSpec) error {
+	switch {
+	case spec.GetVersion() != "" && !slices.Contains(documentDBVersions, spec.GetVersion()):
+		return status.Errorf(codes.InvalidArgument, "validate spec: unsupported DocumentDB version %q", spec.GetVersion())
+	case spec.GetBackupsEnabled():
+		return status.Error(codes.InvalidArgument, "validate spec: backups are not supported for DocumentDB yet")
+	case spec.GetPostgresql() != nil || spec.GetValkey() != nil || spec.GetReplication() != nil:
+		return status.Error(codes.InvalidArgument, "DocumentDB databases take no postgresql or valkey settings")
+	case len(spec.GetNodes()) != 1:
+		return status.Errorf(codes.InvalidArgument, "validate spec: exactly one node group is supported for DocumentDB, got %d", len(spec.GetNodes()))
+	case spec.GetStorage().GetAutoscale().GetEnabled():
+		return status.Error(codes.InvalidArgument, "validate spec: storage autoscaling is not supported for DocumentDB yet")
+	}
+	n := spec.GetNodes()[0]
+	switch {
+	case spec.GetPrimaryNodeGroup() != n.GetName():
+		return status.Errorf(codes.InvalidArgument, "validate spec: primary node group %q does not match the node group %q", spec.GetPrimaryNodeGroup(), n.GetName())
+	case n.GetRole() != documentDBRoleData:
+		return status.Errorf(codes.InvalidArgument, "validate spec: node role must be %q for DocumentDB, got %q", documentDBRoleData, n.GetRole())
+	case n.GetAutoscaling().GetEnabled():
+		return status.Error(codes.InvalidArgument, "validate spec: compute autoscaling is not supported for DocumentDB")
 	}
 	return nil
 }
@@ -701,10 +729,18 @@ func (f *fakeServer) SetDeletionProtection(ctx context.Context, req *serverv1.Se
 
 func (f *fakeServer) storeDatabase(ctx context.Context, name string, spec *serverv1.DatabaseSpec) *serverv1.Database {
 	port := int32(5432)
-	if spec.GetEngine() == engineValkey {
+	endpoints := []*serverv1.PublicEndpoint{{Role: "rw", Host: name + ".public", Port: port}}
+	switch {
+	case spec.GetEngine() == engineValkey:
 		port = 6379
-	} else if spec.Replication == nil {
+	case spec.GetEngine() == engineDocumentDB:
+		port = 27017
+		endpoints = append(endpoints, &serverv1.PublicEndpoint{Role: "ro", Host: name + "-ro.public", Port: port})
+	case spec.Replication == nil:
 		spec.Replication = &serverv1.Replication{Mode: "async"}
+	}
+	for _, e := range endpoints {
+		e.Port = port
 	}
 	db := &serverv1.Database{
 		Id:          f.newID("db"),
@@ -714,7 +750,7 @@ func (f *fakeServer) storeDatabase(ctx context.Context, name string, spec *serve
 		Spec:        spec,
 		Status: &serverv1.DatabaseStatus{
 			Endpoint:        &serverv1.Endpoint{Host: name + ".public", Port: port},
-			PublicEndpoints: []*serverv1.PublicEndpoint{{Role: "rw", Host: name + ".public", Port: port}},
+			PublicEndpoints: endpoints,
 			TotalNodes:      1,
 		},
 	}

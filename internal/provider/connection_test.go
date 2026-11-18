@@ -1,11 +1,15 @@
 package provider
 
 import (
+	"context"
 	"errors"
 	"fmt"
 	"regexp"
 	"testing"
 
+	fwresource "github.com/hashicorp/terraform-plugin-framework/resource"
+	"github.com/hashicorp/terraform-plugin-framework/tfsdk"
+	"github.com/hashicorp/terraform-plugin-go/tftypes"
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
 	"github.com/hashicorp/terraform-plugin-testing/terraform"
 	"google.golang.org/grpc/codes"
@@ -384,4 +388,42 @@ resource "relay_connection" "this" {
 			Check: resource.TestCheckResourceAttr("relay_connection.this", "database_user", "usr_account_rw"),
 		}},
 	})
+}
+
+func TestConnectionModifyPlanWaitsForAnUnknownHostOrUser(t *testing.T) {
+	ctx := context.Background()
+	r := &connectionResource{}
+	var schemaResp fwresource.SchemaResponse
+	r.Schema(ctx, fwresource.SchemaRequest{}, &schemaResp)
+	objType := schemaResp.Schema.Type().TerraformType(ctx).(tftypes.Object)
+	value := func(set map[string]tftypes.Value) tftypes.Value {
+		attrs := make(map[string]tftypes.Value, len(objType.AttributeTypes))
+		for name, typ := range objType.AttributeTypes {
+			attrs[name] = tftypes.NewValue(typ, nil)
+		}
+		for name, v := range set {
+			attrs[name] = v
+		}
+		return tftypes.NewValue(objType, attrs)
+	}
+	unknown := tftypes.NewValue(tftypes.String, tftypes.UnknownValue)
+	state := value(map[string]tftypes.Value{
+		"host":          tftypes.NewValue(tftypes.String, "db.internal:5432"),
+		"user":          tftypes.NewValue(tftypes.String, "app"),
+		"database_user": tftypes.NewValue(tftypes.String, "app"),
+	})
+	for name, plan := range map[string]tftypes.Value{
+		"host": value(map[string]tftypes.Value{"host": unknown, "user": tftypes.NewValue(tftypes.String, "app")}),
+		"user": value(map[string]tftypes.Value{"host": tftypes.NewValue(tftypes.String, "db.internal:5432"), "user": unknown}),
+	} {
+		req := fwresource.ModifyPlanRequest{
+			Plan:  tfsdk.Plan{Schema: schemaResp.Schema, Raw: plan},
+			State: tfsdk.State{Schema: schemaResp.Schema, Raw: state},
+		}
+		resp := fwresource.ModifyPlanResponse{Plan: req.Plan}
+		r.ModifyPlan(ctx, req, &resp)
+		if len(resp.RequiresReplace) != 0 || resp.Diagnostics.HasError() || !resp.Plan.Raw.Equal(plan) {
+			t.Errorf("unknown %s: the plan must wait for the value, got replace %v, diagnostics %v", name, resp.RequiresReplace, resp.Diagnostics)
+		}
+	}
 }

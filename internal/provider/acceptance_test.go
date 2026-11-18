@@ -374,6 +374,75 @@ resource "relay_valkey_cluster" "this" {
 	})
 }
 
+func TestAccDocumentDBClusterAndUser(t *testing.T) {
+	if os.Getenv("TF_ACC") == "" || os.Getenv("RELAY_ACC_DATABASES") == "" {
+		t.Skip("set TF_ACC=1 and RELAY_ACC_DATABASES=1 to provision real clusters")
+	}
+	name := acceptanceName(t)
+	config := func(size, role string) string {
+		return fmt.Sprintf(`
+resource "relay_workspace" "this" {
+  name = %[1]q
+}
+
+resource "relay_documentdb_cluster" "this" {
+  workspace_id = relay_workspace.this.id
+  name         = "documentdb"
+  version      = %[2]q
+
+  storage = {
+    size = %[3]q
+  }
+
+  nodes = {
+    main = {
+      count     = 2
+      cloud     = %[4]q
+      region    = %[5]q
+      tier      = %[6]q
+      resources = {}
+    }
+  }
+}
+
+resource "relay_documentdb_user" "this" {
+  workspace_id      = relay_workspace.this.id
+  cluster_id        = relay_documentdb_cluster.this.id
+  username          = "tfacc"
+  generate_password = true
+  role              = %[7]q
+}
+`, name, envOr("RELAY_ACC_DOCUMENTDB_VERSION", "18"), size, envOr("RELAY_ACC_CLOUD", "aws"), envOr("RELAY_ACC_REGION", "us-east-1"), envOr("RELAY_ACC_DOCUMENTDB_TIER", "R10"), role)
+	}
+	resource.Test(t, resource.TestCase{
+		ProtoV6ProviderFactories: acceptanceFactories(t),
+		Steps: []resource.TestStep{
+			{
+				Config: config("20Gi", "readOnly"),
+				Check: resource.ComposeAggregateTestCheckFunc(
+					resource.TestCheckResourceAttr("relay_documentdb_cluster.this", "phase", "running"),
+					resource.TestCheckResourceAttr("relay_documentdb_cluster.this", "endpoint_port", "27017"),
+					resource.TestCheckResourceAttr("relay_documentdb_user.this", "phase", "Ready"),
+					resource.TestCheckResourceAttrSet("relay_documentdb_user.this", "generated_password"),
+				),
+			},
+			{
+				Config: config("30Gi", "admin"),
+				ConfigPlanChecks: resource.ConfigPlanChecks{
+					PreApply: []plancheck.PlanCheck{
+						plancheck.ExpectResourceAction("relay_documentdb_cluster.this", plancheck.ResourceActionUpdate),
+						plancheck.ExpectResourceAction("relay_documentdb_user.this", plancheck.ResourceActionUpdate),
+					},
+				},
+				Check: resource.ComposeAggregateTestCheckFunc(
+					resource.TestCheckResourceAttr("relay_documentdb_cluster.this", "storage.size", "30Gi"),
+					resource.TestCheckResourceAttr("relay_documentdb_user.this", "role", "admin"),
+				),
+			},
+		},
+	})
+}
+
 func TestAccBackupSchedule(t *testing.T) {
 	if os.Getenv("TF_ACC") == "" || os.Getenv("RELAY_ACC_DATABASES") == "" {
 		t.Skip("set TF_ACC=1 and RELAY_ACC_DATABASES=1 to provision real clusters")

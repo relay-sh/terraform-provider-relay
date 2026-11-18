@@ -77,7 +77,7 @@ func assertResourceGuards(t *testing.T, r resource.Resource) {
 
 func TestClusterModifyPlanStopsOnMalformedInput(t *testing.T) {
 	ctx := context.Background()
-	for _, r := range []resource.ResourceWithModifyPlan{newPostgreSQLClusterResource().(*postgresqlClusterResource), newValkeyClusterResource().(*valkeyClusterResource)} {
+	for _, r := range []resource.ResourceWithModifyPlan{newPostgreSQLClusterResource().(*postgresqlClusterResource), newValkeyClusterResource().(*valkeyClusterResource), newDocumentDBClusterResource().(*documentDBClusterResource)} {
 		var schemaResp resource.SchemaResponse
 		r.Schema(ctx, resource.SchemaRequest{}, &schemaResp)
 
@@ -118,6 +118,8 @@ func TestResourceGuards(t *testing.T) {
 	assertResourceGuards(t, newPostgreSQLDatabaseResource())
 	assertResourceGuards(t, newValkeyClusterResource())
 	assertResourceGuards(t, newValkeyUserResource())
+	assertResourceGuards(t, newDocumentDBClusterResource())
+	assertResourceGuards(t, newDocumentDBUserResource())
 	assertResourceGuards(t, newBackupScheduleResource())
 	assertResourceGuards(t, newBackupAutoExportResource())
 	assertResourceGuards(t, newCloudIntegrationResource())
@@ -126,7 +128,7 @@ func TestResourceGuards(t *testing.T) {
 	assertResourceGuards(t, newPrivateEndpointServiceResource())
 	assertResourceGuards(t, newPrivateEndpointResource())
 
-	for _, d := range []datasource.DataSource{newWorkspaceDataSource(), newPostgreSQLClusterDataSource(), newValkeyClusterDataSource(), newAPIKeyDataSource(), newIPAccessListDataSource(), newPrivateEndpointServiceDataSource(), newPrivateEndpointDataSource(), newRegionsDataSource(), newCloudIntegrationDataSource(), newCloudIntegrationSetupDataSource(), newMigrationCheckDataSource()} {
+	for _, d := range []datasource.DataSource{newWorkspaceDataSource(), newPostgreSQLClusterDataSource(), newValkeyClusterDataSource(), newDocumentDBClusterDataSource(), newAPIKeyDataSource(), newIPAccessListDataSource(), newPrivateEndpointServiceDataSource(), newPrivateEndpointDataSource(), newRegionsDataSource(), newCloudIntegrationDataSource(), newCloudIntegrationSetupDataSource(), newMigrationCheckDataSource()} {
 		var dsSchema datasource.SchemaResponse
 		d.Schema(context.Background(), datasource.SchemaRequest{}, &dsSchema)
 		var readResp datasource.ReadResponse

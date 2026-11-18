@@ -252,6 +252,7 @@ func TestValkeyUserResource_Failures(t *testing.T) {
 			want  string
 		}{
 			"rejected":     {func(f *fakeServer) { f.failWith("CreateDatabaseUser", unavailable) }, "", "Cannot create Valkey user"},
+			"poll error":   {func(f *fakeServer) { f.failWith("GetDatabaseUser", status.Error(codes.PermissionDenied, "denied")) }, "", `(?s)did not become ready.*denied`},
 			"failed phase": {func(f *fakeServer) { f.failUser = "cluster not running" }, "", `(?s)did not become ready.*cluster not running`},
 			"timeout": {func(f *fakeServer) { f.stuck = true }, `
   timeouts {

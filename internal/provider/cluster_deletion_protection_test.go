@@ -35,6 +35,13 @@ var protectedClusters = map[string]protectedCluster{
 		},
 		importIgnore: []string{"keep_backups_on_destroy", "timeouts"},
 	},
+	"documentdb": {
+		addr: documentDBAddr,
+		config: func(f *fakeServer, protected bool) string {
+			return documentDBCluster(f, "17", "", fmt.Sprintf("  deletion_protection = %t\n", protected))
+		},
+		importIgnore: []string{"timeouts"},
+	},
 }
 
 func createdProtected(f *fakeServer) resource.TestCheckFunc {

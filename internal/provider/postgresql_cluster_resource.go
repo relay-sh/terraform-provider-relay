@@ -2,7 +2,6 @@ package provider
 
 import (
 	"context"
-	"errors"
 	"fmt"
 	"reflect"
 	"sort"
@@ -426,7 +425,7 @@ func (r *postgresqlClusterResource) Create(ctx context.Context, req resource.Cre
 	resp.Diagnostics.Append(resp.State.SetAttribute(ctx, path.Root("workspace_id"), plan.WorkspaceID)...)
 	resp.Diagnostics.Append(resp.State.SetAttribute(ctx, path.Root("name"), plan.Name)...)
 
-	db, err := r.waitRunning(scoped, id, timeout)
+	db, err := waitDatabaseRunning(scoped, r.client, id, timeout)
 	if err != nil {
 		resp.Diagnostics.AddError("Cluster did not become ready", err.Error())
 		return
@@ -479,7 +478,7 @@ func (r *postgresqlClusterResource) convergeRestore(ctx context.Context, config 
 		resp.Diagnostics.AddError("Cannot apply the configuration to the restored cluster", err.Error())
 		return nil
 	}
-	db, err := r.waitRunning(ctx, db.GetId(), timeout)
+	db, err := waitDatabaseRunning(ctx, r.client, db.GetId(), timeout)
 	if err != nil {
 		resp.Diagnostics.AddError("Restored cluster did not settle after update", err.Error())
 		return nil
@@ -545,7 +544,7 @@ func (r *postgresqlClusterResource) Update(ctx context.Context, req resource.Upd
 			return
 		}
 	}
-	db, err := r.waitRunning(scoped, plan.ID.ValueString(), timeout)
+	db, err := waitDatabaseRunning(scoped, r.client, plan.ID.ValueString(), timeout)
 	if err != nil {
 		resp.Diagnostics.AddError("Cluster did not settle after update", err.Error())
 		return
@@ -565,33 +564,7 @@ func (r *postgresqlClusterResource) Delete(ctx context.Context, req resource.Del
 	if refuseProtectedDelete(state.DeletionProtection, &resp.Diagnostics) {
 		return
 	}
-	scoped := r.client.Workspace(ctx, state.WorkspaceID.ValueString())
-	id := state.ID.ValueString()
-	_, err := r.client.API.DeleteDatabase(scoped, &serverv1.DeleteDatabaseRequest{Id: id, KeepBackups: state.KeepBackupsOnDestroy.ValueBool()})
-	if relay.IsNotFound(err) {
-		return
-	}
-	if err != nil {
-		resp.Diagnostics.AddError("Cannot delete cluster", err.Error())
-		return
-	}
-	err = waitFor(scoped, timeout, func(ctx context.Context) (bool, error) {
-		out, err := r.client.API.GetDatabase(ctx, &serverv1.GetDatabaseRequest{Id: id})
-		if relay.IsNotFound(err) {
-			return true, nil
-		}
-		if err != nil {
-			return false, err
-		}
-		st := out.GetDatabase().GetStatus()
-		if st.GetPhase() == phaseFailed {
-			return false, errors.New("deletion failed: " + st.GetMessage())
-		}
-		return st.GetPhase() == phaseDeleted, nil
-	})
-	if err != nil {
-		resp.Diagnostics.AddError("Cluster was not deleted", err.Error())
-	}
+	deleteDatabase(r.client.Workspace(ctx, state.WorkspaceID.ValueString()), r.client, state.ID.ValueString(), state.KeepBackupsOnDestroy.ValueBool(), timeout, &resp.Diagnostics)
 }
 
 func (r *postgresqlClusterResource) ImportState(ctx context.Context, req resource.ImportStateRequest, resp *resource.ImportStateResponse) {
@@ -603,25 +576,6 @@ func (r *postgresqlClusterResource) ImportState(ctx context.Context, req resourc
 	resp.Diagnostics.Append(resp.State.SetAttribute(ctx, path.Root("workspace_id"), workspaceID)...)
 	resp.Diagnostics.Append(resp.State.SetAttribute(ctx, path.Root("id"), id)...)
 	resp.Diagnostics.Append(resp.State.SetAttribute(ctx, path.Root("keep_backups_on_destroy"), false)...)
-}
-
-func (r *postgresqlClusterResource) waitRunning(ctx context.Context, id string, timeout time.Duration) (*serverv1.Database, error) {
-	var db *serverv1.Database
-	err := waitFor(ctx, timeout, func(ctx context.Context) (bool, error) {
-		out, err := r.client.API.GetDatabase(ctx, &serverv1.GetDatabaseRequest{Id: id})
-		if err != nil {
-			return false, err
-		}
-		db = out.GetDatabase()
-		switch db.GetStatus().GetPhase() {
-		case phaseRunning:
-			return !changing(db.GetStatus()), nil
-		case phaseFailed:
-			return false, errors.New("provisioning failed: " + db.GetStatus().GetMessage())
-		}
-		return false, nil
-	})
-	return db, err
 }
 
 func clusterSpecToProto(m postgresqlClusterModel) *serverv1.DatabaseSpec {

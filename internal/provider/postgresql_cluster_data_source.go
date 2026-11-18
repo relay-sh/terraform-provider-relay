@@ -96,7 +96,7 @@ func (d *postgresqlClusterDataSource) Read(ctx context.Context, req datasource.R
 		}
 		db = out.GetDatabase()
 	} else {
-		found, err := d.findByName(scoped, config.Name.ValueString())
+		found, err := findDatabaseByName(scoped, d.client, config.Name.ValueString(), enginePostgreSQL)
 		if err != nil {
 			resp.Diagnostics.AddError("Cannot list clusters", err.Error())
 			return
@@ -128,23 +128,4 @@ func (d *postgresqlClusterDataSource) Read(ctx context.Context, req datasource.R
 		TotalNodes:         types.Int64Value(int64(st.GetTotalNodes())),
 	}
 	resp.Diagnostics.Append(resp.State.Set(ctx, &state)...)
-}
-
-func (d *postgresqlClusterDataSource) findByName(ctx context.Context, name string) (*serverv1.Database, error) {
-	token := ""
-	for {
-		out, err := d.client.API.ListDatabases(ctx, &serverv1.ListDatabasesRequest{PageToken: token})
-		if err != nil {
-			return nil, err
-		}
-		for _, db := range out.GetDatabases() {
-			if db.GetName() == name && db.GetSpec().GetEngine() == enginePostgreSQL {
-				return db, nil
-			}
-		}
-		token = out.GetNextPageToken()
-		if token == "" {
-			return nil, nil
-		}
-	}
 }
