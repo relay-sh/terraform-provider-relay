@@ -240,6 +240,8 @@ func TestDocumentDBClusterResource_ConfigValidation(t *testing.T) {
 		"zero nodes":      {documentDBGroup("main", 0, "R10"), "must be at least 1"},
 		"two groups":      {two, "must contain at least 1 elements and at most 1"},
 		"group name":      {documentDBGroup("Main_1", 1, "R10"), "lowercase letters, digits and hyphens"},
+		"read-write user": {"  default_connections = { readwrite = true }\n" + documentDBGroup("main", 1, "R10"), `(?s)Unsupported default connection.*DocumentDB\s+has\s+no\s+readwrite\s+role;\s+use\s+readonly\s+or\s+admin`},
+		"read-write off":  {"  default_connections = { readwrite = false }\n" + documentDBGroup("main", 1, "R10"), `(?s)DocumentDB\s+has\s+no\s+readwrite\s+role`},
 		"backups":         {"  keep_backups_on_destroy = true\n" + documentDBGroup("main", 1, "R10"), `An argument named "keep_backups_on_destroy" is not expected here`},
 	}
 	for name, tc := range cases {

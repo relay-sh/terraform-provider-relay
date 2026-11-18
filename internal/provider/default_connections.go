@@ -8,6 +8,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/path"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/planmodifier"
+	"github.com/hashicorp/terraform-plugin-framework/schema/validator"
 	"github.com/hashicorp/terraform-plugin-framework/types"
 
 	serverv1 "github.com/relay-sh/relay-go/gen/relay/server/v1"
@@ -16,10 +17,10 @@ import (
 )
 
 var (
-	defaultConnectionRoles           = []string{"readonly", "readwrite", "admin"}
-	documentDBDefaultConnectionRoles = []string{"readonly", "admin"}
-	defaultConnectionsAttrTypes      = defaultConnectionsTypes(defaultConnectionRoles)
-	defaultConnectionRoleNames       = map[string]string{"readonly": "read-only", "readwrite": "read-write", "admin": "admin"}
+	defaultConnectionRoles       = []string{"readonly", "readwrite", "admin"}
+	documentDBDefaultConnections = defaultConnectionsPlan{roles: []string{"readonly", "admin"}, refused: map[string]string{"readwrite": "DocumentDB has no readwrite role; use readonly or admin"}}
+	defaultConnectionsAttrTypes  = defaultConnectionsTypes(defaultConnectionRoles)
+	defaultConnectionRoleNames   = map[string]string{"readonly": "read-only", "readwrite": "read-write", "admin": "admin"}
 )
 
 func defaultConnectionsTypes(roles []string) map[string]attr.Type {
@@ -30,13 +31,60 @@ func defaultConnectionsTypes(roles []string) map[string]attr.Type {
 	return out
 }
 
+func (m defaultConnectionsPlan) attrTypes() map[string]attr.Type {
+	out := defaultConnectionsTypes(m.roles)
+	for role := range m.refused {
+		out[role] = types.BoolType
+	}
+	return out
+}
+
+func (m defaultConnectionsPlan) withRefused(values map[string]attr.Value) types.Object {
+	for role := range m.refused {
+		values[role] = types.BoolNull()
+	}
+	return types.ObjectValueMust(m.attrTypes(), values)
+}
+
+func (m defaultConnectionsPlan) fromProto(in *serverv1.DefaultConnectionsIntent, prior types.Object) types.Object {
+	if in == nil {
+		return defaultConnectionsFromProto(in, prior)
+	}
+	intent := intentValues(in)
+	values := make(map[string]attr.Value, len(m.roles))
+	for _, role := range m.roles {
+		values[role] = types.BoolValue(intent[role])
+	}
+	return m.withRefused(values)
+}
+
+func intentValues(in *serverv1.DefaultConnectionsIntent) map[string]bool {
+	return map[string]bool{"readonly": in.GetReadonly(), "readwrite": in.GetReadwrite(), "admin": in.GetAdmin()}
+}
+
+type refusedRole string
+
+func (v refusedRole) Description(context.Context) string {
+	return string(v)
+}
+
+func (v refusedRole) MarkdownDescription(ctx context.Context) string {
+	return v.Description(ctx)
+}
+
+func (v refusedRole) ValidateBool(_ context.Context, req validator.BoolRequest, resp *validator.BoolResponse) {
+	if !req.ConfigValue.IsNull() {
+		resp.Diagnostics.AddAttributeError(req.Path, "Unsupported default connection", string(v))
+	}
+}
+
 func defaultConnectionsAttribute() schema.SingleNestedAttribute {
 	return defaultConnectionsAttributeFor(defaultConnectionsPlan{roles: defaultConnectionRoles, restorable: true},
 		"one read-only, one read-write and one admin. Omitted on create, all three are created")
 }
 
 func documentDBDefaultConnectionsAttribute() schema.SingleNestedAttribute {
-	return defaultConnectionsAttributeFor(defaultConnectionsPlan{roles: documentDBDefaultConnectionRoles},
+	return defaultConnectionsAttributeFor(documentDBDefaultConnections,
 		"one read-only and one admin, since DocumentDB grants writes only with administration. Omitted on create, both are created")
 }
 
@@ -46,6 +94,13 @@ func defaultConnectionsAttributeFor(m defaultConnectionsPlan, users string) sche
 		attrs[role] = schema.BoolAttribute{
 			Optional: true, Computed: true,
 			MarkdownDescription: "The " + defaultConnectionRoleNames[role] + " user and its connection. Omitted, it is `true` on create and keeps its current value afterwards.",
+		}
+	}
+	for role, reason := range m.refused {
+		attrs[role] = schema.BoolAttribute{
+			Optional:            true,
+			Validators:          []validator.Bool{refusedRole(reason)},
+			MarkdownDescription: "Not available: " + reason + ".",
 		}
 	}
 	return schema.SingleNestedAttribute{
@@ -61,6 +116,7 @@ func defaultConnectionsAttributeFor(m defaultConnectionsPlan, users string) sche
 
 type defaultConnectionsPlan struct {
 	roles      []string
+	refused    map[string]string
 	restorable bool
 }
 
@@ -82,7 +138,7 @@ func (m defaultConnectionsPlan) PlanModifyObject(ctx context.Context, req planmo
 		case !creating:
 			resp.PlanValue = req.StateValue
 		case m.restorable && restoring(ctx, req, resp):
-			resp.PlanValue = types.ObjectUnknown(defaultConnectionsTypes(m.roles))
+			resp.PlanValue = types.ObjectUnknown(m.attrTypes())
 		default:
 			resp.PlanValue = m.allOn()
 		}
@@ -108,7 +164,7 @@ func (m defaultConnectionsPlan) PlanModifyObject(ctx context.Context, req planmo
 		}
 		planned[role] = v
 	}
-	resp.PlanValue = types.ObjectValueMust(defaultConnectionsTypes(m.roles), planned)
+	resp.PlanValue = m.withRefused(planned)
 	if len(removed) > 0 {
 		resp.Diagnostics.AddAttributeWarning(req.Path, "Default connections will be deleted",
 			"Turning off "+strings.Join(removed, ", ")+" deletes those Relay connections and then their database users. "+
@@ -121,7 +177,7 @@ func (m defaultConnectionsPlan) allOn() types.Object {
 	for _, role := range m.roles {
 		values[role] = types.BoolValue(true)
 	}
-	return types.ObjectValueMust(defaultConnectionsTypes(m.roles), values)
+	return m.withRefused(values)
 }
 
 func restoring(ctx context.Context, req planmodifier.ObjectRequest, resp *planmodifier.ObjectResponse) bool {
@@ -150,7 +206,7 @@ func defaultConnectionsFromProto(in *serverv1.DefaultConnectionsIntent, prior ty
 		}
 		return prior
 	}
-	values := map[string]bool{"readonly": in.GetReadonly(), "readwrite": in.GetReadwrite(), "admin": in.GetAdmin()}
+	values := intentValues(in)
 	elems := make(map[string]attr.Value, len(attrTypes))
 	for role := range attrTypes {
 		elems[role] = types.BoolValue(values[role])

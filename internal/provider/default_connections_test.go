@@ -236,6 +236,9 @@ func TestDefaultConnectionsPlan(t *testing.T) {
 			t.Errorf("%s: plan %v, %d warnings, errors %v; want %v, %d warnings", name, resp.PlanValue, resp.Diagnostics.WarningsCount(), resp.Diagnostics.Errors(), c.want, c.warnings)
 		}
 	}
+	if refusedRole("no such role").MarkdownDescription(ctx) != "no such role" {
+		t.Error("the refused-role validator must describe why")
+	}
 	if (defaultConnectionsPlan{}).MarkdownDescription(ctx) == "" {
 		t.Error("the plan modifier needs a description")
 	}

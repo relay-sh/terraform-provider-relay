@@ -105,6 +105,7 @@ Optional:
 
 - `admin` (Boolean) The admin user and its connection. Omitted, it is `true` on create and keeps its current value afterwards.
 - `readonly` (Boolean) The read-only user and its connection. Omitted, it is `true` on create and keeps its current value afterwards.
+- `readwrite` (Boolean) Not available: DocumentDB has no readwrite role; use readonly or admin.
 
 
 <a id="nestedatt--storage"></a>

@@ -404,7 +404,7 @@ func documentDBClusterFromProto(db *serverv1.Database, prior documentDBClusterMo
 		Storage:            documentDBStorageFromProto(spec.GetStorage()),
 		Nodes:              documentDBNodesFromProto(spec.GetNodes()),
 		DeletionProtection: types.BoolValue(db.GetDeletionProtection()),
-		DefaultConnections: defaultConnectionsFromProto(db.GetDefaultConnections(), prior.DefaultConnections),
+		DefaultConnections: documentDBDefaultConnections.fromProto(db.GetDefaultConnections(), prior.DefaultConnections),
 		Phase:              types.StringValue(st.GetPhase()),
 		PhaseMessage:       types.StringValue(st.GetMessage()),
 		EndpointHost:       endpointHost,
