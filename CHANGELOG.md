@@ -1,3 +1,9 @@
+## 0.1.4 (Unreleased)
+
+FEATURES:
+
+* data-source/relay_migration_check: checks whether a PostgreSQL database outside Relay can be migrated into Relay. Each read runs a new check against the `source`, given as a `connection_string` or as `host`, `database` and `username`, from the network path the migration will use, for an existing `database_id` or a planned `cloud` and `region`. It returns each `results` entry (`name`, `level`, `mode`, `message`, `fix`, `acknowledgement`), `has_blockers` and the `acknowledgements` that apply to the chosen `mode` (`online`, the default, or `offline`), the `modes` the source supports and the `facts` read from it. Needs the `database_migration` feature; there is no migration resource, migrations run from the CLI or the dashboard ([#127](https://github.com/relay-sh/terraform-provider-relay/pull/127))
+
 ## 0.1.3 (November 17, 2026)
 
 FEATURES:
