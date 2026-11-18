@@ -122,7 +122,7 @@ func (d *valkeyClusterDataSource) Read(ctx context.Context, req datasource.ReadR
 		}
 		db = out.GetDatabase()
 	} else {
-		found, err := d.findByName(scoped, config.Name.ValueString())
+		found, err := findDatabaseByName(scoped, d.client, config.Name.ValueString(), engineValkey)
 		if err != nil {
 			resp.Diagnostics.AddError("Cannot list clusters", err.Error())
 			return
@@ -157,23 +157,4 @@ func (d *valkeyClusterDataSource) Read(ctx context.Context, req datasource.ReadR
 		TotalNodes:         full.TotalNodes,
 	}
 	resp.Diagnostics.Append(resp.State.Set(ctx, &state)...)
-}
-
-func (d *valkeyClusterDataSource) findByName(ctx context.Context, name string) (*serverv1.Database, error) {
-	token := ""
-	for {
-		out, err := d.client.API.ListDatabases(ctx, &serverv1.ListDatabasesRequest{PageToken: token})
-		if err != nil {
-			return nil, err
-		}
-		for _, db := range out.GetDatabases() {
-			if db.GetName() == name && db.GetSpec().GetEngine() == engineValkey {
-				return db, nil
-			}
-		}
-		token = out.GetNextPageToken()
-		if token == "" {
-			return nil, nil
-		}
-	}
 }

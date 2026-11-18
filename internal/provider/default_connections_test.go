@@ -231,7 +231,7 @@ func TestDefaultConnectionsPlan(t *testing.T) {
 			Plan: tfsdk.Plan{Raw: c.plan}, State: tfsdk.State{Raw: c.state},
 		}
 		resp := planmodifier.ObjectResponse{PlanValue: c.config}
-		defaultConnectionsPlan{}.PlanModifyObject(ctx, req, &resp)
+		defaultConnectionsPlan{roles: defaultConnectionRoles, restorable: true}.PlanModifyObject(ctx, req, &resp)
 		if !resp.PlanValue.Equal(c.want) || resp.Diagnostics.WarningsCount() != c.warnings || resp.Diagnostics.HasError() {
 			t.Errorf("%s: plan %v, %d warnings, errors %v; want %v, %d warnings", name, resp.PlanValue, resp.Diagnostics.WarningsCount(), resp.Diagnostics.Errors(), c.want, c.warnings)
 		}
@@ -245,4 +245,10 @@ func TestDefaultConnectionsPlan(t *testing.T) {
 	if defaultConnectionsToProto(types.ObjectUnknown(defaultConnectionsAttrTypes)) != nil {
 		t.Error("an unknown value must not be sent")
 	}
+}
+
+func defaultConnectionsValue(readonly, readwrite, admin bool) types.Object {
+	return types.ObjectValueMust(defaultConnectionsAttrTypes, map[string]attr.Value{
+		"readonly": types.BoolValue(readonly), "readwrite": types.BoolValue(readwrite), "admin": types.BoolValue(admin),
+	})
 }
