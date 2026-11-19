@@ -490,3 +490,167 @@ func TestKeepEquivalentRestore(t *testing.T) {
 		}
 	}
 }
+
+func documentDBSource(id, version string) *serverv1.Database {
+	return &serverv1.Database{
+		Id: id, Name: "source-" + id, WorkspaceId: dbWorkspace,
+		Spec: &serverv1.DatabaseSpec{
+			Engine: engineDocumentDB, Version: version, BackupsEnabled: true, PrimaryNodeGroup: "main",
+			Storage: &serverv1.ClusterStorage{Size: "30Gi"},
+			Nodes: []*serverv1.NodeSpec{{
+				Name: "main", Role: documentDBRoleData, Count: 1, Cloud: "aws", Region: "us-east-1", Tier: "R10",
+				Resources: &serverv1.ResourceRequirements{Cpu: "2", Memory: "4Gi"},
+			}},
+		},
+		Status: &serverv1.DatabaseStatus{Phase: phaseRunning},
+	}
+}
+
+func documentDBRestoreConfig(f *fakeServer, restore, extra string, count int) string {
+	return documentDBConfig(f, restore+extra+documentDBGroup("main", count, "R10"))
+}
+
+func TestDocumentDBClusterResource_Restore(t *testing.T) {
+	f := startFakeServer(t)
+	seedSources(f, documentDBSource("db-src", "18"))
+	resource.UnitTest(t, resource.TestCase{
+		ProtoV6ProviderFactories: factories(relay.Dial),
+		Steps: []resource.TestStep{
+			{
+				Config: documentDBRestoreConfig(f, restoreBlock("db-src", pastInstant), "", 1),
+				Check: resource.ComposeAggregateTestCheckFunc(
+					resource.TestCheckResourceAttr(documentDBAddr, "version", "18"),
+					resource.TestCheckResourceAttr(documentDBAddr, "storage.size", "30Gi"),
+					resource.TestCheckResourceAttr(documentDBAddr, "backups_enabled", "true"),
+					resource.TestCheckResourceAttr(documentDBAddr, "restore.target_time", pastInstant),
+					callCount(f, "UpdateDatabase", 0),
+					func(*terraform.State) error {
+						req := f.lastRestore
+						if req.GetSourceDatabaseId() != "db-src" || !req.GetTargetTime().AsTime().Equal(time.Date(2026, 10, 31, 12, 0, 0, 0, time.UTC)) || req.GetSourceBackupId() != "" {
+							return fmt.Errorf("restore request = %v", req)
+						}
+						return nil
+					},
+				),
+			},
+			{
+				Config:           documentDBRestoreConfig(f, restoreBlock("db-src", "2026-10-31T12:00:00+00:00"), "", 1),
+				ConfigPlanChecks: resource.ConfigPlanChecks{PreApply: []plancheck.PlanCheck{plancheck.ExpectEmptyPlan()}},
+			},
+			{
+				Config: documentDBRestoreConfig(f, restoreBlock("db-src", "2026-10-30T12:00:00Z"), "  storage = { size = \"40Gi\" }\n  backups_enabled = false\n", 2),
+				ConfigPlanChecks: resource.ConfigPlanChecks{PreApply: []plancheck.PlanCheck{
+					plancheck.ExpectResourceAction(documentDBAddr, plancheck.ResourceActionDestroyBeforeCreate),
+				}},
+				Check: resource.ComposeAggregateTestCheckFunc(
+					resource.TestCheckResourceAttr(documentDBAddr, "nodes.main.count", "2"),
+					resource.TestCheckResourceAttr(documentDBAddr, "storage.size", "40Gi"),
+					resource.TestCheckResourceAttr(documentDBAddr, "backups_enabled", "false"),
+					func(*terraform.State) error {
+						req := f.lastDBUpdate
+						if paths := req.GetUpdateMask().GetPaths(); !slices.Equal(paths, []string{"nodes", "storage", "backups_enabled"}) {
+							return fmt.Errorf("mask %v", paths)
+						}
+						if v := req.GetSpec().GetVersion(); v != "18" {
+							return fmt.Errorf("the update must keep the source's version, got %q", v)
+						}
+						return nil
+					},
+				),
+			},
+			{
+				Config:           documentDBRestoreConfig(f, "", "  storage = { size = \"40Gi\" }\n  backups_enabled = false\n", 2),
+				ConfigPlanChecks: resource.ConfigPlanChecks{PreApply: []plancheck.PlanCheck{plancheck.ExpectResourceAction(documentDBAddr, plancheck.ResourceActionUpdate)}},
+				Check:            callCount(f, "RestoreDatabase", 2),
+			},
+		},
+	})
+}
+
+func TestDocumentDBClusterResource_RestoreProtected(t *testing.T) {
+	f := startFakeServer(t)
+	seedSources(f, documentDBSource("db-src", "18"))
+	resource.UnitTest(t, resource.TestCase{
+		ProtoV6ProviderFactories: factories(relay.Dial),
+		Steps: []resource.TestStep{
+			{
+				Config: documentDBRestoreConfig(f, restoreBlock("db-src", ""), "  deletion_protection = true\n", 1),
+				Check: resource.ComposeAggregateTestCheckFunc(
+					resource.TestCheckResourceAttr(documentDBAddr, "deletion_protection", "true"),
+					callCount(f, "SetDeletionProtection", 1),
+				),
+			},
+			{Config: documentDBRestoreConfig(f, restoreBlock("db-src", ""), "  deletion_protection = false\n", 1)},
+		},
+	})
+}
+
+func TestDocumentDBClusterResource_RestoreChecksAndFailures(t *testing.T) {
+	cases := map[string]struct {
+		setup func(*fakeServer)
+		body  string
+		want  string
+	}{
+		"other label": {
+			setup: func(f *fakeServer) { f.set(func() { f.databases["db-src"].Spec.PrimaryNodeGroup = "docs" }) },
+			body:  restoreBlock("db-src", ""),
+			want:  "Missing the source's node group",
+		},
+		"other version": {
+			body: restoreBlock("db-src", "") + "  version = \"17\"\n",
+			want: "Version differs from the source",
+		},
+		"future target": {
+			body: restoreBlock("db-src", "2999-01-01T00:00:00Z"),
+			want: "target_time is in the future",
+		},
+		"kept source on another version": {
+			setup: func(f *fakeServer) { f.set(func() { f.keptSources["db-gone"] = documentDBSource("db-gone", "17") }) },
+			body:  restoreBlock("db-gone", "") + "  version = \"18\"\n",
+			want:  "Restored cluster does not match the configuration",
+		},
+		"update rejected": {
+			setup: func(f *fakeServer) { f.failWith("UpdateDatabase", status.Error(codes.InvalidArgument, "nope")) },
+			body:  restoreBlock("db-src", "") + "  backups_enabled = false\n",
+			want:  "Cannot apply the configuration to the restored cluster",
+		},
+		"update fails to settle": {
+			setup: func(f *fakeServer) {
+				f.set(func() { f.afterUpdate = func(*serverv1.Database) { f.failProvision = "boom" } })
+			},
+			body: restoreBlock("db-src", "") + "  backups_enabled = false\n",
+			want: "Restored cluster did not settle after update",
+		},
+		"source not found": {
+			body: restoreBlock("db-missing", ""),
+			want: "Cannot restore cluster",
+		},
+		"deletion protection refused": {
+			setup: func(f *fakeServer) {
+				f.failWith("SetDeletionProtection", status.Error(codes.FailedPrecondition, "Deletion protection not enabled for this organization"))
+			},
+			body: restoreBlock("db-src", "") + "  deletion_protection = true\n",
+			want: "Cannot change deletion protection",
+		},
+		"default connections refused": {
+			setup: func(f *fakeServer) {
+				f.failWith("SetDefaultConnections", status.Error(codes.FailedPrecondition, "not available"))
+			},
+			body: restoreBlock("db-src", "") + "  default_connections = { admin = false }\n",
+			want: "Cannot set default connections on the restored cluster",
+		},
+	}
+	for name, tc := range cases {
+		t.Run(name, func(t *testing.T) {
+			f := startFakeServer(t)
+			seedSources(f, documentDBSource("db-src", "18"))
+			if tc.setup != nil {
+				tc.setup(f)
+			}
+			resource.UnitTest(t, resource.TestCase{
+				ProtoV6ProviderFactories: factories(relay.Dial),
+				Steps:                    []resource.TestStep{{Config: documentDBRestoreConfig(f, tc.body, "", 1), ExpectError: regexp.MustCompile(tc.want)}},
+			})
+		})
+	}
+}

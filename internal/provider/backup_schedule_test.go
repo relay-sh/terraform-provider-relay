@@ -7,6 +7,8 @@ import (
 	"regexp"
 	"testing"
 
+	"github.com/hashicorp/terraform-plugin-framework/attr"
+	"github.com/hashicorp/terraform-plugin-framework/diag"
 	"github.com/hashicorp/terraform-plugin-framework/resource"
 	"github.com/hashicorp/terraform-plugin-framework/tfsdk"
 	"github.com/hashicorp/terraform-plugin-framework/types"
@@ -21,7 +23,13 @@ import (
 	"github.com/relay-sh/relay-go/relay"
 )
 
-const scheduleAddr = "relay_backup_schedule.this"
+const (
+	scheduleAddr = "relay_backup_schedule.this"
+	laterTier    = `resource "terraform_data" "later" {
+  input = { frequency = "daily", interval = 1, retention_value = 1, retention_unit = "days", enabled = true }
+}
+`
+)
 
 func seedCluster(f *fakeServer, id, engine string, backups bool) {
 	f.set(func() {
@@ -186,6 +194,93 @@ func TestBackupScheduleResource_Valkey(t *testing.T) {
 	})
 }
 
+func TestBackupScheduleResource_DocumentDB(t *testing.T) {
+	f := startFakeServer(t)
+	seedCluster(f, "db-d", engineDocumentDB, true)
+	tfresource.UnitTest(t, tfresource.TestCase{
+		ProtoV6ProviderFactories: factories(relay.Dial),
+		CheckDestroy:             noCustomSchedules(f),
+		Steps: []tfresource.TestStep{
+			{
+				Config: scheduleConfig(f, "db-d", `
+  tiers = [
+    { frequency = "weekly", interval = 1, retention_value = 4 },
+    { frequency = "daily", interval = 1, retention_value = 7 },
+    { frequency = "hourly", interval = 6, retention_value = 8, enabled = false },
+  ]
+`),
+				Check: tfresource.ComposeAggregateTestCheckFunc(
+					tfresource.TestCheckResourceAttr(scheduleAddr, "tiers.#", "3"),
+					tfresource.TestCheckNoResourceAttr(scheduleAddr, "pitr_window_days"),
+					func(*terraform.State) error {
+						spec := f.lastScheduleSpec
+						if tiers := spec.GetPolicyTiers(); len(tiers) != 3 || tiers[2].GetEnabled() || spec.GetPitrWindowDays() != 0 {
+							return fmt.Errorf("spec = %+v", spec)
+						}
+						return nil
+					},
+				),
+			},
+			{
+				Config: scheduleConfig(f, "db-d", "  max_backups = 6"),
+				Check:  tfresource.TestCheckResourceAttr(scheduleAddr, "max_backups", "6"),
+			},
+		},
+	})
+}
+
+func TestBackupScheduleResource_DocumentDBPlanChecks(t *testing.T) {
+	tier := func(frequency string) string {
+		return fmt.Sprintf("{ frequency = %q, interval = 1, retention_value = 2 }", frequency)
+	}
+	cases := map[string]struct{ body, want string }{
+		"hourly":          {"  tiers = [" + tier("weekly") + ", { frequency = \"hourly\", interval = 6, retention_value = 2 }]", `(?s)Tier not available for DocumentDB.*not\s+hourly\s+ones`},
+		"monthly":         {"  tiers = [" + tier("weekly") + ", " + tier("monthly") + "]", `(?s)Tier not available for DocumentDB.*not\s+monthly\s+ones`},
+		"no weekly":       {"  tiers = [" + tier("daily") + "]", "DocumentDB needs a weekly tier"},
+		"disabled weekly": {"  tiers = [" + tier("daily") + ", { frequency = \"weekly\", interval = 1, retention_value = 2, enabled = false }]", "DocumentDB needs a weekly tier"},
+		"pitr":            {"  pitr_window_days = 3", "No pitr_window_days for DocumentDB"},
+		"unknown pitr":    {"  pitr_window_days = terraform_data.later.output.interval", "No pitr_window_days for DocumentDB"},
+	}
+	for name, tc := range cases {
+		t.Run(name, func(t *testing.T) {
+			f := startFakeServer(t)
+			seedCluster(f, "db-d", engineDocumentDB, true)
+			tfresource.UnitTest(t, tfresource.TestCase{
+				ProtoV6ProviderFactories: factories(relay.Dial),
+				Steps: []tfresource.TestStep{{
+					Config:      laterTier + scheduleConfig(f, "db-d", tc.body),
+					ExpectError: regexp.MustCompile(tc.want),
+				}},
+			})
+			if n := len(f.callsTo("UpsertBackupSchedule")); n != 0 {
+				t.Errorf("a refused schedule must fail at plan, but it reached the API %d times", n)
+			}
+		})
+	}
+}
+
+func TestBackupScheduleResource_DocumentDBUnknownTiers(t *testing.T) {
+	f := startFakeServer(t)
+	seedCluster(f, "db-d", engineDocumentDB, true)
+	tfresource.UnitTest(t, tfresource.TestCase{
+		ProtoV6ProviderFactories: factories(relay.Dial),
+		Steps: []tfresource.TestStep{{
+			Config:             laterTier + scheduleConfig(f, "db-d", "  tiers = [{ frequency = terraform_data.later.output.frequency, interval = 1, retention_value = 2 }]"),
+			PlanOnly:           true,
+			ExpectNonEmptyPlan: true,
+		}},
+	})
+}
+
+func TestCheckDocumentDBScheduleSkipsUnknownTier(t *testing.T) {
+	var diags diag.Diagnostics
+	tiers := types.ListValueMust(types.ObjectType{AttrTypes: tierAttrTypes}, []attr.Value{types.ObjectUnknown(tierAttrTypes)})
+	checkDocumentDBSchedule(types.Int64Null(), tiers, &diags)
+	if diags.HasError() {
+		t.Errorf("an unknown tier may be the weekly one: %v", diags)
+	}
+}
+
 func TestBackupScheduleResource_ValkeyClusterModePITRAtApply(t *testing.T) {
 	f := startFakeServer(t)
 	tfresource.UnitTest(t, tfresource.TestCase{
@@ -249,10 +344,7 @@ func TestBackupScheduleResource_PlanOnlyInputs(t *testing.T) {
 			tfresource.UnitTest(t, tfresource.TestCase{
 				ProtoV6ProviderFactories: factories(relay.Dial),
 				Steps: []tfresource.TestStep{{
-					Config: `resource "terraform_data" "later" {
-  input = { frequency = "daily", interval = 1, retention_value = 1, retention_unit = "days", enabled = true }
-}
-` + scheduleConfig(f, "db-1", body),
+					Config:             laterTier + scheduleConfig(f, "db-1", body),
 					PlanOnly:           true,
 					ExpectNonEmptyPlan: true,
 				}},

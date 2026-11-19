@@ -18,3 +18,14 @@ resource "relay_backup_schedule" "sessions" {
   snapshot_time = { hour = 4, minute = 0 }
   max_backups   = 7
 }
+
+resource "relay_backup_schedule" "catalog" {
+  workspace_id  = relay_workspace.prod.id
+  cluster_id    = relay_documentdb_cluster.catalog.id
+  snapshot_time = { hour = 1, minute = 0 }
+
+  tiers = [
+    { frequency = "weekly", interval = 1, retention_value = 4 },
+    { frequency = "daily", interval = 1, retention_value = 7 },
+  ]
+}

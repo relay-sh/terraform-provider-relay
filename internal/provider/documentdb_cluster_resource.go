@@ -16,11 +16,13 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/path"
 	"github.com/hashicorp/terraform-plugin-framework/resource"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema"
+	"github.com/hashicorp/terraform-plugin-framework/resource/schema/booldefault"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/int64default"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/objectplanmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/planmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/stringplanmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/schema/validator"
+	"github.com/hashicorp/terraform-plugin-framework/tfsdk"
 	"github.com/hashicorp/terraform-plugin-framework/types"
 	"google.golang.org/protobuf/types/known/fieldmaskpb"
 
@@ -54,24 +56,27 @@ type documentDBNodeGroupModel struct {
 }
 
 type documentDBClusterModel struct {
-	ID                 types.String                        `tfsdk:"id"`
-	WorkspaceID        types.String                        `tfsdk:"workspace_id"`
-	Name               types.String                        `tfsdk:"name"`
-	Version            types.String                        `tfsdk:"version"`
-	Storage            types.Object                        `tfsdk:"storage"`
-	Nodes              map[string]documentDBNodeGroupModel `tfsdk:"nodes"`
-	DeletionProtection types.Bool                          `tfsdk:"deletion_protection"`
-	DefaultConnections types.Object                        `tfsdk:"default_connections"`
-	Phase              types.String                        `tfsdk:"phase"`
-	PhaseMessage       types.String                        `tfsdk:"phase_message"`
-	EndpointHost       types.String                        `tfsdk:"endpoint_host"`
-	EndpointPort       types.Int64                         `tfsdk:"endpoint_port"`
-	PublicEndpoints    types.List                          `tfsdk:"public_endpoints"`
-	ReadyNodes         types.Int64                         `tfsdk:"ready_nodes"`
-	TotalNodes         types.Int64                         `tfsdk:"total_nodes"`
-	CreatedAt          types.String                        `tfsdk:"created_at"`
-	UpdatedAt          types.String                        `tfsdk:"updated_at"`
-	Timeouts           timeouts.Value                      `tfsdk:"timeouts"`
+	ID                   types.String                        `tfsdk:"id"`
+	WorkspaceID          types.String                        `tfsdk:"workspace_id"`
+	Name                 types.String                        `tfsdk:"name"`
+	Version              types.String                        `tfsdk:"version"`
+	Storage              types.Object                        `tfsdk:"storage"`
+	Nodes                map[string]documentDBNodeGroupModel `tfsdk:"nodes"`
+	BackupsEnabled       types.Bool                          `tfsdk:"backups_enabled"`
+	KeepBackupsOnDestroy types.Bool                          `tfsdk:"keep_backups_on_destroy"`
+	DeletionProtection   types.Bool                          `tfsdk:"deletion_protection"`
+	Restore              types.Object                        `tfsdk:"restore"`
+	DefaultConnections   types.Object                        `tfsdk:"default_connections"`
+	Phase                types.String                        `tfsdk:"phase"`
+	PhaseMessage         types.String                        `tfsdk:"phase_message"`
+	EndpointHost         types.String                        `tfsdk:"endpoint_host"`
+	EndpointPort         types.Int64                         `tfsdk:"endpoint_port"`
+	PublicEndpoints      types.List                          `tfsdk:"public_endpoints"`
+	ReadyNodes           types.Int64                         `tfsdk:"ready_nodes"`
+	TotalNodes           types.Int64                         `tfsdk:"total_nodes"`
+	CreatedAt            types.String                        `tfsdk:"created_at"`
+	UpdatedAt            types.String                        `tfsdk:"updated_at"`
+	Timeouts             timeouts.Value                      `tfsdk:"timeouts"`
 }
 
 func newDocumentDBClusterResource() resource.Resource {
@@ -94,7 +99,8 @@ func (r *documentDBClusterResource) Schema(ctx context.Context, _ resource.Schem
 	resp.Schema = schema.Schema{
 		MarkdownDescription: "A managed DocumentDB cluster, MongoDB-compatible on port 27017 with TLS. Creating, updating and destroying wait for the cluster to settle. " +
 			"Changing `name`, `workspace_id` or `version` replaces the cluster and its data; use `lifecycle { prevent_destroy = true }`. " +
-			"DocumentDB has no backups, restore, parameters, storage autoscaling, compute autoscaling or private endpoints yet, and is not available on the Free plan.",
+			"Backups are on by default; manage their schedule with `relay_backup_schedule`. " +
+			"DocumentDB has no parameters, storage autoscaling, compute autoscaling or private endpoints yet, and is not available on the Free plan.",
 		Attributes: map[string]schema.Attribute{
 			"id":           schema.StringAttribute{Computed: true, PlanModifiers: keepString, MarkdownDescription: "Cluster ID."},
 			"workspace_id": schema.StringAttribute{Required: true, PlanModifiers: replace, MarkdownDescription: "Workspace the cluster belongs to."},
@@ -153,7 +159,19 @@ func (r *documentDBClusterResource) Schema(ctx context.Context, _ resource.Schem
 					},
 				}},
 			},
+			"backups_enabled": schema.BoolAttribute{
+				Optional: true, Computed: true, Default: booldefault.StaticBool(true),
+				MarkdownDescription: "Take scheduled backups and archive WAL for point-in-time restore. Defaults to true. " +
+					"The schedule is the platform default, a weekly full and a daily incremental backup, until a `relay_backup_schedule` sets it.",
+			},
+			"keep_backups_on_destroy": schema.BoolAttribute{
+				Optional: true, Computed: true, Default: booldefault.StaticBool(false),
+				MarkdownDescription: "Keep the cluster's backups when it is destroyed.",
+			},
 			"deletion_protection": deletionProtectionAttribute("cluster"),
+			"restore": restoreAttribute("`version`, when set, must match the source's, and `nodes` must keep the label of the source's node group.",
+				"Recover up to this instant, RFC 3339, for example `2026-10-31T12:00:00Z`, by replaying the source's archived WAL; "+
+					"the platform rejects an instant outside the source's backups. Omit it to restore the latest backup and replay all archived WAL."),
 			"default_connections": documentDBDefaultConnectionsAttribute(),
 			"phase":               schema.StringAttribute{Computed: true, MarkdownDescription: "Lifecycle phase after the last apply."},
 			"phase_message":       schema.StringAttribute{Computed: true, MarkdownDescription: "Detail for the phase."},
@@ -179,7 +197,11 @@ func (r *documentDBClusterResource) Configure(_ context.Context, req resource.Co
 }
 
 func (r *documentDBClusterResource) ModifyPlan(ctx context.Context, req resource.ModifyPlanRequest, resp *resource.ModifyPlanResponse) {
-	if req.Plan.Raw.IsNull() || req.State.Raw.IsNull() {
+	if req.Plan.Raw.IsNull() {
+		return
+	}
+	if req.State.Raw.IsNull() {
+		r.planRestore(ctx, req, resp)
 		return
 	}
 	var plan, prior documentDBClusterModel
@@ -189,7 +211,12 @@ func (r *documentDBClusterResource) ModifyPlan(ctx context.Context, req resource
 		return
 	}
 	rejectShrink(plan.Storage, prior.Storage, &resp.Diagnostics)
-	changed := false
+	equivalent := keepEquivalentRestore(plan.Restore, prior.Restore)
+	changed := !equivalent.Equal(plan.Restore)
+	plan.Restore = equivalent
+	if restoreChanged(plan.Restore, prior.Restore) {
+		resp.RequiresReplace = append(resp.RequiresReplace, path.Root("restore"))
+	}
 	for name, planned := range plan.Nodes {
 		current, ok := prior.Nodes[name]
 		if ok && (planned.Tier.IsUnknown() || planned.Tier.Equal(current.Tier)) {
@@ -203,8 +230,25 @@ func (r *documentDBClusterResource) ModifyPlan(ctx context.Context, req resource
 		plan.Nodes[name] = planned
 		changed = true
 	}
-	if changed {
-		resp.Diagnostics.Append(resp.Plan.Set(ctx, &plan)...)
+	if !changed {
+		return
+	}
+	resp.Diagnostics.Append(resp.Plan.Set(ctx, &plan)...)
+	if satisfies(resp.Plan.Raw, req.State.Raw) {
+		resp.Diagnostics.Append(resp.Plan.Set(ctx, &prior)...)
+	}
+}
+
+func (r *documentDBClusterResource) planRestore(ctx context.Context, req resource.ModifyPlanRequest, resp *resource.ModifyPlanResponse) {
+	var restore types.Object
+	var workspaceID, version types.String
+	var nodes types.Map
+	resp.Diagnostics.Append(req.Plan.GetAttribute(ctx, path.Root("restore"), &restore)...)
+	resp.Diagnostics.Append(req.Plan.GetAttribute(ctx, path.Root("workspace_id"), &workspaceID)...)
+	resp.Diagnostics.Append(req.Plan.GetAttribute(ctx, path.Root("version"), &version)...)
+	resp.Diagnostics.Append(req.Plan.GetAttribute(ctx, path.Root("nodes"), &nodes)...)
+	if src := checkRestorePlan(ctx, r.client, workspaceID, version, restore, engineDocumentDB, &resp.Diagnostics); src != nil {
+		checkRestoreLabel(nodes, src.GetPrimaryNodeGroup(), &resp.Diagnostics)
 	}
 }
 
@@ -218,15 +262,26 @@ func (r *documentDBClusterResource) Create(ctx context.Context, req resource.Cre
 	}
 
 	scoped := r.client.Workspace(ctx, plan.WorkspaceID.ValueString())
-	out, err := r.client.API.CreateDatabase(scoped, &serverv1.CreateDatabaseRequest{
-		Name: plan.Name.ValueString(), Spec: documentDBSpecToProto(plan), DefaultConnections: defaultConnectionsToProto(plan.DefaultConnections),
-		DeletionProtection: plan.DeletionProtection.ValueBool(),
-	})
-	if err != nil {
-		resp.Diagnostics.AddError("Cannot create cluster", err.Error())
-		return
+	var created *serverv1.Database
+	if plan.Restore.IsNull() {
+		out, err := r.client.API.CreateDatabase(scoped, &serverv1.CreateDatabaseRequest{
+			Name: plan.Name.ValueString(), Spec: documentDBSpecToProto(plan), DefaultConnections: defaultConnectionsToProto(plan.DefaultConnections),
+			DeletionProtection: plan.DeletionProtection.ValueBool(),
+		})
+		if err != nil {
+			resp.Diagnostics.AddError("Cannot create cluster", err.Error())
+			return
+		}
+		created = out.GetDatabase()
+	} else {
+		out, err := r.client.API.RestoreDatabase(scoped, restoreRequest(plan.Name.ValueString(), plan.Restore))
+		if err != nil {
+			resp.Diagnostics.AddError("Cannot restore cluster", err.Error())
+			return
+		}
+		created = out.GetDatabase()
 	}
-	id := out.GetDatabase().GetId()
+	id := created.GetId()
 	resp.Diagnostics.Append(resp.State.SetAttribute(ctx, path.Root("id"), id)...)
 	resp.Diagnostics.Append(resp.State.SetAttribute(ctx, path.Root("workspace_id"), plan.WorkspaceID)...)
 	resp.Diagnostics.Append(resp.State.SetAttribute(ctx, path.Root("name"), plan.Name)...)
@@ -236,8 +291,56 @@ func (r *documentDBClusterResource) Create(ctx context.Context, req resource.Cre
 		resp.Diagnostics.AddError("Cluster did not become ready", err.Error())
 		return
 	}
+	if !plan.Restore.IsNull() {
+		if db = r.convergeRestore(scoped, req.Plan, plan, db, timeout, resp); db == nil {
+			return
+		}
+		if known(plan.DefaultConnections) {
+			if db, err = setDefaultConnections(scoped, r.client, id, plan.DefaultConnections); err != nil {
+				resp.Diagnostics.AddError("Cannot set default connections on the restored cluster", err.Error())
+				return
+			}
+		}
+		protected, ok := setClusterDeletionProtection(scoped, r.client, id, plan.DeletionProtection, types.BoolValue(db.GetDeletionProtection()), &resp.Diagnostics)
+		if !ok {
+			return
+		}
+		if protected != nil {
+			db = protected
+		}
+	}
 	state := documentDBClusterFromProto(db, plan)
 	resp.Diagnostics.Append(resp.State.Set(ctx, &state)...)
+}
+
+func (r *documentDBClusterResource) convergeRestore(ctx context.Context, config tfsdk.Plan, plan documentDBClusterModel, db *serverv1.Database, timeout time.Duration, resp *resource.CreateResponse) *serverv1.Database {
+	restored := documentDBClusterFromProto(db, plan)
+	resp.Diagnostics.Append(resp.State.Set(ctx, &restored)...)
+	if fixed := driftedRoots(config, resp.State, []string{"version"}); len(fixed) > 0 {
+		resp.Diagnostics.AddError("Restored cluster does not match the configuration",
+			"The source's version differs from the configuration and cannot change here. Set version to the value in state, then apply again.")
+		return nil
+	}
+	paths := driftedRoots(config, resp.State, []string{"nodes", "storage", "backups_enabled"})
+	if len(paths) == 0 {
+		return db
+	}
+	desired := plan
+	desired.Version = restored.Version
+	if _, err := r.client.API.UpdateDatabase(ctx, &serverv1.UpdateDatabaseRequest{
+		Id:         db.GetId(),
+		Spec:       documentDBSpecToProto(desired),
+		UpdateMask: &fieldmaskpb.FieldMask{Paths: paths},
+	}); err != nil {
+		resp.Diagnostics.AddError("Cannot apply the configuration to the restored cluster", err.Error())
+		return nil
+	}
+	db, err := waitDatabaseRunning(ctx, r.client, db.GetId(), timeout)
+	if err != nil {
+		resp.Diagnostics.AddError("Restored cluster did not settle after update", err.Error())
+		return nil
+	}
+	return db
 }
 
 func (r *documentDBClusterResource) Read(ctx context.Context, req resource.ReadRequest, resp *resource.ReadResponse) {
@@ -318,7 +421,7 @@ func (r *documentDBClusterResource) Delete(ctx context.Context, req resource.Del
 	if refuseProtectedDelete(state.DeletionProtection, &resp.Diagnostics) {
 		return
 	}
-	deleteDatabase(r.client.Workspace(ctx, state.WorkspaceID.ValueString()), r.client, state.ID.ValueString(), false, timeout, &resp.Diagnostics)
+	deleteDatabase(r.client.Workspace(ctx, state.WorkspaceID.ValueString()), r.client, state.ID.ValueString(), state.KeepBackupsOnDestroy.ValueBool(), timeout, &resp.Diagnostics)
 }
 
 func (r *documentDBClusterResource) ImportState(ctx context.Context, req resource.ImportStateRequest, resp *resource.ImportStateResponse) {
@@ -329,13 +432,15 @@ func (r *documentDBClusterResource) ImportState(ctx context.Context, req resourc
 	}
 	resp.Diagnostics.Append(resp.State.SetAttribute(ctx, path.Root("workspace_id"), workspaceID)...)
 	resp.Diagnostics.Append(resp.State.SetAttribute(ctx, path.Root("id"), id)...)
+	resp.Diagnostics.Append(resp.State.SetAttribute(ctx, path.Root("keep_backups_on_destroy"), false)...)
 }
 
 func documentDBSpecToProto(m documentDBClusterModel) *serverv1.DatabaseSpec {
 	spec := &serverv1.DatabaseSpec{
-		Engine:  engineDocumentDB,
-		Version: m.Version.ValueString(),
-		Storage: documentDBStorageToProto(m.Storage),
+		Engine:         engineDocumentDB,
+		Version:        m.Version.ValueString(),
+		Storage:        documentDBStorageToProto(m.Storage),
+		BackupsEnabled: m.BackupsEnabled.ValueBool(),
 	}
 	for name, n := range m.Nodes {
 		spec.PrimaryNodeGroup = name
@@ -359,6 +464,9 @@ func documentDBUpdateMask(plan, prior documentDBClusterModel) []string {
 	}
 	if !plan.Storage.Equal(prior.Storage) {
 		paths = append(paths, "storage")
+	}
+	if !plan.BackupsEnabled.Equal(prior.BackupsEnabled) {
+		paths = append(paths, "backups_enabled")
 	}
 	return paths
 }
@@ -397,23 +505,26 @@ func documentDBClusterFromProto(db *serverv1.Database, prior documentDBClusterMo
 	spec, st := db.GetSpec(), db.GetStatus()
 	endpointHost, endpointPort := primaryEndpointFromProto(st)
 	return documentDBClusterModel{
-		ID:                 types.StringValue(db.GetId()),
-		WorkspaceID:        prior.WorkspaceID,
-		Name:               types.StringValue(db.GetName()),
-		Version:            types.StringValue(spec.GetVersion()),
-		Storage:            documentDBStorageFromProto(spec.GetStorage()),
-		Nodes:              documentDBNodesFromProto(spec.GetNodes()),
-		DeletionProtection: types.BoolValue(db.GetDeletionProtection()),
-		DefaultConnections: documentDBDefaultConnections.fromProto(db.GetDefaultConnections(), prior.DefaultConnections),
-		Phase:              types.StringValue(st.GetPhase()),
-		PhaseMessage:       types.StringValue(st.GetMessage()),
-		EndpointHost:       endpointHost,
-		EndpointPort:       endpointPort,
-		PublicEndpoints:    endpointsFromProto(st.GetPublicEndpoints()),
-		ReadyNodes:         types.Int64Value(int64(st.GetReadyNodes())),
-		TotalNodes:         types.Int64Value(int64(st.GetTotalNodes())),
-		CreatedAt:          timestampValue(st.GetCreatedAt()),
-		UpdatedAt:          timestampValue(st.GetUpdatedAt()),
-		Timeouts:           prior.Timeouts,
+		ID:                   types.StringValue(db.GetId()),
+		WorkspaceID:          prior.WorkspaceID,
+		Name:                 types.StringValue(db.GetName()),
+		Version:              types.StringValue(spec.GetVersion()),
+		Storage:              documentDBStorageFromProto(spec.GetStorage()),
+		Nodes:                documentDBNodesFromProto(spec.GetNodes()),
+		BackupsEnabled:       types.BoolValue(spec.GetBackupsEnabled()),
+		KeepBackupsOnDestroy: prior.KeepBackupsOnDestroy,
+		DeletionProtection:   types.BoolValue(db.GetDeletionProtection()),
+		Restore:              prior.Restore,
+		DefaultConnections:   documentDBDefaultConnections.fromProto(db.GetDefaultConnections(), prior.DefaultConnections),
+		Phase:                types.StringValue(st.GetPhase()),
+		PhaseMessage:         types.StringValue(st.GetMessage()),
+		EndpointHost:         endpointHost,
+		EndpointPort:         endpointPort,
+		PublicEndpoints:      endpointsFromProto(st.GetPublicEndpoints()),
+		ReadyNodes:           types.Int64Value(int64(st.GetReadyNodes())),
+		TotalNodes:           types.Int64Value(int64(st.GetTotalNodes())),
+		CreatedAt:            timestampValue(st.GetCreatedAt()),
+		UpdatedAt:            timestampValue(st.GetUpdatedAt()),
+		Timeouts:             prior.Timeouts,
 	}
 }
