@@ -545,8 +545,6 @@ func validateDocumentDB(spec *serverv1.DatabaseSpec) error {
 	switch {
 	case spec.GetVersion() != "" && !slices.Contains(documentDBVersions, spec.GetVersion()):
 		return status.Errorf(codes.InvalidArgument, "validate spec: unsupported DocumentDB version %q", spec.GetVersion())
-	case spec.GetBackupsEnabled():
-		return status.Error(codes.InvalidArgument, "validate spec: backups are not supported for DocumentDB yet")
 	case spec.GetPostgresql() != nil || spec.GetValkey() != nil || spec.GetReplication() != nil:
 		return status.Error(codes.InvalidArgument, "DocumentDB databases take no postgresql or valkey settings")
 	case len(spec.GetNodes()) != 1:
@@ -907,6 +905,8 @@ func (f *fakeServer) UpdateDatabase(ctx context.Context, req *serverv1.UpdateDat
 			if in.GetStorage().GetAutoscale() != nil {
 				merged.Storage.Autoscale = in.GetStorage().GetAutoscale()
 			}
+		case "backups_enabled":
+			merged.BackupsEnabled = in.GetBackupsEnabled()
 		case "replication":
 			merged.Replication = in.GetReplication()
 		case "postgresql":

@@ -69,6 +69,8 @@ func TestDocumentDBClusterResource_Lifecycle(t *testing.T) {
 				Check: resource.ComposeAggregateTestCheckFunc(
 					resource.TestCheckResourceAttr(documentDBAddr, "phase", "running"),
 					resource.TestCheckResourceAttr(documentDBAddr, "version", "17"),
+					resource.TestCheckResourceAttr(documentDBAddr, "backups_enabled", "true"),
+					resource.TestCheckResourceAttr(documentDBAddr, "keep_backups_on_destroy", "false"),
 					resource.TestCheckResourceAttr(documentDBAddr, "storage.size", "30Gi"),
 					resource.TestCheckResourceAttr(documentDBAddr, "nodes.main.count", "2"),
 					resource.TestCheckResourceAttr(documentDBAddr, "nodes.main.resources.cpu", "2"),
@@ -90,8 +92,8 @@ func TestDocumentDBClusterResource_Lifecycle(t *testing.T) {
 						switch {
 						case spec.GetEngine() != "documentdb" || spec.GetVersion() != "17":
 							return fmt.Errorf("engine and version = %q %q", spec.GetEngine(), spec.GetVersion())
-						case spec.GetBackupsEnabled():
-							return errors.New("DocumentDB refuses backups, so they must not be requested")
+						case !spec.GetBackupsEnabled():
+							return errors.New("backups must be requested by default")
 						case spec.GetValkey() != nil || spec.GetPostgresql() != nil || spec.GetReplication() != nil:
 							return errors.New("no engine settings may be sent for DocumentDB")
 						case spec.GetPrimaryNodeGroup() != "main" || n.GetRole() != "data" || n.GetAutoscaling() != nil:
@@ -152,6 +154,52 @@ func TestDocumentDBClusterResource_Lifecycle(t *testing.T) {
 				ImportState:   true,
 				ImportStateId: "missing-slash",
 				ExpectError:   regexp.MustCompile("Invalid import ID"),
+			},
+		},
+	})
+}
+
+func TestDocumentDBClusterResource_Backups(t *testing.T) {
+	f := startFakeServer(t)
+	resource.UnitTest(t, resource.TestCase{
+		ProtoV6ProviderFactories: factories(relay.Dial),
+		CheckDestroy: func(*terraform.State) error {
+			f.mu.Lock()
+			defer f.mu.Unlock()
+			if !f.lastDBDelete.GetKeepBackups() {
+				return errors.New("keep_backups_on_destroy must reach the delete")
+			}
+			return nil
+		},
+		Steps: []resource.TestStep{
+			{
+				Config: documentDBCluster(f, "17", "", "  backups_enabled         = false\n  keep_backups_on_destroy = true\n"),
+				Check: resource.ComposeAggregateTestCheckFunc(
+					resource.TestCheckResourceAttr(documentDBAddr, "backups_enabled", "false"),
+					resource.TestCheckResourceAttr(documentDBAddr, "keep_backups_on_destroy", "true"),
+					func(*terraform.State) error {
+						if f.lastDBCreate.GetSpec().GetBackupsEnabled() {
+							return errors.New("backups_enabled = false must reach CreateDatabase")
+						}
+						return nil
+					},
+				),
+			},
+			{
+				Config: documentDBCluster(f, "17", "", "  keep_backups_on_destroy = true\n"),
+				ConfigPlanChecks: resource.ConfigPlanChecks{
+					PreApply: []plancheck.PlanCheck{plancheck.ExpectResourceAction(documentDBAddr, plancheck.ResourceActionUpdate)},
+				},
+				Check: resource.ComposeAggregateTestCheckFunc(
+					resource.TestCheckResourceAttr(documentDBAddr, "backups_enabled", "true"),
+					func(*terraform.State) error {
+						req := f.lastDBUpdate
+						if paths := req.GetUpdateMask().GetPaths(); !slices.Equal(paths, []string{"backups_enabled"}) || !req.GetSpec().GetBackupsEnabled() {
+							return fmt.Errorf("turning backups on must send only backups_enabled = true, got %v %v", paths, req.GetSpec().GetBackupsEnabled())
+						}
+						return nil
+					},
+				),
 			},
 		},
 	})
@@ -242,7 +290,6 @@ func TestDocumentDBClusterResource_ConfigValidation(t *testing.T) {
 		"group name":      {documentDBGroup("Main_1", 1, "R10"), "lowercase letters, digits and hyphens"},
 		"read-write user": {"  default_connections = { readwrite = true }\n" + documentDBGroup("main", 1, "R10"), `(?s)Unsupported default connection.*DocumentDB\s+has\s+no\s+readwrite\s+role;\s+use\s+readonly\s+or\s+admin`},
 		"read-write off":  {"  default_connections = { readwrite = false }\n" + documentDBGroup("main", 1, "R10"), `(?s)DocumentDB\s+has\s+no\s+readwrite\s+role`},
-		"backups":         {"  keep_backups_on_destroy = true\n" + documentDBGroup("main", 1, "R10"), `An argument named "keep_backups_on_destroy" is not expected here`},
 	}
 	for name, tc := range cases {
 		t.Run(name, func(t *testing.T) {
@@ -440,7 +487,6 @@ func TestFakeServerRejectsWhatThePlatformRejectsForDocumentDB(t *testing.T) {
 	}
 	cases := map[string]*serverv1.DatabaseSpec{
 		"version":           {Engine: "documentdb", Version: "16", PrimaryNodeGroup: "main", Nodes: group("data")},
-		"backups":           {Engine: "documentdb", BackupsEnabled: true, PrimaryNodeGroup: "main", Nodes: group("data")},
 		"valkey settings":   {Engine: "documentdb", PrimaryNodeGroup: "main", Nodes: group("data"), Valkey: &serverv1.ValkeyConfig{}},
 		"two groups":        {Engine: "documentdb", PrimaryNodeGroup: "a", Nodes: []*serverv1.NodeSpec{{Name: "a", Role: "data"}, {Name: "b", Role: "data"}}},
 		"storage autoscale": {Engine: "documentdb", PrimaryNodeGroup: "main", Nodes: group("data"), Storage: &serverv1.ClusterStorage{Autoscale: &serverv1.StorageAutoscale{Enabled: true}}},
@@ -473,7 +519,8 @@ func TestDocumentDBClusterDataSource(t *testing.T) {
 				Name: "main", Role: "data", Count: 3, Cloud: "aws", Region: "us-east-1", Tier: "R20",
 				Resources: &serverv1.ResourceRequirements{Cpu: "4", Memory: "8Gi"},
 			}},
-			Storage: &serverv1.ClusterStorage{Size: "40Gi"},
+			Storage:        &serverv1.ClusterStorage{Size: "40Gi"},
+			BackupsEnabled: true,
 		},
 		Status: &serverv1.DatabaseStatus{
 			Phase: "running", TotalNodes: 3, ReadyNodes: 3, Endpoint: &serverv1.Endpoint{Host: "docs.db", Port: 27017},
@@ -509,6 +556,8 @@ data "relay_documentdb_cluster" "by_id" {
 				resource.TestCheckResourceAttr(byName, "nodes.main.resources.memory", "8Gi"),
 				resource.TestCheckResourceAttr(byName, "storage.size", "40Gi"),
 				resource.TestCheckResourceAttr(byName, "deletion_protection", "true"),
+				resource.TestCheckResourceAttr(byName, "backups_enabled", "true"),
+				resource.TestCheckResourceAttr(byID, "backups_enabled", "false"),
 				resource.TestCheckResourceAttr(byName, "endpoint_port", "27017"),
 				resource.TestCheckResourceAttr(byName, "public_endpoints.1.host", "docs-ro.db"),
 				resource.TestCheckResourceAttr(byName, "ready_nodes", "3"),

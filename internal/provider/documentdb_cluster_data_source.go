@@ -25,6 +25,7 @@ type documentDBClusterDataModel struct {
 	Nodes              map[string]documentDBNodeGroupModel `tfsdk:"nodes"`
 	Storage            types.Object                        `tfsdk:"storage"`
 	Phase              types.String                        `tfsdk:"phase"`
+	BackupsEnabled     types.Bool                          `tfsdk:"backups_enabled"`
 	DeletionProtection types.Bool                          `tfsdk:"deletion_protection"`
 	EndpointHost       types.String                        `tfsdk:"endpoint_host"`
 	EndpointPort       types.Int64                         `tfsdk:"endpoint_port"`
@@ -77,6 +78,7 @@ func (d *documentDBClusterDataSource) Schema(_ context.Context, _ datasource.Sch
 				Attributes:          map[string]schema.Attribute{"size": schema.StringAttribute{Computed: true}},
 			},
 			"phase":               schema.StringAttribute{Computed: true},
+			"backups_enabled":     schema.BoolAttribute{Computed: true, MarkdownDescription: "Whether the cluster takes scheduled backups."},
 			"deletion_protection": schema.BoolAttribute{Computed: true, MarkdownDescription: "Whether the platform refuses to delete the cluster."},
 			"endpoint_host":       schema.StringAttribute{Computed: true, MarkdownDescription: "Public read-write endpoint host. Empty until the platform publishes it."},
 			"endpoint_port":       schema.Int64Attribute{Computed: true, MarkdownDescription: "Public read-write endpoint port, 27017."},
@@ -133,6 +135,7 @@ func (d *documentDBClusterDataSource) Read(ctx context.Context, req datasource.R
 		Nodes:              full.Nodes,
 		Storage:            full.Storage,
 		Phase:              full.Phase,
+		BackupsEnabled:     full.BackupsEnabled,
 		DeletionProtection: full.DeletionProtection,
 		EndpointHost:       full.EndpointHost,
 		EndpointPort:       full.EndpointPort,

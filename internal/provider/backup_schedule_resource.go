@@ -90,14 +90,14 @@ func (r *backupScheduleResource) Schema(_ context.Context, _ resource.SchemaRequ
 	keep := []planmodifier.String{stringplanmodifier.UseStateForUnknown()}
 
 	resp.Schema = schema.Schema{
-		MarkdownDescription: "The backup schedule of a managed PostgreSQL or Valkey cluster. Every apply replaces the whole schedule, so an attribute left out takes the platform's value. " +
+		MarkdownDescription: "The backup schedule of a managed PostgreSQL, Valkey or DocumentDB cluster. Every apply replaces the whole schedule, so an attribute left out takes the platform's value. " +
 			"Destroying the resource resets the cluster to the platform default schedule; it does not turn backups off. " +
 			"Only the attributes set in the configuration are tracked for drift. " +
 			"The cluster must have backups enabled. A cluster still on the platform default has no schedule to import.",
 		Attributes: map[string]schema.Attribute{
 			"id":           schema.StringAttribute{Computed: true, PlanModifiers: keep, MarkdownDescription: "The cluster ID."},
 			"workspace_id": schema.StringAttribute{Required: true, PlanModifiers: replace, MarkdownDescription: "Workspace of the cluster."},
-			"cluster_id":   schema.StringAttribute{Required: true, PlanModifiers: replace, MarkdownDescription: "`relay_postgresql_cluster` or `relay_valkey_cluster` ID."},
+			"cluster_id":   schema.StringAttribute{Required: true, PlanModifiers: replace, MarkdownDescription: "`relay_postgresql_cluster`, `relay_valkey_cluster` or `relay_documentdb_cluster` ID."},
 			"snapshot_time": schema.SingleNestedAttribute{
 				Optional: true, Computed: true,
 				Default: objectdefault.StaticValue(types.ObjectValueMust(snapshotTimeAttrTypes, map[string]attr.Value{
@@ -113,7 +113,8 @@ func (r *backupScheduleResource) Schema(_ context.Context, _ resource.SchemaRequ
 				Optional:   true,
 				Validators: []validator.List{listvalidator.SizeAtLeast(1)},
 				MarkdownDescription: "Retention ladder, at most one tier per frequency. Every enabled tier is rendered into the cluster's backup crons and retention counts; " +
-					"the weekly tier takes the full backup and the daily tier the incremental one. Left out, the cluster takes a weekly full and a daily incremental backup, each kept `max_backups` times.",
+					"the weekly tier takes the full backup and the daily tier the incremental one. Left out, the cluster takes a weekly full and a daily incremental backup, each kept `max_backups` times. " +
+					"DocumentDB needs an enabled weekly tier and refuses enabled hourly and monthly tiers.",
 				NestedObject: schema.NestedAttributeObject{
 					Attributes: map[string]schema.Attribute{
 						"frequency": schema.StringAttribute{
@@ -145,9 +146,10 @@ func (r *backupScheduleResource) Schema(_ context.Context, _ resource.SchemaRequ
 				MarkdownDescription: "Full backups kept when `tiers` is not set; the platform default is 4. With tiers, the weekly tier's retention decides and the API ignores this value, so the two conflict.",
 			},
 			"pitr_window_days": schema.Int64Attribute{
-				Optional:            true,
-				Validators:          []validator.Int64{int64validator.Between(1, 7)},
-				MarkdownDescription: "Requested point-in-time-restore window in days, 1 to 7. PostgreSQL defaults to 7. Valkey has no window unless set, accepts one in `replication` mode only, and needs a disk at least twice its memory while the window is on.",
+				Optional:   true,
+				Validators: []validator.Int64{int64validator.Between(1, 7)},
+				MarkdownDescription: "Requested point-in-time-restore window in days, 1 to 7. PostgreSQL defaults to 7. Valkey has no window unless set, accepts one in `replication` mode only, and needs a disk at least twice its memory while the window is on. " +
+					"DocumentDB refuses it: its window follows the retained full backups.",
 			},
 			"platform_default": schema.BoolAttribute{
 				Computed: true, PlanModifiers: []planmodifier.Bool{boolplanmodifier.UseStateForUnknown()},
@@ -207,7 +209,7 @@ func (r *backupScheduleResource) ModifyPlan(ctx context.Context, req resource.Mo
 	var pitr types.Int64
 	resp.Diagnostics.Append(req.Plan.Get(ctx, &plan)...)
 	resp.Diagnostics.Append(req.Config.GetAttribute(ctx, path.Root("pitr_window_days"), &pitr)...)
-	if resp.Diagnostics.HasError() || !known(pitr) || plan.WorkspaceID.IsUnknown() || plan.ClusterID.IsUnknown() {
+	if resp.Diagnostics.HasError() || pitr.IsNull() && !known(plan.Tiers) || plan.WorkspaceID.IsUnknown() || plan.ClusterID.IsUnknown() {
 		return
 	}
 	clusterID := plan.ClusterID
@@ -216,13 +218,38 @@ func (r *backupScheduleResource) ModifyPlan(ctx context.Context, req resource.Mo
 		return
 	}
 	spec := out.GetDatabase().GetSpec()
-	if !strings.EqualFold(spec.GetEngine(), engineValkey) {
-		return
-	}
 	switch {
-	case spec.GetValkey().GetMode() == valkeyModeCluster:
+	case strings.EqualFold(spec.GetEngine(), engineDocumentDB):
+		checkDocumentDBSchedule(pitr, plan.Tiers, &resp.Diagnostics)
+	case strings.EqualFold(spec.GetEngine(), engineValkey) && known(pitr) && spec.GetValkey().GetMode() == valkeyModeCluster:
 		resp.Diagnostics.AddAttributeError(path.Root("pitr_window_days"), "No point-in-time restore in Valkey cluster mode",
 			"Cluster "+clusterID.ValueString()+" runs in cluster mode; point-in-time restore needs replication mode. Remove pitr_window_days.")
+	}
+}
+
+func checkDocumentDBSchedule(pitr types.Int64, tiers types.List, diags *diag.Diagnostics) {
+	if !pitr.IsNull() {
+		diags.AddAttributeError(path.Root("pitr_window_days"), "No pitr_window_days for DocumentDB",
+			"DocumentDB's point-in-time restore window follows the retained full backups and cannot be set. Remove pitr_window_days.")
+	}
+	weekly := !known(tiers)
+	for i, elem := range tiers.Elements() {
+		attrs := elem.(types.Object).Attributes()
+		frequency, enabled := attrs["frequency"], attrs["enabled"]
+		switch {
+		case frequency == nil || frequency.IsUnknown() || enabled.IsUnknown():
+			weekly = true
+		case enabled.Equal(types.BoolValue(false)):
+		case frequency.Equal(types.StringValue("weekly")):
+			weekly = true
+		case !frequency.Equal(types.StringValue("daily")):
+			diags.AddAttributeError(path.Root("tiers").AtListIndex(i).AtName("frequency"), "Tier not available for DocumentDB",
+				"DocumentDB takes only a weekly full and a daily incremental backup, not "+frequency.(types.String).ValueString()+" ones. Remove the tier or set enabled = false.")
+		}
+	}
+	if !weekly {
+		diags.AddAttributeError(path.Root("tiers"), "DocumentDB needs a weekly tier",
+			"DocumentDB counts retention in full backups, which the weekly tier takes. Add an enabled weekly tier.")
 	}
 }
 

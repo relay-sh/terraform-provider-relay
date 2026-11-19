@@ -27,7 +27,7 @@ func (f *fakeServer) scheduledDatabase(ctx context.Context, id string) (*serverv
 	if !ok || db.GetWorkspaceId() != workspaceOf(ctx) {
 		return nil, status.Errorf(codes.NotFound, "database %s not found", id)
 	}
-	if e := db.GetSpec().GetEngine(); e != enginePostgreSQL && e != engineValkey {
+	if e := db.GetSpec().GetEngine(); e != enginePostgreSQL && e != engineValkey && e != engineDocumentDB {
 		return nil, status.Errorf(codes.FailedPrecondition, "engine %q has no cluster-keyed backup schedule", e)
 	}
 	if !db.GetSpec().GetBackupsEnabled() {
@@ -128,6 +128,11 @@ func validateSchedule(engine string, spec *serverv1.BackupScheduleSpec) error {
 	case t != nil && (t.GetHour() < 0 || t.GetHour() > 23 || t.GetMinute() < 0 || t.GetMinute() > 59):
 		return fmt.Errorf("snapshot_time must be a UTC wall-clock time (hour 0-23, minute 0-59)")
 	}
+	if engine == engineDocumentDB {
+		if err := validateDocumentDBPolicy(spec); err != nil {
+			return err
+		}
+	}
 	seen := map[string]bool{}
 	for i, t := range spec.GetPolicyTiers() {
 		rule, ok := tierRules[t.GetFrequency()]
@@ -149,6 +154,26 @@ func validateSchedule(engine string, spec *serverv1.BackupScheduleSpec) error {
 		case t.GetRetentionUnit() != "" && t.GetRetentionUnit() != rule.unit:
 			return fmt.Errorf("policy_tiers[%d]: %s retention is counted in %s, got %q", i, t.GetFrequency(), rule.unit, t.GetRetentionUnit())
 		}
+	}
+	return nil
+}
+
+func validateDocumentDBPolicy(spec *serverv1.BackupScheduleSpec) error {
+	if spec.GetPitrWindowDays() != 0 {
+		return fmt.Errorf("pitr_window_days is not supported for DocumentDB; the point-in-time restore window follows the retained full backups")
+	}
+	weekly := len(spec.GetPolicyTiers()) == 0
+	for i, t := range spec.GetPolicyTiers() {
+		switch {
+		case !t.GetEnabled():
+		case t.GetFrequency() == "weekly":
+			weekly = true
+		case t.GetFrequency() != "daily":
+			return fmt.Errorf("policy_tiers[%d]: %s backups are not supported for DocumentDB (only weekly full and daily incremental)", i, t.GetFrequency())
+		}
+	}
+	if !weekly {
+		return fmt.Errorf("policy_tiers: DocumentDB needs the weekly full backup tier enabled")
 	}
 	return nil
 }
