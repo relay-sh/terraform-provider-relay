@@ -71,6 +71,7 @@ type fakeServer struct {
 	lastRestore       *serverv1.RestoreDatabaseRequest
 	keptSources       map[string]*serverv1.Database
 	lastDBUpdate      *serverv1.UpdateDatabaseRequest
+	lastDBMark        *serverv1.UpdateDatabaseRequest
 	lastDBDelete      *serverv1.DeleteDatabaseRequest
 	afterUpdate       func(*serverv1.Database)
 	denyDisable       bool
@@ -690,6 +691,7 @@ func (f *fakeServer) CreateDatabase(ctx context.Context, req *serverv1.CreateDat
 		db.DefaultConnections = proto.Clone(dc).(*serverv1.DefaultConnectionsIntent)
 	}
 	db.DeletionProtection = req.GetDeletionProtection()
+	db.ManagedBy = req.GetManagedBy()
 	return &serverv1.CreateDatabaseResponse{Database: db}, nil
 }
 
@@ -875,11 +877,16 @@ func (f *fakeServer) UpdateDatabase(ctx context.Context, req *serverv1.UpdateDat
 	if err := f.record(ctx, "UpdateDatabase"); err != nil {
 		return nil, err
 	}
-	f.lastDBUpdate = req
 	db, ok := f.databases[req.GetId()]
 	if !ok {
 		return nil, status.Error(codes.NotFound, "database not found")
 	}
+	if req.GetSpec() == nil && req.GetUpdateMask() == nil && req.ManagedBy != nil {
+		f.lastDBMark = req
+		db.ManagedBy = req.GetManagedBy()
+		return &serverv1.UpdateDatabaseResponse{Database: db}, nil
+	}
+	f.lastDBUpdate = req
 	in := req.GetSpec()
 	merged := proto.Clone(db.GetSpec()).(*serverv1.DatabaseSpec)
 	if merged.Storage == nil {

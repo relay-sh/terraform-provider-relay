@@ -37,6 +37,7 @@ data "relay_documentdb_cluster" "catalog" {
 - `deletion_protection` (Boolean) Whether the platform refuses to delete the cluster.
 - `endpoint_host` (String) Public read-write endpoint host. Empty until the platform publishes it.
 - `endpoint_port` (Number) Public read-write endpoint port, 27017.
+- `managed_by` (String) Owner tag, empty when unmanaged.
 - `nodes` (Attributes Map) The cluster's node group, keyed by its label. (see [below for nested schema](#nestedatt--nodes))
 - `phase` (String)
 - `public_endpoints` (Attributes List) Public endpoints by role: `rw` and `ro`. (see [below for nested schema](#nestedatt--public_endpoints))

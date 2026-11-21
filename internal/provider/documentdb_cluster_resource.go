@@ -65,6 +65,7 @@ type documentDBClusterModel struct {
 	BackupsEnabled       types.Bool                          `tfsdk:"backups_enabled"`
 	KeepBackupsOnDestroy types.Bool                          `tfsdk:"keep_backups_on_destroy"`
 	DeletionProtection   types.Bool                          `tfsdk:"deletion_protection"`
+	ManagedBy            types.String                        `tfsdk:"managed_by"`
 	Restore              types.Object                        `tfsdk:"restore"`
 	DefaultConnections   types.Object                        `tfsdk:"default_connections"`
 	Phase                types.String                        `tfsdk:"phase"`
@@ -169,6 +170,7 @@ func (r *documentDBClusterResource) Schema(ctx context.Context, _ resource.Schem
 				MarkdownDescription: "Keep the cluster's backups when it is destroyed.",
 			},
 			"deletion_protection": deletionProtectionAttribute("cluster"),
+			"managed_by":          clusterManagedByAttribute(),
 			"restore": restoreAttribute("`version`, when set, must match the source's, and `nodes` must keep the label of the source's node group.",
 				"Recover up to this instant, RFC 3339, for example `2026-10-31T12:00:00Z`, by replaying the source's archived WAL; "+
 					"the platform rejects an instant outside the source's backups. Omit it to restore the latest backup and replay all archived WAL."),
@@ -267,6 +269,7 @@ func (r *documentDBClusterResource) Create(ctx context.Context, req resource.Cre
 		out, err := r.client.API.CreateDatabase(scoped, &serverv1.CreateDatabaseRequest{
 			Name: plan.Name.ValueString(), Spec: documentDBSpecToProto(plan), DefaultConnections: defaultConnectionsToProto(plan.DefaultConnections),
 			DeletionProtection: plan.DeletionProtection.ValueBool(),
+			ManagedBy:          plan.ManagedBy.ValueString(),
 		})
 		if err != nil {
 			resp.Diagnostics.AddError("Cannot create cluster", err.Error())
@@ -300,6 +303,13 @@ func (r *documentDBClusterResource) Create(ctx context.Context, req resource.Cre
 				resp.Diagnostics.AddError("Cannot set default connections on the restored cluster", err.Error())
 				return
 			}
+		}
+		marked, ok := setClusterManagedBy(scoped, r.client, id, plan.ManagedBy, types.StringValue(db.GetManagedBy()), &resp.Diagnostics)
+		if !ok {
+			return
+		}
+		if marked != nil {
+			db = marked
 		}
 		protected, ok := setClusterDeletionProtection(scoped, r.client, id, plan.DeletionProtection, types.BoolValue(db.GetDeletionProtection()), &resp.Diagnostics)
 		if !ok {
@@ -383,6 +393,9 @@ func (r *documentDBClusterResource) Update(ctx context.Context, req resource.Upd
 
 	scoped := r.client.Workspace(ctx, plan.WorkspaceID.ValueString())
 	if _, ok := setClusterDeletionProtection(scoped, r.client, plan.ID.ValueString(), plan.DeletionProtection, prior.DeletionProtection, &resp.Diagnostics); !ok {
+		return
+	}
+	if _, ok := setClusterManagedBy(scoped, r.client, plan.ID.ValueString(), plan.ManagedBy, prior.ManagedBy, &resp.Diagnostics); !ok {
 		return
 	}
 	if paths := documentDBUpdateMask(plan, prior); len(paths) > 0 {
@@ -514,6 +527,7 @@ func documentDBClusterFromProto(db *serverv1.Database, prior documentDBClusterMo
 		BackupsEnabled:       types.BoolValue(spec.GetBackupsEnabled()),
 		KeepBackupsOnDestroy: prior.KeepBackupsOnDestroy,
 		DeletionProtection:   types.BoolValue(db.GetDeletionProtection()),
+		ManagedBy:            types.StringValue(db.GetManagedBy()),
 		Restore:              prior.Restore,
 		DefaultConnections:   documentDBDefaultConnections.fromProto(db.GetDefaultConnections(), prior.DefaultConnections),
 		Phase:                types.StringValue(st.GetPhase()),

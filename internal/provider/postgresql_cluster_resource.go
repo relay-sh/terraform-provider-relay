@@ -51,6 +51,7 @@ type postgresqlClusterModel struct {
 	Replication          types.Object              `tfsdk:"replication"`
 	KeepBackupsOnDestroy types.Bool                `tfsdk:"keep_backups_on_destroy"`
 	DeletionProtection   types.Bool                `tfsdk:"deletion_protection"`
+	ManagedBy            types.String              `tfsdk:"managed_by"`
 	Restore              types.Object              `tfsdk:"restore"`
 	DefaultConnections   types.Object              `tfsdk:"default_connections"`
 	Phase                types.String              `tfsdk:"phase"`
@@ -193,6 +194,7 @@ func (r *postgresqlClusterResource) Schema(ctx context.Context, _ resource.Schem
 				MarkdownDescription: "Keep the cluster's backups when it is destroyed.",
 			},
 			"deletion_protection": deletionProtectionAttribute("cluster"),
+			"managed_by":          clusterManagedByAttribute(),
 			"restore": restoreAttribute("`version`, when set, must match the source's, and `nodes` must keep the label of the source's primary group.",
 				"Recover up to this instant, RFC 3339, for example `2026-10-31T12:00:00Z`, by replaying the source's archived WAL; "+
 					"the platform rejects an instant outside the source's backups. Omit it to restore the latest backup and replay all archived WAL."),
@@ -403,6 +405,7 @@ func (r *postgresqlClusterResource) Create(ctx context.Context, req resource.Cre
 		out, err := r.client.API.CreateDatabase(scoped, &serverv1.CreateDatabaseRequest{
 			Name: plan.Name.ValueString(), Spec: clusterSpecToProto(plan), DefaultConnections: defaultConnectionsToProto(plan.DefaultConnections),
 			DeletionProtection: plan.DeletionProtection.ValueBool(),
+			ManagedBy:          plan.ManagedBy.ValueString(),
 		})
 		if err != nil {
 			resp.Diagnostics.AddError("Cannot create cluster", err.Error())
@@ -440,6 +443,13 @@ func (r *postgresqlClusterResource) Create(ctx context.Context, req resource.Cre
 			resp.Diagnostics.AddError("Cannot set default connections on the restored cluster", err.Error())
 			return
 		}
+	}
+	marked, ok := setClusterManagedBy(scoped, r.client, id, plan.ManagedBy, types.StringValue(db.GetManagedBy()), &resp.Diagnostics)
+	if !ok {
+		return
+	}
+	if marked != nil {
+		db = marked
 	}
 	protected, ok := setClusterDeletionProtection(scoped, r.client, id, plan.DeletionProtection, types.BoolValue(db.GetDeletionProtection()), &resp.Diagnostics)
 	if !ok {
@@ -526,6 +536,9 @@ func (r *postgresqlClusterResource) Update(ctx context.Context, req resource.Upd
 
 	scoped := r.client.Workspace(ctx, plan.WorkspaceID.ValueString())
 	if _, ok := setClusterDeletionProtection(scoped, r.client, plan.ID.ValueString(), plan.DeletionProtection, prior.DeletionProtection, &resp.Diagnostics); !ok {
+		return
+	}
+	if _, ok := setClusterManagedBy(scoped, r.client, plan.ID.ValueString(), plan.ManagedBy, prior.ManagedBy, &resp.Diagnostics); !ok {
 		return
 	}
 	if paths := clusterUpdateMask(plan, prior); len(paths) > 0 {
@@ -624,6 +637,7 @@ func clusterFromProto(db *serverv1.Database, prior postgresqlClusterModel) postg
 		Replication:          replicationFromProto(spec.GetReplication()),
 		KeepBackupsOnDestroy: prior.KeepBackupsOnDestroy,
 		DeletionProtection:   types.BoolValue(db.GetDeletionProtection()),
+		ManagedBy:            types.StringValue(db.GetManagedBy()),
 		Restore:              prior.Restore,
 		DefaultConnections:   defaultConnectionsFromProto(db.GetDefaultConnections(), prior.DefaultConnections),
 		Phase:                types.StringValue(st.GetPhase()),

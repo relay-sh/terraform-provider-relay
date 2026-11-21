@@ -29,6 +29,7 @@ type valkeyClusterDataModel struct {
 	Parameters         types.Map                       `tfsdk:"parameters"`
 	Phase              types.String                    `tfsdk:"phase"`
 	DeletionProtection types.Bool                      `tfsdk:"deletion_protection"`
+	ManagedBy          types.String                    `tfsdk:"managed_by"`
 	EndpointHost       types.String                    `tfsdk:"endpoint_host"`
 	EndpointPort       types.Int64                     `tfsdk:"endpoint_port"`
 	PublicEndpoints    types.List                      `tfsdk:"public_endpoints"`
@@ -85,6 +86,7 @@ func (d *valkeyClusterDataSource) Schema(_ context.Context, _ datasource.SchemaR
 			"parameters":          schema.MapAttribute{ElementType: types.StringType, Computed: true, MarkdownDescription: "Valkey settings."},
 			"phase":               schema.StringAttribute{Computed: true},
 			"deletion_protection": schema.BoolAttribute{Computed: true, MarkdownDescription: "Whether the platform refuses to delete the cluster."},
+			"managed_by":          schema.StringAttribute{Computed: true, MarkdownDescription: "Owner tag, empty when unmanaged."},
 			"endpoint_host":       schema.StringAttribute{Computed: true, MarkdownDescription: "Public read-write endpoint host. Empty until the platform publishes it."},
 			"endpoint_port":       schema.Int64Attribute{Computed: true, MarkdownDescription: "Public read-write endpoint port."},
 			"public_endpoints":    schema.ListNestedAttribute{Computed: true, NestedObject: endpoint},
@@ -147,6 +149,7 @@ func (d *valkeyClusterDataSource) Read(ctx context.Context, req datasource.ReadR
 		Parameters:         full.Parameters,
 		Phase:              full.Phase,
 		DeletionProtection: full.DeletionProtection,
+		ManagedBy:          full.ManagedBy,
 		EndpointHost:       full.EndpointHost,
 		EndpointPort:       full.EndpointPort,
 		PublicEndpoints:    full.PublicEndpoints,

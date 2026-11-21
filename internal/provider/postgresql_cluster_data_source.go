@@ -24,6 +24,7 @@ type postgresqlClusterDataModel struct {
 	Version            types.String `tfsdk:"version"`
 	Phase              types.String `tfsdk:"phase"`
 	DeletionProtection types.Bool   `tfsdk:"deletion_protection"`
+	ManagedBy          types.String `tfsdk:"managed_by"`
 	EndpointHost       types.String `tfsdk:"endpoint_host"`
 	EndpointPort       types.Int64  `tfsdk:"endpoint_port"`
 	SharedHost         types.String `tfsdk:"shared_host"`
@@ -58,6 +59,7 @@ func (d *postgresqlClusterDataSource) Schema(_ context.Context, _ datasource.Sch
 			"version":             schema.StringAttribute{Computed: true},
 			"phase":               schema.StringAttribute{Computed: true},
 			"deletion_protection": schema.BoolAttribute{Computed: true, MarkdownDescription: "Whether the platform refuses to delete the cluster."},
+			"managed_by":          schema.StringAttribute{Computed: true, MarkdownDescription: "Owner tag, empty when unmanaged."},
 			"endpoint_host":       schema.StringAttribute{Computed: true, MarkdownDescription: "Public read-write endpoint host. Empty until the platform publishes it."},
 			"endpoint_port":       schema.Int64Attribute{Computed: true, MarkdownDescription: "Public read-write endpoint port."},
 			"shared_host":         schema.StringAttribute{Computed: true, MarkdownDescription: "The previous shared read-write address of a database upgraded from the Free plan. It keeps working, but is never `endpoint_host`. Empty when there is no such alias."},
@@ -117,6 +119,7 @@ func (d *postgresqlClusterDataSource) Read(ctx context.Context, req datasource.R
 		Version:            types.StringValue(spec.GetVersion()),
 		Phase:              types.StringValue(st.GetPhase()),
 		DeletionProtection: types.BoolValue(db.GetDeletionProtection()),
+		ManagedBy:          types.StringValue(db.GetManagedBy()),
 		EndpointHost:       endpointHost,
 		EndpointPort:       endpointPort,
 		SharedHost:         sharedHostFromProto(st.GetPublicEndpoints()),

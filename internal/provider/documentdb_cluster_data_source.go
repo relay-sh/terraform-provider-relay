@@ -27,6 +27,7 @@ type documentDBClusterDataModel struct {
 	Phase              types.String                        `tfsdk:"phase"`
 	BackupsEnabled     types.Bool                          `tfsdk:"backups_enabled"`
 	DeletionProtection types.Bool                          `tfsdk:"deletion_protection"`
+	ManagedBy          types.String                        `tfsdk:"managed_by"`
 	EndpointHost       types.String                        `tfsdk:"endpoint_host"`
 	EndpointPort       types.Int64                         `tfsdk:"endpoint_port"`
 	PublicEndpoints    types.List                          `tfsdk:"public_endpoints"`
@@ -80,6 +81,7 @@ func (d *documentDBClusterDataSource) Schema(_ context.Context, _ datasource.Sch
 			"phase":               schema.StringAttribute{Computed: true},
 			"backups_enabled":     schema.BoolAttribute{Computed: true, MarkdownDescription: "Whether the cluster takes scheduled backups."},
 			"deletion_protection": schema.BoolAttribute{Computed: true, MarkdownDescription: "Whether the platform refuses to delete the cluster."},
+			"managed_by":          schema.StringAttribute{Computed: true, MarkdownDescription: "Owner tag, empty when unmanaged."},
 			"endpoint_host":       schema.StringAttribute{Computed: true, MarkdownDescription: "Public read-write endpoint host. Empty until the platform publishes it."},
 			"endpoint_port":       schema.Int64Attribute{Computed: true, MarkdownDescription: "Public read-write endpoint port, 27017."},
 			"public_endpoints":    schema.ListNestedAttribute{Computed: true, NestedObject: endpoint, MarkdownDescription: "Public endpoints by role: `rw` and `ro`."},
@@ -137,6 +139,7 @@ func (d *documentDBClusterDataSource) Read(ctx context.Context, req datasource.R
 		Phase:              full.Phase,
 		BackupsEnabled:     full.BackupsEnabled,
 		DeletionProtection: full.DeletionProtection,
+		ManagedBy:          full.ManagedBy,
 		EndpointHost:       full.EndpointHost,
 		EndpointPort:       full.EndpointPort,
 		PublicEndpoints:    full.PublicEndpoints,

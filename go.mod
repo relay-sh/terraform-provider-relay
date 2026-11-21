@@ -9,7 +9,7 @@ require (
 	github.com/hashicorp/terraform-plugin-framework-validators v0.19.0
 	github.com/hashicorp/terraform-plugin-go v0.31.0
 	github.com/hashicorp/terraform-plugin-testing v1.16.0
-	github.com/relay-sh/relay-go v0.0.2-0.20261118165256-682642683c06
+	github.com/relay-sh/relay-go v0.0.2-0.20261121231006-8f0e991cc9bf
 	google.golang.org/grpc v1.83.2
 	google.golang.org/protobuf v1.36.11
 )

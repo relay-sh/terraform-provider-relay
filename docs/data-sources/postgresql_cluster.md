@@ -36,6 +36,7 @@ data "relay_postgresql_cluster" "billing" {
 - `deletion_protection` (Boolean) Whether the platform refuses to delete the cluster.
 - `endpoint_host` (String) Public read-write endpoint host. Empty until the platform publishes it.
 - `endpoint_port` (Number) Public read-write endpoint port.
+- `managed_by` (String) Owner tag, empty when unmanaged.
 - `phase` (String)
 - `private_endpoints` (Attributes List) (see [below for nested schema](#nestedatt--private_endpoints))
 - `public_endpoints` (Attributes List) (see [below for nested schema](#nestedatt--public_endpoints))

@@ -73,6 +73,7 @@ type valkeyClusterModel struct {
 	Parameters           types.Map                       `tfsdk:"parameters"`
 	KeepBackupsOnDestroy types.Bool                      `tfsdk:"keep_backups_on_destroy"`
 	DeletionProtection   types.Bool                      `tfsdk:"deletion_protection"`
+	ManagedBy            types.String                    `tfsdk:"managed_by"`
 	Restore              types.Object                    `tfsdk:"restore"`
 	DefaultConnections   types.Object                    `tfsdk:"default_connections"`
 	Phase                types.String                    `tfsdk:"phase"`
@@ -193,6 +194,7 @@ func (r *valkeyClusterResource) Schema(ctx context.Context, _ resource.SchemaReq
 				MarkdownDescription: "Keep the cluster's backups when it is destroyed.",
 			},
 			"deletion_protection": deletionProtectionAttribute("cluster"),
+			"managed_by":          clusterManagedByAttribute(),
 			"restore": restoreAttribute("`mode`, `version` when set, and the node group label must match the source's.",
 				"Recover up to this instant, RFC 3339, for example `2026-10-31T12:00:00Z`. It replays the source's AOF archive, so it needs `mode = \"replication\"`, "+
 					"a source that still exists with `pitr_window_days` on its backup schedule, and an instant inside that window. Omit it to restore the latest backup."),
@@ -338,7 +340,7 @@ func (r *valkeyClusterResource) ModifyPlan(ctx context.Context, req resource.Mod
 func sameSettings(a, b valkeyClusterModel) bool {
 	return a.Name.Equal(b.Name) && a.WorkspaceID.Equal(b.WorkspaceID) && a.Version.Equal(b.Version) && a.Mode.Equal(b.Mode) &&
 		a.Storage.Equal(b.Storage) && a.Shards.Equal(b.Shards) && a.ReplicasPerShard.Equal(b.ReplicasPerShard) && a.Parameters.Equal(b.Parameters) &&
-		a.KeepBackupsOnDestroy.Equal(b.KeepBackupsOnDestroy) && a.DeletionProtection.Equal(b.DeletionProtection) && a.Restore.Equal(b.Restore) &&
+		a.KeepBackupsOnDestroy.Equal(b.KeepBackupsOnDestroy) && a.DeletionProtection.Equal(b.DeletionProtection) && a.ManagedBy.Equal(b.ManagedBy) && a.Restore.Equal(b.Restore) &&
 		a.DefaultConnections.Equal(b.DefaultConnections) && a.Timeouts.Equal(b.Timeouts)
 }
 
@@ -388,6 +390,7 @@ func (r *valkeyClusterResource) Create(ctx context.Context, req resource.CreateR
 		out, err := r.client.API.CreateDatabase(scoped, &serverv1.CreateDatabaseRequest{
 			Name: plan.Name.ValueString(), Spec: valkeySpecToProto(plan), DefaultConnections: defaultConnectionsToProto(plan.DefaultConnections),
 			DeletionProtection: plan.DeletionProtection.ValueBool(),
+			ManagedBy:          plan.ManagedBy.ValueString(),
 		})
 		if err != nil {
 			resp.Diagnostics.AddError("Cannot create cluster", err.Error())
@@ -422,6 +425,13 @@ func (r *valkeyClusterResource) Create(ctx context.Context, req resource.CreateR
 			resp.Diagnostics.AddError("Cannot set default connections on the restored cluster", err.Error())
 			return
 		}
+	}
+	marked, ok := setClusterManagedBy(scoped, r.client, id, plan.ManagedBy, types.StringValue(db.GetManagedBy()), &resp.Diagnostics)
+	if !ok {
+		return
+	}
+	if marked != nil {
+		db = marked
 	}
 	protected, ok := setClusterDeletionProtection(scoped, r.client, id, plan.DeletionProtection, types.BoolValue(db.GetDeletionProtection()), &resp.Diagnostics)
 	if !ok {
@@ -520,6 +530,9 @@ func (r *valkeyClusterResource) Update(ctx context.Context, req resource.UpdateR
 
 	scoped := r.client.Workspace(ctx, plan.WorkspaceID.ValueString())
 	if _, ok := setClusterDeletionProtection(scoped, r.client, plan.ID.ValueString(), plan.DeletionProtection, prior.DeletionProtection, &resp.Diagnostics); !ok {
+		return
+	}
+	if _, ok := setClusterManagedBy(scoped, r.client, plan.ID.ValueString(), plan.ManagedBy, prior.ManagedBy, &resp.Diagnostics); !ok {
 		return
 	}
 	if paths := valkeyUpdateMask(plan, prior); len(paths) > 0 {
@@ -716,6 +729,7 @@ func valkeyClusterFromProto(db *serverv1.Database, prior valkeyClusterModel) val
 		Parameters:           keepConfiguredParameterNames(v.GetParameters(), prior.Parameters),
 		KeepBackupsOnDestroy: prior.KeepBackupsOnDestroy,
 		DeletionProtection:   types.BoolValue(db.GetDeletionProtection()),
+		ManagedBy:            types.StringValue(db.GetManagedBy()),
 		Restore:              prior.Restore,
 		DefaultConnections:   defaultConnectionsFromProto(db.GetDefaultConnections(), prior.DefaultConnections),
 		Phase:                types.StringValue(st.GetPhase()),
