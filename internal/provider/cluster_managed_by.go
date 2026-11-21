@@ -18,7 +18,7 @@ func clusterManagedByAttribute() schema.StringAttribute {
 		Optional:            true,
 		Computed:            true,
 		Default:             stringdefault.StaticString(managedBy),
-		MarkdownDescription: "Owner tag the dashboard shows. Defaults to `terraform`; set it to another tool or an empty string. Clusters created before this attribute existed are tagged on the next apply.",
+		MarkdownDescription: "The tool that manages this cluster, recorded by Relay. Defaults to `terraform`; set it to another tool or an empty string. Clusters created before this attribute existed are tagged on the next apply.",
 	}
 }
 
