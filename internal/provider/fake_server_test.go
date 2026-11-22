@@ -50,6 +50,9 @@ type fakeServer struct {
 	readyAfter        int
 	valkeyFloor       string
 	unsyncedStandby   bool
+	regionLink        map[string]string
+	regionHeld        map[string]string
+	regionMessage     map[string]string
 	stuck             bool
 	failProvision     string
 	failDeletion      string
@@ -132,6 +135,9 @@ func startFakeServer(t *testing.T) *fakeServer {
 		databases:         map[string]*serverv1.Database{},
 		keptSources:       map[string]*serverv1.Database{},
 		dbCountdown:       map[string]int{},
+		regionLink:        map[string]string{},
+		regionHeld:        map[string]string{},
+		regionMessage:     map[string]string{},
 		readyAfter:        2,
 		users:             map[string]*serverv1.DatabaseUser{},
 		userCountdown:     map[string]int{},
@@ -804,6 +810,7 @@ func (f *fakeServer) storeDatabase(ctx context.Context, name string, spec *serve
 		},
 	}
 	effectiveCompute(db)
+	f.effectiveRegions(db)
 	f.databases[db.Id] = db
 	f.settle(db.Id, "provisioning")
 	return db
@@ -855,6 +862,27 @@ func effectiveCompute(db *serverv1.Database) {
 		out = append(out, c)
 	}
 	db.Status.Compute = out
+}
+
+func (f *fakeServer) effectiveRegions(db *serverv1.Database) {
+	d := db.GetSpec().GetDistribution()
+	if d.GetMode() != distributionStandby {
+		return
+	}
+	db.Status.Regions = nil
+	nodes := db.GetSpec().GetNodes()[0].GetCount()
+	for cloud, c := range d.GetClouds() {
+		for region, p := range c.GetRegions() {
+			key := cloud + "/" + region
+			r := &serverv1.RegionStatus{Cloud: cloud, Region: region, Role: "standby", Phase: db.GetStatus().GetPhase(), TotalNodes: nodes, ReadyNodes: db.GetStatus().GetReadyNodes(), Held: f.regionHeld[key], Message: f.regionMessage[key]}
+			if p.GetPrimary() {
+				r.Role = "primary"
+			} else if r.ReplicationLink = f.regionLink[key]; r.ReplicationLink == "" {
+				r.ReplicationLink = "Up"
+			}
+			db.Status.Regions = append(db.Status.Regions, r)
+		}
+	}
 }
 
 func (f *fakeServer) RestoreDatabase(ctx context.Context, req *serverv1.RestoreDatabaseRequest) (*serverv1.RestoreDatabaseResponse, error) {
@@ -917,6 +945,7 @@ func (f *fakeServer) GetDatabase(ctx context.Context, req *serverv1.GetDatabaseR
 			}
 		}
 	}
+	f.effectiveRegions(db)
 	return &serverv1.GetDatabaseResponse{Database: db}, nil
 }
 
@@ -991,6 +1020,7 @@ func (f *fakeServer) UpdateDatabase(ctx context.Context, req *serverv1.UpdateDat
 	deriveTierResources(merged)
 	db.Spec = merged
 	effectiveCompute(db)
+	f.effectiveRegions(db)
 	if f.afterUpdate != nil {
 		f.afterUpdate(db)
 	}
@@ -1038,6 +1068,7 @@ func (f *fakeServer) ListDatabases(ctx context.Context, req *serverv1.ListDataba
 	}
 	out := &serverv1.ListDatabasesResponse{}
 	if start < len(ids) {
+		f.effectiveRegions(f.databases[ids[start]])
 		out.Databases = []*serverv1.Database{f.databases[ids[start]]}
 		if start+1 < len(ids) {
 			out.NextPageToken = strconv.Itoa(start + 1)

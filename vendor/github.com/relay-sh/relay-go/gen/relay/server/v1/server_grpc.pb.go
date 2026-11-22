@@ -192,6 +192,9 @@ const (
 	ServerService_SetDefaultConnections_FullMethodName           = "/relay.server.v1.ServerService/SetDefaultConnections"
 	ServerService_SetDeletionProtection_FullMethodName           = "/relay.server.v1.ServerService/SetDeletionProtection"
 	ServerService_ResumeDatabase_FullMethodName                  = "/relay.server.v1.ServerService/ResumeDatabase"
+	ServerService_GetTopologyOperation_FullMethodName            = "/relay.server.v1.ServerService/GetTopologyOperation"
+	ServerService_AbortTopologyOperation_FullMethodName          = "/relay.server.v1.ServerService/AbortTopologyOperation"
+	ServerService_ResumeTopologyOperation_FullMethodName         = "/relay.server.v1.ServerService/ResumeTopologyOperation"
 	ServerService_GetDatabaseStatus_FullMethodName               = "/relay.server.v1.ServerService/GetDatabaseStatus"
 	ServerService_ListDatabaseNodes_FullMethodName               = "/relay.server.v1.ServerService/ListDatabaseNodes"
 	ServerService_GetDatabaseLogs_FullMethodName                 = "/relay.server.v1.ServerService/GetDatabaseLogs"
@@ -732,6 +735,9 @@ type ServerServiceClient interface {
 	SetDeletionProtection(ctx context.Context, in *SetDeletionProtectionRequest, opts ...grpc.CallOption) (*SetDeletionProtectionResponse, error)
 	// ResumeDatabase brings a paused cluster back from its storage.
 	ResumeDatabase(ctx context.Context, in *ResumeDatabaseRequest, opts ...grpc.CallOption) (*ResumeDatabaseResponse, error)
+	GetTopologyOperation(ctx context.Context, in *GetTopologyOperationRequest, opts ...grpc.CallOption) (*GetTopologyOperationResponse, error)
+	AbortTopologyOperation(ctx context.Context, in *AbortTopologyOperationRequest, opts ...grpc.CallOption) (*AbortTopologyOperationResponse, error)
+	ResumeTopologyOperation(ctx context.Context, in *ResumeTopologyOperationRequest, opts ...grpc.CallOption) (*ResumeTopologyOperationResponse, error)
 	// GetDatabaseStatus returns the latest phase/connection details.
 	GetDatabaseStatus(ctx context.Context, in *GetDatabaseStatusRequest, opts ...grpc.CallOption) (*GetDatabaseStatusResponse, error)
 	// ListDatabaseNodes returns runtime topology (members, roles).
@@ -2828,6 +2834,36 @@ func (c *serverServiceClient) ResumeDatabase(ctx context.Context, in *ResumeData
 	return out, nil
 }
 
+func (c *serverServiceClient) GetTopologyOperation(ctx context.Context, in *GetTopologyOperationRequest, opts ...grpc.CallOption) (*GetTopologyOperationResponse, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(GetTopologyOperationResponse)
+	err := c.cc.Invoke(ctx, ServerService_GetTopologyOperation_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *serverServiceClient) AbortTopologyOperation(ctx context.Context, in *AbortTopologyOperationRequest, opts ...grpc.CallOption) (*AbortTopologyOperationResponse, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(AbortTopologyOperationResponse)
+	err := c.cc.Invoke(ctx, ServerService_AbortTopologyOperation_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *serverServiceClient) ResumeTopologyOperation(ctx context.Context, in *ResumeTopologyOperationRequest, opts ...grpc.CallOption) (*ResumeTopologyOperationResponse, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(ResumeTopologyOperationResponse)
+	err := c.cc.Invoke(ctx, ServerService_ResumeTopologyOperation_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
 func (c *serverServiceClient) GetDatabaseStatus(ctx context.Context, in *GetDatabaseStatusRequest, opts ...grpc.CallOption) (*GetDatabaseStatusResponse, error) {
 	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
 	out := new(GetDatabaseStatusResponse)
@@ -4446,6 +4482,9 @@ type ServerServiceServer interface {
 	SetDeletionProtection(context.Context, *SetDeletionProtectionRequest) (*SetDeletionProtectionResponse, error)
 	// ResumeDatabase brings a paused cluster back from its storage.
 	ResumeDatabase(context.Context, *ResumeDatabaseRequest) (*ResumeDatabaseResponse, error)
+	GetTopologyOperation(context.Context, *GetTopologyOperationRequest) (*GetTopologyOperationResponse, error)
+	AbortTopologyOperation(context.Context, *AbortTopologyOperationRequest) (*AbortTopologyOperationResponse, error)
+	ResumeTopologyOperation(context.Context, *ResumeTopologyOperationRequest) (*ResumeTopologyOperationResponse, error)
 	// GetDatabaseStatus returns the latest phase/connection details.
 	GetDatabaseStatus(context.Context, *GetDatabaseStatusRequest) (*GetDatabaseStatusResponse, error)
 	// ListDatabaseNodes returns runtime topology (members, roles).
@@ -5321,6 +5360,15 @@ func (UnimplementedServerServiceServer) SetDeletionProtection(context.Context, *
 }
 func (UnimplementedServerServiceServer) ResumeDatabase(context.Context, *ResumeDatabaseRequest) (*ResumeDatabaseResponse, error) {
 	return nil, status.Error(codes.Unimplemented, "method ResumeDatabase not implemented")
+}
+func (UnimplementedServerServiceServer) GetTopologyOperation(context.Context, *GetTopologyOperationRequest) (*GetTopologyOperationResponse, error) {
+	return nil, status.Error(codes.Unimplemented, "method GetTopologyOperation not implemented")
+}
+func (UnimplementedServerServiceServer) AbortTopologyOperation(context.Context, *AbortTopologyOperationRequest) (*AbortTopologyOperationResponse, error) {
+	return nil, status.Error(codes.Unimplemented, "method AbortTopologyOperation not implemented")
+}
+func (UnimplementedServerServiceServer) ResumeTopologyOperation(context.Context, *ResumeTopologyOperationRequest) (*ResumeTopologyOperationResponse, error) {
+	return nil, status.Error(codes.Unimplemented, "method ResumeTopologyOperation not implemented")
 }
 func (UnimplementedServerServiceServer) GetDatabaseStatus(context.Context, *GetDatabaseStatusRequest) (*GetDatabaseStatusResponse, error) {
 	return nil, status.Error(codes.Unimplemented, "method GetDatabaseStatus not implemented")
@@ -8810,6 +8858,60 @@ func _ServerService_ResumeDatabase_Handler(srv interface{}, ctx context.Context,
 	return interceptor(ctx, in, info, handler)
 }
 
+func _ServerService_GetTopologyOperation_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(GetTopologyOperationRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(ServerServiceServer).GetTopologyOperation(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: ServerService_GetTopologyOperation_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(ServerServiceServer).GetTopologyOperation(ctx, req.(*GetTopologyOperationRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _ServerService_AbortTopologyOperation_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(AbortTopologyOperationRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(ServerServiceServer).AbortTopologyOperation(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: ServerService_AbortTopologyOperation_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(ServerServiceServer).AbortTopologyOperation(ctx, req.(*AbortTopologyOperationRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _ServerService_ResumeTopologyOperation_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(ResumeTopologyOperationRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(ServerServiceServer).ResumeTopologyOperation(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: ServerService_ResumeTopologyOperation_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(ServerServiceServer).ResumeTopologyOperation(ctx, req.(*ResumeTopologyOperationRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
 func _ServerService_GetDatabaseStatus_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
 	in := new(GetDatabaseStatusRequest)
 	if err := dec(in); err != nil {
@@ -11664,6 +11766,18 @@ var ServerService_ServiceDesc = grpc.ServiceDesc{
 		{
 			MethodName: "ResumeDatabase",
 			Handler:    _ServerService_ResumeDatabase_Handler,
+		},
+		{
+			MethodName: "GetTopologyOperation",
+			Handler:    _ServerService_GetTopologyOperation_Handler,
+		},
+		{
+			MethodName: "AbortTopologyOperation",
+			Handler:    _ServerService_AbortTopologyOperation_Handler,
+		},
+		{
+			MethodName: "ResumeTopologyOperation",
+			Handler:    _ServerService_ResumeTopologyOperation_Handler,
 		},
 		{
 			MethodName: "GetDatabaseStatus",

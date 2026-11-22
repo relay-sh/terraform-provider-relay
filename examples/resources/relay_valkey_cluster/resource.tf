@@ -87,3 +87,7 @@ resource "relay_valkey_cluster" "orders" {
     }
   }
 }
+
+output "orders_standby_links" {
+  value = { for r in relay_valkey_cluster.orders.regions : "${r.cloud}/${r.region}" => r.replication_link if r.role == "standby" }
+}

@@ -84,7 +84,7 @@ func upgradeValkeyClusterV0(ctx context.Context, req resource.UpgradeStateReques
 		Restore: old.Restore, DefaultConnections: old.DefaultConnections, Phase: old.Phase, PhaseMessage: old.PhaseMessage,
 		EndpointHost: old.EndpointHost, EndpointPort: old.EndpointPort, PublicEndpoints: old.PublicEndpoints,
 		PrivateEndpoints: old.PrivateEndpoints, StorageStatus: upgradedStorageStatus(old.StorageStatus),
-		ReadyNodes: old.ReadyNodes, TotalNodes: old.TotalNodes, CreatedAt: old.CreatedAt, UpdatedAt: old.UpdatedAt,
+		ReadyNodes: old.ReadyNodes, TotalNodes: old.TotalNodes, Regions: types.SetNull(regionStatusType), CreatedAt: old.CreatedAt, UpdatedAt: old.UpdatedAt,
 		Timeouts: old.Timeouts,
 	}
 	resp.Diagnostics.Append(resp.State.Set(ctx, &upgraded)...)
