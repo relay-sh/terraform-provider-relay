@@ -668,7 +668,7 @@ func clusterFromProto(db *serverv1.Database, prior postgresqlClusterModel) postg
 		StorageStatus:        storageStatusFromProto(st.GetStorage()),
 		ReadyNodes:           types.Int64Value(int64(st.GetReadyNodes())),
 		TotalNodes:           types.Int64Value(int64(st.GetTotalNodes())),
-		Distribution:         distributionFromProto(spec.GetDistribution()),
+		Distribution:         distributionFromProto(spec.GetDistribution(), prior.Distribution),
 		Regions:              regionsFromProto(st.GetRegions()),
 		CreatedAt:            timestampValue(st.GetCreatedAt()),
 		UpdatedAt:            timestampValue(st.GetUpdatedAt()),

@@ -251,3 +251,58 @@ func TestFakeServerRejectsWhatThePlatformRejectsForValkeyDistribution(t *testing
 		t.Fatalf("no distribution has no primary, got %q", got)
 	}
 }
+
+func TestValkeyClusterResource_NonCanonicalRegionSpelling(t *testing.T) {
+	f := startFakeServer(t)
+	east := standbyRegion("aws", "us-east-1", true)
+	euLoud := standbyRegion("AWS", "EU-West-1", false)
+	movedEast, movedEu := "    region {\n      cloud  = \"aws\"\n      region = \"us-east-1\"\n    }\n", standbyRegion("AWS", "EU-West-1", true)
+	const addr = "relay_valkey_cluster.this"
+	stored := func(region string) *serverv1.RegionPlacement {
+		f.mu.Lock()
+		defer f.mu.Unlock()
+		for _, db := range f.databases {
+			return db.GetSpec().GetDistribution().GetClouds()["aws"].GetRegions()[region]
+		}
+		return nil
+	}
+	resource.UnitTest(t, resource.TestCase{
+		ProtoV6ProviderFactories: factories(relay.Dial),
+		Steps: []resource.TestStep{
+			{
+				Config: standbyConfig(f, east, euLoud),
+				Check: resource.ComposeAggregateTestCheckFunc(
+					resource.TestCheckTypeSetElemNestedAttrs(addr, "distribution.region.*", map[string]string{"cloud": "AWS", "region": "EU-West-1", "primary": "false"}),
+					func(*terraform.State) error {
+						if stored("eu-west-1") == nil || stored("EU-West-1") != nil {
+							return fmt.Errorf("the platform must store the registered spelling, got %v", stored("eu-west-1"))
+						}
+						return nil
+					},
+				),
+			},
+			{Config: standbyConfig(f, east, euLoud), PlanOnly: true},
+			{
+				PreConfig: func() {
+					f.mu.Lock()
+					defer f.mu.Unlock()
+					for _, db := range f.databases {
+						two := int32(2)
+						db.Spec.Distribution.Clouds["aws"].Regions["eu-west-1"].Members = &two
+					}
+				},
+				Config: standbyConfig(f, movedEast, movedEu),
+				Check: resource.ComposeAggregateTestCheckFunc(
+					resource.TestCheckTypeSetElemNestedAttrs(addr, "distribution.region.*", map[string]string{"cloud": "AWS", "region": "EU-West-1", "primary": "true"}),
+					func(*terraform.State) error {
+						if got := stored("eu-west-1"); !got.GetPrimary() || got.GetMembers() != 2 {
+							return fmt.Errorf("the stored members must survive a spelling that differs from the stored one, got %v", got)
+						}
+						return nil
+					},
+				),
+			},
+			{Config: standbyConfig(f, movedEast, movedEu), PlanOnly: true},
+		},
+	})
+}

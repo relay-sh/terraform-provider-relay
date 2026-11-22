@@ -22,8 +22,29 @@ func (f *fakeServer) updateDistribution(merged, in *serverv1.DatabaseSpec) error
 	if err := f.gatePromotion(merged.GetDistribution(), in.GetDistribution()); err != nil {
 		return err
 	}
-	merged.Distribution = in.GetDistribution()
+	merged.Distribution = f.canonicalRegions(in.GetDistribution())
 	return nil
+}
+
+func (f *fakeServer) canonicalRegions(d *serverv1.Distribution) *serverv1.Distribution {
+	if d == nil {
+		return nil
+	}
+	out := &serverv1.Distribution{Mode: d.GetMode(), Clouds: map[string]*serverv1.CloudRegions{}}
+	for cloud, c := range d.GetClouds() {
+		for region, p := range c.GetRegions() {
+			for _, known := range f.providers {
+				if strings.EqualFold(known.GetCloud(), cloud) && strings.EqualFold(known.GetRegion(), region) {
+					cloud, region = known.GetCloud(), known.GetRegion()
+				}
+			}
+			if out.Clouds[cloud] == nil {
+				out.Clouds[cloud] = &serverv1.CloudRegions{Regions: map[string]*serverv1.RegionPlacement{}}
+			}
+			out.Clouds[cloud].Regions[region] = p
+		}
+	}
+	return out
 }
 
 func (f *fakeServer) gatePromotion(old, next *serverv1.Distribution) error {

@@ -37,7 +37,7 @@ func TestDistributionConversions(t *testing.T) {
 	if proto.GetMode() != "standby" || !proto.GetClouds()["aws"].GetRegions()["us-east-1"].GetPrimary() || proto.GetClouds()["gcp"].GetRegions()["us-central1"].GetPrimary() {
 		t.Fatalf("unexpected proto %v", proto)
 	}
-	if back := distributionFromProto(proto); !back.Equal(d) {
+	if back := distributionFromProto(proto, d); !back.Equal(d) {
 		t.Fatalf("round trip lost the distribution: %v", back)
 	}
 	if got := distributionPrimary(d); got != "aws/us-east-1" {
@@ -51,7 +51,7 @@ func TestDistributionConversions(t *testing.T) {
 		"local":     {Mode: "local"},
 		"stretched": {Mode: "stretched", Clouds: map[string]*serverv1.CloudRegions{"aws": {Regions: map[string]*serverv1.RegionPlacement{"us-east-1": {Primary: true}, "eu-west-1": {}}}}},
 	} {
-		if got := distributionFromProto(in); !got.IsNull() {
+		if got := distributionFromProto(in, types.ObjectNull(distributionAttrTypes)); !got.IsNull() {
 			t.Fatalf("%s must read as no distribution, got %v", name, got)
 		}
 	}
@@ -65,6 +65,42 @@ func TestDistributionConversions(t *testing.T) {
 		if got := distributionToProto(in); got != nil {
 			t.Fatalf("%s must send no distribution, got %v", name, got)
 		}
+	}
+}
+
+func TestDistributionFromProtoKeepsTheConfiguredSpelling(t *testing.T) {
+	s, yes, no := types.StringValue, types.BoolValue(true), types.BoolValue(false)
+	server := &serverv1.Distribution{Mode: "standby", Clouds: map[string]*serverv1.CloudRegions{
+		"aws": {Regions: map[string]*serverv1.RegionPlacement{"us-east-1": {Primary: true}, "eu-west-1": {}}},
+	}}
+	configured := distributionObject("standby",
+		regionObject(s("AWS"), s("US-East-1"), yes),
+		regionObject(types.StringUnknown(), s("eu-west-1"), no))
+	want := distributionObject("standby",
+		regionObject(s("AWS"), s("US-East-1"), yes),
+		regionObject(s("aws"), s("eu-west-1"), no))
+	if got := distributionFromProto(server, configured); !got.Equal(want) {
+		t.Fatalf("got %v, want %v", got, want)
+	}
+	canonical := distributionObject("standby",
+		regionObject(s("aws"), s("us-east-1"), yes),
+		regionObject(s("aws"), s("eu-west-1"), no))
+	if got := distributionFromProto(server, types.ObjectNull(distributionAttrTypes)); !got.Equal(canonical) {
+		t.Fatalf("with nothing configured the server spelling stands, got %v", got)
+	}
+}
+
+func TestKeepStoredPlacementsIgnoresSpelling(t *testing.T) {
+	members := int32(2)
+	stored := &serverv1.Distribution{Clouds: map[string]*serverv1.CloudRegions{
+		"aws": {Regions: map[string]*serverv1.RegionPlacement{"eu-west-1": {Members: &members}}},
+	}}
+	next := &serverv1.Distribution{Clouds: map[string]*serverv1.CloudRegions{
+		"AWS": {Regions: map[string]*serverv1.RegionPlacement{"EU-West-1": {}}},
+	}}
+	keepStoredPlacements(next, stored)
+	if got := next.GetClouds()["AWS"].GetRegions()["EU-West-1"].GetMembers(); got != 2 {
+		t.Fatalf("members = %d, want the stored 2", got)
 	}
 }
 
