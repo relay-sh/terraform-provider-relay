@@ -1,3 +1,15 @@
+## 0.1.5 (Unreleased)
+
+FEATURES:
+
+* resource/relay_postgresql_cluster: the `distribution` block with `mode = "standby"` and two or more `region` blocks (`cloud`, `region`, `primary`) runs the cluster in several regions, each a full copy that replicates from the primary region. Moving `primary` to another region promotes it in place; the platform refuses the promotion while that region has not synchronized, and a forced promotion is not available from Terraform. The platform cannot spread an existing cluster, add or remove a region, move a node group of a spread cluster or restore a backup into one, so the plan refuses each of those. `mode = "stretched"` is refused with a message: it needs a shared etcd, a member count and optionally a priority per region, which the provider does not model
+* resource/relay_postgresql_cluster, data-source/relay_postgresql_cluster: the computed `regions` set reports each region of a standby `distribution` (`cloud`, `region`, `role`, `phase`, `ready_nodes`, `total_nodes`, `replication_link`, `held`, `message`), and is empty for a single-region cluster. The data source also returns the `distribution`, which is null for a single-region cluster and for a stretched one
+
+BUG FIXES:
+
+* resource/relay_postgresql_cluster, resource/relay_valkey_cluster: an update that changes `distribution` keeps the `members` and `priority` the platform stores for the regions that remain, instead of clearing them
+* resource/relay_valkey_cluster: `distribution.mode = "stretched"` is refused with an explanation instead of a bare "value must be one of"
+
 ## 0.1.4 (November 22, 2026)
 
 FEATURES:

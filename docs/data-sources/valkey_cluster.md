@@ -38,7 +38,7 @@ output "sessions_regions" {
 ### Read-Only
 
 - `deletion_protection` (Boolean) Whether the platform refuses to delete the cluster.
-- `distribution` (Attributes) The standby spread across regions. Null for a single-region cluster. (see [below for nested schema](#nestedatt--distribution))
+- `distribution` (Attributes) The standby spread across regions. Null for a single-region cluster, and for a PostgreSQL cluster with a stretched distribution, which Terraform does not model. (see [below for nested schema](#nestedatt--distribution))
 - `endpoint_host` (String) Public read-write endpoint host. Empty until the platform publishes it.
 - `endpoint_port` (Number) Public read-write endpoint port.
 - `managed_by` (String) Owner tag, empty when unmanaged.

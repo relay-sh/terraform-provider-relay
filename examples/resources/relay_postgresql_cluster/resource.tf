@@ -67,3 +67,39 @@ resource "relay_postgresql_cluster" "billing" {
     prevent_destroy = true
   }
 }
+
+resource "relay_postgresql_cluster" "ledger" {
+  workspace_id = relay_workspace.prod.id
+  name         = "ledger"
+  version      = "18"
+
+  nodes = {
+    writers = {
+      role      = "electable"
+      count     = 3
+      cloud     = "aws"
+      region    = "us-east-1"
+      tier      = "R30"
+      resources = {}
+    }
+  }
+
+  distribution {
+    mode = "standby"
+
+    region {
+      cloud   = "aws"
+      region  = "us-east-1"
+      primary = true
+    }
+
+    region {
+      cloud  = "aws"
+      region = "eu-west-1"
+    }
+  }
+}
+
+output "ledger_standby_links" {
+  value = { for r in relay_postgresql_cluster.ledger.regions : "${r.cloud}/${r.region}" => r.replication_link if r.role == "standby" }
+}

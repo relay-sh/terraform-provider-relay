@@ -221,7 +221,7 @@ Optional:
 Optional:
 
 - `mode` (String) Only `standby` is supported. Required when the block is present.
-- `region` (Block Set) A region the cluster runs in; at least two, exactly one with `primary = true`. The node group's `cloud` and `region` must be one of them. (see [below for nested schema](#nestedblock--distribution--region))
+- `region` (Block Set) A region the cluster runs in; at least two, exactly one with `primary = true`. Every node group's `cloud` and `region` must be one of them. (see [below for nested schema](#nestedblock--distribution--region))
 
 <a id="nestedblock--distribution--region"></a>
 ### Nested Schema for `distribution.region`

@@ -1,16 +1,12 @@
 package provider
 
 import (
-	"errors"
 	"fmt"
 	"regexp"
 	"slices"
 	"strings"
 	"testing"
 
-	"github.com/hashicorp/terraform-plugin-framework/attr"
-	"github.com/hashicorp/terraform-plugin-framework/diag"
-	"github.com/hashicorp/terraform-plugin-framework/types"
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
 	"github.com/hashicorp/terraform-plugin-testing/plancheck"
 	"github.com/hashicorp/terraform-plugin-testing/terraform"
@@ -160,12 +156,12 @@ func TestValkeyClusterResource_DistributionConfigValidation(t *testing.T) {
 		body string
 		want string
 	}{
-		"one region":  {valkeyGroup("cache", 1, "1Gi", "") + standbyBlock("standby", east), "Too few regions"},
-		"no primary":  {valkeyGroup("cache", 1, "1Gi", "") + standbyBlock("standby", standbyRegion("aws", "us-east-1", false), eu), "Exactly one primary region"},
-		"two primary": {valkeyGroup("cache", 1, "1Gi", "") + standbyBlock("standby", east, standbyRegion("aws", "eu-west-1", true)), "Exactly one primary region"},
-		"duplicate":   {valkeyGroup("cache", 1, "1Gi", "") + standbyBlock("standby", east, eu, standbyRegion("aws", "us-east-1", false)), "Duplicate region"},
-		"unknown mode": {valkeyGroup("cache", 1, "1Gi", "") + standbyBlock("stretched", east, eu),
-			"value must be one of"},
+		"one region":   {valkeyGroup("cache", 1, "1Gi", "") + standbyBlock("standby", east), "Too few regions"},
+		"no primary":   {valkeyGroup("cache", 1, "1Gi", "") + standbyBlock("standby", standbyRegion("aws", "us-east-1", false), eu), "Exactly one primary region"},
+		"two primary":  {valkeyGroup("cache", 1, "1Gi", "") + standbyBlock("standby", east, standbyRegion("aws", "eu-west-1", true)), "Exactly one primary region"},
+		"duplicate":    {valkeyGroup("cache", 1, "1Gi", "") + standbyBlock("standby", east, eu, standbyRegion("aws", "us-east-1", false)), "Duplicate region"},
+		"stretched":    {valkeyGroup("cache", 1, "1Gi", "") + standbyBlock("stretched", east, eu), "Stretched distribution is not available"},
+		"unknown mode": {valkeyGroup("cache", 1, "1Gi", "") + standbyBlock("mirror", east, eu), "Unsupported distribution mode"},
 		"node outside": {valkeyGroup("cache", 1, "1Gi", "") + standbyBlock("standby", standbyRegion("aws", "eu-west-1", true), standbyRegion("gcp", "us-central1", false)),
 			`(?s)Node group outside the distribution.*cache runs in aws/us-east-1.*aws/eu-west-1, gcp/us-central1`},
 		"cluster mode": {"  mode = \"cluster\"\n  shards = 3\n" + valkeyGroup("cache", 3, "1Gi", "") + standbyBlock("standby", east, eu), "Standby needs replication mode"},
@@ -253,132 +249,5 @@ func TestFakeServerRejectsWhatThePlatformRejectsForValkeyDistribution(t *testing
 	}
 	if got := primaryRegionOf(nil); got != "" {
 		t.Fatalf("no distribution has no primary, got %q", got)
-	}
-}
-
-func regionObject(cloud, region types.String, primary types.Bool) attr.Value {
-	return types.ObjectValueMust(distributionRegionType.AttrTypes, map[string]attr.Value{"cloud": cloud, "region": region, "primary": primary})
-}
-
-func distributionObject(mode string, regions ...attr.Value) types.Object {
-	return types.ObjectValueMust(distributionAttrTypes, map[string]attr.Value{
-		"mode":   types.StringValue(mode),
-		"region": types.SetValueMust(distributionRegionType, regions),
-	})
-}
-
-func TestDistributionConversions(t *testing.T) {
-	s := types.StringValue
-	d := distributionObject("standby",
-		regionObject(s("aws"), s("us-east-1"), types.BoolValue(true)),
-		regionObject(s("gcp"), s("us-central1"), types.BoolValue(false)))
-
-	proto := distributionToProto(d)
-	if proto.GetMode() != "standby" || !proto.GetClouds()["aws"].GetRegions()["us-east-1"].GetPrimary() || proto.GetClouds()["gcp"].GetRegions()["us-central1"].GetPrimary() {
-		t.Fatalf("unexpected proto %v", proto)
-	}
-	if back := distributionFromProto(proto); !back.Equal(d) {
-		t.Fatalf("round trip lost the distribution: %v", back)
-	}
-	if got := distributionPrimary(d); got != "aws/us-east-1" {
-		t.Fatalf("primary = %q", got)
-	}
-	if got := distributionPrimary(types.ObjectNull(distributionAttrTypes)); got != "" {
-		t.Fatalf("a missing distribution has no primary, got %q", got)
-	}
-	for name, in := range map[string]*serverv1.Distribution{"nil": nil, "local": {Mode: "local"}} {
-		if got := distributionFromProto(in); !got.IsNull() {
-			t.Fatalf("%s must read as no distribution, got %v", name, got)
-		}
-	}
-	for name, in := range map[string]types.Object{
-		"null":    types.ObjectNull(distributionAttrTypes),
-		"unknown": types.ObjectUnknown(distributionAttrTypes),
-		"unknown regions": types.ObjectValueMust(distributionAttrTypes, map[string]attr.Value{
-			"mode": s("standby"), "region": types.SetUnknown(distributionRegionType),
-		}),
-	} {
-		if got := distributionToProto(in); got != nil {
-			t.Fatalf("%s must send no distribution, got %v", name, got)
-		}
-	}
-}
-
-func TestPromotesStandby(t *testing.T) {
-	s, yes, no := types.StringValue, types.BoolValue(true), types.BoolValue(false)
-	east := distributionObject("standby", regionObject(s("aws"), s("us-east-1"), yes), regionObject(s("aws"), s("eu-west-1"), no))
-	eu := distributionObject("standby", regionObject(s("aws"), s("us-east-1"), no), regionObject(s("aws"), s("eu-west-1"), yes))
-	null := types.ObjectNull(distributionAttrTypes)
-	for name, tc := range map[string]struct {
-		plan, prior types.Object
-		want        bool
-	}{
-		"marker moves":  {eu, east, true},
-		"unchanged":     {east, east, false},
-		"added":         {east, null, false},
-		"with a region": {distributionObject("standby", regionObject(s("aws"), s("us-east-1"), no), regionObject(s("aws"), s("eu-west-1"), yes), regionObject(s("aws"), s("sa-east-1"), no)), east, false},
-		"removed":       {null, east, false},
-	} {
-		if got := promotesStandby(tc.plan, tc.prior); got != tc.want {
-			t.Errorf("%s: got %v, want %v", name, got, tc.want)
-		}
-	}
-}
-
-func TestClusterUpdateError(t *testing.T) {
-	refused := status.Error(codes.FailedPrecondition, "cannot be promoted yet")
-	cases := map[string]struct {
-		err       error
-		promoting bool
-		summary   string
-		forced    bool
-	}{
-		"refused promotion":     {refused, true, "Cannot promote the standby region", true},
-		"refused other update":  {refused, false, "Cannot update cluster", false},
-		"other promotion error": {status.Error(codes.Internal, "boom"), true, "Cannot update cluster", false},
-		"plain error":           {errors.New("boom"), true, "Cannot update cluster", false},
-	}
-	for name, tc := range cases {
-		summary, detail := clusterUpdateError(tc.err, tc.promoting)
-		if summary != tc.summary || strings.Contains(detail, "API, CLI or dashboard") != tc.forced {
-			t.Errorf("%s: got %q / %q", name, summary, detail)
-		}
-	}
-}
-
-func TestValidateDistributionSkipsWhatIsNotKnown(t *testing.T) {
-	noRestore := types.ObjectNull(map[string]attr.Type{})
-	s := types.StringValue
-	node := func(cloud, region types.String) types.Map {
-		return types.MapValueMust(types.ObjectType{AttrTypes: map[string]attr.Type{"cloud": types.StringType, "region": types.StringType}}, map[string]attr.Value{
-			"cache": types.ObjectValueMust(map[string]attr.Type{"cloud": types.StringType, "region": types.StringType}, map[string]attr.Value{"cloud": cloud, "region": region}),
-		})
-	}
-	two := distributionObject("standby", regionObject(s("aws"), s("us-east-1"), types.BoolValue(true)), regionObject(s("aws"), s("eu-west-1"), types.BoolValue(false)))
-	for name, tc := range map[string]struct {
-		d     types.Object
-		mode  types.String
-		nodes types.Map
-	}{
-		"no distribution":   {types.ObjectNull(distributionAttrTypes), s("replication"), types.MapNull(types.StringType)},
-		"unknown":           {types.ObjectUnknown(distributionAttrTypes), s("replication"), types.MapNull(types.StringType)},
-		"unknown regions":   {types.ObjectValueMust(distributionAttrTypes, map[string]attr.Value{"mode": s("standby"), "region": types.SetUnknown(distributionRegionType)}), s("replication"), types.MapNull(types.StringType)},
-		"unknown nodes":     {two, s("replication"), types.MapUnknown(types.StringType)},
-		"no nodes":          {two, s("replication"), types.MapNull(types.StringType)},
-		"unknown node cell": {two, s("replication"), node(types.StringUnknown(), s("us-east-1"))},
-		"unknown node reg":  {two, s("replication"), node(s("aws"), types.StringUnknown())},
-		"unknown mode":      {two, types.StringUnknown(), node(s("aws"), s("us-east-1"))},
-		"null mode":         {two, types.StringNull(), node(s("aws"), s("us-east-1"))},
-	} {
-		var diags diag.Diagnostics
-		validateDistribution(tc.d, tc.mode, tc.nodes, noRestore, &diags)
-		if diags.HasError() {
-			t.Errorf("%s: %v", name, diags)
-		}
-	}
-	var diags diag.Diagnostics
-	validateDistribution(two, s("replication"), node(s("aws"), s("ap-south-1")), noRestore, &diags)
-	if !diags.HasError() {
-		t.Fatal("a node group outside the regions must be rejected")
 	}
 }

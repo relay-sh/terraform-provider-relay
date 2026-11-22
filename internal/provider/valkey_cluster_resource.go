@@ -222,7 +222,7 @@ func (r *valkeyClusterResource) Schema(ctx context.Context, _ resource.SchemaReq
 			"updated_at":  schema.StringAttribute{Computed: true, MarkdownDescription: "Last change time, RFC 3339."},
 		},
 		Blocks: map[string]schema.Block{
-			"distribution": distributionBlock(),
+			"distribution": distributionBlock(valkeyDistribution),
 			"timeouts":     timeouts.Block(ctx, timeouts.Opts{Create: true, Update: true, Delete: true}),
 		},
 	}
@@ -245,7 +245,7 @@ func (r *valkeyClusterResource) ValidateConfig(ctx context.Context, req resource
 	resp.Diagnostics.Append(req.Config.GetAttribute(ctx, path.Root("replicas_per_shard"), &replicas)...)
 	resp.Diagnostics.Append(req.Config.GetAttribute(ctx, path.Root("nodes"), &nodes)...)
 	validateComputeAutoscaling(nodes, &resp.Diagnostics)
-	validateDistribution(distribution, mode, nodes, restore, &resp.Diagnostics)
+	validateValkeyDistributionConfig(distribution, mode, nodes, restore, &resp.Diagnostics)
 	if resp.Diagnostics.HasError() || mode.IsUnknown() {
 		return
 	}
@@ -544,9 +544,13 @@ func (r *valkeyClusterResource) Update(ctx context.Context, req resource.UpdateR
 		return
 	}
 	if paths := valkeyUpdateMask(plan, prior); len(paths) > 0 {
+		spec := valkeySpecToProto(plan)
+		if !carryStoredPlacements(scoped, r.client, plan.ID.ValueString(), spec, paths, &resp.Diagnostics) {
+			return
+		}
 		if _, err := r.client.API.UpdateDatabase(scoped, &serverv1.UpdateDatabaseRequest{
 			Id:         plan.ID.ValueString(),
-			Spec:       valkeySpecToProto(plan),
+			Spec:       spec,
 			UpdateMask: &fieldmaskpb.FieldMask{Paths: paths},
 		}); err != nil {
 			summary, detail := clusterUpdateError(err, promotesStandby(plan.Distribution, prior.Distribution))
