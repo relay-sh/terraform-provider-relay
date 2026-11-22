@@ -49,6 +49,7 @@ type fakeServer struct {
 	dbCountdown       map[string]int
 	readyAfter        int
 	valkeyFloor       string
+	unsyncedStandby   bool
 	stuck             bool
 	failProvision     string
 	failDeletion      string
@@ -593,6 +594,9 @@ func validateValkey(spec *serverv1.DatabaseSpec) error {
 	if len(spec.GetNodes()) != 1 {
 		return status.Errorf(codes.InvalidArgument, "validate spec: exactly one node group is supported for Valkey, got %d", len(spec.GetNodes()))
 	}
+	if err := validateValkeyDistribution(spec); err != nil {
+		return err
+	}
 	v, count := spec.GetValkey(), spec.GetNodes()[0].GetCount()
 	switch v.GetMode() {
 	case valkeyModeReplication:
@@ -607,6 +611,51 @@ func validateValkey(spec *serverv1.DatabaseSpec) error {
 		return status.Errorf(codes.InvalidArgument, "validate spec: mode must be replication or cluster, got %q", v.GetMode())
 	}
 	return nil
+}
+
+func validateValkeyDistribution(spec *serverv1.DatabaseSpec) error {
+	d := spec.GetDistribution()
+	if d == nil || d.GetMode() == distributionLocal {
+		return nil
+	}
+	if d.GetMode() != distributionStandby {
+		return status.Errorf(codes.InvalidArgument, "validate spec: distribution.mode %q is not supported for Valkey (only \"local\" or \"standby\")", d.GetMode())
+	}
+	if m := spec.GetValkey().GetMode(); m != valkeyModeReplication {
+		return status.Error(codes.InvalidArgument, "validate spec: distribution.mode \"standby\" requires mode \"replication\"")
+	}
+	regions, primaries := 0, 0
+	hosted := false
+	node := spec.GetNodes()[0]
+	for cloud, c := range d.GetClouds() {
+		for region, p := range c.GetRegions() {
+			regions++
+			if p.GetPrimary() {
+				primaries++
+			}
+			hosted = hosted || cloud == node.GetCloud() && region == node.GetRegion()
+		}
+	}
+	switch {
+	case regions < 2:
+		return status.Errorf(codes.InvalidArgument, "validate spec: distribution.mode \"standby\" requires at least 2 regions, got %d", regions)
+	case primaries != 1:
+		return status.Errorf(codes.InvalidArgument, "validate spec: distribution requires exactly one region marked primary, got %d", primaries)
+	case !hosted:
+		return status.Errorf(codes.InvalidArgument, "validate spec: node group %q is placed in %s/%s, which is not a region of the standby distribution", node.GetName(), node.GetCloud(), node.GetRegion())
+	}
+	return nil
+}
+
+func primaryRegionOf(d *serverv1.Distribution) string {
+	for cloud, c := range d.GetClouds() {
+		for region, p := range c.GetRegions() {
+			if p.GetPrimary() {
+				return cloud + "/" + region
+			}
+		}
+	}
+	return ""
 }
 
 // bindPlacement mirrors the platform: a group is placed by cloud and region, and
@@ -922,6 +971,14 @@ func (f *fakeServer) UpdateDatabase(ctx context.Context, req *serverv1.UpdateDat
 			merged.Valkey = in.GetValkey()
 		case "valkey.parameters":
 			merged.Valkey.Parameters = in.GetValkey().GetParameters()
+		case "distribution":
+			if (merged.GetDistribution() == nil) != (in.GetDistribution() == nil) {
+				return nil, status.Error(codes.FailedPrecondition, "changing the distribution mode of a valkey database is not supported")
+			}
+			if to := primaryRegionOf(in.GetDistribution()); f.unsyncedStandby && to != primaryRegionOf(merged.GetDistribution()) {
+				return nil, status.Errorf(codes.FailedPrecondition, "the standby region %s cannot be promoted yet: its head has not synchronized with the primary region yet (replication offset 0); retry once it has synchronized, or force the promotion to accept losing whatever it has not received", to)
+			}
+			merged.Distribution = in.GetDistribution()
 		default:
 			return nil, status.Errorf(codes.InvalidArgument, "path %q is not updatable", p)
 		}

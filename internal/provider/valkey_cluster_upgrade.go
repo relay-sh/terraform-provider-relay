@@ -79,7 +79,7 @@ func upgradeValkeyClusterV0(ctx context.Context, req resource.UpgradeStateReques
 	upgraded := valkeyClusterModel{
 		ID: old.ID, WorkspaceID: old.WorkspaceID, Name: old.Name, Version: old.Version, Mode: old.Mode,
 		Shards: old.Shards, ReplicasPerShard: old.ReplicasPerShard,
-		Storage: upgradedStorage(sizes, primary, ceilings), Nodes: nodes, Parameters: old.Parameters,
+		Storage: upgradedStorage(sizes, primary, ceilings), Nodes: nodes, Distribution: types.ObjectNull(distributionAttrTypes), Parameters: old.Parameters,
 		KeepBackupsOnDestroy: old.KeepBackupsOnDestroy, DeletionProtection: old.DeletionProtection,
 		Restore: old.Restore, DefaultConnections: old.DefaultConnections, Phase: old.Phase, PhaseMessage: old.PhaseMessage,
 		EndpointHost: old.EndpointHost, EndpointPort: old.EndpointPort, PublicEndpoints: old.PublicEndpoints,

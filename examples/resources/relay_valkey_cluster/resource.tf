@@ -57,3 +57,33 @@ resource "relay_valkey_cluster" "leaderboard" {
     prevent_destroy = true
   }
 }
+
+resource "relay_valkey_cluster" "orders" {
+  workspace_id = relay_workspace.prod.id
+  name         = "orders"
+
+  nodes = {
+    cache = {
+      count     = 2
+      cloud     = "aws"
+      region    = "us-east-1"
+      tier      = "RC20"
+      resources = {}
+    }
+  }
+
+  distribution {
+    mode = "standby"
+
+    region {
+      cloud   = "aws"
+      region  = "us-east-1"
+      primary = true
+    }
+
+    region {
+      cloud  = "aws"
+      region = "eu-west-1"
+    }
+  }
+}

@@ -983,7 +983,7 @@ func TestSameSettingsCoversEveryConfigurableAttribute(t *testing.T) {
 	(&valkeyClusterResource{}).Schema(context.Background(), fwresource.SchemaRequest{}, &resp)
 	covered := map[string]bool{
 		"workspace_id": true, "name": true, "version": true, "mode": true, "shards": true, "replicas_per_shard": true,
-		"nodes": true, "storage": true, "parameters": true, "keep_backups_on_destroy": true, "deletion_protection": true, "managed_by": true, "restore": true, "default_connections": true, "timeouts": true,
+		"nodes": true, "storage": true, "parameters": true, "keep_backups_on_destroy": true, "deletion_protection": true, "managed_by": true, "restore": true, "default_connections": true, "timeouts": true, "distribution": true,
 	}
 	for name, a := range resp.Schema.Attributes {
 		if (a.IsRequired() || a.IsOptional()) && !covered[name] {
@@ -991,7 +991,7 @@ func TestSameSettingsCoversEveryConfigurableAttribute(t *testing.T) {
 		}
 	}
 	for name := range covered {
-		if _, ok := resp.Schema.Attributes[name]; !ok && name != "timeouts" {
+		if _, ok := resp.Schema.Attributes[name]; !ok && name != "timeouts" && name != "distribution" {
 			t.Errorf("%s is listed as covered but is not in the schema", name)
 		}
 	}
