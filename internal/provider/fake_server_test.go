@@ -50,6 +50,7 @@ type fakeServer struct {
 	readyAfter        int
 	valkeyFloor       string
 	unsyncedStandby   bool
+	noStandbyMesh     bool
 	regionLink        map[string]string
 	regionHeld        map[string]string
 	regionMessage     map[string]string
@@ -721,6 +722,12 @@ func (f *fakeServer) CreateDatabase(ctx context.Context, req *serverv1.CreateDat
 	if err := validateValkey(req.GetSpec()); err != nil {
 		return nil, err
 	}
+	if err := validatePostgreSQLDistribution(req.GetSpec()); err != nil {
+		return nil, err
+	}
+	if err := f.rejectCrossClusterStandby(req.GetSpec()); err != nil {
+		return nil, err
+	}
 	if err := validateCompute(req.GetSpec()); err != nil {
 		return nil, err
 	}
@@ -979,6 +986,9 @@ func (f *fakeServer) UpdateDatabase(ctx context.Context, req *serverv1.UpdateDat
 			if err := f.bindPlacement(in.GetNodes()); err != nil {
 				return nil, err
 			}
+			if err := rejectSpreadGroupMove(merged, in.GetNodes()); err != nil {
+				return nil, err
+			}
 			merged.Nodes = keepComputeAutoscaling(in.GetNodes(), merged.GetNodes())
 			if err := validateCompute(merged); err != nil {
 				return nil, err
@@ -1001,19 +1011,18 @@ func (f *fakeServer) UpdateDatabase(ctx context.Context, req *serverv1.UpdateDat
 		case "valkey.parameters":
 			merged.Valkey.Parameters = in.GetValkey().GetParameters()
 		case "distribution":
-			if (merged.GetDistribution() == nil) != (in.GetDistribution() == nil) {
-				return nil, status.Error(codes.FailedPrecondition, "changing the distribution mode of a valkey database is not supported")
+			if err := f.updateDistribution(merged, in); err != nil {
+				return nil, err
 			}
-			if to := primaryRegionOf(in.GetDistribution()); f.unsyncedStandby && to != primaryRegionOf(merged.GetDistribution()) {
-				return nil, status.Errorf(codes.FailedPrecondition, "the standby region %s cannot be promoted yet: its head has not synchronized with the primary region yet (replication offset 0); retry once it has synchronized, or force the promotion to accept losing whatever it has not received", to)
-			}
-			merged.Distribution = in.GetDistribution()
 		default:
 			return nil, status.Errorf(codes.InvalidArgument, "path %q is not updatable", p)
 		}
 	}
 	canonicalizeValkeyParameters(merged)
 	if err := validateValkey(merged); err != nil {
+		return nil, err
+	}
+	if err := validatePostgreSQLDistribution(merged); err != nil {
 		return nil, err
 	}
 	f.resolveStorage(merged, db.GetSpec())

@@ -34,6 +34,8 @@ type postgresqlClusterDataModel struct {
 	StorageStatus      types.Object `tfsdk:"storage_status"`
 	ReadyNodes         types.Int64  `tfsdk:"ready_nodes"`
 	TotalNodes         types.Int64  `tfsdk:"total_nodes"`
+	Distribution       types.Object `tfsdk:"distribution"`
+	Regions            types.Set    `tfsdk:"regions"`
 }
 
 func newPostgreSQLClusterDataSource() datasource.DataSource {
@@ -69,6 +71,8 @@ func (d *postgresqlClusterDataSource) Schema(_ context.Context, _ datasource.Sch
 			"storage_status":      storageStatusDataAttribute(),
 			"ready_nodes":         schema.Int64Attribute{Computed: true},
 			"total_nodes":         schema.Int64Attribute{Computed: true},
+			"distribution":        distributionDataAttribute(),
+			"regions":             regionsDataAttribute(),
 		},
 	}
 }
@@ -129,6 +133,8 @@ func (d *postgresqlClusterDataSource) Read(ctx context.Context, req datasource.R
 		StorageStatus:      storageStatusFromProto(st.GetStorage()),
 		ReadyNodes:         types.Int64Value(int64(st.GetReadyNodes())),
 		TotalNodes:         types.Int64Value(int64(st.GetTotalNodes())),
+		Distribution:       distributionFromProto(spec.GetDistribution()),
+		Regions:            regionsFromProto(st.GetRegions()),
 	}
 	resp.Diagnostics.Append(resp.State.Set(ctx, &state)...)
 }

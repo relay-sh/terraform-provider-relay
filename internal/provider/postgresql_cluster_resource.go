@@ -64,6 +64,8 @@ type postgresqlClusterModel struct {
 	StorageStatus        types.Object              `tfsdk:"storage_status"`
 	ReadyNodes           types.Int64               `tfsdk:"ready_nodes"`
 	TotalNodes           types.Int64               `tfsdk:"total_nodes"`
+	Distribution         types.Object              `tfsdk:"distribution"`
+	Regions              types.Set                 `tfsdk:"regions"`
 	CreatedAt            types.String              `tfsdk:"created_at"`
 	UpdatedAt            types.String              `tfsdk:"updated_at"`
 	Timeouts             timeouts.Value            `tfsdk:"timeouts"`
@@ -112,7 +114,8 @@ func (r *postgresqlClusterResource) Schema(ctx context.Context, _ resource.Schem
 				Validators: []validator.Map{mapvalidator.SizeAtLeast(1)},
 				MarkdownDescription: "Node groups, keyed by a label you choose. The label is the group's identity, in your configuration and in the platform: changing a value " +
 					"inside one group is a diff on that group alone, `ignore_changes` can reach `nodes[\"readers\"].tier`, and renaming a group replaces it. What a group " +
-					"does comes from `role`. Every group runs in the cluster's own cloud and region; one cluster does not span regions.",
+					"does comes from `role`. Every group runs in the same cloud and region, which is one of the `distribution` regions when there is one; " +
+					"a distribution spreads copies of the whole cluster, not its groups.",
 				NestedObject: schema.NestedAttributeObject{Attributes: map[string]schema.Attribute{
 					"role": schema.StringAttribute{
 						Required:   true,
@@ -220,11 +223,13 @@ func (r *postgresqlClusterResource) Schema(ctx context.Context, _ resource.Schem
 			},
 			"ready_nodes": schema.Int64Attribute{Computed: true, MarkdownDescription: "Nodes ready."},
 			"total_nodes": schema.Int64Attribute{Computed: true, MarkdownDescription: "Nodes expected."},
+			"regions":     regionsAttribute(),
 			"created_at":  schema.StringAttribute{Computed: true, MarkdownDescription: "Creation time, RFC 3339."},
 			"updated_at":  schema.StringAttribute{Computed: true, MarkdownDescription: "Last change time, RFC 3339."},
 		},
 		Blocks: map[string]schema.Block{
-			"timeouts": timeouts.Block(ctx, timeouts.Opts{Create: true, Update: true, Delete: true}),
+			"distribution": distributionBlock(postgresqlDistribution),
+			"timeouts":     timeouts.Block(ctx, timeouts.Opts{Create: true, Update: true, Delete: true}),
 		},
 	}
 }
@@ -249,6 +254,10 @@ func (r *postgresqlClusterResource) ValidateConfig(ctx context.Context, req reso
 	var nodes types.Map
 	resp.Diagnostics.Append(req.Config.GetAttribute(ctx, path.Root("nodes"), &nodes)...)
 	validateComputeAutoscaling(nodes, &resp.Diagnostics)
+	var distribution, restore types.Object
+	resp.Diagnostics.Append(req.Config.GetAttribute(ctx, path.Root("distribution"), &distribution)...)
+	resp.Diagnostics.Append(req.Config.GetAttribute(ctx, path.Root("restore"), &restore)...)
+	validatePostgreSQLDistributionConfig(distribution, nodes, restore, &resp.Diagnostics)
 	if nodes.IsNull() || nodes.IsUnknown() {
 		return
 	}
@@ -274,7 +283,7 @@ func (r *postgresqlClusterResource) ValidateConfig(ctx context.Context, req reso
 	}
 	if len(placements) > 1 {
 		resp.Diagnostics.AddAttributeError(path.Root("nodes"), "One cluster, one region",
-			"The groups ask for "+describePlacements(placements)+". Every group runs where the cluster runs; spreading one cluster across regions is not available yet.")
+			"The groups ask for "+describePlacements(placements)+". Every group runs in the same cloud and region; a distribution spreads copies of the whole cluster, and spreading its groups across regions is not available yet.")
 	}
 }
 
@@ -313,6 +322,8 @@ func (r *postgresqlClusterResource) ModifyPlan(ctx context.Context, req resource
 			"Upgrading from "+prior.Version.ValueString()+" to "+plan.Version.ValueString()+" goes through Relay's upgrade flow. Run the upgrade, then set version to the new value.")
 	}
 	rejectShrink(plan.Storage, prior.Storage, &resp.Diagnostics)
+	rejectDistributionChange(plan.Distribution, prior.Distribution, &resp.Diagnostics)
+	rejectGroupMove(plan.Nodes, prior.Nodes, prior.Distribution, &resp.Diagnostics)
 	if autoscaleEnabledAnew(plan.Storage, prior.Storage) {
 		plan.Storage = unknownComputedStorage(plan.Storage)
 		changed = true
@@ -542,12 +553,17 @@ func (r *postgresqlClusterResource) Update(ctx context.Context, req resource.Upd
 		return
 	}
 	if paths := clusterUpdateMask(plan, prior); len(paths) > 0 {
+		spec := clusterSpecToProto(plan)
+		if !carryStoredPlacements(scoped, r.client, plan.ID.ValueString(), spec, paths, &resp.Diagnostics) {
+			return
+		}
 		if _, err := r.client.API.UpdateDatabase(scoped, &serverv1.UpdateDatabaseRequest{
 			Id:         plan.ID.ValueString(),
-			Spec:       clusterSpecToProto(plan),
+			Spec:       spec,
 			UpdateMask: &fieldmaskpb.FieldMask{Paths: paths},
 		}); err != nil {
-			resp.Diagnostics.AddError("Cannot update cluster", err.Error())
+			summary, detail := clusterUpdateError(err, promotesStandby(plan.Distribution, prior.Distribution))
+			resp.Diagnostics.AddError(summary, detail)
 			return
 		}
 	}
@@ -601,6 +617,7 @@ func clusterSpecToProto(m postgresqlClusterModel) *serverv1.DatabaseSpec {
 		// Turning backups off is accepted and then ignored, so on is the only value that reads back unchanged.
 		BackupsEnabled: true,
 		Replication:    replicationToProto(m.Replication),
+		Distribution:   distributionToProto(m.Distribution),
 	}
 	if !m.Parameters.IsNull() && !m.Parameters.IsUnknown() {
 		spec.Postgresql = &serverv1.PostgreSQLConfig{Parameters: stringMapToGo(m.Parameters)}
@@ -619,6 +636,7 @@ func clusterUpdateMask(plan, prior postgresqlClusterModel) []string {
 	add(!plan.Storage.Equal(prior.Storage), "storage")
 	add(!plan.Replication.Equal(prior.Replication), "replication")
 	add(!plan.Parameters.Equal(prior.Parameters), "postgresql")
+	add(!plan.Distribution.Equal(prior.Distribution), "distribution")
 	return paths
 }
 
@@ -650,6 +668,8 @@ func clusterFromProto(db *serverv1.Database, prior postgresqlClusterModel) postg
 		StorageStatus:        storageStatusFromProto(st.GetStorage()),
 		ReadyNodes:           types.Int64Value(int64(st.GetReadyNodes())),
 		TotalNodes:           types.Int64Value(int64(st.GetTotalNodes())),
+		Distribution:         distributionFromProto(spec.GetDistribution()),
+		Regions:              regionsFromProto(st.GetRegions()),
 		CreatedAt:            timestampValue(st.GetCreatedAt()),
 		UpdatedAt:            timestampValue(st.GetUpdatedAt()),
 		Timeouts:             prior.Timeouts,

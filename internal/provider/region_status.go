@@ -86,7 +86,7 @@ func distributionDataAttribute() datasourceschema.Attribute {
 				MarkdownDescription: "The regions the cluster runs in.",
 			},
 		},
-		MarkdownDescription: "The standby spread across regions. Null for a single-region cluster.",
+		MarkdownDescription: "The standby spread across regions. Null for a single-region cluster, and for a PostgreSQL cluster with a stretched distribution, which Terraform does not model.",
 	}
 }
 

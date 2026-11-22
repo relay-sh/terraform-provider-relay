@@ -93,6 +93,7 @@ func upgradePostgreSQLClusterV0(ctx context.Context, req resource.UpgradeStateRe
 		Phase: old.Phase, PhaseMessage: old.PhaseMessage, EndpointHost: old.EndpointHost, EndpointPort: old.EndpointPort,
 		SharedHost: old.SharedHost, PublicEndpoints: old.PublicEndpoints, PrivateEndpoints: old.PrivateEndpoints,
 		StorageStatus: upgradedStorageStatus(old.StorageStatus), ReadyNodes: old.ReadyNodes, TotalNodes: old.TotalNodes,
+		Distribution: types.ObjectNull(distributionAttrTypes), Regions: types.SetNull(regionStatusType),
 		CreatedAt: old.CreatedAt, UpdatedAt: old.UpdatedAt, Timeouts: old.Timeouts,
 	}
 	resp.Diagnostics.Append(resp.State.Set(ctx, &upgraded)...)
