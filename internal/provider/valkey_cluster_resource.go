@@ -70,6 +70,7 @@ type valkeyClusterModel struct {
 	ReplicasPerShard     types.Int64                     `tfsdk:"replicas_per_shard"`
 	Storage              types.Object                    `tfsdk:"storage"`
 	Nodes                map[string]valkeyNodeGroupModel `tfsdk:"nodes"`
+	Distribution         types.Object                    `tfsdk:"distribution"`
 	Parameters           types.Map                       `tfsdk:"parameters"`
 	KeepBackupsOnDestroy types.Bool                      `tfsdk:"keep_backups_on_destroy"`
 	DeletionProtection   types.Bool                      `tfsdk:"deletion_protection"`
@@ -219,7 +220,8 @@ func (r *valkeyClusterResource) Schema(ctx context.Context, _ resource.SchemaReq
 			"updated_at":  schema.StringAttribute{Computed: true, MarkdownDescription: "Last change time, RFC 3339."},
 		},
 		Blocks: map[string]schema.Block{
-			"timeouts": timeouts.Block(ctx, timeouts.Opts{Create: true, Update: true, Delete: true}),
+			"distribution": distributionBlock(),
+			"timeouts":     timeouts.Block(ctx, timeouts.Opts{Create: true, Update: true, Delete: true}),
 		},
 	}
 }
@@ -233,11 +235,15 @@ func (r *valkeyClusterResource) ValidateConfig(ctx context.Context, req resource
 	var mode types.String
 	var shards, replicas types.Int64
 	var nodes types.Map
+	var distribution, restore types.Object
+	resp.Diagnostics.Append(req.Config.GetAttribute(ctx, path.Root("distribution"), &distribution)...)
+	resp.Diagnostics.Append(req.Config.GetAttribute(ctx, path.Root("restore"), &restore)...)
 	resp.Diagnostics.Append(req.Config.GetAttribute(ctx, path.Root("mode"), &mode)...)
 	resp.Diagnostics.Append(req.Config.GetAttribute(ctx, path.Root("shards"), &shards)...)
 	resp.Diagnostics.Append(req.Config.GetAttribute(ctx, path.Root("replicas_per_shard"), &replicas)...)
 	resp.Diagnostics.Append(req.Config.GetAttribute(ctx, path.Root("nodes"), &nodes)...)
 	validateComputeAutoscaling(nodes, &resp.Diagnostics)
+	validateDistribution(distribution, mode, nodes, restore, &resp.Diagnostics)
 	if resp.Diagnostics.HasError() || mode.IsUnknown() {
 		return
 	}
@@ -341,7 +347,7 @@ func sameSettings(a, b valkeyClusterModel) bool {
 	return a.Name.Equal(b.Name) && a.WorkspaceID.Equal(b.WorkspaceID) && a.Version.Equal(b.Version) && a.Mode.Equal(b.Mode) &&
 		a.Storage.Equal(b.Storage) && a.Shards.Equal(b.Shards) && a.ReplicasPerShard.Equal(b.ReplicasPerShard) && a.Parameters.Equal(b.Parameters) &&
 		a.KeepBackupsOnDestroy.Equal(b.KeepBackupsOnDestroy) && a.DeletionProtection.Equal(b.DeletionProtection) && a.ManagedBy.Equal(b.ManagedBy) && a.Restore.Equal(b.Restore) &&
-		a.DefaultConnections.Equal(b.DefaultConnections) && a.Timeouts.Equal(b.Timeouts)
+		a.DefaultConnections.Equal(b.DefaultConnections) && a.Distribution.Equal(b.Distribution) && a.Timeouts.Equal(b.Timeouts)
 }
 
 func (r *valkeyClusterResource) planRestore(ctx context.Context, req resource.ModifyPlanRequest, resp *resource.ModifyPlanResponse) {
@@ -541,7 +547,8 @@ func (r *valkeyClusterResource) Update(ctx context.Context, req resource.UpdateR
 			Spec:       valkeySpecToProto(plan),
 			UpdateMask: &fieldmaskpb.FieldMask{Paths: paths},
 		}); err != nil {
-			resp.Diagnostics.AddError("Cannot update cluster", err.Error())
+			summary, detail := clusterUpdateError(err, promotesStandby(plan.Distribution, prior.Distribution))
+			resp.Diagnostics.AddError(summary, detail)
 			return
 		}
 	}
@@ -592,6 +599,7 @@ func valkeySpecToProto(m valkeyClusterModel) *serverv1.DatabaseSpec {
 		Version:        m.Version.ValueString(),
 		BackupsEnabled: true,
 		Storage:        storageToProto(m.Storage),
+		Distribution:   distributionToProto(m.Distribution),
 		Valkey: &serverv1.ValkeyConfig{
 			Mode:             m.Mode.ValueString(),
 			Shards:           int32(m.Shards.ValueInt64()),
@@ -628,6 +636,9 @@ func valkeyUpdateMask(plan, prior valkeyClusterModel) []string {
 		paths = append(paths, "valkey")
 	case !plan.Parameters.Equal(prior.Parameters):
 		paths = append(paths, "valkey.parameters")
+	}
+	if !plan.Distribution.Equal(prior.Distribution) {
+		paths = append(paths, "distribution")
 	}
 	return paths
 }
@@ -726,6 +737,7 @@ func valkeyClusterFromProto(db *serverv1.Database, prior valkeyClusterModel) val
 		ReplicasPerShard:     replicas,
 		Storage:              storageFromProto(spec.GetStorage(), prior.Storage),
 		Nodes:                valkeyNodesFromProto(spec.GetNodes(), st.GetCompute(), prior.Nodes),
+		Distribution:         distributionFromProto(spec.GetDistribution()),
 		Parameters:           keepConfiguredParameterNames(v.GetParameters(), prior.Parameters),
 		KeepBackupsOnDestroy: prior.KeepBackupsOnDestroy,
 		DeletionProtection:   types.BoolValue(db.GetDeletionProtection()),
