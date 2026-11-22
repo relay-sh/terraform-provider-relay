@@ -147,16 +147,21 @@ func distributionToProto(d types.Object) *serverv1.Distribution {
 	return out
 }
 
-func distributionFromProto(d *serverv1.Distribution) types.Object {
+func distributionFromProto(d *serverv1.Distribution, configured types.Object) types.Object {
 	if d.GetMode() != distributionStandby {
 		return types.ObjectNull(distributionAttrTypes)
 	}
+	spelled := configuredSpellings(configured)
 	var elements []attr.Value
 	for cloud, regions := range d.GetClouds() {
 		for region, placement := range regions.GetRegions() {
+			spelling, ok := spelled[regionKey(cloud, region)]
+			if !ok {
+				spelling = [2]string{cloud, region}
+			}
 			elements = append(elements, types.ObjectValueMust(distributionRegionType.AttrTypes, map[string]attr.Value{
-				"cloud":   types.StringValue(cloud),
-				"region":  types.StringValue(region),
+				"cloud":   types.StringValue(spelling[0]),
+				"region":  types.StringValue(spelling[1]),
 				"primary": types.BoolValue(placement.GetPrimary()),
 			}))
 		}
@@ -165,6 +170,21 @@ func distributionFromProto(d *serverv1.Distribution) types.Object {
 		"mode":   types.StringValue(d.GetMode()),
 		"region": types.SetValueMust(distributionRegionType, elements),
 	})
+}
+
+func regionKey(cloud, region string) string {
+	return strings.ToLower(cloud) + "/" + strings.ToLower(region)
+}
+
+func configuredSpellings(d types.Object) map[string][2]string {
+	regions, _ := distributionRegions(d)
+	out := make(map[string][2]string, len(regions))
+	for _, r := range regions {
+		if known(r.Cloud) && known(r.Region) {
+			out[regionKey(r.Cloud.ValueString(), r.Region.ValueString())] = [2]string{r.Cloud.ValueString(), r.Region.ValueString()}
+		}
+	}
+	return out
 }
 
 func validateDistributionRegions(d types.Object, nodes types.Map, diags *diag.Diagnostics) {
@@ -270,11 +290,22 @@ func distributionPlaced(d types.Object) ([]string, bool) {
 func keepStoredPlacements(next, stored *serverv1.Distribution) {
 	for cloud, regions := range next.GetClouds() {
 		for region, placement := range regions.GetRegions() {
-			if kept := stored.GetClouds()[cloud].GetRegions()[region]; kept != nil {
+			if kept := findPlacement(stored, cloud, region); kept != nil {
 				placement.Members, placement.Priority = kept.Members, kept.Priority
 			}
 		}
 	}
+}
+
+func findPlacement(stored *serverv1.Distribution, cloud, region string) *serverv1.RegionPlacement {
+	for storedCloud, regions := range stored.GetClouds() {
+		for storedRegion, placement := range regions.GetRegions() {
+			if regionKey(storedCloud, storedRegion) == regionKey(cloud, region) {
+				return placement
+			}
+		}
+	}
+	return nil
 }
 
 func carryStoredPlacements(ctx context.Context, c *client.Client, id string, spec *serverv1.DatabaseSpec, paths []string, diags *diag.Diagnostics) bool {

@@ -738,6 +738,9 @@ func (f *fakeServer) CreateDatabase(ctx context.Context, req *serverv1.CreateDat
 	}
 	spec := proto.Clone(req.GetSpec()).(*serverv1.DatabaseSpec)
 	canonicalizeValkeyParameters(spec)
+	if spec.GetEngine() == engineValkey {
+		spec.Distribution = f.canonicalRegions(spec.GetDistribution())
+	}
 	f.resolveStorage(spec, nil)
 	deriveTierResources(spec)
 	if err := f.bindPlacement(spec.GetNodes()); err != nil {

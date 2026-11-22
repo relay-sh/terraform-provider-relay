@@ -743,7 +743,7 @@ func valkeyClusterFromProto(db *serverv1.Database, prior valkeyClusterModel) val
 		ReplicasPerShard:     replicas,
 		Storage:              storageFromProto(spec.GetStorage(), prior.Storage),
 		Nodes:                valkeyNodesFromProto(spec.GetNodes(), st.GetCompute(), prior.Nodes),
-		Distribution:         distributionFromProto(spec.GetDistribution()),
+		Distribution:         distributionFromProto(spec.GetDistribution(), prior.Distribution),
 		Parameters:           keepConfiguredParameterNames(v.GetParameters(), prior.Parameters),
 		KeepBackupsOnDestroy: prior.KeepBackupsOnDestroy,
 		DeletionProtection:   types.BoolValue(db.GetDeletionProtection()),

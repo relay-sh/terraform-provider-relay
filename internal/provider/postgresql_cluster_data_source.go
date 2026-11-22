@@ -133,7 +133,7 @@ func (d *postgresqlClusterDataSource) Read(ctx context.Context, req datasource.R
 		StorageStatus:      storageStatusFromProto(st.GetStorage()),
 		ReadyNodes:         types.Int64Value(int64(st.GetReadyNodes())),
 		TotalNodes:         types.Int64Value(int64(st.GetTotalNodes())),
-		Distribution:       distributionFromProto(spec.GetDistribution()),
+		Distribution:       distributionFromProto(spec.GetDistribution(), types.ObjectNull(distributionAttrTypes)),
 		Regions:            regionsFromProto(st.GetRegions()),
 	}
 	resp.Diagnostics.Append(resp.State.Set(ctx, &state)...)
