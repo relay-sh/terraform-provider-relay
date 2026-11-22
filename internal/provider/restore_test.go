@@ -150,7 +150,7 @@ func TestValkeyClusterResource_Restore(t *testing.T) {
 				Check: resource.ComposeAggregateTestCheckFunc(
 					resource.TestCheckNoResourceAttr(valkeyAddr, "restore.source_database_id"),
 					callCount(f, "RestoreDatabase", 2),
-					callCount(f, "UpdateDatabase", 2),
+					callCount(f, "UpdateDatabase", 4),
 				),
 			},
 		},
@@ -312,7 +312,7 @@ func TestPostgreSQLClusterResource_Restore(t *testing.T) {
 					resource.TestCheckResourceAttr(postgresAddr, "version", "18"),
 					resource.TestCheckResourceAttr(postgresAddr, "parameters.work_mem", "4MB"),
 					resource.TestCheckNoResourceAttr(postgresAddr, "restore.target_time"),
-					callCount(f, "UpdateDatabase", 0),
+					callCount(f, "UpdateDatabase", 1),
 					func(*terraform.State) error {
 						if f.lastRestore.GetTargetTime() != nil {
 							return fmt.Errorf("an omitted target_time must not be sent, got %v", f.lastRestore.GetTargetTime())
@@ -523,7 +523,7 @@ func TestDocumentDBClusterResource_Restore(t *testing.T) {
 					resource.TestCheckResourceAttr(documentDBAddr, "storage.size", "30Gi"),
 					resource.TestCheckResourceAttr(documentDBAddr, "backups_enabled", "true"),
 					resource.TestCheckResourceAttr(documentDBAddr, "restore.target_time", pastInstant),
-					callCount(f, "UpdateDatabase", 0),
+					callCount(f, "UpdateDatabase", 1),
 					func(*terraform.State) error {
 						req := f.lastRestore
 						if req.GetSourceDatabaseId() != "db-src" || !req.GetTargetTime().AsTime().Equal(time.Date(2026, 10, 31, 12, 0, 0, 0, time.UTC)) || req.GetSourceBackupId() != "" {

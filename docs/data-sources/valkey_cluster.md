@@ -36,6 +36,7 @@ data "relay_valkey_cluster" "sessions" {
 - `deletion_protection` (Boolean) Whether the platform refuses to delete the cluster.
 - `endpoint_host` (String) Public read-write endpoint host. Empty until the platform publishes it.
 - `endpoint_port` (Number) Public read-write endpoint port.
+- `managed_by` (String) Owner tag, empty when unmanaged.
 - `mode` (String) `replication` or `cluster`.
 - `nodes` (Attributes Map) The cluster's node group, keyed by its label. (see [below for nested schema](#nestedatt--nodes))
 - `parameters` (Map of String) Valkey settings.

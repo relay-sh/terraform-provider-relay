@@ -181,6 +181,7 @@ const (
 	ServerService_UpdateDatabase_FullMethodName                  = "/relay.server.v1.ServerService/UpdateDatabase"
 	ServerService_ListPostgreSQLParameters_FullMethodName        = "/relay.server.v1.ServerService/ListPostgreSQLParameters"
 	ServerService_ListValkeyParameters_FullMethodName            = "/relay.server.v1.ServerService/ListValkeyParameters"
+	ServerService_ListDocumentDBParameters_FullMethodName        = "/relay.server.v1.ServerService/ListDocumentDBParameters"
 	ServerService_ListAutoscaleMetrics_FullMethodName            = "/relay.server.v1.ServerService/ListAutoscaleMetrics"
 	ServerService_ListScaleEvents_FullMethodName                 = "/relay.server.v1.ServerService/ListScaleEvents"
 	ServerService_WatchDatabase_FullMethodName                   = "/relay.server.v1.ServerService/WatchDatabase"
@@ -701,6 +702,10 @@ type ServerServiceClient interface {
 	ListPostgreSQLParameters(ctx context.Context, in *ListPostgreSQLParametersRequest, opts ...grpc.CallOption) (*ListPostgreSQLParametersResponse, error)
 	// ListValkeyParameters returns the Valkey version's catalog that valkey.parameters is validated against.
 	ListValkeyParameters(ctx context.Context, in *ListValkeyParametersRequest, opts ...grpc.CallOption) (*ListValkeyParametersResponse, error)
+	// ListDocumentDBParameters returns the catalog that a DocumentDB database's
+	// spec.postgresql.parameters is validated against (same shape as
+	// ListPostgreSQLParameters). Requires the documentdb feature flag.
+	ListDocumentDBParameters(ctx context.Context, in *ListDocumentDBParametersRequest, opts ...grpc.CallOption) (*ListDocumentDBParametersResponse, error)
 	ListAutoscaleMetrics(ctx context.Context, in *ListAutoscaleMetricsRequest, opts ...grpc.CallOption) (*ListAutoscaleMetricsResponse, error)
 	// Newest first.
 	ListScaleEvents(ctx context.Context, in *ListScaleEventsRequest, opts ...grpc.CallOption) (*ListScaleEventsResponse, error)
@@ -2704,6 +2709,16 @@ func (c *serverServiceClient) ListValkeyParameters(ctx context.Context, in *List
 	return out, nil
 }
 
+func (c *serverServiceClient) ListDocumentDBParameters(ctx context.Context, in *ListDocumentDBParametersRequest, opts ...grpc.CallOption) (*ListDocumentDBParametersResponse, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(ListDocumentDBParametersResponse)
+	err := c.cc.Invoke(ctx, ServerService_ListDocumentDBParameters_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
 func (c *serverServiceClient) ListAutoscaleMetrics(ctx context.Context, in *ListAutoscaleMetricsRequest, opts ...grpc.CallOption) (*ListAutoscaleMetricsResponse, error) {
 	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
 	out := new(ListAutoscaleMetricsResponse)
@@ -4401,6 +4416,10 @@ type ServerServiceServer interface {
 	ListPostgreSQLParameters(context.Context, *ListPostgreSQLParametersRequest) (*ListPostgreSQLParametersResponse, error)
 	// ListValkeyParameters returns the Valkey version's catalog that valkey.parameters is validated against.
 	ListValkeyParameters(context.Context, *ListValkeyParametersRequest) (*ListValkeyParametersResponse, error)
+	// ListDocumentDBParameters returns the catalog that a DocumentDB database's
+	// spec.postgresql.parameters is validated against (same shape as
+	// ListPostgreSQLParameters). Requires the documentdb feature flag.
+	ListDocumentDBParameters(context.Context, *ListDocumentDBParametersRequest) (*ListDocumentDBParametersResponse, error)
 	ListAutoscaleMetrics(context.Context, *ListAutoscaleMetricsRequest) (*ListAutoscaleMetricsResponse, error)
 	// Newest first.
 	ListScaleEvents(context.Context, *ListScaleEventsRequest) (*ListScaleEventsResponse, error)
@@ -5269,6 +5288,9 @@ func (UnimplementedServerServiceServer) ListPostgreSQLParameters(context.Context
 }
 func (UnimplementedServerServiceServer) ListValkeyParameters(context.Context, *ListValkeyParametersRequest) (*ListValkeyParametersResponse, error) {
 	return nil, status.Error(codes.Unimplemented, "method ListValkeyParameters not implemented")
+}
+func (UnimplementedServerServiceServer) ListDocumentDBParameters(context.Context, *ListDocumentDBParametersRequest) (*ListDocumentDBParametersResponse, error) {
+	return nil, status.Error(codes.Unimplemented, "method ListDocumentDBParameters not implemented")
 }
 func (UnimplementedServerServiceServer) ListAutoscaleMetrics(context.Context, *ListAutoscaleMetricsRequest) (*ListAutoscaleMetricsResponse, error) {
 	return nil, status.Error(codes.Unimplemented, "method ListAutoscaleMetrics not implemented")
@@ -8597,6 +8619,24 @@ func _ServerService_ListValkeyParameters_Handler(srv interface{}, ctx context.Co
 	return interceptor(ctx, in, info, handler)
 }
 
+func _ServerService_ListDocumentDBParameters_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(ListDocumentDBParametersRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(ServerServiceServer).ListDocumentDBParameters(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: ServerService_ListDocumentDBParameters_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(ServerServiceServer).ListDocumentDBParameters(ctx, req.(*ListDocumentDBParametersRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
 func _ServerService_ListAutoscaleMetrics_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
 	in := new(ListAutoscaleMetricsRequest)
 	if err := dec(in); err != nil {
@@ -11586,6 +11626,10 @@ var ServerService_ServiceDesc = grpc.ServiceDesc{
 			Handler:    _ServerService_ListValkeyParameters_Handler,
 		},
 		{
+			MethodName: "ListDocumentDBParameters",
+			Handler:    _ServerService_ListDocumentDBParameters_Handler,
+		},
+		{
 			MethodName: "ListAutoscaleMetrics",
 			Handler:    _ServerService_ListAutoscaleMetrics_Handler,
 		},
@@ -12127,6 +12171,11 @@ const (
 	AdminService_AdminGrantOrganizationCredit_FullMethodName      = "/relay.server.v1.AdminService/AdminGrantOrganizationCredit"
 	AdminService_AdminRevokeOrganizationCredit_FullMethodName     = "/relay.server.v1.AdminService/AdminRevokeOrganizationCredit"
 	AdminService_AdminListOrganizationGrants_FullMethodName       = "/relay.server.v1.AdminService/AdminListOrganizationGrants"
+	AdminService_AdminListOrganizationContracts_FullMethodName    = "/relay.server.v1.AdminService/AdminListOrganizationContracts"
+	AdminService_AdminGetOrganizationContract_FullMethodName      = "/relay.server.v1.AdminService/AdminGetOrganizationContract"
+	AdminService_AdminCreateOrganizationContract_FullMethodName   = "/relay.server.v1.AdminService/AdminCreateOrganizationContract"
+	AdminService_AdminUpdateOrganizationContract_FullMethodName   = "/relay.server.v1.AdminService/AdminUpdateOrganizationContract"
+	AdminService_AdminListContractTemplates_FullMethodName        = "/relay.server.v1.AdminService/AdminListContractTemplates"
 	AdminService_AdminCreatePromoCampaign_FullMethodName          = "/relay.server.v1.AdminService/AdminCreatePromoCampaign"
 	AdminService_AdminListPromoCampaigns_FullMethodName           = "/relay.server.v1.AdminService/AdminListPromoCampaigns"
 	AdminService_AdminSetPromoCampaignActive_FullMethodName       = "/relay.server.v1.AdminService/AdminSetPromoCampaignActive"
@@ -12257,6 +12306,22 @@ type AdminServiceClient interface {
 	// newest first, with credit balances. Revoked grants are included only with
 	// include_revoked.
 	AdminListOrganizationGrants(ctx context.Context, in *AdminListOrganizationGrantsRequest, opts ...grpc.CallOption) (*AdminListOrganizationGrantsResponse, error)
+	// AdminListOrganizationContracts lists an organization's contracts, newest
+	// first. Fails with FailedPrecondition when contracts are not configured.
+	AdminListOrganizationContracts(ctx context.Context, in *AdminListOrganizationContractsRequest, opts ...grpc.CallOption) (*AdminListOrganizationContractsResponse, error)
+	// AdminGetOrganizationContract returns one contract of the organization with
+	// fresh, time-limited links to the signed PDFs and the audit certificate,
+	// fetched from DocuSeal at request time.
+	AdminGetOrganizationContract(ctx context.Context, in *AdminGetOrganizationContractRequest, opts ...grpc.CallOption) (*AdminGetOrganizationContractResponse, error)
+	// AdminCreateOrganizationContract sends a DocuSeal template to the signers
+	// (by email) and records the submission against the organization.
+	AdminCreateOrganizationContract(ctx context.Context, in *AdminCreateOrganizationContractRequest, opts ...grpc.CallOption) (*AdminCreateOrganizationContractResponse, error)
+	// AdminUpdateOrganizationContract replaces the contract's metadata (dates,
+	// value, links to the price version, comp and credit grants).
+	AdminUpdateOrganizationContract(ctx context.Context, in *AdminUpdateOrganizationContractRequest, opts ...grpc.CallOption) (*AdminUpdateOrganizationContractResponse, error)
+	// AdminListContractTemplates lists the DocuSeal templates a contract can be
+	// sent from.
+	AdminListContractTemplates(ctx context.Context, in *AdminListContractTemplatesRequest, opts ...grpc.CallOption) (*AdminListContractTemplatesResponse, error)
 	AdminCreatePromoCampaign(ctx context.Context, in *AdminCreatePromoCampaignRequest, opts ...grpc.CallOption) (*AdminCreatePromoCampaignResponse, error)
 	AdminListPromoCampaigns(ctx context.Context, in *AdminListPromoCampaignsRequest, opts ...grpc.CallOption) (*AdminListPromoCampaignsResponse, error)
 	AdminSetPromoCampaignActive(ctx context.Context, in *AdminSetPromoCampaignActiveRequest, opts ...grpc.CallOption) (*AdminSetPromoCampaignActiveResponse, error)
@@ -12608,6 +12673,56 @@ func (c *adminServiceClient) AdminListOrganizationGrants(ctx context.Context, in
 	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
 	out := new(AdminListOrganizationGrantsResponse)
 	err := c.cc.Invoke(ctx, AdminService_AdminListOrganizationGrants_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *adminServiceClient) AdminListOrganizationContracts(ctx context.Context, in *AdminListOrganizationContractsRequest, opts ...grpc.CallOption) (*AdminListOrganizationContractsResponse, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(AdminListOrganizationContractsResponse)
+	err := c.cc.Invoke(ctx, AdminService_AdminListOrganizationContracts_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *adminServiceClient) AdminGetOrganizationContract(ctx context.Context, in *AdminGetOrganizationContractRequest, opts ...grpc.CallOption) (*AdminGetOrganizationContractResponse, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(AdminGetOrganizationContractResponse)
+	err := c.cc.Invoke(ctx, AdminService_AdminGetOrganizationContract_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *adminServiceClient) AdminCreateOrganizationContract(ctx context.Context, in *AdminCreateOrganizationContractRequest, opts ...grpc.CallOption) (*AdminCreateOrganizationContractResponse, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(AdminCreateOrganizationContractResponse)
+	err := c.cc.Invoke(ctx, AdminService_AdminCreateOrganizationContract_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *adminServiceClient) AdminUpdateOrganizationContract(ctx context.Context, in *AdminUpdateOrganizationContractRequest, opts ...grpc.CallOption) (*AdminUpdateOrganizationContractResponse, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(AdminUpdateOrganizationContractResponse)
+	err := c.cc.Invoke(ctx, AdminService_AdminUpdateOrganizationContract_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *adminServiceClient) AdminListContractTemplates(ctx context.Context, in *AdminListContractTemplatesRequest, opts ...grpc.CallOption) (*AdminListContractTemplatesResponse, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(AdminListContractTemplatesResponse)
+	err := c.cc.Invoke(ctx, AdminService_AdminListContractTemplates_FullMethodName, in, out, cOpts...)
 	if err != nil {
 		return nil, err
 	}
@@ -13327,6 +13442,22 @@ type AdminServiceServer interface {
 	// newest first, with credit balances. Revoked grants are included only with
 	// include_revoked.
 	AdminListOrganizationGrants(context.Context, *AdminListOrganizationGrantsRequest) (*AdminListOrganizationGrantsResponse, error)
+	// AdminListOrganizationContracts lists an organization's contracts, newest
+	// first. Fails with FailedPrecondition when contracts are not configured.
+	AdminListOrganizationContracts(context.Context, *AdminListOrganizationContractsRequest) (*AdminListOrganizationContractsResponse, error)
+	// AdminGetOrganizationContract returns one contract of the organization with
+	// fresh, time-limited links to the signed PDFs and the audit certificate,
+	// fetched from DocuSeal at request time.
+	AdminGetOrganizationContract(context.Context, *AdminGetOrganizationContractRequest) (*AdminGetOrganizationContractResponse, error)
+	// AdminCreateOrganizationContract sends a DocuSeal template to the signers
+	// (by email) and records the submission against the organization.
+	AdminCreateOrganizationContract(context.Context, *AdminCreateOrganizationContractRequest) (*AdminCreateOrganizationContractResponse, error)
+	// AdminUpdateOrganizationContract replaces the contract's metadata (dates,
+	// value, links to the price version, comp and credit grants).
+	AdminUpdateOrganizationContract(context.Context, *AdminUpdateOrganizationContractRequest) (*AdminUpdateOrganizationContractResponse, error)
+	// AdminListContractTemplates lists the DocuSeal templates a contract can be
+	// sent from.
+	AdminListContractTemplates(context.Context, *AdminListContractTemplatesRequest) (*AdminListContractTemplatesResponse, error)
 	AdminCreatePromoCampaign(context.Context, *AdminCreatePromoCampaignRequest) (*AdminCreatePromoCampaignResponse, error)
 	AdminListPromoCampaigns(context.Context, *AdminListPromoCampaignsRequest) (*AdminListPromoCampaignsResponse, error)
 	AdminSetPromoCampaignActive(context.Context, *AdminSetPromoCampaignActiveRequest) (*AdminSetPromoCampaignActiveResponse, error)
@@ -13585,6 +13716,21 @@ func (UnimplementedAdminServiceServer) AdminRevokeOrganizationCredit(context.Con
 }
 func (UnimplementedAdminServiceServer) AdminListOrganizationGrants(context.Context, *AdminListOrganizationGrantsRequest) (*AdminListOrganizationGrantsResponse, error) {
 	return nil, status.Error(codes.Unimplemented, "method AdminListOrganizationGrants not implemented")
+}
+func (UnimplementedAdminServiceServer) AdminListOrganizationContracts(context.Context, *AdminListOrganizationContractsRequest) (*AdminListOrganizationContractsResponse, error) {
+	return nil, status.Error(codes.Unimplemented, "method AdminListOrganizationContracts not implemented")
+}
+func (UnimplementedAdminServiceServer) AdminGetOrganizationContract(context.Context, *AdminGetOrganizationContractRequest) (*AdminGetOrganizationContractResponse, error) {
+	return nil, status.Error(codes.Unimplemented, "method AdminGetOrganizationContract not implemented")
+}
+func (UnimplementedAdminServiceServer) AdminCreateOrganizationContract(context.Context, *AdminCreateOrganizationContractRequest) (*AdminCreateOrganizationContractResponse, error) {
+	return nil, status.Error(codes.Unimplemented, "method AdminCreateOrganizationContract not implemented")
+}
+func (UnimplementedAdminServiceServer) AdminUpdateOrganizationContract(context.Context, *AdminUpdateOrganizationContractRequest) (*AdminUpdateOrganizationContractResponse, error) {
+	return nil, status.Error(codes.Unimplemented, "method AdminUpdateOrganizationContract not implemented")
+}
+func (UnimplementedAdminServiceServer) AdminListContractTemplates(context.Context, *AdminListContractTemplatesRequest) (*AdminListContractTemplatesResponse, error) {
+	return nil, status.Error(codes.Unimplemented, "method AdminListContractTemplates not implemented")
 }
 func (UnimplementedAdminServiceServer) AdminCreatePromoCampaign(context.Context, *AdminCreatePromoCampaignRequest) (*AdminCreatePromoCampaignResponse, error) {
 	return nil, status.Error(codes.Unimplemented, "method AdminCreatePromoCampaign not implemented")
@@ -14050,6 +14196,96 @@ func _AdminService_AdminListOrganizationGrants_Handler(srv interface{}, ctx cont
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
 		return srv.(AdminServiceServer).AdminListOrganizationGrants(ctx, req.(*AdminListOrganizationGrantsRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _AdminService_AdminListOrganizationContracts_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(AdminListOrganizationContractsRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(AdminServiceServer).AdminListOrganizationContracts(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: AdminService_AdminListOrganizationContracts_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(AdminServiceServer).AdminListOrganizationContracts(ctx, req.(*AdminListOrganizationContractsRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _AdminService_AdminGetOrganizationContract_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(AdminGetOrganizationContractRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(AdminServiceServer).AdminGetOrganizationContract(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: AdminService_AdminGetOrganizationContract_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(AdminServiceServer).AdminGetOrganizationContract(ctx, req.(*AdminGetOrganizationContractRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _AdminService_AdminCreateOrganizationContract_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(AdminCreateOrganizationContractRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(AdminServiceServer).AdminCreateOrganizationContract(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: AdminService_AdminCreateOrganizationContract_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(AdminServiceServer).AdminCreateOrganizationContract(ctx, req.(*AdminCreateOrganizationContractRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _AdminService_AdminUpdateOrganizationContract_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(AdminUpdateOrganizationContractRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(AdminServiceServer).AdminUpdateOrganizationContract(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: AdminService_AdminUpdateOrganizationContract_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(AdminServiceServer).AdminUpdateOrganizationContract(ctx, req.(*AdminUpdateOrganizationContractRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _AdminService_AdminListContractTemplates_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(AdminListContractTemplatesRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(AdminServiceServer).AdminListContractTemplates(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: AdminService_AdminListContractTemplates_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(AdminServiceServer).AdminListContractTemplates(ctx, req.(*AdminListContractTemplatesRequest))
 	}
 	return interceptor(ctx, in, info, handler)
 }
@@ -15286,6 +15522,26 @@ var AdminService_ServiceDesc = grpc.ServiceDesc{
 		{
 			MethodName: "AdminListOrganizationGrants",
 			Handler:    _AdminService_AdminListOrganizationGrants_Handler,
+		},
+		{
+			MethodName: "AdminListOrganizationContracts",
+			Handler:    _AdminService_AdminListOrganizationContracts_Handler,
+		},
+		{
+			MethodName: "AdminGetOrganizationContract",
+			Handler:    _AdminService_AdminGetOrganizationContract_Handler,
+		},
+		{
+			MethodName: "AdminCreateOrganizationContract",
+			Handler:    _AdminService_AdminCreateOrganizationContract_Handler,
+		},
+		{
+			MethodName: "AdminUpdateOrganizationContract",
+			Handler:    _AdminService_AdminUpdateOrganizationContract_Handler,
+		},
+		{
+			MethodName: "AdminListContractTemplates",
+			Handler:    _AdminService_AdminListContractTemplates_Handler,
 		},
 		{
 			MethodName: "AdminCreatePromoCampaign",
