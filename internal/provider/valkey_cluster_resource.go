@@ -86,6 +86,7 @@ type valkeyClusterModel struct {
 	StorageStatus        types.Object                    `tfsdk:"storage_status"`
 	ReadyNodes           types.Int64                     `tfsdk:"ready_nodes"`
 	TotalNodes           types.Int64                     `tfsdk:"total_nodes"`
+	Regions              types.Set                       `tfsdk:"regions"`
 	CreatedAt            types.String                    `tfsdk:"created_at"`
 	UpdatedAt            types.String                    `tfsdk:"updated_at"`
 	Timeouts             timeouts.Value                  `tfsdk:"timeouts"`
@@ -216,6 +217,7 @@ func (r *valkeyClusterResource) Schema(ctx context.Context, _ resource.SchemaReq
 			},
 			"ready_nodes": schema.Int64Attribute{Computed: true, MarkdownDescription: "Nodes ready."},
 			"total_nodes": schema.Int64Attribute{Computed: true, MarkdownDescription: "Nodes expected."},
+			"regions":     regionsAttribute(),
 			"created_at":  schema.StringAttribute{Computed: true, MarkdownDescription: "Creation time, RFC 3339."},
 			"updated_at":  schema.StringAttribute{Computed: true, MarkdownDescription: "Last change time, RFC 3339."},
 		},
@@ -753,6 +755,7 @@ func valkeyClusterFromProto(db *serverv1.Database, prior valkeyClusterModel) val
 		StorageStatus:        storageStatusFromProto(st.GetStorage()),
 		ReadyNodes:           types.Int64Value(int64(st.GetReadyNodes())),
 		TotalNodes:           types.Int64Value(int64(st.GetTotalNodes())),
+		Regions:              regionsFromProto(st.GetRegions()),
 		CreatedAt:            timestampValue(st.GetCreatedAt()),
 		UpdatedAt:            timestampValue(st.GetUpdatedAt()),
 		Timeouts:             prior.Timeouts,

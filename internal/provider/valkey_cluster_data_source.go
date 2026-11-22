@@ -26,6 +26,7 @@ type valkeyClusterDataModel struct {
 	Shards             types.Int64                     `tfsdk:"shards"`
 	ReplicasPerShard   types.Int64                     `tfsdk:"replicas_per_shard"`
 	Nodes              map[string]valkeyNodeGroupModel `tfsdk:"nodes"`
+	Distribution       types.Object                    `tfsdk:"distribution"`
 	Parameters         types.Map                       `tfsdk:"parameters"`
 	Phase              types.String                    `tfsdk:"phase"`
 	DeletionProtection types.Bool                      `tfsdk:"deletion_protection"`
@@ -38,6 +39,7 @@ type valkeyClusterDataModel struct {
 	StorageStatus      types.Object                    `tfsdk:"storage_status"`
 	ReadyNodes         types.Int64                     `tfsdk:"ready_nodes"`
 	TotalNodes         types.Int64                     `tfsdk:"total_nodes"`
+	Regions            types.Set                       `tfsdk:"regions"`
 }
 
 func newValkeyClusterDataSource() datasource.DataSource {
@@ -83,6 +85,7 @@ func (d *valkeyClusterDataSource) Schema(_ context.Context, _ datasource.SchemaR
 				}},
 				MarkdownDescription: "The cluster's node group, keyed by its label.",
 			},
+			"distribution":        distributionDataAttribute(),
 			"parameters":          schema.MapAttribute{ElementType: types.StringType, Computed: true, MarkdownDescription: "Valkey settings."},
 			"phase":               schema.StringAttribute{Computed: true},
 			"deletion_protection": schema.BoolAttribute{Computed: true, MarkdownDescription: "Whether the platform refuses to delete the cluster."},
@@ -95,6 +98,7 @@ func (d *valkeyClusterDataSource) Schema(_ context.Context, _ datasource.SchemaR
 			"storage_status":      storageStatusDataAttribute(),
 			"ready_nodes":         schema.Int64Attribute{Computed: true},
 			"total_nodes":         schema.Int64Attribute{Computed: true},
+			"regions":             regionsDataAttribute(),
 		},
 	}
 }
@@ -146,6 +150,7 @@ func (d *valkeyClusterDataSource) Read(ctx context.Context, req datasource.ReadR
 		Shards:             full.Shards,
 		ReplicasPerShard:   full.ReplicasPerShard,
 		Nodes:              full.Nodes,
+		Distribution:       full.Distribution,
 		Parameters:         full.Parameters,
 		Phase:              full.Phase,
 		DeletionProtection: full.DeletionProtection,
@@ -158,6 +163,7 @@ func (d *valkeyClusterDataSource) Read(ctx context.Context, req datasource.ReadR
 		StorageStatus:      full.StorageStatus,
 		ReadyNodes:         full.ReadyNodes,
 		TotalNodes:         full.TotalNodes,
+		Regions:            full.Regions,
 	}
 	resp.Diagnostics.Append(resp.State.Set(ctx, &state)...)
 }
