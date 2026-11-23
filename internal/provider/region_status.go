@@ -22,6 +22,7 @@ var regionStatusType = types.ObjectType{AttrTypes: map[string]attr.Type{
 	"replication_link": types.StringType,
 	"held":             types.StringType,
 	"message":          types.StringType,
+	"endpoint":         types.StringType,
 }}
 
 const regionsDescription = "Per-region status of a standby distribution, one entry per region, empty for a single-region cluster. " +
@@ -37,6 +38,7 @@ var regionStatusDescriptions = map[string]string{
 	"replication_link": "`Up` or `Down` on a standby, as the operator reports it; empty on the primary.",
 	"held":             "Why the operator holds this region's role change; empty when nothing is held.",
 	"message":          "Detail for the phase.",
+	"endpoint":         "Hostname of this region's own endpoint, on a standby region as well. Empty when the region has no DNS cell of its own and without the `region_endpoints` feature.",
 }
 
 func regionsAttribute() schema.Attribute {
@@ -107,6 +109,7 @@ func regionsFromProto(regions []*serverv1.RegionStatus) types.Set {
 			"replication_link": types.StringValue(r.GetReplicationLink()),
 			"held":             types.StringValue(r.GetHeld()),
 			"message":          types.StringValue(r.GetMessage()),
+			"endpoint":         types.StringValue(r.GetEndpoint()),
 		}))
 	}
 	return types.SetValueMust(regionStatusType, elements)

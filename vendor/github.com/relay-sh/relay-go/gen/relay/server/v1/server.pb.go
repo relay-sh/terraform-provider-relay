@@ -1966,7 +1966,9 @@ type RegionStatus struct {
 	// Standby only: "Up" or "Down" as the operator reports it.
 	ReplicationLink string `protobuf:"bytes,9,opt,name=replication_link,json=replicationLink,proto3" json:"replication_link,omitempty"`
 	// Why the operator holds this region's role change; empty when nothing is held.
-	Held          string `protobuf:"bytes,10,opt,name=held,proto3" json:"held,omitempty"`
+	Held string `protobuf:"bytes,10,opt,name=held,proto3" json:"held,omitempty"`
+	// The region's own read-write hostname; empty when the region has no DNS cell of its own.
+	Endpoint      string `protobuf:"bytes,11,opt,name=endpoint,proto3" json:"endpoint,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
@@ -2067,6 +2069,13 @@ func (x *RegionStatus) GetReplicationLink() string {
 func (x *RegionStatus) GetHeld() string {
 	if x != nil {
 		return x.Held
+	}
+	return ""
+}
+
+func (x *RegionStatus) GetEndpoint() string {
+	if x != nil {
+		return x.Endpoint
 	}
 	return ""
 }
@@ -44589,6 +44598,78 @@ func (*DeleteOrganizationResponse) Descriptor() ([]byte, []int) {
 	return file_relay_server_v1_server_proto_rawDescGZIP(), []int{654}
 }
 
+type DeleteAccountRequest struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *DeleteAccountRequest) Reset() {
+	*x = DeleteAccountRequest{}
+	mi := &file_relay_server_v1_server_proto_msgTypes[655]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *DeleteAccountRequest) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*DeleteAccountRequest) ProtoMessage() {}
+
+func (x *DeleteAccountRequest) ProtoReflect() protoreflect.Message {
+	mi := &file_relay_server_v1_server_proto_msgTypes[655]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use DeleteAccountRequest.ProtoReflect.Descriptor instead.
+func (*DeleteAccountRequest) Descriptor() ([]byte, []int) {
+	return file_relay_server_v1_server_proto_rawDescGZIP(), []int{655}
+}
+
+type DeleteAccountResponse struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *DeleteAccountResponse) Reset() {
+	*x = DeleteAccountResponse{}
+	mi := &file_relay_server_v1_server_proto_msgTypes[656]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *DeleteAccountResponse) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*DeleteAccountResponse) ProtoMessage() {}
+
+func (x *DeleteAccountResponse) ProtoReflect() protoreflect.Message {
+	mi := &file_relay_server_v1_server_proto_msgTypes[656]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use DeleteAccountResponse.ProtoReflect.Descriptor instead.
+func (*DeleteAccountResponse) Descriptor() ([]byte, []int) {
+	return file_relay_server_v1_server_proto_rawDescGZIP(), []int{656}
+}
+
 type Workspace struct {
 	state           protoimpl.MessageState `protogen:"open.v1"`
 	Id              string                 `protobuf:"bytes,1,opt,name=id,proto3" json:"id,omitempty"`
@@ -44607,7 +44688,7 @@ type Workspace struct {
 
 func (x *Workspace) Reset() {
 	*x = Workspace{}
-	mi := &file_relay_server_v1_server_proto_msgTypes[655]
+	mi := &file_relay_server_v1_server_proto_msgTypes[657]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -44619,7 +44700,7 @@ func (x *Workspace) String() string {
 func (*Workspace) ProtoMessage() {}
 
 func (x *Workspace) ProtoReflect() protoreflect.Message {
-	mi := &file_relay_server_v1_server_proto_msgTypes[655]
+	mi := &file_relay_server_v1_server_proto_msgTypes[657]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -44632,7 +44713,7 @@ func (x *Workspace) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use Workspace.ProtoReflect.Descriptor instead.
 func (*Workspace) Descriptor() ([]byte, []int) {
-	return file_relay_server_v1_server_proto_rawDescGZIP(), []int{655}
+	return file_relay_server_v1_server_proto_rawDescGZIP(), []int{657}
 }
 
 func (x *Workspace) GetId() string {
@@ -44699,7 +44780,7 @@ type ListWorkspacesRequest struct {
 
 func (x *ListWorkspacesRequest) Reset() {
 	*x = ListWorkspacesRequest{}
-	mi := &file_relay_server_v1_server_proto_msgTypes[656]
+	mi := &file_relay_server_v1_server_proto_msgTypes[658]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -44711,7 +44792,7 @@ func (x *ListWorkspacesRequest) String() string {
 func (*ListWorkspacesRequest) ProtoMessage() {}
 
 func (x *ListWorkspacesRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_relay_server_v1_server_proto_msgTypes[656]
+	mi := &file_relay_server_v1_server_proto_msgTypes[658]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -44724,7 +44805,7 @@ func (x *ListWorkspacesRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use ListWorkspacesRequest.ProtoReflect.Descriptor instead.
 func (*ListWorkspacesRequest) Descriptor() ([]byte, []int) {
-	return file_relay_server_v1_server_proto_rawDescGZIP(), []int{656}
+	return file_relay_server_v1_server_proto_rawDescGZIP(), []int{658}
 }
 
 type ListWorkspacesResponse struct {
@@ -44736,7 +44817,7 @@ type ListWorkspacesResponse struct {
 
 func (x *ListWorkspacesResponse) Reset() {
 	*x = ListWorkspacesResponse{}
-	mi := &file_relay_server_v1_server_proto_msgTypes[657]
+	mi := &file_relay_server_v1_server_proto_msgTypes[659]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -44748,7 +44829,7 @@ func (x *ListWorkspacesResponse) String() string {
 func (*ListWorkspacesResponse) ProtoMessage() {}
 
 func (x *ListWorkspacesResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_relay_server_v1_server_proto_msgTypes[657]
+	mi := &file_relay_server_v1_server_proto_msgTypes[659]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -44761,7 +44842,7 @@ func (x *ListWorkspacesResponse) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use ListWorkspacesResponse.ProtoReflect.Descriptor instead.
 func (*ListWorkspacesResponse) Descriptor() ([]byte, []int) {
-	return file_relay_server_v1_server_proto_rawDescGZIP(), []int{657}
+	return file_relay_server_v1_server_proto_rawDescGZIP(), []int{659}
 }
 
 func (x *ListWorkspacesResponse) GetWorkspaces() []*Workspace {
@@ -44784,7 +44865,7 @@ type GetWorkspaceRequest struct {
 
 func (x *GetWorkspaceRequest) Reset() {
 	*x = GetWorkspaceRequest{}
-	mi := &file_relay_server_v1_server_proto_msgTypes[658]
+	mi := &file_relay_server_v1_server_proto_msgTypes[660]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -44796,7 +44877,7 @@ func (x *GetWorkspaceRequest) String() string {
 func (*GetWorkspaceRequest) ProtoMessage() {}
 
 func (x *GetWorkspaceRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_relay_server_v1_server_proto_msgTypes[658]
+	mi := &file_relay_server_v1_server_proto_msgTypes[660]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -44809,7 +44890,7 @@ func (x *GetWorkspaceRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use GetWorkspaceRequest.ProtoReflect.Descriptor instead.
 func (*GetWorkspaceRequest) Descriptor() ([]byte, []int) {
-	return file_relay_server_v1_server_proto_rawDescGZIP(), []int{658}
+	return file_relay_server_v1_server_proto_rawDescGZIP(), []int{660}
 }
 
 func (x *GetWorkspaceRequest) GetKey() isGetWorkspaceRequest_Key {
@@ -44862,7 +44943,7 @@ type GetWorkspaceResponse struct {
 
 func (x *GetWorkspaceResponse) Reset() {
 	*x = GetWorkspaceResponse{}
-	mi := &file_relay_server_v1_server_proto_msgTypes[659]
+	mi := &file_relay_server_v1_server_proto_msgTypes[661]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -44874,7 +44955,7 @@ func (x *GetWorkspaceResponse) String() string {
 func (*GetWorkspaceResponse) ProtoMessage() {}
 
 func (x *GetWorkspaceResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_relay_server_v1_server_proto_msgTypes[659]
+	mi := &file_relay_server_v1_server_proto_msgTypes[661]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -44887,7 +44968,7 @@ func (x *GetWorkspaceResponse) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use GetWorkspaceResponse.ProtoReflect.Descriptor instead.
 func (*GetWorkspaceResponse) Descriptor() ([]byte, []int) {
-	return file_relay_server_v1_server_proto_rawDescGZIP(), []int{659}
+	return file_relay_server_v1_server_proto_rawDescGZIP(), []int{661}
 }
 
 func (x *GetWorkspaceResponse) GetWorkspace() *Workspace {
@@ -44909,7 +44990,7 @@ type CreateWorkspaceRequest struct {
 
 func (x *CreateWorkspaceRequest) Reset() {
 	*x = CreateWorkspaceRequest{}
-	mi := &file_relay_server_v1_server_proto_msgTypes[660]
+	mi := &file_relay_server_v1_server_proto_msgTypes[662]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -44921,7 +45002,7 @@ func (x *CreateWorkspaceRequest) String() string {
 func (*CreateWorkspaceRequest) ProtoMessage() {}
 
 func (x *CreateWorkspaceRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_relay_server_v1_server_proto_msgTypes[660]
+	mi := &file_relay_server_v1_server_proto_msgTypes[662]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -44934,7 +45015,7 @@ func (x *CreateWorkspaceRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use CreateWorkspaceRequest.ProtoReflect.Descriptor instead.
 func (*CreateWorkspaceRequest) Descriptor() ([]byte, []int) {
-	return file_relay_server_v1_server_proto_rawDescGZIP(), []int{660}
+	return file_relay_server_v1_server_proto_rawDescGZIP(), []int{662}
 }
 
 func (x *CreateWorkspaceRequest) GetName() string {
@@ -44974,7 +45055,7 @@ type CreateWorkspaceResponse struct {
 
 func (x *CreateWorkspaceResponse) Reset() {
 	*x = CreateWorkspaceResponse{}
-	mi := &file_relay_server_v1_server_proto_msgTypes[661]
+	mi := &file_relay_server_v1_server_proto_msgTypes[663]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -44986,7 +45067,7 @@ func (x *CreateWorkspaceResponse) String() string {
 func (*CreateWorkspaceResponse) ProtoMessage() {}
 
 func (x *CreateWorkspaceResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_relay_server_v1_server_proto_msgTypes[661]
+	mi := &file_relay_server_v1_server_proto_msgTypes[663]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -44999,7 +45080,7 @@ func (x *CreateWorkspaceResponse) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use CreateWorkspaceResponse.ProtoReflect.Descriptor instead.
 func (*CreateWorkspaceResponse) Descriptor() ([]byte, []int) {
-	return file_relay_server_v1_server_proto_rawDescGZIP(), []int{661}
+	return file_relay_server_v1_server_proto_rawDescGZIP(), []int{663}
 }
 
 func (x *CreateWorkspaceResponse) GetWorkspace() *Workspace {
@@ -45023,7 +45104,7 @@ type UpdateWorkspaceRequest struct {
 
 func (x *UpdateWorkspaceRequest) Reset() {
 	*x = UpdateWorkspaceRequest{}
-	mi := &file_relay_server_v1_server_proto_msgTypes[662]
+	mi := &file_relay_server_v1_server_proto_msgTypes[664]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -45035,7 +45116,7 @@ func (x *UpdateWorkspaceRequest) String() string {
 func (*UpdateWorkspaceRequest) ProtoMessage() {}
 
 func (x *UpdateWorkspaceRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_relay_server_v1_server_proto_msgTypes[662]
+	mi := &file_relay_server_v1_server_proto_msgTypes[664]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -45048,7 +45129,7 @@ func (x *UpdateWorkspaceRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use UpdateWorkspaceRequest.ProtoReflect.Descriptor instead.
 func (*UpdateWorkspaceRequest) Descriptor() ([]byte, []int) {
-	return file_relay_server_v1_server_proto_rawDescGZIP(), []int{662}
+	return file_relay_server_v1_server_proto_rawDescGZIP(), []int{664}
 }
 
 func (x *UpdateWorkspaceRequest) GetName() string {
@@ -45095,7 +45176,7 @@ type UpdateWorkspaceResponse struct {
 
 func (x *UpdateWorkspaceResponse) Reset() {
 	*x = UpdateWorkspaceResponse{}
-	mi := &file_relay_server_v1_server_proto_msgTypes[663]
+	mi := &file_relay_server_v1_server_proto_msgTypes[665]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -45107,7 +45188,7 @@ func (x *UpdateWorkspaceResponse) String() string {
 func (*UpdateWorkspaceResponse) ProtoMessage() {}
 
 func (x *UpdateWorkspaceResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_relay_server_v1_server_proto_msgTypes[663]
+	mi := &file_relay_server_v1_server_proto_msgTypes[665]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -45120,7 +45201,7 @@ func (x *UpdateWorkspaceResponse) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use UpdateWorkspaceResponse.ProtoReflect.Descriptor instead.
 func (*UpdateWorkspaceResponse) Descriptor() ([]byte, []int) {
-	return file_relay_server_v1_server_proto_rawDescGZIP(), []int{663}
+	return file_relay_server_v1_server_proto_rawDescGZIP(), []int{665}
 }
 
 func (x *UpdateWorkspaceResponse) GetWorkspace() *Workspace {
@@ -45139,7 +45220,7 @@ type DeleteWorkspaceRequest struct {
 
 func (x *DeleteWorkspaceRequest) Reset() {
 	*x = DeleteWorkspaceRequest{}
-	mi := &file_relay_server_v1_server_proto_msgTypes[664]
+	mi := &file_relay_server_v1_server_proto_msgTypes[666]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -45151,7 +45232,7 @@ func (x *DeleteWorkspaceRequest) String() string {
 func (*DeleteWorkspaceRequest) ProtoMessage() {}
 
 func (x *DeleteWorkspaceRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_relay_server_v1_server_proto_msgTypes[664]
+	mi := &file_relay_server_v1_server_proto_msgTypes[666]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -45164,7 +45245,7 @@ func (x *DeleteWorkspaceRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use DeleteWorkspaceRequest.ProtoReflect.Descriptor instead.
 func (*DeleteWorkspaceRequest) Descriptor() ([]byte, []int) {
-	return file_relay_server_v1_server_proto_rawDescGZIP(), []int{664}
+	return file_relay_server_v1_server_proto_rawDescGZIP(), []int{666}
 }
 
 func (x *DeleteWorkspaceRequest) GetName() string {
@@ -45182,7 +45263,7 @@ type DeleteWorkspaceResponse struct {
 
 func (x *DeleteWorkspaceResponse) Reset() {
 	*x = DeleteWorkspaceResponse{}
-	mi := &file_relay_server_v1_server_proto_msgTypes[665]
+	mi := &file_relay_server_v1_server_proto_msgTypes[667]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -45194,7 +45275,7 @@ func (x *DeleteWorkspaceResponse) String() string {
 func (*DeleteWorkspaceResponse) ProtoMessage() {}
 
 func (x *DeleteWorkspaceResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_relay_server_v1_server_proto_msgTypes[665]
+	mi := &file_relay_server_v1_server_proto_msgTypes[667]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -45207,7 +45288,7 @@ func (x *DeleteWorkspaceResponse) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use DeleteWorkspaceResponse.ProtoReflect.Descriptor instead.
 func (*DeleteWorkspaceResponse) Descriptor() ([]byte, []int) {
-	return file_relay_server_v1_server_proto_rawDescGZIP(), []int{665}
+	return file_relay_server_v1_server_proto_rawDescGZIP(), []int{667}
 }
 
 type GetOrgOverviewRequest struct {
@@ -45219,7 +45300,7 @@ type GetOrgOverviewRequest struct {
 
 func (x *GetOrgOverviewRequest) Reset() {
 	*x = GetOrgOverviewRequest{}
-	mi := &file_relay_server_v1_server_proto_msgTypes[666]
+	mi := &file_relay_server_v1_server_proto_msgTypes[668]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -45231,7 +45312,7 @@ func (x *GetOrgOverviewRequest) String() string {
 func (*GetOrgOverviewRequest) ProtoMessage() {}
 
 func (x *GetOrgOverviewRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_relay_server_v1_server_proto_msgTypes[666]
+	mi := &file_relay_server_v1_server_proto_msgTypes[668]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -45244,7 +45325,7 @@ func (x *GetOrgOverviewRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use GetOrgOverviewRequest.ProtoReflect.Descriptor instead.
 func (*GetOrgOverviewRequest) Descriptor() ([]byte, []int) {
-	return file_relay_server_v1_server_proto_rawDescGZIP(), []int{666}
+	return file_relay_server_v1_server_proto_rawDescGZIP(), []int{668}
 }
 
 func (x *GetOrgOverviewRequest) GetMetricsHours() int32 {
@@ -45278,7 +45359,7 @@ type GetOrgOverviewResponse struct {
 
 func (x *GetOrgOverviewResponse) Reset() {
 	*x = GetOrgOverviewResponse{}
-	mi := &file_relay_server_v1_server_proto_msgTypes[667]
+	mi := &file_relay_server_v1_server_proto_msgTypes[669]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -45290,7 +45371,7 @@ func (x *GetOrgOverviewResponse) String() string {
 func (*GetOrgOverviewResponse) ProtoMessage() {}
 
 func (x *GetOrgOverviewResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_relay_server_v1_server_proto_msgTypes[667]
+	mi := &file_relay_server_v1_server_proto_msgTypes[669]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -45303,7 +45384,7 @@ func (x *GetOrgOverviewResponse) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use GetOrgOverviewResponse.ProtoReflect.Descriptor instead.
 func (*GetOrgOverviewResponse) Descriptor() ([]byte, []int) {
-	return file_relay_server_v1_server_proto_rawDescGZIP(), []int{667}
+	return file_relay_server_v1_server_proto_rawDescGZIP(), []int{669}
 }
 
 func (x *GetOrgOverviewResponse) GetWorkspaces() []*WorkspaceOverview {
@@ -45393,7 +45474,7 @@ type WorkspaceOverview struct {
 
 func (x *WorkspaceOverview) Reset() {
 	*x = WorkspaceOverview{}
-	mi := &file_relay_server_v1_server_proto_msgTypes[668]
+	mi := &file_relay_server_v1_server_proto_msgTypes[670]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -45405,7 +45486,7 @@ func (x *WorkspaceOverview) String() string {
 func (*WorkspaceOverview) ProtoMessage() {}
 
 func (x *WorkspaceOverview) ProtoReflect() protoreflect.Message {
-	mi := &file_relay_server_v1_server_proto_msgTypes[668]
+	mi := &file_relay_server_v1_server_proto_msgTypes[670]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -45418,7 +45499,7 @@ func (x *WorkspaceOverview) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use WorkspaceOverview.ProtoReflect.Descriptor instead.
 func (*WorkspaceOverview) Descriptor() ([]byte, []int) {
-	return file_relay_server_v1_server_proto_rawDescGZIP(), []int{668}
+	return file_relay_server_v1_server_proto_rawDescGZIP(), []int{670}
 }
 
 func (x *WorkspaceOverview) GetId() string {
@@ -45494,7 +45575,7 @@ type WorkspaceSpend struct {
 
 func (x *WorkspaceSpend) Reset() {
 	*x = WorkspaceSpend{}
-	mi := &file_relay_server_v1_server_proto_msgTypes[669]
+	mi := &file_relay_server_v1_server_proto_msgTypes[671]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -45506,7 +45587,7 @@ func (x *WorkspaceSpend) String() string {
 func (*WorkspaceSpend) ProtoMessage() {}
 
 func (x *WorkspaceSpend) ProtoReflect() protoreflect.Message {
-	mi := &file_relay_server_v1_server_proto_msgTypes[669]
+	mi := &file_relay_server_v1_server_proto_msgTypes[671]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -45519,7 +45600,7 @@ func (x *WorkspaceSpend) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use WorkspaceSpend.ProtoReflect.Descriptor instead.
 func (*WorkspaceSpend) Descriptor() ([]byte, []int) {
-	return file_relay_server_v1_server_proto_rawDescGZIP(), []int{669}
+	return file_relay_server_v1_server_proto_rawDescGZIP(), []int{671}
 }
 
 func (x *WorkspaceSpend) GetWorkspaceName() string {
@@ -45548,7 +45629,7 @@ type WorkspaceMember struct {
 
 func (x *WorkspaceMember) Reset() {
 	*x = WorkspaceMember{}
-	mi := &file_relay_server_v1_server_proto_msgTypes[670]
+	mi := &file_relay_server_v1_server_proto_msgTypes[672]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -45560,7 +45641,7 @@ func (x *WorkspaceMember) String() string {
 func (*WorkspaceMember) ProtoMessage() {}
 
 func (x *WorkspaceMember) ProtoReflect() protoreflect.Message {
-	mi := &file_relay_server_v1_server_proto_msgTypes[670]
+	mi := &file_relay_server_v1_server_proto_msgTypes[672]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -45573,7 +45654,7 @@ func (x *WorkspaceMember) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use WorkspaceMember.ProtoReflect.Descriptor instead.
 func (*WorkspaceMember) Descriptor() ([]byte, []int) {
-	return file_relay_server_v1_server_proto_rawDescGZIP(), []int{670}
+	return file_relay_server_v1_server_proto_rawDescGZIP(), []int{672}
 }
 
 func (x *WorkspaceMember) GetEmail() string {
@@ -45615,7 +45696,7 @@ type AddWorkspaceMemberRequest struct {
 
 func (x *AddWorkspaceMemberRequest) Reset() {
 	*x = AddWorkspaceMemberRequest{}
-	mi := &file_relay_server_v1_server_proto_msgTypes[671]
+	mi := &file_relay_server_v1_server_proto_msgTypes[673]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -45627,7 +45708,7 @@ func (x *AddWorkspaceMemberRequest) String() string {
 func (*AddWorkspaceMemberRequest) ProtoMessage() {}
 
 func (x *AddWorkspaceMemberRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_relay_server_v1_server_proto_msgTypes[671]
+	mi := &file_relay_server_v1_server_proto_msgTypes[673]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -45640,7 +45721,7 @@ func (x *AddWorkspaceMemberRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use AddWorkspaceMemberRequest.ProtoReflect.Descriptor instead.
 func (*AddWorkspaceMemberRequest) Descriptor() ([]byte, []int) {
-	return file_relay_server_v1_server_proto_rawDescGZIP(), []int{671}
+	return file_relay_server_v1_server_proto_rawDescGZIP(), []int{673}
 }
 
 func (x *AddWorkspaceMemberRequest) GetWorkspaceName() string {
@@ -45672,7 +45753,7 @@ type AddWorkspaceMemberResponse struct {
 
 func (x *AddWorkspaceMemberResponse) Reset() {
 	*x = AddWorkspaceMemberResponse{}
-	mi := &file_relay_server_v1_server_proto_msgTypes[672]
+	mi := &file_relay_server_v1_server_proto_msgTypes[674]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -45684,7 +45765,7 @@ func (x *AddWorkspaceMemberResponse) String() string {
 func (*AddWorkspaceMemberResponse) ProtoMessage() {}
 
 func (x *AddWorkspaceMemberResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_relay_server_v1_server_proto_msgTypes[672]
+	mi := &file_relay_server_v1_server_proto_msgTypes[674]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -45697,7 +45778,7 @@ func (x *AddWorkspaceMemberResponse) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use AddWorkspaceMemberResponse.ProtoReflect.Descriptor instead.
 func (*AddWorkspaceMemberResponse) Descriptor() ([]byte, []int) {
-	return file_relay_server_v1_server_proto_rawDescGZIP(), []int{672}
+	return file_relay_server_v1_server_proto_rawDescGZIP(), []int{674}
 }
 
 type RemoveWorkspaceMemberRequest struct {
@@ -45710,7 +45791,7 @@ type RemoveWorkspaceMemberRequest struct {
 
 func (x *RemoveWorkspaceMemberRequest) Reset() {
 	*x = RemoveWorkspaceMemberRequest{}
-	mi := &file_relay_server_v1_server_proto_msgTypes[673]
+	mi := &file_relay_server_v1_server_proto_msgTypes[675]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -45722,7 +45803,7 @@ func (x *RemoveWorkspaceMemberRequest) String() string {
 func (*RemoveWorkspaceMemberRequest) ProtoMessage() {}
 
 func (x *RemoveWorkspaceMemberRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_relay_server_v1_server_proto_msgTypes[673]
+	mi := &file_relay_server_v1_server_proto_msgTypes[675]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -45735,7 +45816,7 @@ func (x *RemoveWorkspaceMemberRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use RemoveWorkspaceMemberRequest.ProtoReflect.Descriptor instead.
 func (*RemoveWorkspaceMemberRequest) Descriptor() ([]byte, []int) {
-	return file_relay_server_v1_server_proto_rawDescGZIP(), []int{673}
+	return file_relay_server_v1_server_proto_rawDescGZIP(), []int{675}
 }
 
 func (x *RemoveWorkspaceMemberRequest) GetWorkspaceName() string {
@@ -45760,7 +45841,7 @@ type RemoveWorkspaceMemberResponse struct {
 
 func (x *RemoveWorkspaceMemberResponse) Reset() {
 	*x = RemoveWorkspaceMemberResponse{}
-	mi := &file_relay_server_v1_server_proto_msgTypes[674]
+	mi := &file_relay_server_v1_server_proto_msgTypes[676]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -45772,7 +45853,7 @@ func (x *RemoveWorkspaceMemberResponse) String() string {
 func (*RemoveWorkspaceMemberResponse) ProtoMessage() {}
 
 func (x *RemoveWorkspaceMemberResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_relay_server_v1_server_proto_msgTypes[674]
+	mi := &file_relay_server_v1_server_proto_msgTypes[676]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -45785,7 +45866,7 @@ func (x *RemoveWorkspaceMemberResponse) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use RemoveWorkspaceMemberResponse.ProtoReflect.Descriptor instead.
 func (*RemoveWorkspaceMemberResponse) Descriptor() ([]byte, []int) {
-	return file_relay_server_v1_server_proto_rawDescGZIP(), []int{674}
+	return file_relay_server_v1_server_proto_rawDescGZIP(), []int{676}
 }
 
 type ListWorkspaceMembersRequest struct {
@@ -45797,7 +45878,7 @@ type ListWorkspaceMembersRequest struct {
 
 func (x *ListWorkspaceMembersRequest) Reset() {
 	*x = ListWorkspaceMembersRequest{}
-	mi := &file_relay_server_v1_server_proto_msgTypes[675]
+	mi := &file_relay_server_v1_server_proto_msgTypes[677]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -45809,7 +45890,7 @@ func (x *ListWorkspaceMembersRequest) String() string {
 func (*ListWorkspaceMembersRequest) ProtoMessage() {}
 
 func (x *ListWorkspaceMembersRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_relay_server_v1_server_proto_msgTypes[675]
+	mi := &file_relay_server_v1_server_proto_msgTypes[677]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -45822,7 +45903,7 @@ func (x *ListWorkspaceMembersRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use ListWorkspaceMembersRequest.ProtoReflect.Descriptor instead.
 func (*ListWorkspaceMembersRequest) Descriptor() ([]byte, []int) {
-	return file_relay_server_v1_server_proto_rawDescGZIP(), []int{675}
+	return file_relay_server_v1_server_proto_rawDescGZIP(), []int{677}
 }
 
 func (x *ListWorkspaceMembersRequest) GetWorkspaceName() string {
@@ -45843,7 +45924,7 @@ type ListWorkspaceMembersResponse struct {
 
 func (x *ListWorkspaceMembersResponse) Reset() {
 	*x = ListWorkspaceMembersResponse{}
-	mi := &file_relay_server_v1_server_proto_msgTypes[676]
+	mi := &file_relay_server_v1_server_proto_msgTypes[678]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -45855,7 +45936,7 @@ func (x *ListWorkspaceMembersResponse) String() string {
 func (*ListWorkspaceMembersResponse) ProtoMessage() {}
 
 func (x *ListWorkspaceMembersResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_relay_server_v1_server_proto_msgTypes[676]
+	mi := &file_relay_server_v1_server_proto_msgTypes[678]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -45868,7 +45949,7 @@ func (x *ListWorkspaceMembersResponse) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use ListWorkspaceMembersResponse.ProtoReflect.Descriptor instead.
 func (*ListWorkspaceMembersResponse) Descriptor() ([]byte, []int) {
-	return file_relay_server_v1_server_proto_rawDescGZIP(), []int{676}
+	return file_relay_server_v1_server_proto_rawDescGZIP(), []int{678}
 }
 
 func (x *ListWorkspaceMembersResponse) GetMembers() []*WorkspaceMember {
@@ -45903,7 +45984,7 @@ type AddWorkspaceTeamRequest struct {
 
 func (x *AddWorkspaceTeamRequest) Reset() {
 	*x = AddWorkspaceTeamRequest{}
-	mi := &file_relay_server_v1_server_proto_msgTypes[677]
+	mi := &file_relay_server_v1_server_proto_msgTypes[679]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -45915,7 +45996,7 @@ func (x *AddWorkspaceTeamRequest) String() string {
 func (*AddWorkspaceTeamRequest) ProtoMessage() {}
 
 func (x *AddWorkspaceTeamRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_relay_server_v1_server_proto_msgTypes[677]
+	mi := &file_relay_server_v1_server_proto_msgTypes[679]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -45928,7 +46009,7 @@ func (x *AddWorkspaceTeamRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use AddWorkspaceTeamRequest.ProtoReflect.Descriptor instead.
 func (*AddWorkspaceTeamRequest) Descriptor() ([]byte, []int) {
-	return file_relay_server_v1_server_proto_rawDescGZIP(), []int{677}
+	return file_relay_server_v1_server_proto_rawDescGZIP(), []int{679}
 }
 
 func (x *AddWorkspaceTeamRequest) GetWorkspaceName() string {
@@ -45960,7 +46041,7 @@ type AddWorkspaceTeamResponse struct {
 
 func (x *AddWorkspaceTeamResponse) Reset() {
 	*x = AddWorkspaceTeamResponse{}
-	mi := &file_relay_server_v1_server_proto_msgTypes[678]
+	mi := &file_relay_server_v1_server_proto_msgTypes[680]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -45972,7 +46053,7 @@ func (x *AddWorkspaceTeamResponse) String() string {
 func (*AddWorkspaceTeamResponse) ProtoMessage() {}
 
 func (x *AddWorkspaceTeamResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_relay_server_v1_server_proto_msgTypes[678]
+	mi := &file_relay_server_v1_server_proto_msgTypes[680]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -45985,7 +46066,7 @@ func (x *AddWorkspaceTeamResponse) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use AddWorkspaceTeamResponse.ProtoReflect.Descriptor instead.
 func (*AddWorkspaceTeamResponse) Descriptor() ([]byte, []int) {
-	return file_relay_server_v1_server_proto_rawDescGZIP(), []int{678}
+	return file_relay_server_v1_server_proto_rawDescGZIP(), []int{680}
 }
 
 type RemoveWorkspaceTeamRequest struct {
@@ -45998,7 +46079,7 @@ type RemoveWorkspaceTeamRequest struct {
 
 func (x *RemoveWorkspaceTeamRequest) Reset() {
 	*x = RemoveWorkspaceTeamRequest{}
-	mi := &file_relay_server_v1_server_proto_msgTypes[679]
+	mi := &file_relay_server_v1_server_proto_msgTypes[681]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -46010,7 +46091,7 @@ func (x *RemoveWorkspaceTeamRequest) String() string {
 func (*RemoveWorkspaceTeamRequest) ProtoMessage() {}
 
 func (x *RemoveWorkspaceTeamRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_relay_server_v1_server_proto_msgTypes[679]
+	mi := &file_relay_server_v1_server_proto_msgTypes[681]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -46023,7 +46104,7 @@ func (x *RemoveWorkspaceTeamRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use RemoveWorkspaceTeamRequest.ProtoReflect.Descriptor instead.
 func (*RemoveWorkspaceTeamRequest) Descriptor() ([]byte, []int) {
-	return file_relay_server_v1_server_proto_rawDescGZIP(), []int{679}
+	return file_relay_server_v1_server_proto_rawDescGZIP(), []int{681}
 }
 
 func (x *RemoveWorkspaceTeamRequest) GetWorkspaceName() string {
@@ -46048,7 +46129,7 @@ type RemoveWorkspaceTeamResponse struct {
 
 func (x *RemoveWorkspaceTeamResponse) Reset() {
 	*x = RemoveWorkspaceTeamResponse{}
-	mi := &file_relay_server_v1_server_proto_msgTypes[680]
+	mi := &file_relay_server_v1_server_proto_msgTypes[682]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -46060,7 +46141,7 @@ func (x *RemoveWorkspaceTeamResponse) String() string {
 func (*RemoveWorkspaceTeamResponse) ProtoMessage() {}
 
 func (x *RemoveWorkspaceTeamResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_relay_server_v1_server_proto_msgTypes[680]
+	mi := &file_relay_server_v1_server_proto_msgTypes[682]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -46073,7 +46154,7 @@ func (x *RemoveWorkspaceTeamResponse) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use RemoveWorkspaceTeamResponse.ProtoReflect.Descriptor instead.
 func (*RemoveWorkspaceTeamResponse) Descriptor() ([]byte, []int) {
-	return file_relay_server_v1_server_proto_rawDescGZIP(), []int{680}
+	return file_relay_server_v1_server_proto_rawDescGZIP(), []int{682}
 }
 
 type ListWorkspaceTeamsRequest struct {
@@ -46085,7 +46166,7 @@ type ListWorkspaceTeamsRequest struct {
 
 func (x *ListWorkspaceTeamsRequest) Reset() {
 	*x = ListWorkspaceTeamsRequest{}
-	mi := &file_relay_server_v1_server_proto_msgTypes[681]
+	mi := &file_relay_server_v1_server_proto_msgTypes[683]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -46097,7 +46178,7 @@ func (x *ListWorkspaceTeamsRequest) String() string {
 func (*ListWorkspaceTeamsRequest) ProtoMessage() {}
 
 func (x *ListWorkspaceTeamsRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_relay_server_v1_server_proto_msgTypes[681]
+	mi := &file_relay_server_v1_server_proto_msgTypes[683]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -46110,7 +46191,7 @@ func (x *ListWorkspaceTeamsRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use ListWorkspaceTeamsRequest.ProtoReflect.Descriptor instead.
 func (*ListWorkspaceTeamsRequest) Descriptor() ([]byte, []int) {
-	return file_relay_server_v1_server_proto_rawDescGZIP(), []int{681}
+	return file_relay_server_v1_server_proto_rawDescGZIP(), []int{683}
 }
 
 func (x *ListWorkspaceTeamsRequest) GetWorkspaceName() string {
@@ -46130,7 +46211,7 @@ type ListWorkspaceTeamsResponse struct {
 
 func (x *ListWorkspaceTeamsResponse) Reset() {
 	*x = ListWorkspaceTeamsResponse{}
-	mi := &file_relay_server_v1_server_proto_msgTypes[682]
+	mi := &file_relay_server_v1_server_proto_msgTypes[684]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -46142,7 +46223,7 @@ func (x *ListWorkspaceTeamsResponse) String() string {
 func (*ListWorkspaceTeamsResponse) ProtoMessage() {}
 
 func (x *ListWorkspaceTeamsResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_relay_server_v1_server_proto_msgTypes[682]
+	mi := &file_relay_server_v1_server_proto_msgTypes[684]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -46155,7 +46236,7 @@ func (x *ListWorkspaceTeamsResponse) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use ListWorkspaceTeamsResponse.ProtoReflect.Descriptor instead.
 func (*ListWorkspaceTeamsResponse) Descriptor() ([]byte, []int) {
-	return file_relay_server_v1_server_proto_rawDescGZIP(), []int{682}
+	return file_relay_server_v1_server_proto_rawDescGZIP(), []int{684}
 }
 
 func (x *ListWorkspaceTeamsResponse) GetTeamNames() []string {
@@ -46183,7 +46264,7 @@ type SetWorkspaceMemberRoleRequest struct {
 
 func (x *SetWorkspaceMemberRoleRequest) Reset() {
 	*x = SetWorkspaceMemberRoleRequest{}
-	mi := &file_relay_server_v1_server_proto_msgTypes[683]
+	mi := &file_relay_server_v1_server_proto_msgTypes[685]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -46195,7 +46276,7 @@ func (x *SetWorkspaceMemberRoleRequest) String() string {
 func (*SetWorkspaceMemberRoleRequest) ProtoMessage() {}
 
 func (x *SetWorkspaceMemberRoleRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_relay_server_v1_server_proto_msgTypes[683]
+	mi := &file_relay_server_v1_server_proto_msgTypes[685]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -46208,7 +46289,7 @@ func (x *SetWorkspaceMemberRoleRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use SetWorkspaceMemberRoleRequest.ProtoReflect.Descriptor instead.
 func (*SetWorkspaceMemberRoleRequest) Descriptor() ([]byte, []int) {
-	return file_relay_server_v1_server_proto_rawDescGZIP(), []int{683}
+	return file_relay_server_v1_server_proto_rawDescGZIP(), []int{685}
 }
 
 func (x *SetWorkspaceMemberRoleRequest) GetWorkspaceName() string {
@@ -46240,7 +46321,7 @@ type SetWorkspaceMemberRoleResponse struct {
 
 func (x *SetWorkspaceMemberRoleResponse) Reset() {
 	*x = SetWorkspaceMemberRoleResponse{}
-	mi := &file_relay_server_v1_server_proto_msgTypes[684]
+	mi := &file_relay_server_v1_server_proto_msgTypes[686]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -46252,7 +46333,7 @@ func (x *SetWorkspaceMemberRoleResponse) String() string {
 func (*SetWorkspaceMemberRoleResponse) ProtoMessage() {}
 
 func (x *SetWorkspaceMemberRoleResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_relay_server_v1_server_proto_msgTypes[684]
+	mi := &file_relay_server_v1_server_proto_msgTypes[686]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -46265,7 +46346,7 @@ func (x *SetWorkspaceMemberRoleResponse) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use SetWorkspaceMemberRoleResponse.ProtoReflect.Descriptor instead.
 func (*SetWorkspaceMemberRoleResponse) Descriptor() ([]byte, []int) {
-	return file_relay_server_v1_server_proto_rawDescGZIP(), []int{684}
+	return file_relay_server_v1_server_proto_rawDescGZIP(), []int{686}
 }
 
 type SetWorkspaceTeamRoleRequest struct {
@@ -46279,7 +46360,7 @@ type SetWorkspaceTeamRoleRequest struct {
 
 func (x *SetWorkspaceTeamRoleRequest) Reset() {
 	*x = SetWorkspaceTeamRoleRequest{}
-	mi := &file_relay_server_v1_server_proto_msgTypes[685]
+	mi := &file_relay_server_v1_server_proto_msgTypes[687]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -46291,7 +46372,7 @@ func (x *SetWorkspaceTeamRoleRequest) String() string {
 func (*SetWorkspaceTeamRoleRequest) ProtoMessage() {}
 
 func (x *SetWorkspaceTeamRoleRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_relay_server_v1_server_proto_msgTypes[685]
+	mi := &file_relay_server_v1_server_proto_msgTypes[687]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -46304,7 +46385,7 @@ func (x *SetWorkspaceTeamRoleRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use SetWorkspaceTeamRoleRequest.ProtoReflect.Descriptor instead.
 func (*SetWorkspaceTeamRoleRequest) Descriptor() ([]byte, []int) {
-	return file_relay_server_v1_server_proto_rawDescGZIP(), []int{685}
+	return file_relay_server_v1_server_proto_rawDescGZIP(), []int{687}
 }
 
 func (x *SetWorkspaceTeamRoleRequest) GetWorkspaceName() string {
@@ -46336,7 +46417,7 @@ type SetWorkspaceTeamRoleResponse struct {
 
 func (x *SetWorkspaceTeamRoleResponse) Reset() {
 	*x = SetWorkspaceTeamRoleResponse{}
-	mi := &file_relay_server_v1_server_proto_msgTypes[686]
+	mi := &file_relay_server_v1_server_proto_msgTypes[688]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -46348,7 +46429,7 @@ func (x *SetWorkspaceTeamRoleResponse) String() string {
 func (*SetWorkspaceTeamRoleResponse) ProtoMessage() {}
 
 func (x *SetWorkspaceTeamRoleResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_relay_server_v1_server_proto_msgTypes[686]
+	mi := &file_relay_server_v1_server_proto_msgTypes[688]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -46361,7 +46442,7 @@ func (x *SetWorkspaceTeamRoleResponse) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use SetWorkspaceTeamRoleResponse.ProtoReflect.Descriptor instead.
 func (*SetWorkspaceTeamRoleResponse) Descriptor() ([]byte, []int) {
-	return file_relay_server_v1_server_proto_rawDescGZIP(), []int{686}
+	return file_relay_server_v1_server_proto_rawDescGZIP(), []int{688}
 }
 
 type WorkspaceTeamInfo struct {
@@ -46375,7 +46456,7 @@ type WorkspaceTeamInfo struct {
 
 func (x *WorkspaceTeamInfo) Reset() {
 	*x = WorkspaceTeamInfo{}
-	mi := &file_relay_server_v1_server_proto_msgTypes[687]
+	mi := &file_relay_server_v1_server_proto_msgTypes[689]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -46387,7 +46468,7 @@ func (x *WorkspaceTeamInfo) String() string {
 func (*WorkspaceTeamInfo) ProtoMessage() {}
 
 func (x *WorkspaceTeamInfo) ProtoReflect() protoreflect.Message {
-	mi := &file_relay_server_v1_server_proto_msgTypes[687]
+	mi := &file_relay_server_v1_server_proto_msgTypes[689]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -46400,7 +46481,7 @@ func (x *WorkspaceTeamInfo) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use WorkspaceTeamInfo.ProtoReflect.Descriptor instead.
 func (*WorkspaceTeamInfo) Descriptor() ([]byte, []int) {
-	return file_relay_server_v1_server_proto_rawDescGZIP(), []int{687}
+	return file_relay_server_v1_server_proto_rawDescGZIP(), []int{689}
 }
 
 func (x *WorkspaceTeamInfo) GetTeamName() string {
@@ -46438,7 +46519,7 @@ type RoleInfo struct {
 
 func (x *RoleInfo) Reset() {
 	*x = RoleInfo{}
-	mi := &file_relay_server_v1_server_proto_msgTypes[688]
+	mi := &file_relay_server_v1_server_proto_msgTypes[690]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -46450,7 +46531,7 @@ func (x *RoleInfo) String() string {
 func (*RoleInfo) ProtoMessage() {}
 
 func (x *RoleInfo) ProtoReflect() protoreflect.Message {
-	mi := &file_relay_server_v1_server_proto_msgTypes[688]
+	mi := &file_relay_server_v1_server_proto_msgTypes[690]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -46463,7 +46544,7 @@ func (x *RoleInfo) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use RoleInfo.ProtoReflect.Descriptor instead.
 func (*RoleInfo) Descriptor() ([]byte, []int) {
-	return file_relay_server_v1_server_proto_rawDescGZIP(), []int{688}
+	return file_relay_server_v1_server_proto_rawDescGZIP(), []int{690}
 }
 
 func (x *RoleInfo) GetId() string {
@@ -46516,7 +46597,7 @@ type ListRolesRequest struct {
 
 func (x *ListRolesRequest) Reset() {
 	*x = ListRolesRequest{}
-	mi := &file_relay_server_v1_server_proto_msgTypes[689]
+	mi := &file_relay_server_v1_server_proto_msgTypes[691]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -46528,7 +46609,7 @@ func (x *ListRolesRequest) String() string {
 func (*ListRolesRequest) ProtoMessage() {}
 
 func (x *ListRolesRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_relay_server_v1_server_proto_msgTypes[689]
+	mi := &file_relay_server_v1_server_proto_msgTypes[691]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -46541,7 +46622,7 @@ func (x *ListRolesRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use ListRolesRequest.ProtoReflect.Descriptor instead.
 func (*ListRolesRequest) Descriptor() ([]byte, []int) {
-	return file_relay_server_v1_server_proto_rawDescGZIP(), []int{689}
+	return file_relay_server_v1_server_proto_rawDescGZIP(), []int{691}
 }
 
 type ListRolesResponse struct {
@@ -46553,7 +46634,7 @@ type ListRolesResponse struct {
 
 func (x *ListRolesResponse) Reset() {
 	*x = ListRolesResponse{}
-	mi := &file_relay_server_v1_server_proto_msgTypes[690]
+	mi := &file_relay_server_v1_server_proto_msgTypes[692]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -46565,7 +46646,7 @@ func (x *ListRolesResponse) String() string {
 func (*ListRolesResponse) ProtoMessage() {}
 
 func (x *ListRolesResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_relay_server_v1_server_proto_msgTypes[690]
+	mi := &file_relay_server_v1_server_proto_msgTypes[692]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -46578,7 +46659,7 @@ func (x *ListRolesResponse) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use ListRolesResponse.ProtoReflect.Descriptor instead.
 func (*ListRolesResponse) Descriptor() ([]byte, []int) {
-	return file_relay_server_v1_server_proto_rawDescGZIP(), []int{690}
+	return file_relay_server_v1_server_proto_rawDescGZIP(), []int{692}
 }
 
 func (x *ListRolesResponse) GetRoles() []*RoleInfo {
@@ -46600,7 +46681,7 @@ type CreateRoleRequest struct {
 
 func (x *CreateRoleRequest) Reset() {
 	*x = CreateRoleRequest{}
-	mi := &file_relay_server_v1_server_proto_msgTypes[691]
+	mi := &file_relay_server_v1_server_proto_msgTypes[693]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -46612,7 +46693,7 @@ func (x *CreateRoleRequest) String() string {
 func (*CreateRoleRequest) ProtoMessage() {}
 
 func (x *CreateRoleRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_relay_server_v1_server_proto_msgTypes[691]
+	mi := &file_relay_server_v1_server_proto_msgTypes[693]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -46625,7 +46706,7 @@ func (x *CreateRoleRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use CreateRoleRequest.ProtoReflect.Descriptor instead.
 func (*CreateRoleRequest) Descriptor() ([]byte, []int) {
-	return file_relay_server_v1_server_proto_rawDescGZIP(), []int{691}
+	return file_relay_server_v1_server_proto_rawDescGZIP(), []int{693}
 }
 
 func (x *CreateRoleRequest) GetSlug() string {
@@ -46665,7 +46746,7 @@ type CreateRoleResponse struct {
 
 func (x *CreateRoleResponse) Reset() {
 	*x = CreateRoleResponse{}
-	mi := &file_relay_server_v1_server_proto_msgTypes[692]
+	mi := &file_relay_server_v1_server_proto_msgTypes[694]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -46677,7 +46758,7 @@ func (x *CreateRoleResponse) String() string {
 func (*CreateRoleResponse) ProtoMessage() {}
 
 func (x *CreateRoleResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_relay_server_v1_server_proto_msgTypes[692]
+	mi := &file_relay_server_v1_server_proto_msgTypes[694]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -46690,7 +46771,7 @@ func (x *CreateRoleResponse) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use CreateRoleResponse.ProtoReflect.Descriptor instead.
 func (*CreateRoleResponse) Descriptor() ([]byte, []int) {
-	return file_relay_server_v1_server_proto_rawDescGZIP(), []int{692}
+	return file_relay_server_v1_server_proto_rawDescGZIP(), []int{694}
 }
 
 func (x *CreateRoleResponse) GetRole() *RoleInfo {
@@ -46717,7 +46798,7 @@ type UpdateRoleRequest struct {
 
 func (x *UpdateRoleRequest) Reset() {
 	*x = UpdateRoleRequest{}
-	mi := &file_relay_server_v1_server_proto_msgTypes[693]
+	mi := &file_relay_server_v1_server_proto_msgTypes[695]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -46729,7 +46810,7 @@ func (x *UpdateRoleRequest) String() string {
 func (*UpdateRoleRequest) ProtoMessage() {}
 
 func (x *UpdateRoleRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_relay_server_v1_server_proto_msgTypes[693]
+	mi := &file_relay_server_v1_server_proto_msgTypes[695]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -46742,7 +46823,7 @@ func (x *UpdateRoleRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use UpdateRoleRequest.ProtoReflect.Descriptor instead.
 func (*UpdateRoleRequest) Descriptor() ([]byte, []int) {
-	return file_relay_server_v1_server_proto_rawDescGZIP(), []int{693}
+	return file_relay_server_v1_server_proto_rawDescGZIP(), []int{695}
 }
 
 func (x *UpdateRoleRequest) GetSlug() string {
@@ -46789,7 +46870,7 @@ type UpdateRoleResponse struct {
 
 func (x *UpdateRoleResponse) Reset() {
 	*x = UpdateRoleResponse{}
-	mi := &file_relay_server_v1_server_proto_msgTypes[694]
+	mi := &file_relay_server_v1_server_proto_msgTypes[696]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -46801,7 +46882,7 @@ func (x *UpdateRoleResponse) String() string {
 func (*UpdateRoleResponse) ProtoMessage() {}
 
 func (x *UpdateRoleResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_relay_server_v1_server_proto_msgTypes[694]
+	mi := &file_relay_server_v1_server_proto_msgTypes[696]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -46814,7 +46895,7 @@ func (x *UpdateRoleResponse) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use UpdateRoleResponse.ProtoReflect.Descriptor instead.
 func (*UpdateRoleResponse) Descriptor() ([]byte, []int) {
-	return file_relay_server_v1_server_proto_rawDescGZIP(), []int{694}
+	return file_relay_server_v1_server_proto_rawDescGZIP(), []int{696}
 }
 
 func (x *UpdateRoleResponse) GetRole() *RoleInfo {
@@ -46833,7 +46914,7 @@ type DeleteRoleRequest struct {
 
 func (x *DeleteRoleRequest) Reset() {
 	*x = DeleteRoleRequest{}
-	mi := &file_relay_server_v1_server_proto_msgTypes[695]
+	mi := &file_relay_server_v1_server_proto_msgTypes[697]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -46845,7 +46926,7 @@ func (x *DeleteRoleRequest) String() string {
 func (*DeleteRoleRequest) ProtoMessage() {}
 
 func (x *DeleteRoleRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_relay_server_v1_server_proto_msgTypes[695]
+	mi := &file_relay_server_v1_server_proto_msgTypes[697]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -46858,7 +46939,7 @@ func (x *DeleteRoleRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use DeleteRoleRequest.ProtoReflect.Descriptor instead.
 func (*DeleteRoleRequest) Descriptor() ([]byte, []int) {
-	return file_relay_server_v1_server_proto_rawDescGZIP(), []int{695}
+	return file_relay_server_v1_server_proto_rawDescGZIP(), []int{697}
 }
 
 func (x *DeleteRoleRequest) GetSlug() string {
@@ -46876,7 +46957,7 @@ type DeleteRoleResponse struct {
 
 func (x *DeleteRoleResponse) Reset() {
 	*x = DeleteRoleResponse{}
-	mi := &file_relay_server_v1_server_proto_msgTypes[696]
+	mi := &file_relay_server_v1_server_proto_msgTypes[698]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -46888,7 +46969,7 @@ func (x *DeleteRoleResponse) String() string {
 func (*DeleteRoleResponse) ProtoMessage() {}
 
 func (x *DeleteRoleResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_relay_server_v1_server_proto_msgTypes[696]
+	mi := &file_relay_server_v1_server_proto_msgTypes[698]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -46901,7 +46982,7 @@ func (x *DeleteRoleResponse) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use DeleteRoleResponse.ProtoReflect.Descriptor instead.
 func (*DeleteRoleResponse) Descriptor() ([]byte, []int) {
-	return file_relay_server_v1_server_proto_rawDescGZIP(), []int{696}
+	return file_relay_server_v1_server_proto_rawDescGZIP(), []int{698}
 }
 
 // RoleBinding is a (subject, role, scope) grant. subject_type is "user" or
@@ -46922,7 +47003,7 @@ type RoleBinding struct {
 
 func (x *RoleBinding) Reset() {
 	*x = RoleBinding{}
-	mi := &file_relay_server_v1_server_proto_msgTypes[697]
+	mi := &file_relay_server_v1_server_proto_msgTypes[699]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -46934,7 +47015,7 @@ func (x *RoleBinding) String() string {
 func (*RoleBinding) ProtoMessage() {}
 
 func (x *RoleBinding) ProtoReflect() protoreflect.Message {
-	mi := &file_relay_server_v1_server_proto_msgTypes[697]
+	mi := &file_relay_server_v1_server_proto_msgTypes[699]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -46947,7 +47028,7 @@ func (x *RoleBinding) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use RoleBinding.ProtoReflect.Descriptor instead.
 func (*RoleBinding) Descriptor() ([]byte, []int) {
-	return file_relay_server_v1_server_proto_rawDescGZIP(), []int{697}
+	return file_relay_server_v1_server_proto_rawDescGZIP(), []int{699}
 }
 
 func (x *RoleBinding) GetId() string {
@@ -47009,7 +47090,7 @@ type ListRoleBindingsRequest struct {
 
 func (x *ListRoleBindingsRequest) Reset() {
 	*x = ListRoleBindingsRequest{}
-	mi := &file_relay_server_v1_server_proto_msgTypes[698]
+	mi := &file_relay_server_v1_server_proto_msgTypes[700]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -47021,7 +47102,7 @@ func (x *ListRoleBindingsRequest) String() string {
 func (*ListRoleBindingsRequest) ProtoMessage() {}
 
 func (x *ListRoleBindingsRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_relay_server_v1_server_proto_msgTypes[698]
+	mi := &file_relay_server_v1_server_proto_msgTypes[700]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -47034,7 +47115,7 @@ func (x *ListRoleBindingsRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use ListRoleBindingsRequest.ProtoReflect.Descriptor instead.
 func (*ListRoleBindingsRequest) Descriptor() ([]byte, []int) {
-	return file_relay_server_v1_server_proto_rawDescGZIP(), []int{698}
+	return file_relay_server_v1_server_proto_rawDescGZIP(), []int{700}
 }
 
 func (x *ListRoleBindingsRequest) GetWorkspaceName() string {
@@ -47053,7 +47134,7 @@ type ListRoleBindingsResponse struct {
 
 func (x *ListRoleBindingsResponse) Reset() {
 	*x = ListRoleBindingsResponse{}
-	mi := &file_relay_server_v1_server_proto_msgTypes[699]
+	mi := &file_relay_server_v1_server_proto_msgTypes[701]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -47065,7 +47146,7 @@ func (x *ListRoleBindingsResponse) String() string {
 func (*ListRoleBindingsResponse) ProtoMessage() {}
 
 func (x *ListRoleBindingsResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_relay_server_v1_server_proto_msgTypes[699]
+	mi := &file_relay_server_v1_server_proto_msgTypes[701]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -47078,7 +47159,7 @@ func (x *ListRoleBindingsResponse) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use ListRoleBindingsResponse.ProtoReflect.Descriptor instead.
 func (*ListRoleBindingsResponse) Descriptor() ([]byte, []int) {
-	return file_relay_server_v1_server_proto_rawDescGZIP(), []int{699}
+	return file_relay_server_v1_server_proto_rawDescGZIP(), []int{701}
 }
 
 func (x *ListRoleBindingsResponse) GetBindings() []*RoleBinding {
@@ -47102,7 +47183,7 @@ type CreateRoleBindingRequest struct {
 
 func (x *CreateRoleBindingRequest) Reset() {
 	*x = CreateRoleBindingRequest{}
-	mi := &file_relay_server_v1_server_proto_msgTypes[700]
+	mi := &file_relay_server_v1_server_proto_msgTypes[702]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -47114,7 +47195,7 @@ func (x *CreateRoleBindingRequest) String() string {
 func (*CreateRoleBindingRequest) ProtoMessage() {}
 
 func (x *CreateRoleBindingRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_relay_server_v1_server_proto_msgTypes[700]
+	mi := &file_relay_server_v1_server_proto_msgTypes[702]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -47127,7 +47208,7 @@ func (x *CreateRoleBindingRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use CreateRoleBindingRequest.ProtoReflect.Descriptor instead.
 func (*CreateRoleBindingRequest) Descriptor() ([]byte, []int) {
-	return file_relay_server_v1_server_proto_rawDescGZIP(), []int{700}
+	return file_relay_server_v1_server_proto_rawDescGZIP(), []int{702}
 }
 
 func (x *CreateRoleBindingRequest) GetUserEmail() string {
@@ -47167,7 +47248,7 @@ type CreateRoleBindingResponse struct {
 
 func (x *CreateRoleBindingResponse) Reset() {
 	*x = CreateRoleBindingResponse{}
-	mi := &file_relay_server_v1_server_proto_msgTypes[701]
+	mi := &file_relay_server_v1_server_proto_msgTypes[703]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -47179,7 +47260,7 @@ func (x *CreateRoleBindingResponse) String() string {
 func (*CreateRoleBindingResponse) ProtoMessage() {}
 
 func (x *CreateRoleBindingResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_relay_server_v1_server_proto_msgTypes[701]
+	mi := &file_relay_server_v1_server_proto_msgTypes[703]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -47192,7 +47273,7 @@ func (x *CreateRoleBindingResponse) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use CreateRoleBindingResponse.ProtoReflect.Descriptor instead.
 func (*CreateRoleBindingResponse) Descriptor() ([]byte, []int) {
-	return file_relay_server_v1_server_proto_rawDescGZIP(), []int{701}
+	return file_relay_server_v1_server_proto_rawDescGZIP(), []int{703}
 }
 
 func (x *CreateRoleBindingResponse) GetBinding() *RoleBinding {
@@ -47211,7 +47292,7 @@ type DeleteRoleBindingRequest struct {
 
 func (x *DeleteRoleBindingRequest) Reset() {
 	*x = DeleteRoleBindingRequest{}
-	mi := &file_relay_server_v1_server_proto_msgTypes[702]
+	mi := &file_relay_server_v1_server_proto_msgTypes[704]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -47223,7 +47304,7 @@ func (x *DeleteRoleBindingRequest) String() string {
 func (*DeleteRoleBindingRequest) ProtoMessage() {}
 
 func (x *DeleteRoleBindingRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_relay_server_v1_server_proto_msgTypes[702]
+	mi := &file_relay_server_v1_server_proto_msgTypes[704]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -47236,7 +47317,7 @@ func (x *DeleteRoleBindingRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use DeleteRoleBindingRequest.ProtoReflect.Descriptor instead.
 func (*DeleteRoleBindingRequest) Descriptor() ([]byte, []int) {
-	return file_relay_server_v1_server_proto_rawDescGZIP(), []int{702}
+	return file_relay_server_v1_server_proto_rawDescGZIP(), []int{704}
 }
 
 func (x *DeleteRoleBindingRequest) GetId() string {
@@ -47254,7 +47335,7 @@ type DeleteRoleBindingResponse struct {
 
 func (x *DeleteRoleBindingResponse) Reset() {
 	*x = DeleteRoleBindingResponse{}
-	mi := &file_relay_server_v1_server_proto_msgTypes[703]
+	mi := &file_relay_server_v1_server_proto_msgTypes[705]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -47266,7 +47347,7 @@ func (x *DeleteRoleBindingResponse) String() string {
 func (*DeleteRoleBindingResponse) ProtoMessage() {}
 
 func (x *DeleteRoleBindingResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_relay_server_v1_server_proto_msgTypes[703]
+	mi := &file_relay_server_v1_server_proto_msgTypes[705]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -47279,7 +47360,7 @@ func (x *DeleteRoleBindingResponse) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use DeleteRoleBindingResponse.ProtoReflect.Descriptor instead.
 func (*DeleteRoleBindingResponse) Descriptor() ([]byte, []int) {
-	return file_relay_server_v1_server_proto_rawDescGZIP(), []int{703}
+	return file_relay_server_v1_server_proto_rawDescGZIP(), []int{705}
 }
 
 // BillingMachineTier mirrors the payments service's MachineTier so the
@@ -47297,7 +47378,7 @@ type BillingMachineTier struct {
 
 func (x *BillingMachineTier) Reset() {
 	*x = BillingMachineTier{}
-	mi := &file_relay_server_v1_server_proto_msgTypes[704]
+	mi := &file_relay_server_v1_server_proto_msgTypes[706]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -47309,7 +47390,7 @@ func (x *BillingMachineTier) String() string {
 func (*BillingMachineTier) ProtoMessage() {}
 
 func (x *BillingMachineTier) ProtoReflect() protoreflect.Message {
-	mi := &file_relay_server_v1_server_proto_msgTypes[704]
+	mi := &file_relay_server_v1_server_proto_msgTypes[706]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -47322,7 +47403,7 @@ func (x *BillingMachineTier) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use BillingMachineTier.ProtoReflect.Descriptor instead.
 func (*BillingMachineTier) Descriptor() ([]byte, []int) {
-	return file_relay_server_v1_server_proto_rawDescGZIP(), []int{704}
+	return file_relay_server_v1_server_proto_rawDescGZIP(), []int{706}
 }
 
 func (x *BillingMachineTier) GetName() string {
@@ -47375,7 +47456,7 @@ type BillingProjectionLine struct {
 
 func (x *BillingProjectionLine) Reset() {
 	*x = BillingProjectionLine{}
-	mi := &file_relay_server_v1_server_proto_msgTypes[705]
+	mi := &file_relay_server_v1_server_proto_msgTypes[707]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -47387,7 +47468,7 @@ func (x *BillingProjectionLine) String() string {
 func (*BillingProjectionLine) ProtoMessage() {}
 
 func (x *BillingProjectionLine) ProtoReflect() protoreflect.Message {
-	mi := &file_relay_server_v1_server_proto_msgTypes[705]
+	mi := &file_relay_server_v1_server_proto_msgTypes[707]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -47400,7 +47481,7 @@ func (x *BillingProjectionLine) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use BillingProjectionLine.ProtoReflect.Descriptor instead.
 func (*BillingProjectionLine) Descriptor() ([]byte, []int) {
-	return file_relay_server_v1_server_proto_rawDescGZIP(), []int{705}
+	return file_relay_server_v1_server_proto_rawDescGZIP(), []int{707}
 }
 
 func (x *BillingProjectionLine) GetTier() string {
@@ -47443,7 +47524,7 @@ type BillingCycleUsageLine struct {
 
 func (x *BillingCycleUsageLine) Reset() {
 	*x = BillingCycleUsageLine{}
-	mi := &file_relay_server_v1_server_proto_msgTypes[706]
+	mi := &file_relay_server_v1_server_proto_msgTypes[708]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -47455,7 +47536,7 @@ func (x *BillingCycleUsageLine) String() string {
 func (*BillingCycleUsageLine) ProtoMessage() {}
 
 func (x *BillingCycleUsageLine) ProtoReflect() protoreflect.Message {
-	mi := &file_relay_server_v1_server_proto_msgTypes[706]
+	mi := &file_relay_server_v1_server_proto_msgTypes[708]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -47468,7 +47549,7 @@ func (x *BillingCycleUsageLine) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use BillingCycleUsageLine.ProtoReflect.Descriptor instead.
 func (*BillingCycleUsageLine) Descriptor() ([]byte, []int) {
-	return file_relay_server_v1_server_proto_rawDescGZIP(), []int{706}
+	return file_relay_server_v1_server_proto_rawDescGZIP(), []int{708}
 }
 
 func (x *BillingCycleUsageLine) GetTier() string {
@@ -47507,7 +47588,7 @@ type GetBillingStateRequest struct {
 
 func (x *GetBillingStateRequest) Reset() {
 	*x = GetBillingStateRequest{}
-	mi := &file_relay_server_v1_server_proto_msgTypes[707]
+	mi := &file_relay_server_v1_server_proto_msgTypes[709]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -47519,7 +47600,7 @@ func (x *GetBillingStateRequest) String() string {
 func (*GetBillingStateRequest) ProtoMessage() {}
 
 func (x *GetBillingStateRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_relay_server_v1_server_proto_msgTypes[707]
+	mi := &file_relay_server_v1_server_proto_msgTypes[709]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -47532,7 +47613,7 @@ func (x *GetBillingStateRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use GetBillingStateRequest.ProtoReflect.Descriptor instead.
 func (*GetBillingStateRequest) Descriptor() ([]byte, []int) {
-	return file_relay_server_v1_server_proto_rawDescGZIP(), []int{707}
+	return file_relay_server_v1_server_proto_rawDescGZIP(), []int{709}
 }
 
 type GetBillingStateResponse struct {
@@ -47663,7 +47744,7 @@ type GetBillingStateResponse struct {
 
 func (x *GetBillingStateResponse) Reset() {
 	*x = GetBillingStateResponse{}
-	mi := &file_relay_server_v1_server_proto_msgTypes[708]
+	mi := &file_relay_server_v1_server_proto_msgTypes[710]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -47675,7 +47756,7 @@ func (x *GetBillingStateResponse) String() string {
 func (*GetBillingStateResponse) ProtoMessage() {}
 
 func (x *GetBillingStateResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_relay_server_v1_server_proto_msgTypes[708]
+	mi := &file_relay_server_v1_server_proto_msgTypes[710]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -47688,7 +47769,7 @@ func (x *GetBillingStateResponse) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use GetBillingStateResponse.ProtoReflect.Descriptor instead.
 func (*GetBillingStateResponse) Descriptor() ([]byte, []int) {
-	return file_relay_server_v1_server_proto_rawDescGZIP(), []int{708}
+	return file_relay_server_v1_server_proto_rawDescGZIP(), []int{710}
 }
 
 func (x *GetBillingStateResponse) GetPlan() string {
@@ -48135,7 +48216,7 @@ type BillingBackupPriceTier struct {
 
 func (x *BillingBackupPriceTier) Reset() {
 	*x = BillingBackupPriceTier{}
-	mi := &file_relay_server_v1_server_proto_msgTypes[709]
+	mi := &file_relay_server_v1_server_proto_msgTypes[711]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -48147,7 +48228,7 @@ func (x *BillingBackupPriceTier) String() string {
 func (*BillingBackupPriceTier) ProtoMessage() {}
 
 func (x *BillingBackupPriceTier) ProtoReflect() protoreflect.Message {
-	mi := &file_relay_server_v1_server_proto_msgTypes[709]
+	mi := &file_relay_server_v1_server_proto_msgTypes[711]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -48160,7 +48241,7 @@ func (x *BillingBackupPriceTier) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use BillingBackupPriceTier.ProtoReflect.Descriptor instead.
 func (*BillingBackupPriceTier) Descriptor() ([]byte, []int) {
-	return file_relay_server_v1_server_proto_rawDescGZIP(), []int{709}
+	return file_relay_server_v1_server_proto_rawDescGZIP(), []int{711}
 }
 
 func (x *BillingBackupPriceTier) GetFromGib() int64 {
@@ -48194,7 +48275,7 @@ type BillingBackupLine struct {
 
 func (x *BillingBackupLine) Reset() {
 	*x = BillingBackupLine{}
-	mi := &file_relay_server_v1_server_proto_msgTypes[710]
+	mi := &file_relay_server_v1_server_proto_msgTypes[712]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -48206,7 +48287,7 @@ func (x *BillingBackupLine) String() string {
 func (*BillingBackupLine) ProtoMessage() {}
 
 func (x *BillingBackupLine) ProtoReflect() protoreflect.Message {
-	mi := &file_relay_server_v1_server_proto_msgTypes[710]
+	mi := &file_relay_server_v1_server_proto_msgTypes[712]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -48219,7 +48300,7 @@ func (x *BillingBackupLine) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use BillingBackupLine.ProtoReflect.Descriptor instead.
 func (*BillingBackupLine) Descriptor() ([]byte, []int) {
-	return file_relay_server_v1_server_proto_rawDescGZIP(), []int{710}
+	return file_relay_server_v1_server_proto_rawDescGZIP(), []int{712}
 }
 
 func (x *BillingBackupLine) GetDatabaseId() string {
@@ -48282,7 +48363,7 @@ type BillingPlanFeatures struct {
 
 func (x *BillingPlanFeatures) Reset() {
 	*x = BillingPlanFeatures{}
-	mi := &file_relay_server_v1_server_proto_msgTypes[711]
+	mi := &file_relay_server_v1_server_proto_msgTypes[713]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -48294,7 +48375,7 @@ func (x *BillingPlanFeatures) String() string {
 func (*BillingPlanFeatures) ProtoMessage() {}
 
 func (x *BillingPlanFeatures) ProtoReflect() protoreflect.Message {
-	mi := &file_relay_server_v1_server_proto_msgTypes[711]
+	mi := &file_relay_server_v1_server_proto_msgTypes[713]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -48307,7 +48388,7 @@ func (x *BillingPlanFeatures) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use BillingPlanFeatures.ProtoReflect.Descriptor instead.
 func (*BillingPlanFeatures) Descriptor() ([]byte, []int) {
-	return file_relay_server_v1_server_proto_rawDescGZIP(), []int{711}
+	return file_relay_server_v1_server_proto_rawDescGZIP(), []int{713}
 }
 
 func (x *BillingPlanFeatures) GetPlan() string {
@@ -48334,7 +48415,7 @@ type BillingFeatureRequirement struct {
 
 func (x *BillingFeatureRequirement) Reset() {
 	*x = BillingFeatureRequirement{}
-	mi := &file_relay_server_v1_server_proto_msgTypes[712]
+	mi := &file_relay_server_v1_server_proto_msgTypes[714]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -48346,7 +48427,7 @@ func (x *BillingFeatureRequirement) String() string {
 func (*BillingFeatureRequirement) ProtoMessage() {}
 
 func (x *BillingFeatureRequirement) ProtoReflect() protoreflect.Message {
-	mi := &file_relay_server_v1_server_proto_msgTypes[712]
+	mi := &file_relay_server_v1_server_proto_msgTypes[714]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -48359,7 +48440,7 @@ func (x *BillingFeatureRequirement) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use BillingFeatureRequirement.ProtoReflect.Descriptor instead.
 func (*BillingFeatureRequirement) Descriptor() ([]byte, []int) {
-	return file_relay_server_v1_server_proto_rawDescGZIP(), []int{712}
+	return file_relay_server_v1_server_proto_rawDescGZIP(), []int{714}
 }
 
 func (x *BillingFeatureRequirement) GetFeature() string {
@@ -48390,7 +48471,7 @@ type CreateCheckoutSessionRequest struct {
 
 func (x *CreateCheckoutSessionRequest) Reset() {
 	*x = CreateCheckoutSessionRequest{}
-	mi := &file_relay_server_v1_server_proto_msgTypes[713]
+	mi := &file_relay_server_v1_server_proto_msgTypes[715]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -48402,7 +48483,7 @@ func (x *CreateCheckoutSessionRequest) String() string {
 func (*CreateCheckoutSessionRequest) ProtoMessage() {}
 
 func (x *CreateCheckoutSessionRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_relay_server_v1_server_proto_msgTypes[713]
+	mi := &file_relay_server_v1_server_proto_msgTypes[715]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -48415,7 +48496,7 @@ func (x *CreateCheckoutSessionRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use CreateCheckoutSessionRequest.ProtoReflect.Descriptor instead.
 func (*CreateCheckoutSessionRequest) Descriptor() ([]byte, []int) {
-	return file_relay_server_v1_server_proto_rawDescGZIP(), []int{713}
+	return file_relay_server_v1_server_proto_rawDescGZIP(), []int{715}
 }
 
 func (x *CreateCheckoutSessionRequest) GetPlan() string {
@@ -48441,7 +48522,7 @@ type CreateCheckoutSessionResponse struct {
 
 func (x *CreateCheckoutSessionResponse) Reset() {
 	*x = CreateCheckoutSessionResponse{}
-	mi := &file_relay_server_v1_server_proto_msgTypes[714]
+	mi := &file_relay_server_v1_server_proto_msgTypes[716]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -48453,7 +48534,7 @@ func (x *CreateCheckoutSessionResponse) String() string {
 func (*CreateCheckoutSessionResponse) ProtoMessage() {}
 
 func (x *CreateCheckoutSessionResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_relay_server_v1_server_proto_msgTypes[714]
+	mi := &file_relay_server_v1_server_proto_msgTypes[716]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -48466,7 +48547,7 @@ func (x *CreateCheckoutSessionResponse) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use CreateCheckoutSessionResponse.ProtoReflect.Descriptor instead.
 func (*CreateCheckoutSessionResponse) Descriptor() ([]byte, []int) {
-	return file_relay_server_v1_server_proto_rawDescGZIP(), []int{714}
+	return file_relay_server_v1_server_proto_rawDescGZIP(), []int{716}
 }
 
 func (x *CreateCheckoutSessionResponse) GetUrl() string {
@@ -48490,7 +48571,7 @@ type ChangePlanRequest struct {
 
 func (x *ChangePlanRequest) Reset() {
 	*x = ChangePlanRequest{}
-	mi := &file_relay_server_v1_server_proto_msgTypes[715]
+	mi := &file_relay_server_v1_server_proto_msgTypes[717]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -48502,7 +48583,7 @@ func (x *ChangePlanRequest) String() string {
 func (*ChangePlanRequest) ProtoMessage() {}
 
 func (x *ChangePlanRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_relay_server_v1_server_proto_msgTypes[715]
+	mi := &file_relay_server_v1_server_proto_msgTypes[717]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -48515,7 +48596,7 @@ func (x *ChangePlanRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use ChangePlanRequest.ProtoReflect.Descriptor instead.
 func (*ChangePlanRequest) Descriptor() ([]byte, []int) {
-	return file_relay_server_v1_server_proto_rawDescGZIP(), []int{715}
+	return file_relay_server_v1_server_proto_rawDescGZIP(), []int{717}
 }
 
 func (x *ChangePlanRequest) GetPlan() string {
@@ -48549,7 +48630,7 @@ type ChangePlanResponse struct {
 
 func (x *ChangePlanResponse) Reset() {
 	*x = ChangePlanResponse{}
-	mi := &file_relay_server_v1_server_proto_msgTypes[716]
+	mi := &file_relay_server_v1_server_proto_msgTypes[718]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -48561,7 +48642,7 @@ func (x *ChangePlanResponse) String() string {
 func (*ChangePlanResponse) ProtoMessage() {}
 
 func (x *ChangePlanResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_relay_server_v1_server_proto_msgTypes[716]
+	mi := &file_relay_server_v1_server_proto_msgTypes[718]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -48574,7 +48655,7 @@ func (x *ChangePlanResponse) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use ChangePlanResponse.ProtoReflect.Descriptor instead.
 func (*ChangePlanResponse) Descriptor() ([]byte, []int) {
-	return file_relay_server_v1_server_proto_rawDescGZIP(), []int{716}
+	return file_relay_server_v1_server_proto_rawDescGZIP(), []int{718}
 }
 
 func (x *ChangePlanResponse) GetPlan() string {
@@ -48620,7 +48701,7 @@ type CreateBillingPortalSessionRequest struct {
 
 func (x *CreateBillingPortalSessionRequest) Reset() {
 	*x = CreateBillingPortalSessionRequest{}
-	mi := &file_relay_server_v1_server_proto_msgTypes[717]
+	mi := &file_relay_server_v1_server_proto_msgTypes[719]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -48632,7 +48713,7 @@ func (x *CreateBillingPortalSessionRequest) String() string {
 func (*CreateBillingPortalSessionRequest) ProtoMessage() {}
 
 func (x *CreateBillingPortalSessionRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_relay_server_v1_server_proto_msgTypes[717]
+	mi := &file_relay_server_v1_server_proto_msgTypes[719]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -48645,7 +48726,7 @@ func (x *CreateBillingPortalSessionRequest) ProtoReflect() protoreflect.Message 
 
 // Deprecated: Use CreateBillingPortalSessionRequest.ProtoReflect.Descriptor instead.
 func (*CreateBillingPortalSessionRequest) Descriptor() ([]byte, []int) {
-	return file_relay_server_v1_server_proto_rawDescGZIP(), []int{717}
+	return file_relay_server_v1_server_proto_rawDescGZIP(), []int{719}
 }
 
 type CreateBillingPortalSessionResponse struct {
@@ -48657,7 +48738,7 @@ type CreateBillingPortalSessionResponse struct {
 
 func (x *CreateBillingPortalSessionResponse) Reset() {
 	*x = CreateBillingPortalSessionResponse{}
-	mi := &file_relay_server_v1_server_proto_msgTypes[718]
+	mi := &file_relay_server_v1_server_proto_msgTypes[720]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -48669,7 +48750,7 @@ func (x *CreateBillingPortalSessionResponse) String() string {
 func (*CreateBillingPortalSessionResponse) ProtoMessage() {}
 
 func (x *CreateBillingPortalSessionResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_relay_server_v1_server_proto_msgTypes[718]
+	mi := &file_relay_server_v1_server_proto_msgTypes[720]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -48682,7 +48763,7 @@ func (x *CreateBillingPortalSessionResponse) ProtoReflect() protoreflect.Message
 
 // Deprecated: Use CreateBillingPortalSessionResponse.ProtoReflect.Descriptor instead.
 func (*CreateBillingPortalSessionResponse) Descriptor() ([]byte, []int) {
-	return file_relay_server_v1_server_proto_rawDescGZIP(), []int{718}
+	return file_relay_server_v1_server_proto_rawDescGZIP(), []int{720}
 }
 
 func (x *CreateBillingPortalSessionResponse) GetUrl() string {
@@ -48720,7 +48801,7 @@ type ExternalSecretSource struct {
 
 func (x *ExternalSecretSource) Reset() {
 	*x = ExternalSecretSource{}
-	mi := &file_relay_server_v1_server_proto_msgTypes[719]
+	mi := &file_relay_server_v1_server_proto_msgTypes[721]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -48732,7 +48813,7 @@ func (x *ExternalSecretSource) String() string {
 func (*ExternalSecretSource) ProtoMessage() {}
 
 func (x *ExternalSecretSource) ProtoReflect() protoreflect.Message {
-	mi := &file_relay_server_v1_server_proto_msgTypes[719]
+	mi := &file_relay_server_v1_server_proto_msgTypes[721]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -48745,7 +48826,7 @@ func (x *ExternalSecretSource) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use ExternalSecretSource.ProtoReflect.Descriptor instead.
 func (*ExternalSecretSource) Descriptor() ([]byte, []int) {
-	return file_relay_server_v1_server_proto_rawDescGZIP(), []int{719}
+	return file_relay_server_v1_server_proto_rawDescGZIP(), []int{721}
 }
 
 func (x *ExternalSecretSource) GetId() string {
@@ -48819,7 +48900,7 @@ type ListExternalSecretSourcesRequest struct {
 
 func (x *ListExternalSecretSourcesRequest) Reset() {
 	*x = ListExternalSecretSourcesRequest{}
-	mi := &file_relay_server_v1_server_proto_msgTypes[720]
+	mi := &file_relay_server_v1_server_proto_msgTypes[722]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -48831,7 +48912,7 @@ func (x *ListExternalSecretSourcesRequest) String() string {
 func (*ListExternalSecretSourcesRequest) ProtoMessage() {}
 
 func (x *ListExternalSecretSourcesRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_relay_server_v1_server_proto_msgTypes[720]
+	mi := &file_relay_server_v1_server_proto_msgTypes[722]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -48844,7 +48925,7 @@ func (x *ListExternalSecretSourcesRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use ListExternalSecretSourcesRequest.ProtoReflect.Descriptor instead.
 func (*ListExternalSecretSourcesRequest) Descriptor() ([]byte, []int) {
-	return file_relay_server_v1_server_proto_rawDescGZIP(), []int{720}
+	return file_relay_server_v1_server_proto_rawDescGZIP(), []int{722}
 }
 
 type ListExternalSecretSourcesResponse struct {
@@ -48861,7 +48942,7 @@ type ListExternalSecretSourcesResponse struct {
 
 func (x *ListExternalSecretSourcesResponse) Reset() {
 	*x = ListExternalSecretSourcesResponse{}
-	mi := &file_relay_server_v1_server_proto_msgTypes[721]
+	mi := &file_relay_server_v1_server_proto_msgTypes[723]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -48873,7 +48954,7 @@ func (x *ListExternalSecretSourcesResponse) String() string {
 func (*ListExternalSecretSourcesResponse) ProtoMessage() {}
 
 func (x *ListExternalSecretSourcesResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_relay_server_v1_server_proto_msgTypes[721]
+	mi := &file_relay_server_v1_server_proto_msgTypes[723]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -48886,7 +48967,7 @@ func (x *ListExternalSecretSourcesResponse) ProtoReflect() protoreflect.Message 
 
 // Deprecated: Use ListExternalSecretSourcesResponse.ProtoReflect.Descriptor instead.
 func (*ListExternalSecretSourcesResponse) Descriptor() ([]byte, []int) {
-	return file_relay_server_v1_server_proto_rawDescGZIP(), []int{721}
+	return file_relay_server_v1_server_proto_rawDescGZIP(), []int{723}
 }
 
 func (x *ListExternalSecretSourcesResponse) GetSources() []*ExternalSecretSource {
@@ -48912,7 +48993,7 @@ type GetExternalSecretSourceRequest struct {
 
 func (x *GetExternalSecretSourceRequest) Reset() {
 	*x = GetExternalSecretSourceRequest{}
-	mi := &file_relay_server_v1_server_proto_msgTypes[722]
+	mi := &file_relay_server_v1_server_proto_msgTypes[724]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -48924,7 +49005,7 @@ func (x *GetExternalSecretSourceRequest) String() string {
 func (*GetExternalSecretSourceRequest) ProtoMessage() {}
 
 func (x *GetExternalSecretSourceRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_relay_server_v1_server_proto_msgTypes[722]
+	mi := &file_relay_server_v1_server_proto_msgTypes[724]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -48937,7 +49018,7 @@ func (x *GetExternalSecretSourceRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use GetExternalSecretSourceRequest.ProtoReflect.Descriptor instead.
 func (*GetExternalSecretSourceRequest) Descriptor() ([]byte, []int) {
-	return file_relay_server_v1_server_proto_rawDescGZIP(), []int{722}
+	return file_relay_server_v1_server_proto_rawDescGZIP(), []int{724}
 }
 
 func (x *GetExternalSecretSourceRequest) GetName() string {
@@ -48956,7 +49037,7 @@ type GetExternalSecretSourceResponse struct {
 
 func (x *GetExternalSecretSourceResponse) Reset() {
 	*x = GetExternalSecretSourceResponse{}
-	mi := &file_relay_server_v1_server_proto_msgTypes[723]
+	mi := &file_relay_server_v1_server_proto_msgTypes[725]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -48968,7 +49049,7 @@ func (x *GetExternalSecretSourceResponse) String() string {
 func (*GetExternalSecretSourceResponse) ProtoMessage() {}
 
 func (x *GetExternalSecretSourceResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_relay_server_v1_server_proto_msgTypes[723]
+	mi := &file_relay_server_v1_server_proto_msgTypes[725]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -48981,7 +49062,7 @@ func (x *GetExternalSecretSourceResponse) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use GetExternalSecretSourceResponse.ProtoReflect.Descriptor instead.
 func (*GetExternalSecretSourceResponse) Descriptor() ([]byte, []int) {
-	return file_relay_server_v1_server_proto_rawDescGZIP(), []int{723}
+	return file_relay_server_v1_server_proto_rawDescGZIP(), []int{725}
 }
 
 func (x *GetExternalSecretSourceResponse) GetSource() *ExternalSecretSource {
@@ -49006,7 +49087,7 @@ type UpsertExternalSecretSourceRequest struct {
 
 func (x *UpsertExternalSecretSourceRequest) Reset() {
 	*x = UpsertExternalSecretSourceRequest{}
-	mi := &file_relay_server_v1_server_proto_msgTypes[724]
+	mi := &file_relay_server_v1_server_proto_msgTypes[726]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -49018,7 +49099,7 @@ func (x *UpsertExternalSecretSourceRequest) String() string {
 func (*UpsertExternalSecretSourceRequest) ProtoMessage() {}
 
 func (x *UpsertExternalSecretSourceRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_relay_server_v1_server_proto_msgTypes[724]
+	mi := &file_relay_server_v1_server_proto_msgTypes[726]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -49031,7 +49112,7 @@ func (x *UpsertExternalSecretSourceRequest) ProtoReflect() protoreflect.Message 
 
 // Deprecated: Use UpsertExternalSecretSourceRequest.ProtoReflect.Descriptor instead.
 func (*UpsertExternalSecretSourceRequest) Descriptor() ([]byte, []int) {
-	return file_relay_server_v1_server_proto_rawDescGZIP(), []int{724}
+	return file_relay_server_v1_server_proto_rawDescGZIP(), []int{726}
 }
 
 func (x *UpsertExternalSecretSourceRequest) GetName() string {
@@ -49081,7 +49162,7 @@ type UpsertExternalSecretSourceResponse struct {
 
 func (x *UpsertExternalSecretSourceResponse) Reset() {
 	*x = UpsertExternalSecretSourceResponse{}
-	mi := &file_relay_server_v1_server_proto_msgTypes[725]
+	mi := &file_relay_server_v1_server_proto_msgTypes[727]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -49093,7 +49174,7 @@ func (x *UpsertExternalSecretSourceResponse) String() string {
 func (*UpsertExternalSecretSourceResponse) ProtoMessage() {}
 
 func (x *UpsertExternalSecretSourceResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_relay_server_v1_server_proto_msgTypes[725]
+	mi := &file_relay_server_v1_server_proto_msgTypes[727]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -49106,7 +49187,7 @@ func (x *UpsertExternalSecretSourceResponse) ProtoReflect() protoreflect.Message
 
 // Deprecated: Use UpsertExternalSecretSourceResponse.ProtoReflect.Descriptor instead.
 func (*UpsertExternalSecretSourceResponse) Descriptor() ([]byte, []int) {
-	return file_relay_server_v1_server_proto_rawDescGZIP(), []int{725}
+	return file_relay_server_v1_server_proto_rawDescGZIP(), []int{727}
 }
 
 func (x *UpsertExternalSecretSourceResponse) GetSource() *ExternalSecretSource {
@@ -49132,7 +49213,7 @@ type DeleteExternalSecretSourceRequest struct {
 
 func (x *DeleteExternalSecretSourceRequest) Reset() {
 	*x = DeleteExternalSecretSourceRequest{}
-	mi := &file_relay_server_v1_server_proto_msgTypes[726]
+	mi := &file_relay_server_v1_server_proto_msgTypes[728]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -49144,7 +49225,7 @@ func (x *DeleteExternalSecretSourceRequest) String() string {
 func (*DeleteExternalSecretSourceRequest) ProtoMessage() {}
 
 func (x *DeleteExternalSecretSourceRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_relay_server_v1_server_proto_msgTypes[726]
+	mi := &file_relay_server_v1_server_proto_msgTypes[728]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -49157,7 +49238,7 @@ func (x *DeleteExternalSecretSourceRequest) ProtoReflect() protoreflect.Message 
 
 // Deprecated: Use DeleteExternalSecretSourceRequest.ProtoReflect.Descriptor instead.
 func (*DeleteExternalSecretSourceRequest) Descriptor() ([]byte, []int) {
-	return file_relay_server_v1_server_proto_rawDescGZIP(), []int{726}
+	return file_relay_server_v1_server_proto_rawDescGZIP(), []int{728}
 }
 
 func (x *DeleteExternalSecretSourceRequest) GetName() string {
@@ -49175,7 +49256,7 @@ type DeleteExternalSecretSourceResponse struct {
 
 func (x *DeleteExternalSecretSourceResponse) Reset() {
 	*x = DeleteExternalSecretSourceResponse{}
-	mi := &file_relay_server_v1_server_proto_msgTypes[727]
+	mi := &file_relay_server_v1_server_proto_msgTypes[729]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -49187,7 +49268,7 @@ func (x *DeleteExternalSecretSourceResponse) String() string {
 func (*DeleteExternalSecretSourceResponse) ProtoMessage() {}
 
 func (x *DeleteExternalSecretSourceResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_relay_server_v1_server_proto_msgTypes[727]
+	mi := &file_relay_server_v1_server_proto_msgTypes[729]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -49200,7 +49281,7 @@ func (x *DeleteExternalSecretSourceResponse) ProtoReflect() protoreflect.Message
 
 // Deprecated: Use DeleteExternalSecretSourceResponse.ProtoReflect.Descriptor instead.
 func (*DeleteExternalSecretSourceResponse) Descriptor() ([]byte, []int) {
-	return file_relay_server_v1_server_proto_rawDescGZIP(), []int{727}
+	return file_relay_server_v1_server_proto_rawDescGZIP(), []int{729}
 }
 
 type ResolveConnectionCredentialRequest struct {
@@ -49212,7 +49293,7 @@ type ResolveConnectionCredentialRequest struct {
 
 func (x *ResolveConnectionCredentialRequest) Reset() {
 	*x = ResolveConnectionCredentialRequest{}
-	mi := &file_relay_server_v1_server_proto_msgTypes[728]
+	mi := &file_relay_server_v1_server_proto_msgTypes[730]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -49224,7 +49305,7 @@ func (x *ResolveConnectionCredentialRequest) String() string {
 func (*ResolveConnectionCredentialRequest) ProtoMessage() {}
 
 func (x *ResolveConnectionCredentialRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_relay_server_v1_server_proto_msgTypes[728]
+	mi := &file_relay_server_v1_server_proto_msgTypes[730]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -49237,7 +49318,7 @@ func (x *ResolveConnectionCredentialRequest) ProtoReflect() protoreflect.Message
 
 // Deprecated: Use ResolveConnectionCredentialRequest.ProtoReflect.Descriptor instead.
 func (*ResolveConnectionCredentialRequest) Descriptor() ([]byte, []int) {
-	return file_relay_server_v1_server_proto_rawDescGZIP(), []int{728}
+	return file_relay_server_v1_server_proto_rawDescGZIP(), []int{730}
 }
 
 func (x *ResolveConnectionCredentialRequest) GetName() string {
@@ -49258,7 +49339,7 @@ type ResolveConnectionCredentialResponse struct {
 
 func (x *ResolveConnectionCredentialResponse) Reset() {
 	*x = ResolveConnectionCredentialResponse{}
-	mi := &file_relay_server_v1_server_proto_msgTypes[729]
+	mi := &file_relay_server_v1_server_proto_msgTypes[731]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -49270,7 +49351,7 @@ func (x *ResolveConnectionCredentialResponse) String() string {
 func (*ResolveConnectionCredentialResponse) ProtoMessage() {}
 
 func (x *ResolveConnectionCredentialResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_relay_server_v1_server_proto_msgTypes[729]
+	mi := &file_relay_server_v1_server_proto_msgTypes[731]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -49283,7 +49364,7 @@ func (x *ResolveConnectionCredentialResponse) ProtoReflect() protoreflect.Messag
 
 // Deprecated: Use ResolveConnectionCredentialResponse.ProtoReflect.Descriptor instead.
 func (*ResolveConnectionCredentialResponse) Descriptor() ([]byte, []int) {
-	return file_relay_server_v1_server_proto_rawDescGZIP(), []int{729}
+	return file_relay_server_v1_server_proto_rawDescGZIP(), []int{731}
 }
 
 func (x *ResolveConnectionCredentialResponse) GetPassword() string {
@@ -49302,7 +49383,7 @@ type ResolveExternalSecretSourceRequest struct {
 
 func (x *ResolveExternalSecretSourceRequest) Reset() {
 	*x = ResolveExternalSecretSourceRequest{}
-	mi := &file_relay_server_v1_server_proto_msgTypes[730]
+	mi := &file_relay_server_v1_server_proto_msgTypes[732]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -49314,7 +49395,7 @@ func (x *ResolveExternalSecretSourceRequest) String() string {
 func (*ResolveExternalSecretSourceRequest) ProtoMessage() {}
 
 func (x *ResolveExternalSecretSourceRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_relay_server_v1_server_proto_msgTypes[730]
+	mi := &file_relay_server_v1_server_proto_msgTypes[732]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -49327,7 +49408,7 @@ func (x *ResolveExternalSecretSourceRequest) ProtoReflect() protoreflect.Message
 
 // Deprecated: Use ResolveExternalSecretSourceRequest.ProtoReflect.Descriptor instead.
 func (*ResolveExternalSecretSourceRequest) Descriptor() ([]byte, []int) {
-	return file_relay_server_v1_server_proto_rawDescGZIP(), []int{730}
+	return file_relay_server_v1_server_proto_rawDescGZIP(), []int{732}
 }
 
 func (x *ResolveExternalSecretSourceRequest) GetName() string {
@@ -49348,7 +49429,7 @@ type ResolveExternalSecretSourceResponse struct {
 
 func (x *ResolveExternalSecretSourceResponse) Reset() {
 	*x = ResolveExternalSecretSourceResponse{}
-	mi := &file_relay_server_v1_server_proto_msgTypes[731]
+	mi := &file_relay_server_v1_server_proto_msgTypes[733]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -49360,7 +49441,7 @@ func (x *ResolveExternalSecretSourceResponse) String() string {
 func (*ResolveExternalSecretSourceResponse) ProtoMessage() {}
 
 func (x *ResolveExternalSecretSourceResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_relay_server_v1_server_proto_msgTypes[731]
+	mi := &file_relay_server_v1_server_proto_msgTypes[733]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -49373,7 +49454,7 @@ func (x *ResolveExternalSecretSourceResponse) ProtoReflect() protoreflect.Messag
 
 // Deprecated: Use ResolveExternalSecretSourceResponse.ProtoReflect.Descriptor instead.
 func (*ResolveExternalSecretSourceResponse) Descriptor() ([]byte, []int) {
-	return file_relay_server_v1_server_proto_rawDescGZIP(), []int{731}
+	return file_relay_server_v1_server_proto_rawDescGZIP(), []int{733}
 }
 
 func (x *ResolveExternalSecretSourceResponse) GetName() string {
@@ -49416,7 +49497,7 @@ type CloudIntegration struct {
 
 func (x *CloudIntegration) Reset() {
 	*x = CloudIntegration{}
-	mi := &file_relay_server_v1_server_proto_msgTypes[732]
+	mi := &file_relay_server_v1_server_proto_msgTypes[734]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -49428,7 +49509,7 @@ func (x *CloudIntegration) String() string {
 func (*CloudIntegration) ProtoMessage() {}
 
 func (x *CloudIntegration) ProtoReflect() protoreflect.Message {
-	mi := &file_relay_server_v1_server_proto_msgTypes[732]
+	mi := &file_relay_server_v1_server_proto_msgTypes[734]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -49441,7 +49522,7 @@ func (x *CloudIntegration) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use CloudIntegration.ProtoReflect.Descriptor instead.
 func (*CloudIntegration) Descriptor() ([]byte, []int) {
-	return file_relay_server_v1_server_proto_rawDescGZIP(), []int{732}
+	return file_relay_server_v1_server_proto_rawDescGZIP(), []int{734}
 }
 
 func (x *CloudIntegration) GetId() string {
@@ -49530,7 +49611,7 @@ type GetCloudIntegrationSetupRequest struct {
 
 func (x *GetCloudIntegrationSetupRequest) Reset() {
 	*x = GetCloudIntegrationSetupRequest{}
-	mi := &file_relay_server_v1_server_proto_msgTypes[733]
+	mi := &file_relay_server_v1_server_proto_msgTypes[735]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -49542,7 +49623,7 @@ func (x *GetCloudIntegrationSetupRequest) String() string {
 func (*GetCloudIntegrationSetupRequest) ProtoMessage() {}
 
 func (x *GetCloudIntegrationSetupRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_relay_server_v1_server_proto_msgTypes[733]
+	mi := &file_relay_server_v1_server_proto_msgTypes[735]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -49555,7 +49636,7 @@ func (x *GetCloudIntegrationSetupRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use GetCloudIntegrationSetupRequest.ProtoReflect.Descriptor instead.
 func (*GetCloudIntegrationSetupRequest) Descriptor() ([]byte, []int) {
-	return file_relay_server_v1_server_proto_rawDescGZIP(), []int{733}
+	return file_relay_server_v1_server_proto_rawDescGZIP(), []int{735}
 }
 
 func (x *GetCloudIntegrationSetupRequest) GetProvider() string {
@@ -49577,7 +49658,7 @@ type GetCloudIntegrationSetupResponse struct {
 
 func (x *GetCloudIntegrationSetupResponse) Reset() {
 	*x = GetCloudIntegrationSetupResponse{}
-	mi := &file_relay_server_v1_server_proto_msgTypes[734]
+	mi := &file_relay_server_v1_server_proto_msgTypes[736]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -49589,7 +49670,7 @@ func (x *GetCloudIntegrationSetupResponse) String() string {
 func (*GetCloudIntegrationSetupResponse) ProtoMessage() {}
 
 func (x *GetCloudIntegrationSetupResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_relay_server_v1_server_proto_msgTypes[734]
+	mi := &file_relay_server_v1_server_proto_msgTypes[736]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -49602,7 +49683,7 @@ func (x *GetCloudIntegrationSetupResponse) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use GetCloudIntegrationSetupResponse.ProtoReflect.Descriptor instead.
 func (*GetCloudIntegrationSetupResponse) Descriptor() ([]byte, []int) {
-	return file_relay_server_v1_server_proto_rawDescGZIP(), []int{734}
+	return file_relay_server_v1_server_proto_rawDescGZIP(), []int{736}
 }
 
 func (x *GetCloudIntegrationSetupResponse) GetRelayAwsAccountId() string {
@@ -49641,7 +49722,7 @@ type ListCloudIntegrationsRequest struct {
 
 func (x *ListCloudIntegrationsRequest) Reset() {
 	*x = ListCloudIntegrationsRequest{}
-	mi := &file_relay_server_v1_server_proto_msgTypes[735]
+	mi := &file_relay_server_v1_server_proto_msgTypes[737]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -49653,7 +49734,7 @@ func (x *ListCloudIntegrationsRequest) String() string {
 func (*ListCloudIntegrationsRequest) ProtoMessage() {}
 
 func (x *ListCloudIntegrationsRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_relay_server_v1_server_proto_msgTypes[735]
+	mi := &file_relay_server_v1_server_proto_msgTypes[737]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -49666,7 +49747,7 @@ func (x *ListCloudIntegrationsRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use ListCloudIntegrationsRequest.ProtoReflect.Descriptor instead.
 func (*ListCloudIntegrationsRequest) Descriptor() ([]byte, []int) {
-	return file_relay_server_v1_server_proto_rawDescGZIP(), []int{735}
+	return file_relay_server_v1_server_proto_rawDescGZIP(), []int{737}
 }
 
 type ListCloudIntegrationsResponse struct {
@@ -49678,7 +49759,7 @@ type ListCloudIntegrationsResponse struct {
 
 func (x *ListCloudIntegrationsResponse) Reset() {
 	*x = ListCloudIntegrationsResponse{}
-	mi := &file_relay_server_v1_server_proto_msgTypes[736]
+	mi := &file_relay_server_v1_server_proto_msgTypes[738]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -49690,7 +49771,7 @@ func (x *ListCloudIntegrationsResponse) String() string {
 func (*ListCloudIntegrationsResponse) ProtoMessage() {}
 
 func (x *ListCloudIntegrationsResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_relay_server_v1_server_proto_msgTypes[736]
+	mi := &file_relay_server_v1_server_proto_msgTypes[738]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -49703,7 +49784,7 @@ func (x *ListCloudIntegrationsResponse) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use ListCloudIntegrationsResponse.ProtoReflect.Descriptor instead.
 func (*ListCloudIntegrationsResponse) Descriptor() ([]byte, []int) {
-	return file_relay_server_v1_server_proto_rawDescGZIP(), []int{736}
+	return file_relay_server_v1_server_proto_rawDescGZIP(), []int{738}
 }
 
 func (x *ListCloudIntegrationsResponse) GetIntegrations() []*CloudIntegration {
@@ -49722,7 +49803,7 @@ type GetCloudIntegrationRequest struct {
 
 func (x *GetCloudIntegrationRequest) Reset() {
 	*x = GetCloudIntegrationRequest{}
-	mi := &file_relay_server_v1_server_proto_msgTypes[737]
+	mi := &file_relay_server_v1_server_proto_msgTypes[739]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -49734,7 +49815,7 @@ func (x *GetCloudIntegrationRequest) String() string {
 func (*GetCloudIntegrationRequest) ProtoMessage() {}
 
 func (x *GetCloudIntegrationRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_relay_server_v1_server_proto_msgTypes[737]
+	mi := &file_relay_server_v1_server_proto_msgTypes[739]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -49747,7 +49828,7 @@ func (x *GetCloudIntegrationRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use GetCloudIntegrationRequest.ProtoReflect.Descriptor instead.
 func (*GetCloudIntegrationRequest) Descriptor() ([]byte, []int) {
-	return file_relay_server_v1_server_proto_rawDescGZIP(), []int{737}
+	return file_relay_server_v1_server_proto_rawDescGZIP(), []int{739}
 }
 
 func (x *GetCloudIntegrationRequest) GetId() string {
@@ -49766,7 +49847,7 @@ type GetCloudIntegrationResponse struct {
 
 func (x *GetCloudIntegrationResponse) Reset() {
 	*x = GetCloudIntegrationResponse{}
-	mi := &file_relay_server_v1_server_proto_msgTypes[738]
+	mi := &file_relay_server_v1_server_proto_msgTypes[740]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -49778,7 +49859,7 @@ func (x *GetCloudIntegrationResponse) String() string {
 func (*GetCloudIntegrationResponse) ProtoMessage() {}
 
 func (x *GetCloudIntegrationResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_relay_server_v1_server_proto_msgTypes[738]
+	mi := &file_relay_server_v1_server_proto_msgTypes[740]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -49791,7 +49872,7 @@ func (x *GetCloudIntegrationResponse) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use GetCloudIntegrationResponse.ProtoReflect.Descriptor instead.
 func (*GetCloudIntegrationResponse) Descriptor() ([]byte, []int) {
-	return file_relay_server_v1_server_proto_rawDescGZIP(), []int{738}
+	return file_relay_server_v1_server_proto_rawDescGZIP(), []int{740}
 }
 
 func (x *GetCloudIntegrationResponse) GetIntegration() *CloudIntegration {
@@ -49812,7 +49893,7 @@ type CreateCloudIntegrationRequest struct {
 
 func (x *CreateCloudIntegrationRequest) Reset() {
 	*x = CreateCloudIntegrationRequest{}
-	mi := &file_relay_server_v1_server_proto_msgTypes[739]
+	mi := &file_relay_server_v1_server_proto_msgTypes[741]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -49824,7 +49905,7 @@ func (x *CreateCloudIntegrationRequest) String() string {
 func (*CreateCloudIntegrationRequest) ProtoMessage() {}
 
 func (x *CreateCloudIntegrationRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_relay_server_v1_server_proto_msgTypes[739]
+	mi := &file_relay_server_v1_server_proto_msgTypes[741]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -49837,7 +49918,7 @@ func (x *CreateCloudIntegrationRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use CreateCloudIntegrationRequest.ProtoReflect.Descriptor instead.
 func (*CreateCloudIntegrationRequest) Descriptor() ([]byte, []int) {
-	return file_relay_server_v1_server_proto_rawDescGZIP(), []int{739}
+	return file_relay_server_v1_server_proto_rawDescGZIP(), []int{741}
 }
 
 func (x *CreateCloudIntegrationRequest) GetProvider() string {
@@ -49870,7 +49951,7 @@ type CreateCloudIntegrationResponse struct {
 
 func (x *CreateCloudIntegrationResponse) Reset() {
 	*x = CreateCloudIntegrationResponse{}
-	mi := &file_relay_server_v1_server_proto_msgTypes[740]
+	mi := &file_relay_server_v1_server_proto_msgTypes[742]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -49882,7 +49963,7 @@ func (x *CreateCloudIntegrationResponse) String() string {
 func (*CreateCloudIntegrationResponse) ProtoMessage() {}
 
 func (x *CreateCloudIntegrationResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_relay_server_v1_server_proto_msgTypes[740]
+	mi := &file_relay_server_v1_server_proto_msgTypes[742]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -49895,7 +49976,7 @@ func (x *CreateCloudIntegrationResponse) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use CreateCloudIntegrationResponse.ProtoReflect.Descriptor instead.
 func (*CreateCloudIntegrationResponse) Descriptor() ([]byte, []int) {
-	return file_relay_server_v1_server_proto_rawDescGZIP(), []int{740}
+	return file_relay_server_v1_server_proto_rawDescGZIP(), []int{742}
 }
 
 func (x *CreateCloudIntegrationResponse) GetIntegration() *CloudIntegration {
@@ -49916,7 +49997,7 @@ type UpdateCloudIntegrationRequest struct {
 
 func (x *UpdateCloudIntegrationRequest) Reset() {
 	*x = UpdateCloudIntegrationRequest{}
-	mi := &file_relay_server_v1_server_proto_msgTypes[741]
+	mi := &file_relay_server_v1_server_proto_msgTypes[743]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -49928,7 +50009,7 @@ func (x *UpdateCloudIntegrationRequest) String() string {
 func (*UpdateCloudIntegrationRequest) ProtoMessage() {}
 
 func (x *UpdateCloudIntegrationRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_relay_server_v1_server_proto_msgTypes[741]
+	mi := &file_relay_server_v1_server_proto_msgTypes[743]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -49941,7 +50022,7 @@ func (x *UpdateCloudIntegrationRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use UpdateCloudIntegrationRequest.ProtoReflect.Descriptor instead.
 func (*UpdateCloudIntegrationRequest) Descriptor() ([]byte, []int) {
-	return file_relay_server_v1_server_proto_rawDescGZIP(), []int{741}
+	return file_relay_server_v1_server_proto_rawDescGZIP(), []int{743}
 }
 
 func (x *UpdateCloudIntegrationRequest) GetId() string {
@@ -49974,7 +50055,7 @@ type UpdateCloudIntegrationResponse struct {
 
 func (x *UpdateCloudIntegrationResponse) Reset() {
 	*x = UpdateCloudIntegrationResponse{}
-	mi := &file_relay_server_v1_server_proto_msgTypes[742]
+	mi := &file_relay_server_v1_server_proto_msgTypes[744]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -49986,7 +50067,7 @@ func (x *UpdateCloudIntegrationResponse) String() string {
 func (*UpdateCloudIntegrationResponse) ProtoMessage() {}
 
 func (x *UpdateCloudIntegrationResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_relay_server_v1_server_proto_msgTypes[742]
+	mi := &file_relay_server_v1_server_proto_msgTypes[744]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -49999,7 +50080,7 @@ func (x *UpdateCloudIntegrationResponse) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use UpdateCloudIntegrationResponse.ProtoReflect.Descriptor instead.
 func (*UpdateCloudIntegrationResponse) Descriptor() ([]byte, []int) {
-	return file_relay_server_v1_server_proto_rawDescGZIP(), []int{742}
+	return file_relay_server_v1_server_proto_rawDescGZIP(), []int{744}
 }
 
 func (x *UpdateCloudIntegrationResponse) GetIntegration() *CloudIntegration {
@@ -50018,7 +50099,7 @@ type DeleteCloudIntegrationRequest struct {
 
 func (x *DeleteCloudIntegrationRequest) Reset() {
 	*x = DeleteCloudIntegrationRequest{}
-	mi := &file_relay_server_v1_server_proto_msgTypes[743]
+	mi := &file_relay_server_v1_server_proto_msgTypes[745]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -50030,7 +50111,7 @@ func (x *DeleteCloudIntegrationRequest) String() string {
 func (*DeleteCloudIntegrationRequest) ProtoMessage() {}
 
 func (x *DeleteCloudIntegrationRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_relay_server_v1_server_proto_msgTypes[743]
+	mi := &file_relay_server_v1_server_proto_msgTypes[745]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -50043,7 +50124,7 @@ func (x *DeleteCloudIntegrationRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use DeleteCloudIntegrationRequest.ProtoReflect.Descriptor instead.
 func (*DeleteCloudIntegrationRequest) Descriptor() ([]byte, []int) {
-	return file_relay_server_v1_server_proto_rawDescGZIP(), []int{743}
+	return file_relay_server_v1_server_proto_rawDescGZIP(), []int{745}
 }
 
 func (x *DeleteCloudIntegrationRequest) GetId() string {
@@ -50061,7 +50142,7 @@ type DeleteCloudIntegrationResponse struct {
 
 func (x *DeleteCloudIntegrationResponse) Reset() {
 	*x = DeleteCloudIntegrationResponse{}
-	mi := &file_relay_server_v1_server_proto_msgTypes[744]
+	mi := &file_relay_server_v1_server_proto_msgTypes[746]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -50073,7 +50154,7 @@ func (x *DeleteCloudIntegrationResponse) String() string {
 func (*DeleteCloudIntegrationResponse) ProtoMessage() {}
 
 func (x *DeleteCloudIntegrationResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_relay_server_v1_server_proto_msgTypes[744]
+	mi := &file_relay_server_v1_server_proto_msgTypes[746]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -50086,7 +50167,7 @@ func (x *DeleteCloudIntegrationResponse) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use DeleteCloudIntegrationResponse.ProtoReflect.Descriptor instead.
 func (*DeleteCloudIntegrationResponse) Descriptor() ([]byte, []int) {
-	return file_relay_server_v1_server_proto_rawDescGZIP(), []int{744}
+	return file_relay_server_v1_server_proto_rawDescGZIP(), []int{746}
 }
 
 type TestCloudIntegrationRequest struct {
@@ -50098,7 +50179,7 @@ type TestCloudIntegrationRequest struct {
 
 func (x *TestCloudIntegrationRequest) Reset() {
 	*x = TestCloudIntegrationRequest{}
-	mi := &file_relay_server_v1_server_proto_msgTypes[745]
+	mi := &file_relay_server_v1_server_proto_msgTypes[747]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -50110,7 +50191,7 @@ func (x *TestCloudIntegrationRequest) String() string {
 func (*TestCloudIntegrationRequest) ProtoMessage() {}
 
 func (x *TestCloudIntegrationRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_relay_server_v1_server_proto_msgTypes[745]
+	mi := &file_relay_server_v1_server_proto_msgTypes[747]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -50123,7 +50204,7 @@ func (x *TestCloudIntegrationRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use TestCloudIntegrationRequest.ProtoReflect.Descriptor instead.
 func (*TestCloudIntegrationRequest) Descriptor() ([]byte, []int) {
-	return file_relay_server_v1_server_proto_rawDescGZIP(), []int{745}
+	return file_relay_server_v1_server_proto_rawDescGZIP(), []int{747}
 }
 
 func (x *TestCloudIntegrationRequest) GetId() string {
@@ -50143,7 +50224,7 @@ type TestCloudIntegrationResponse struct {
 
 func (x *TestCloudIntegrationResponse) Reset() {
 	*x = TestCloudIntegrationResponse{}
-	mi := &file_relay_server_v1_server_proto_msgTypes[746]
+	mi := &file_relay_server_v1_server_proto_msgTypes[748]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -50155,7 +50236,7 @@ func (x *TestCloudIntegrationResponse) String() string {
 func (*TestCloudIntegrationResponse) ProtoMessage() {}
 
 func (x *TestCloudIntegrationResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_relay_server_v1_server_proto_msgTypes[746]
+	mi := &file_relay_server_v1_server_proto_msgTypes[748]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -50168,7 +50249,7 @@ func (x *TestCloudIntegrationResponse) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use TestCloudIntegrationResponse.ProtoReflect.Descriptor instead.
 func (*TestCloudIntegrationResponse) Descriptor() ([]byte, []int) {
-	return file_relay_server_v1_server_proto_rawDescGZIP(), []int{746}
+	return file_relay_server_v1_server_proto_rawDescGZIP(), []int{748}
 }
 
 func (x *TestCloudIntegrationResponse) GetIntegration() *CloudIntegration {
@@ -50195,7 +50276,7 @@ type ClusterScope struct {
 
 func (x *ClusterScope) Reset() {
 	*x = ClusterScope{}
-	mi := &file_relay_server_v1_server_proto_msgTypes[747]
+	mi := &file_relay_server_v1_server_proto_msgTypes[749]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -50207,7 +50288,7 @@ func (x *ClusterScope) String() string {
 func (*ClusterScope) ProtoMessage() {}
 
 func (x *ClusterScope) ProtoReflect() protoreflect.Message {
-	mi := &file_relay_server_v1_server_proto_msgTypes[747]
+	mi := &file_relay_server_v1_server_proto_msgTypes[749]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -50220,7 +50301,7 @@ func (x *ClusterScope) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use ClusterScope.ProtoReflect.Descriptor instead.
 func (*ClusterScope) Descriptor() ([]byte, []int) {
-	return file_relay_server_v1_server_proto_rawDescGZIP(), []int{747}
+	return file_relay_server_v1_server_proto_rawDescGZIP(), []int{749}
 }
 
 func (x *ClusterScope) GetMode() string {
@@ -50253,7 +50334,7 @@ type LogStream struct {
 
 func (x *LogStream) Reset() {
 	*x = LogStream{}
-	mi := &file_relay_server_v1_server_proto_msgTypes[748]
+	mi := &file_relay_server_v1_server_proto_msgTypes[750]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -50265,7 +50346,7 @@ func (x *LogStream) String() string {
 func (*LogStream) ProtoMessage() {}
 
 func (x *LogStream) ProtoReflect() protoreflect.Message {
-	mi := &file_relay_server_v1_server_proto_msgTypes[748]
+	mi := &file_relay_server_v1_server_proto_msgTypes[750]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -50278,7 +50359,7 @@ func (x *LogStream) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use LogStream.ProtoReflect.Descriptor instead.
 func (*LogStream) Descriptor() ([]byte, []int) {
-	return file_relay_server_v1_server_proto_rawDescGZIP(), []int{748}
+	return file_relay_server_v1_server_proto_rawDescGZIP(), []int{750}
 }
 
 func (x *LogStream) GetIntegrationId() string {
@@ -50345,7 +50426,7 @@ type GetLogStreamRequest struct {
 
 func (x *GetLogStreamRequest) Reset() {
 	*x = GetLogStreamRequest{}
-	mi := &file_relay_server_v1_server_proto_msgTypes[749]
+	mi := &file_relay_server_v1_server_proto_msgTypes[751]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -50357,7 +50438,7 @@ func (x *GetLogStreamRequest) String() string {
 func (*GetLogStreamRequest) ProtoMessage() {}
 
 func (x *GetLogStreamRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_relay_server_v1_server_proto_msgTypes[749]
+	mi := &file_relay_server_v1_server_proto_msgTypes[751]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -50370,7 +50451,7 @@ func (x *GetLogStreamRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use GetLogStreamRequest.ProtoReflect.Descriptor instead.
 func (*GetLogStreamRequest) Descriptor() ([]byte, []int) {
-	return file_relay_server_v1_server_proto_rawDescGZIP(), []int{749}
+	return file_relay_server_v1_server_proto_rawDescGZIP(), []int{751}
 }
 
 type GetLogStreamResponse struct {
@@ -50382,7 +50463,7 @@ type GetLogStreamResponse struct {
 
 func (x *GetLogStreamResponse) Reset() {
 	*x = GetLogStreamResponse{}
-	mi := &file_relay_server_v1_server_proto_msgTypes[750]
+	mi := &file_relay_server_v1_server_proto_msgTypes[752]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -50394,7 +50475,7 @@ func (x *GetLogStreamResponse) String() string {
 func (*GetLogStreamResponse) ProtoMessage() {}
 
 func (x *GetLogStreamResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_relay_server_v1_server_proto_msgTypes[750]
+	mi := &file_relay_server_v1_server_proto_msgTypes[752]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -50407,7 +50488,7 @@ func (x *GetLogStreamResponse) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use GetLogStreamResponse.ProtoReflect.Descriptor instead.
 func (*GetLogStreamResponse) Descriptor() ([]byte, []int) {
-	return file_relay_server_v1_server_proto_rawDescGZIP(), []int{750}
+	return file_relay_server_v1_server_proto_rawDescGZIP(), []int{752}
 }
 
 func (x *GetLogStreamResponse) GetStream() *LogStream {
@@ -50426,7 +50507,7 @@ type UpsertLogStreamRequest struct {
 
 func (x *UpsertLogStreamRequest) Reset() {
 	*x = UpsertLogStreamRequest{}
-	mi := &file_relay_server_v1_server_proto_msgTypes[751]
+	mi := &file_relay_server_v1_server_proto_msgTypes[753]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -50438,7 +50519,7 @@ func (x *UpsertLogStreamRequest) String() string {
 func (*UpsertLogStreamRequest) ProtoMessage() {}
 
 func (x *UpsertLogStreamRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_relay_server_v1_server_proto_msgTypes[751]
+	mi := &file_relay_server_v1_server_proto_msgTypes[753]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -50451,7 +50532,7 @@ func (x *UpsertLogStreamRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use UpsertLogStreamRequest.ProtoReflect.Descriptor instead.
 func (*UpsertLogStreamRequest) Descriptor() ([]byte, []int) {
-	return file_relay_server_v1_server_proto_rawDescGZIP(), []int{751}
+	return file_relay_server_v1_server_proto_rawDescGZIP(), []int{753}
 }
 
 func (x *UpsertLogStreamRequest) GetStream() *LogStream {
@@ -50470,7 +50551,7 @@ type UpsertLogStreamResponse struct {
 
 func (x *UpsertLogStreamResponse) Reset() {
 	*x = UpsertLogStreamResponse{}
-	mi := &file_relay_server_v1_server_proto_msgTypes[752]
+	mi := &file_relay_server_v1_server_proto_msgTypes[754]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -50482,7 +50563,7 @@ func (x *UpsertLogStreamResponse) String() string {
 func (*UpsertLogStreamResponse) ProtoMessage() {}
 
 func (x *UpsertLogStreamResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_relay_server_v1_server_proto_msgTypes[752]
+	mi := &file_relay_server_v1_server_proto_msgTypes[754]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -50495,7 +50576,7 @@ func (x *UpsertLogStreamResponse) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use UpsertLogStreamResponse.ProtoReflect.Descriptor instead.
 func (*UpsertLogStreamResponse) Descriptor() ([]byte, []int) {
-	return file_relay_server_v1_server_proto_rawDescGZIP(), []int{752}
+	return file_relay_server_v1_server_proto_rawDescGZIP(), []int{754}
 }
 
 func (x *UpsertLogStreamResponse) GetStream() *LogStream {
@@ -50513,7 +50594,7 @@ type DeleteLogStreamRequest struct {
 
 func (x *DeleteLogStreamRequest) Reset() {
 	*x = DeleteLogStreamRequest{}
-	mi := &file_relay_server_v1_server_proto_msgTypes[753]
+	mi := &file_relay_server_v1_server_proto_msgTypes[755]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -50525,7 +50606,7 @@ func (x *DeleteLogStreamRequest) String() string {
 func (*DeleteLogStreamRequest) ProtoMessage() {}
 
 func (x *DeleteLogStreamRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_relay_server_v1_server_proto_msgTypes[753]
+	mi := &file_relay_server_v1_server_proto_msgTypes[755]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -50538,7 +50619,7 @@ func (x *DeleteLogStreamRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use DeleteLogStreamRequest.ProtoReflect.Descriptor instead.
 func (*DeleteLogStreamRequest) Descriptor() ([]byte, []int) {
-	return file_relay_server_v1_server_proto_rawDescGZIP(), []int{753}
+	return file_relay_server_v1_server_proto_rawDescGZIP(), []int{755}
 }
 
 type DeleteLogStreamResponse struct {
@@ -50549,7 +50630,7 @@ type DeleteLogStreamResponse struct {
 
 func (x *DeleteLogStreamResponse) Reset() {
 	*x = DeleteLogStreamResponse{}
-	mi := &file_relay_server_v1_server_proto_msgTypes[754]
+	mi := &file_relay_server_v1_server_proto_msgTypes[756]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -50561,7 +50642,7 @@ func (x *DeleteLogStreamResponse) String() string {
 func (*DeleteLogStreamResponse) ProtoMessage() {}
 
 func (x *DeleteLogStreamResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_relay_server_v1_server_proto_msgTypes[754]
+	mi := &file_relay_server_v1_server_proto_msgTypes[756]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -50574,7 +50655,7 @@ func (x *DeleteLogStreamResponse) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use DeleteLogStreamResponse.ProtoReflect.Descriptor instead.
 func (*DeleteLogStreamResponse) Descriptor() ([]byte, []int) {
-	return file_relay_server_v1_server_proto_rawDescGZIP(), []int{754}
+	return file_relay_server_v1_server_proto_rawDescGZIP(), []int{756}
 }
 
 type LogDestinationConfig struct {
@@ -50599,7 +50680,7 @@ type LogDestinationConfig struct {
 
 func (x *LogDestinationConfig) Reset() {
 	*x = LogDestinationConfig{}
-	mi := &file_relay_server_v1_server_proto_msgTypes[755]
+	mi := &file_relay_server_v1_server_proto_msgTypes[757]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -50611,7 +50692,7 @@ func (x *LogDestinationConfig) String() string {
 func (*LogDestinationConfig) ProtoMessage() {}
 
 func (x *LogDestinationConfig) ProtoReflect() protoreflect.Message {
-	mi := &file_relay_server_v1_server_proto_msgTypes[755]
+	mi := &file_relay_server_v1_server_proto_msgTypes[757]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -50624,7 +50705,7 @@ func (x *LogDestinationConfig) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use LogDestinationConfig.ProtoReflect.Descriptor instead.
 func (*LogDestinationConfig) Descriptor() ([]byte, []int) {
-	return file_relay_server_v1_server_proto_rawDescGZIP(), []int{755}
+	return file_relay_server_v1_server_proto_rawDescGZIP(), []int{757}
 }
 
 func (x *LogDestinationConfig) GetUrl() string {
@@ -50739,7 +50820,7 @@ type LogDestinationHealth struct {
 
 func (x *LogDestinationHealth) Reset() {
 	*x = LogDestinationHealth{}
-	mi := &file_relay_server_v1_server_proto_msgTypes[756]
+	mi := &file_relay_server_v1_server_proto_msgTypes[758]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -50751,7 +50832,7 @@ func (x *LogDestinationHealth) String() string {
 func (*LogDestinationHealth) ProtoMessage() {}
 
 func (x *LogDestinationHealth) ProtoReflect() protoreflect.Message {
-	mi := &file_relay_server_v1_server_proto_msgTypes[756]
+	mi := &file_relay_server_v1_server_proto_msgTypes[758]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -50764,7 +50845,7 @@ func (x *LogDestinationHealth) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use LogDestinationHealth.ProtoReflect.Descriptor instead.
 func (*LogDestinationHealth) Descriptor() ([]byte, []int) {
-	return file_relay_server_v1_server_proto_rawDescGZIP(), []int{756}
+	return file_relay_server_v1_server_proto_rawDescGZIP(), []int{758}
 }
 
 func (x *LogDestinationHealth) GetLastSuccessAt() *timestamppb.Timestamp {
@@ -50827,7 +50908,7 @@ type LogDestination struct {
 
 func (x *LogDestination) Reset() {
 	*x = LogDestination{}
-	mi := &file_relay_server_v1_server_proto_msgTypes[757]
+	mi := &file_relay_server_v1_server_proto_msgTypes[759]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -50839,7 +50920,7 @@ func (x *LogDestination) String() string {
 func (*LogDestination) ProtoMessage() {}
 
 func (x *LogDestination) ProtoReflect() protoreflect.Message {
-	mi := &file_relay_server_v1_server_proto_msgTypes[757]
+	mi := &file_relay_server_v1_server_proto_msgTypes[759]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -50852,7 +50933,7 @@ func (x *LogDestination) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use LogDestination.ProtoReflect.Descriptor instead.
 func (*LogDestination) Descriptor() ([]byte, []int) {
-	return file_relay_server_v1_server_proto_rawDescGZIP(), []int{757}
+	return file_relay_server_v1_server_proto_rawDescGZIP(), []int{759}
 }
 
 func (x *LogDestination) GetId() string {
@@ -50933,7 +51014,7 @@ type ListLogDestinationsRequest struct {
 
 func (x *ListLogDestinationsRequest) Reset() {
 	*x = ListLogDestinationsRequest{}
-	mi := &file_relay_server_v1_server_proto_msgTypes[758]
+	mi := &file_relay_server_v1_server_proto_msgTypes[760]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -50945,7 +51026,7 @@ func (x *ListLogDestinationsRequest) String() string {
 func (*ListLogDestinationsRequest) ProtoMessage() {}
 
 func (x *ListLogDestinationsRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_relay_server_v1_server_proto_msgTypes[758]
+	mi := &file_relay_server_v1_server_proto_msgTypes[760]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -50958,7 +51039,7 @@ func (x *ListLogDestinationsRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use ListLogDestinationsRequest.ProtoReflect.Descriptor instead.
 func (*ListLogDestinationsRequest) Descriptor() ([]byte, []int) {
-	return file_relay_server_v1_server_proto_rawDescGZIP(), []int{758}
+	return file_relay_server_v1_server_proto_rawDescGZIP(), []int{760}
 }
 
 type ListLogDestinationsResponse struct {
@@ -50970,7 +51051,7 @@ type ListLogDestinationsResponse struct {
 
 func (x *ListLogDestinationsResponse) Reset() {
 	*x = ListLogDestinationsResponse{}
-	mi := &file_relay_server_v1_server_proto_msgTypes[759]
+	mi := &file_relay_server_v1_server_proto_msgTypes[761]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -50982,7 +51063,7 @@ func (x *ListLogDestinationsResponse) String() string {
 func (*ListLogDestinationsResponse) ProtoMessage() {}
 
 func (x *ListLogDestinationsResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_relay_server_v1_server_proto_msgTypes[759]
+	mi := &file_relay_server_v1_server_proto_msgTypes[761]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -50995,7 +51076,7 @@ func (x *ListLogDestinationsResponse) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use ListLogDestinationsResponse.ProtoReflect.Descriptor instead.
 func (*ListLogDestinationsResponse) Descriptor() ([]byte, []int) {
-	return file_relay_server_v1_server_proto_rawDescGZIP(), []int{759}
+	return file_relay_server_v1_server_proto_rawDescGZIP(), []int{761}
 }
 
 func (x *ListLogDestinationsResponse) GetDestinations() []*LogDestination {
@@ -51017,7 +51098,7 @@ type CreateLogDestinationRequest struct {
 
 func (x *CreateLogDestinationRequest) Reset() {
 	*x = CreateLogDestinationRequest{}
-	mi := &file_relay_server_v1_server_proto_msgTypes[760]
+	mi := &file_relay_server_v1_server_proto_msgTypes[762]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -51029,7 +51110,7 @@ func (x *CreateLogDestinationRequest) String() string {
 func (*CreateLogDestinationRequest) ProtoMessage() {}
 
 func (x *CreateLogDestinationRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_relay_server_v1_server_proto_msgTypes[760]
+	mi := &file_relay_server_v1_server_proto_msgTypes[762]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -51042,7 +51123,7 @@ func (x *CreateLogDestinationRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use CreateLogDestinationRequest.ProtoReflect.Descriptor instead.
 func (*CreateLogDestinationRequest) Descriptor() ([]byte, []int) {
-	return file_relay_server_v1_server_proto_rawDescGZIP(), []int{760}
+	return file_relay_server_v1_server_proto_rawDescGZIP(), []int{762}
 }
 
 func (x *CreateLogDestinationRequest) GetDestination() *LogDestination {
@@ -51070,7 +51151,7 @@ type CreateLogDestinationResponse struct {
 
 func (x *CreateLogDestinationResponse) Reset() {
 	*x = CreateLogDestinationResponse{}
-	mi := &file_relay_server_v1_server_proto_msgTypes[761]
+	mi := &file_relay_server_v1_server_proto_msgTypes[763]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -51082,7 +51163,7 @@ func (x *CreateLogDestinationResponse) String() string {
 func (*CreateLogDestinationResponse) ProtoMessage() {}
 
 func (x *CreateLogDestinationResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_relay_server_v1_server_proto_msgTypes[761]
+	mi := &file_relay_server_v1_server_proto_msgTypes[763]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -51095,7 +51176,7 @@ func (x *CreateLogDestinationResponse) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use CreateLogDestinationResponse.ProtoReflect.Descriptor instead.
 func (*CreateLogDestinationResponse) Descriptor() ([]byte, []int) {
-	return file_relay_server_v1_server_proto_rawDescGZIP(), []int{761}
+	return file_relay_server_v1_server_proto_rawDescGZIP(), []int{763}
 }
 
 func (x *CreateLogDestinationResponse) GetDestination() *LogDestination {
@@ -51124,7 +51205,7 @@ type UpdateLogDestinationRequest struct {
 
 func (x *UpdateLogDestinationRequest) Reset() {
 	*x = UpdateLogDestinationRequest{}
-	mi := &file_relay_server_v1_server_proto_msgTypes[762]
+	mi := &file_relay_server_v1_server_proto_msgTypes[764]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -51136,7 +51217,7 @@ func (x *UpdateLogDestinationRequest) String() string {
 func (*UpdateLogDestinationRequest) ProtoMessage() {}
 
 func (x *UpdateLogDestinationRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_relay_server_v1_server_proto_msgTypes[762]
+	mi := &file_relay_server_v1_server_proto_msgTypes[764]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -51149,7 +51230,7 @@ func (x *UpdateLogDestinationRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use UpdateLogDestinationRequest.ProtoReflect.Descriptor instead.
 func (*UpdateLogDestinationRequest) Descriptor() ([]byte, []int) {
-	return file_relay_server_v1_server_proto_rawDescGZIP(), []int{762}
+	return file_relay_server_v1_server_proto_rawDescGZIP(), []int{764}
 }
 
 func (x *UpdateLogDestinationRequest) GetId() string {
@@ -51182,7 +51263,7 @@ type UpdateLogDestinationResponse struct {
 
 func (x *UpdateLogDestinationResponse) Reset() {
 	*x = UpdateLogDestinationResponse{}
-	mi := &file_relay_server_v1_server_proto_msgTypes[763]
+	mi := &file_relay_server_v1_server_proto_msgTypes[765]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -51194,7 +51275,7 @@ func (x *UpdateLogDestinationResponse) String() string {
 func (*UpdateLogDestinationResponse) ProtoMessage() {}
 
 func (x *UpdateLogDestinationResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_relay_server_v1_server_proto_msgTypes[763]
+	mi := &file_relay_server_v1_server_proto_msgTypes[765]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -51207,7 +51288,7 @@ func (x *UpdateLogDestinationResponse) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use UpdateLogDestinationResponse.ProtoReflect.Descriptor instead.
 func (*UpdateLogDestinationResponse) Descriptor() ([]byte, []int) {
-	return file_relay_server_v1_server_proto_rawDescGZIP(), []int{763}
+	return file_relay_server_v1_server_proto_rawDescGZIP(), []int{765}
 }
 
 func (x *UpdateLogDestinationResponse) GetDestination() *LogDestination {
@@ -51226,7 +51307,7 @@ type DeleteLogDestinationRequest struct {
 
 func (x *DeleteLogDestinationRequest) Reset() {
 	*x = DeleteLogDestinationRequest{}
-	mi := &file_relay_server_v1_server_proto_msgTypes[764]
+	mi := &file_relay_server_v1_server_proto_msgTypes[766]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -51238,7 +51319,7 @@ func (x *DeleteLogDestinationRequest) String() string {
 func (*DeleteLogDestinationRequest) ProtoMessage() {}
 
 func (x *DeleteLogDestinationRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_relay_server_v1_server_proto_msgTypes[764]
+	mi := &file_relay_server_v1_server_proto_msgTypes[766]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -51251,7 +51332,7 @@ func (x *DeleteLogDestinationRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use DeleteLogDestinationRequest.ProtoReflect.Descriptor instead.
 func (*DeleteLogDestinationRequest) Descriptor() ([]byte, []int) {
-	return file_relay_server_v1_server_proto_rawDescGZIP(), []int{764}
+	return file_relay_server_v1_server_proto_rawDescGZIP(), []int{766}
 }
 
 func (x *DeleteLogDestinationRequest) GetId() string {
@@ -51269,7 +51350,7 @@ type DeleteLogDestinationResponse struct {
 
 func (x *DeleteLogDestinationResponse) Reset() {
 	*x = DeleteLogDestinationResponse{}
-	mi := &file_relay_server_v1_server_proto_msgTypes[765]
+	mi := &file_relay_server_v1_server_proto_msgTypes[767]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -51281,7 +51362,7 @@ func (x *DeleteLogDestinationResponse) String() string {
 func (*DeleteLogDestinationResponse) ProtoMessage() {}
 
 func (x *DeleteLogDestinationResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_relay_server_v1_server_proto_msgTypes[765]
+	mi := &file_relay_server_v1_server_proto_msgTypes[767]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -51294,7 +51375,7 @@ func (x *DeleteLogDestinationResponse) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use DeleteLogDestinationResponse.ProtoReflect.Descriptor instead.
 func (*DeleteLogDestinationResponse) Descriptor() ([]byte, []int) {
-	return file_relay_server_v1_server_proto_rawDescGZIP(), []int{765}
+	return file_relay_server_v1_server_proto_rawDescGZIP(), []int{767}
 }
 
 type TestLogDestinationRequest struct {
@@ -51306,7 +51387,7 @@ type TestLogDestinationRequest struct {
 
 func (x *TestLogDestinationRequest) Reset() {
 	*x = TestLogDestinationRequest{}
-	mi := &file_relay_server_v1_server_proto_msgTypes[766]
+	mi := &file_relay_server_v1_server_proto_msgTypes[768]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -51318,7 +51399,7 @@ func (x *TestLogDestinationRequest) String() string {
 func (*TestLogDestinationRequest) ProtoMessage() {}
 
 func (x *TestLogDestinationRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_relay_server_v1_server_proto_msgTypes[766]
+	mi := &file_relay_server_v1_server_proto_msgTypes[768]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -51331,7 +51412,7 @@ func (x *TestLogDestinationRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use TestLogDestinationRequest.ProtoReflect.Descriptor instead.
 func (*TestLogDestinationRequest) Descriptor() ([]byte, []int) {
-	return file_relay_server_v1_server_proto_rawDescGZIP(), []int{766}
+	return file_relay_server_v1_server_proto_rawDescGZIP(), []int{768}
 }
 
 func (x *TestLogDestinationRequest) GetId() string {
@@ -51352,7 +51433,7 @@ type TestLogDestinationResponse struct {
 
 func (x *TestLogDestinationResponse) Reset() {
 	*x = TestLogDestinationResponse{}
-	mi := &file_relay_server_v1_server_proto_msgTypes[767]
+	mi := &file_relay_server_v1_server_proto_msgTypes[769]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -51364,7 +51445,7 @@ func (x *TestLogDestinationResponse) String() string {
 func (*TestLogDestinationResponse) ProtoMessage() {}
 
 func (x *TestLogDestinationResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_relay_server_v1_server_proto_msgTypes[767]
+	mi := &file_relay_server_v1_server_proto_msgTypes[769]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -51377,7 +51458,7 @@ func (x *TestLogDestinationResponse) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use TestLogDestinationResponse.ProtoReflect.Descriptor instead.
 func (*TestLogDestinationResponse) Descriptor() ([]byte, []int) {
-	return file_relay_server_v1_server_proto_rawDescGZIP(), []int{767}
+	return file_relay_server_v1_server_proto_rawDescGZIP(), []int{769}
 }
 
 func (x *TestLogDestinationResponse) GetOk() bool {
@@ -51417,7 +51498,7 @@ type BackupAutoExport struct {
 
 func (x *BackupAutoExport) Reset() {
 	*x = BackupAutoExport{}
-	mi := &file_relay_server_v1_server_proto_msgTypes[768]
+	mi := &file_relay_server_v1_server_proto_msgTypes[770]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -51429,7 +51510,7 @@ func (x *BackupAutoExport) String() string {
 func (*BackupAutoExport) ProtoMessage() {}
 
 func (x *BackupAutoExport) ProtoReflect() protoreflect.Message {
-	mi := &file_relay_server_v1_server_proto_msgTypes[768]
+	mi := &file_relay_server_v1_server_proto_msgTypes[770]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -51442,7 +51523,7 @@ func (x *BackupAutoExport) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use BackupAutoExport.ProtoReflect.Descriptor instead.
 func (*BackupAutoExport) Descriptor() ([]byte, []int) {
-	return file_relay_server_v1_server_proto_rawDescGZIP(), []int{768}
+	return file_relay_server_v1_server_proto_rawDescGZIP(), []int{770}
 }
 
 func (x *BackupAutoExport) GetIntegrationId() string {
@@ -51509,7 +51590,7 @@ type GetBackupAutoExportRequest struct {
 
 func (x *GetBackupAutoExportRequest) Reset() {
 	*x = GetBackupAutoExportRequest{}
-	mi := &file_relay_server_v1_server_proto_msgTypes[769]
+	mi := &file_relay_server_v1_server_proto_msgTypes[771]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -51521,7 +51602,7 @@ func (x *GetBackupAutoExportRequest) String() string {
 func (*GetBackupAutoExportRequest) ProtoMessage() {}
 
 func (x *GetBackupAutoExportRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_relay_server_v1_server_proto_msgTypes[769]
+	mi := &file_relay_server_v1_server_proto_msgTypes[771]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -51534,7 +51615,7 @@ func (x *GetBackupAutoExportRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use GetBackupAutoExportRequest.ProtoReflect.Descriptor instead.
 func (*GetBackupAutoExportRequest) Descriptor() ([]byte, []int) {
-	return file_relay_server_v1_server_proto_rawDescGZIP(), []int{769}
+	return file_relay_server_v1_server_proto_rawDescGZIP(), []int{771}
 }
 
 type GetBackupAutoExportResponse struct {
@@ -51546,7 +51627,7 @@ type GetBackupAutoExportResponse struct {
 
 func (x *GetBackupAutoExportResponse) Reset() {
 	*x = GetBackupAutoExportResponse{}
-	mi := &file_relay_server_v1_server_proto_msgTypes[770]
+	mi := &file_relay_server_v1_server_proto_msgTypes[772]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -51558,7 +51639,7 @@ func (x *GetBackupAutoExportResponse) String() string {
 func (*GetBackupAutoExportResponse) ProtoMessage() {}
 
 func (x *GetBackupAutoExportResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_relay_server_v1_server_proto_msgTypes[770]
+	mi := &file_relay_server_v1_server_proto_msgTypes[772]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -51571,7 +51652,7 @@ func (x *GetBackupAutoExportResponse) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use GetBackupAutoExportResponse.ProtoReflect.Descriptor instead.
 func (*GetBackupAutoExportResponse) Descriptor() ([]byte, []int) {
-	return file_relay_server_v1_server_proto_rawDescGZIP(), []int{770}
+	return file_relay_server_v1_server_proto_rawDescGZIP(), []int{772}
 }
 
 func (x *GetBackupAutoExportResponse) GetAutoExport() *BackupAutoExport {
@@ -51596,7 +51677,7 @@ type UpsertBackupAutoExportRequest struct {
 
 func (x *UpsertBackupAutoExportRequest) Reset() {
 	*x = UpsertBackupAutoExportRequest{}
-	mi := &file_relay_server_v1_server_proto_msgTypes[771]
+	mi := &file_relay_server_v1_server_proto_msgTypes[773]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -51608,7 +51689,7 @@ func (x *UpsertBackupAutoExportRequest) String() string {
 func (*UpsertBackupAutoExportRequest) ProtoMessage() {}
 
 func (x *UpsertBackupAutoExportRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_relay_server_v1_server_proto_msgTypes[771]
+	mi := &file_relay_server_v1_server_proto_msgTypes[773]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -51621,7 +51702,7 @@ func (x *UpsertBackupAutoExportRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use UpsertBackupAutoExportRequest.ProtoReflect.Descriptor instead.
 func (*UpsertBackupAutoExportRequest) Descriptor() ([]byte, []int) {
-	return file_relay_server_v1_server_proto_rawDescGZIP(), []int{771}
+	return file_relay_server_v1_server_proto_rawDescGZIP(), []int{773}
 }
 
 func (x *UpsertBackupAutoExportRequest) GetAutoExport() *BackupAutoExport {
@@ -51647,7 +51728,7 @@ type UpsertBackupAutoExportResponse struct {
 
 func (x *UpsertBackupAutoExportResponse) Reset() {
 	*x = UpsertBackupAutoExportResponse{}
-	mi := &file_relay_server_v1_server_proto_msgTypes[772]
+	mi := &file_relay_server_v1_server_proto_msgTypes[774]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -51659,7 +51740,7 @@ func (x *UpsertBackupAutoExportResponse) String() string {
 func (*UpsertBackupAutoExportResponse) ProtoMessage() {}
 
 func (x *UpsertBackupAutoExportResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_relay_server_v1_server_proto_msgTypes[772]
+	mi := &file_relay_server_v1_server_proto_msgTypes[774]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -51672,7 +51753,7 @@ func (x *UpsertBackupAutoExportResponse) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use UpsertBackupAutoExportResponse.ProtoReflect.Descriptor instead.
 func (*UpsertBackupAutoExportResponse) Descriptor() ([]byte, []int) {
-	return file_relay_server_v1_server_proto_rawDescGZIP(), []int{772}
+	return file_relay_server_v1_server_proto_rawDescGZIP(), []int{774}
 }
 
 func (x *UpsertBackupAutoExportResponse) GetAutoExport() *BackupAutoExport {
@@ -51690,7 +51771,7 @@ type DeleteBackupAutoExportRequest struct {
 
 func (x *DeleteBackupAutoExportRequest) Reset() {
 	*x = DeleteBackupAutoExportRequest{}
-	mi := &file_relay_server_v1_server_proto_msgTypes[773]
+	mi := &file_relay_server_v1_server_proto_msgTypes[775]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -51702,7 +51783,7 @@ func (x *DeleteBackupAutoExportRequest) String() string {
 func (*DeleteBackupAutoExportRequest) ProtoMessage() {}
 
 func (x *DeleteBackupAutoExportRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_relay_server_v1_server_proto_msgTypes[773]
+	mi := &file_relay_server_v1_server_proto_msgTypes[775]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -51715,7 +51796,7 @@ func (x *DeleteBackupAutoExportRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use DeleteBackupAutoExportRequest.ProtoReflect.Descriptor instead.
 func (*DeleteBackupAutoExportRequest) Descriptor() ([]byte, []int) {
-	return file_relay_server_v1_server_proto_rawDescGZIP(), []int{773}
+	return file_relay_server_v1_server_proto_rawDescGZIP(), []int{775}
 }
 
 type DeleteBackupAutoExportResponse struct {
@@ -51726,7 +51807,7 @@ type DeleteBackupAutoExportResponse struct {
 
 func (x *DeleteBackupAutoExportResponse) Reset() {
 	*x = DeleteBackupAutoExportResponse{}
-	mi := &file_relay_server_v1_server_proto_msgTypes[774]
+	mi := &file_relay_server_v1_server_proto_msgTypes[776]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -51738,7 +51819,7 @@ func (x *DeleteBackupAutoExportResponse) String() string {
 func (*DeleteBackupAutoExportResponse) ProtoMessage() {}
 
 func (x *DeleteBackupAutoExportResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_relay_server_v1_server_proto_msgTypes[774]
+	mi := &file_relay_server_v1_server_proto_msgTypes[776]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -51751,7 +51832,7 @@ func (x *DeleteBackupAutoExportResponse) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use DeleteBackupAutoExportResponse.ProtoReflect.Descriptor instead.
 func (*DeleteBackupAutoExportResponse) Descriptor() ([]byte, []int) {
-	return file_relay_server_v1_server_proto_rawDescGZIP(), []int{774}
+	return file_relay_server_v1_server_proto_rawDescGZIP(), []int{776}
 }
 
 type ExportToCloudRequest struct {
@@ -51769,7 +51850,7 @@ type ExportToCloudRequest struct {
 
 func (x *ExportToCloudRequest) Reset() {
 	*x = ExportToCloudRequest{}
-	mi := &file_relay_server_v1_server_proto_msgTypes[775]
+	mi := &file_relay_server_v1_server_proto_msgTypes[777]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -51781,7 +51862,7 @@ func (x *ExportToCloudRequest) String() string {
 func (*ExportToCloudRequest) ProtoMessage() {}
 
 func (x *ExportToCloudRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_relay_server_v1_server_proto_msgTypes[775]
+	mi := &file_relay_server_v1_server_proto_msgTypes[777]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -51794,7 +51875,7 @@ func (x *ExportToCloudRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use ExportToCloudRequest.ProtoReflect.Descriptor instead.
 func (*ExportToCloudRequest) Descriptor() ([]byte, []int) {
-	return file_relay_server_v1_server_proto_rawDescGZIP(), []int{775}
+	return file_relay_server_v1_server_proto_rawDescGZIP(), []int{777}
 }
 
 func (x *ExportToCloudRequest) GetKind() string {
@@ -51855,7 +51936,7 @@ type ExportToCloudResponse struct {
 
 func (x *ExportToCloudResponse) Reset() {
 	*x = ExportToCloudResponse{}
-	mi := &file_relay_server_v1_server_proto_msgTypes[776]
+	mi := &file_relay_server_v1_server_proto_msgTypes[778]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -51867,7 +51948,7 @@ func (x *ExportToCloudResponse) String() string {
 func (*ExportToCloudResponse) ProtoMessage() {}
 
 func (x *ExportToCloudResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_relay_server_v1_server_proto_msgTypes[776]
+	mi := &file_relay_server_v1_server_proto_msgTypes[778]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -51880,7 +51961,7 @@ func (x *ExportToCloudResponse) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use ExportToCloudResponse.ProtoReflect.Descriptor instead.
 func (*ExportToCloudResponse) Descriptor() ([]byte, []int) {
-	return file_relay_server_v1_server_proto_rawDescGZIP(), []int{776}
+	return file_relay_server_v1_server_proto_rawDescGZIP(), []int{778}
 }
 
 func (x *ExportToCloudResponse) GetUri() string {
@@ -51929,7 +52010,7 @@ type SupportReport struct {
 
 func (x *SupportReport) Reset() {
 	*x = SupportReport{}
-	mi := &file_relay_server_v1_server_proto_msgTypes[777]
+	mi := &file_relay_server_v1_server_proto_msgTypes[779]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -51941,7 +52022,7 @@ func (x *SupportReport) String() string {
 func (*SupportReport) ProtoMessage() {}
 
 func (x *SupportReport) ProtoReflect() protoreflect.Message {
-	mi := &file_relay_server_v1_server_proto_msgTypes[777]
+	mi := &file_relay_server_v1_server_proto_msgTypes[779]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -51954,7 +52035,7 @@ func (x *SupportReport) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use SupportReport.ProtoReflect.Descriptor instead.
 func (*SupportReport) Descriptor() ([]byte, []int) {
-	return file_relay_server_v1_server_proto_rawDescGZIP(), []int{777}
+	return file_relay_server_v1_server_proto_rawDescGZIP(), []int{779}
 }
 
 func (x *SupportReport) GetId() string {
@@ -52100,7 +52181,7 @@ type SupportReportComment struct {
 
 func (x *SupportReportComment) Reset() {
 	*x = SupportReportComment{}
-	mi := &file_relay_server_v1_server_proto_msgTypes[778]
+	mi := &file_relay_server_v1_server_proto_msgTypes[780]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -52112,7 +52193,7 @@ func (x *SupportReportComment) String() string {
 func (*SupportReportComment) ProtoMessage() {}
 
 func (x *SupportReportComment) ProtoReflect() protoreflect.Message {
-	mi := &file_relay_server_v1_server_proto_msgTypes[778]
+	mi := &file_relay_server_v1_server_proto_msgTypes[780]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -52125,7 +52206,7 @@ func (x *SupportReportComment) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use SupportReportComment.ProtoReflect.Descriptor instead.
 func (*SupportReportComment) Descriptor() ([]byte, []int) {
-	return file_relay_server_v1_server_proto_rawDescGZIP(), []int{778}
+	return file_relay_server_v1_server_proto_rawDescGZIP(), []int{780}
 }
 
 func (x *SupportReportComment) GetId() string {
@@ -52187,7 +52268,7 @@ type SupportAttachment struct {
 
 func (x *SupportAttachment) Reset() {
 	*x = SupportAttachment{}
-	mi := &file_relay_server_v1_server_proto_msgTypes[779]
+	mi := &file_relay_server_v1_server_proto_msgTypes[781]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -52199,7 +52280,7 @@ func (x *SupportAttachment) String() string {
 func (*SupportAttachment) ProtoMessage() {}
 
 func (x *SupportAttachment) ProtoReflect() protoreflect.Message {
-	mi := &file_relay_server_v1_server_proto_msgTypes[779]
+	mi := &file_relay_server_v1_server_proto_msgTypes[781]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -52212,7 +52293,7 @@ func (x *SupportAttachment) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use SupportAttachment.ProtoReflect.Descriptor instead.
 func (*SupportAttachment) Descriptor() ([]byte, []int) {
-	return file_relay_server_v1_server_proto_rawDescGZIP(), []int{779}
+	return file_relay_server_v1_server_proto_rawDescGZIP(), []int{781}
 }
 
 func (x *SupportAttachment) GetId() string {
@@ -52266,7 +52347,7 @@ type SupportAttachmentUpload struct {
 
 func (x *SupportAttachmentUpload) Reset() {
 	*x = SupportAttachmentUpload{}
-	mi := &file_relay_server_v1_server_proto_msgTypes[780]
+	mi := &file_relay_server_v1_server_proto_msgTypes[782]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -52278,7 +52359,7 @@ func (x *SupportAttachmentUpload) String() string {
 func (*SupportAttachmentUpload) ProtoMessage() {}
 
 func (x *SupportAttachmentUpload) ProtoReflect() protoreflect.Message {
-	mi := &file_relay_server_v1_server_proto_msgTypes[780]
+	mi := &file_relay_server_v1_server_proto_msgTypes[782]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -52291,7 +52372,7 @@ func (x *SupportAttachmentUpload) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use SupportAttachmentUpload.ProtoReflect.Descriptor instead.
 func (*SupportAttachmentUpload) Descriptor() ([]byte, []int) {
-	return file_relay_server_v1_server_proto_rawDescGZIP(), []int{780}
+	return file_relay_server_v1_server_proto_rawDescGZIP(), []int{782}
 }
 
 func (x *SupportAttachmentUpload) GetName() string {
@@ -52336,7 +52417,7 @@ type CreateSupportReportRequest struct {
 
 func (x *CreateSupportReportRequest) Reset() {
 	*x = CreateSupportReportRequest{}
-	mi := &file_relay_server_v1_server_proto_msgTypes[781]
+	mi := &file_relay_server_v1_server_proto_msgTypes[783]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -52348,7 +52429,7 @@ func (x *CreateSupportReportRequest) String() string {
 func (*CreateSupportReportRequest) ProtoMessage() {}
 
 func (x *CreateSupportReportRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_relay_server_v1_server_proto_msgTypes[781]
+	mi := &file_relay_server_v1_server_proto_msgTypes[783]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -52361,7 +52442,7 @@ func (x *CreateSupportReportRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use CreateSupportReportRequest.ProtoReflect.Descriptor instead.
 func (*CreateSupportReportRequest) Descriptor() ([]byte, []int) {
-	return file_relay_server_v1_server_proto_rawDescGZIP(), []int{781}
+	return file_relay_server_v1_server_proto_rawDescGZIP(), []int{783}
 }
 
 func (x *CreateSupportReportRequest) GetCategory() string {
@@ -52422,7 +52503,7 @@ type CreateSupportReportResponse struct {
 
 func (x *CreateSupportReportResponse) Reset() {
 	*x = CreateSupportReportResponse{}
-	mi := &file_relay_server_v1_server_proto_msgTypes[782]
+	mi := &file_relay_server_v1_server_proto_msgTypes[784]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -52434,7 +52515,7 @@ func (x *CreateSupportReportResponse) String() string {
 func (*CreateSupportReportResponse) ProtoMessage() {}
 
 func (x *CreateSupportReportResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_relay_server_v1_server_proto_msgTypes[782]
+	mi := &file_relay_server_v1_server_proto_msgTypes[784]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -52447,7 +52528,7 @@ func (x *CreateSupportReportResponse) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use CreateSupportReportResponse.ProtoReflect.Descriptor instead.
 func (*CreateSupportReportResponse) Descriptor() ([]byte, []int) {
-	return file_relay_server_v1_server_proto_rawDescGZIP(), []int{782}
+	return file_relay_server_v1_server_proto_rawDescGZIP(), []int{784}
 }
 
 func (x *CreateSupportReportResponse) GetReport() *SupportReport {
@@ -52468,7 +52549,7 @@ type ListSupportReportsRequest struct {
 
 func (x *ListSupportReportsRequest) Reset() {
 	*x = ListSupportReportsRequest{}
-	mi := &file_relay_server_v1_server_proto_msgTypes[783]
+	mi := &file_relay_server_v1_server_proto_msgTypes[785]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -52480,7 +52561,7 @@ func (x *ListSupportReportsRequest) String() string {
 func (*ListSupportReportsRequest) ProtoMessage() {}
 
 func (x *ListSupportReportsRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_relay_server_v1_server_proto_msgTypes[783]
+	mi := &file_relay_server_v1_server_proto_msgTypes[785]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -52493,7 +52574,7 @@ func (x *ListSupportReportsRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use ListSupportReportsRequest.ProtoReflect.Descriptor instead.
 func (*ListSupportReportsRequest) Descriptor() ([]byte, []int) {
-	return file_relay_server_v1_server_proto_rawDescGZIP(), []int{783}
+	return file_relay_server_v1_server_proto_rawDescGZIP(), []int{785}
 }
 
 func (x *ListSupportReportsRequest) GetStatus() string {
@@ -52519,7 +52600,7 @@ type ListSupportReportsResponse struct {
 
 func (x *ListSupportReportsResponse) Reset() {
 	*x = ListSupportReportsResponse{}
-	mi := &file_relay_server_v1_server_proto_msgTypes[784]
+	mi := &file_relay_server_v1_server_proto_msgTypes[786]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -52531,7 +52612,7 @@ func (x *ListSupportReportsResponse) String() string {
 func (*ListSupportReportsResponse) ProtoMessage() {}
 
 func (x *ListSupportReportsResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_relay_server_v1_server_proto_msgTypes[784]
+	mi := &file_relay_server_v1_server_proto_msgTypes[786]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -52544,7 +52625,7 @@ func (x *ListSupportReportsResponse) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use ListSupportReportsResponse.ProtoReflect.Descriptor instead.
 func (*ListSupportReportsResponse) Descriptor() ([]byte, []int) {
-	return file_relay_server_v1_server_proto_rawDescGZIP(), []int{784}
+	return file_relay_server_v1_server_proto_rawDescGZIP(), []int{786}
 }
 
 func (x *ListSupportReportsResponse) GetReports() []*SupportReport {
@@ -52563,7 +52644,7 @@ type GetSupportReportRequest struct {
 
 func (x *GetSupportReportRequest) Reset() {
 	*x = GetSupportReportRequest{}
-	mi := &file_relay_server_v1_server_proto_msgTypes[785]
+	mi := &file_relay_server_v1_server_proto_msgTypes[787]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -52575,7 +52656,7 @@ func (x *GetSupportReportRequest) String() string {
 func (*GetSupportReportRequest) ProtoMessage() {}
 
 func (x *GetSupportReportRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_relay_server_v1_server_proto_msgTypes[785]
+	mi := &file_relay_server_v1_server_proto_msgTypes[787]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -52588,7 +52669,7 @@ func (x *GetSupportReportRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use GetSupportReportRequest.ProtoReflect.Descriptor instead.
 func (*GetSupportReportRequest) Descriptor() ([]byte, []int) {
-	return file_relay_server_v1_server_proto_rawDescGZIP(), []int{785}
+	return file_relay_server_v1_server_proto_rawDescGZIP(), []int{787}
 }
 
 func (x *GetSupportReportRequest) GetId() string {
@@ -52608,7 +52689,7 @@ type GetSupportReportResponse struct {
 
 func (x *GetSupportReportResponse) Reset() {
 	*x = GetSupportReportResponse{}
-	mi := &file_relay_server_v1_server_proto_msgTypes[786]
+	mi := &file_relay_server_v1_server_proto_msgTypes[788]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -52620,7 +52701,7 @@ func (x *GetSupportReportResponse) String() string {
 func (*GetSupportReportResponse) ProtoMessage() {}
 
 func (x *GetSupportReportResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_relay_server_v1_server_proto_msgTypes[786]
+	mi := &file_relay_server_v1_server_proto_msgTypes[788]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -52633,7 +52714,7 @@ func (x *GetSupportReportResponse) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use GetSupportReportResponse.ProtoReflect.Descriptor instead.
 func (*GetSupportReportResponse) Descriptor() ([]byte, []int) {
-	return file_relay_server_v1_server_proto_rawDescGZIP(), []int{786}
+	return file_relay_server_v1_server_proto_rawDescGZIP(), []int{788}
 }
 
 func (x *GetSupportReportResponse) GetReport() *SupportReport {
@@ -52662,7 +52743,7 @@ type AddSupportReportCommentRequest struct {
 
 func (x *AddSupportReportCommentRequest) Reset() {
 	*x = AddSupportReportCommentRequest{}
-	mi := &file_relay_server_v1_server_proto_msgTypes[787]
+	mi := &file_relay_server_v1_server_proto_msgTypes[789]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -52674,7 +52755,7 @@ func (x *AddSupportReportCommentRequest) String() string {
 func (*AddSupportReportCommentRequest) ProtoMessage() {}
 
 func (x *AddSupportReportCommentRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_relay_server_v1_server_proto_msgTypes[787]
+	mi := &file_relay_server_v1_server_proto_msgTypes[789]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -52687,7 +52768,7 @@ func (x *AddSupportReportCommentRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use AddSupportReportCommentRequest.ProtoReflect.Descriptor instead.
 func (*AddSupportReportCommentRequest) Descriptor() ([]byte, []int) {
-	return file_relay_server_v1_server_proto_rawDescGZIP(), []int{787}
+	return file_relay_server_v1_server_proto_rawDescGZIP(), []int{789}
 }
 
 func (x *AddSupportReportCommentRequest) GetId() string {
@@ -52720,7 +52801,7 @@ type AddSupportReportCommentResponse struct {
 
 func (x *AddSupportReportCommentResponse) Reset() {
 	*x = AddSupportReportCommentResponse{}
-	mi := &file_relay_server_v1_server_proto_msgTypes[788]
+	mi := &file_relay_server_v1_server_proto_msgTypes[790]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -52732,7 +52813,7 @@ func (x *AddSupportReportCommentResponse) String() string {
 func (*AddSupportReportCommentResponse) ProtoMessage() {}
 
 func (x *AddSupportReportCommentResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_relay_server_v1_server_proto_msgTypes[788]
+	mi := &file_relay_server_v1_server_proto_msgTypes[790]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -52745,7 +52826,7 @@ func (x *AddSupportReportCommentResponse) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use AddSupportReportCommentResponse.ProtoReflect.Descriptor instead.
 func (*AddSupportReportCommentResponse) Descriptor() ([]byte, []int) {
-	return file_relay_server_v1_server_proto_rawDescGZIP(), []int{788}
+	return file_relay_server_v1_server_proto_rawDescGZIP(), []int{790}
 }
 
 func (x *AddSupportReportCommentResponse) GetComment() *SupportReportComment {
@@ -52765,7 +52846,7 @@ type GetSupportAttachmentRequest struct {
 
 func (x *GetSupportAttachmentRequest) Reset() {
 	*x = GetSupportAttachmentRequest{}
-	mi := &file_relay_server_v1_server_proto_msgTypes[789]
+	mi := &file_relay_server_v1_server_proto_msgTypes[791]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -52777,7 +52858,7 @@ func (x *GetSupportAttachmentRequest) String() string {
 func (*GetSupportAttachmentRequest) ProtoMessage() {}
 
 func (x *GetSupportAttachmentRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_relay_server_v1_server_proto_msgTypes[789]
+	mi := &file_relay_server_v1_server_proto_msgTypes[791]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -52790,7 +52871,7 @@ func (x *GetSupportAttachmentRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use GetSupportAttachmentRequest.ProtoReflect.Descriptor instead.
 func (*GetSupportAttachmentRequest) Descriptor() ([]byte, []int) {
-	return file_relay_server_v1_server_proto_rawDescGZIP(), []int{789}
+	return file_relay_server_v1_server_proto_rawDescGZIP(), []int{791}
 }
 
 func (x *GetSupportAttachmentRequest) GetReportId() string {
@@ -52817,7 +52898,7 @@ type GetSupportAttachmentResponse struct {
 
 func (x *GetSupportAttachmentResponse) Reset() {
 	*x = GetSupportAttachmentResponse{}
-	mi := &file_relay_server_v1_server_proto_msgTypes[790]
+	mi := &file_relay_server_v1_server_proto_msgTypes[792]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -52829,7 +52910,7 @@ func (x *GetSupportAttachmentResponse) String() string {
 func (*GetSupportAttachmentResponse) ProtoMessage() {}
 
 func (x *GetSupportAttachmentResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_relay_server_v1_server_proto_msgTypes[790]
+	mi := &file_relay_server_v1_server_proto_msgTypes[792]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -52842,7 +52923,7 @@ func (x *GetSupportAttachmentResponse) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use GetSupportAttachmentResponse.ProtoReflect.Descriptor instead.
 func (*GetSupportAttachmentResponse) Descriptor() ([]byte, []int) {
-	return file_relay_server_v1_server_proto_rawDescGZIP(), []int{790}
+	return file_relay_server_v1_server_proto_rawDescGZIP(), []int{792}
 }
 
 func (x *GetSupportAttachmentResponse) GetAttachment() *SupportAttachment {
@@ -52869,7 +52950,7 @@ type UpdateSupportReportStatusRequest struct {
 
 func (x *UpdateSupportReportStatusRequest) Reset() {
 	*x = UpdateSupportReportStatusRequest{}
-	mi := &file_relay_server_v1_server_proto_msgTypes[791]
+	mi := &file_relay_server_v1_server_proto_msgTypes[793]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -52881,7 +52962,7 @@ func (x *UpdateSupportReportStatusRequest) String() string {
 func (*UpdateSupportReportStatusRequest) ProtoMessage() {}
 
 func (x *UpdateSupportReportStatusRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_relay_server_v1_server_proto_msgTypes[791]
+	mi := &file_relay_server_v1_server_proto_msgTypes[793]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -52894,7 +52975,7 @@ func (x *UpdateSupportReportStatusRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use UpdateSupportReportStatusRequest.ProtoReflect.Descriptor instead.
 func (*UpdateSupportReportStatusRequest) Descriptor() ([]byte, []int) {
-	return file_relay_server_v1_server_proto_rawDescGZIP(), []int{791}
+	return file_relay_server_v1_server_proto_rawDescGZIP(), []int{793}
 }
 
 func (x *UpdateSupportReportStatusRequest) GetId() string {
@@ -52920,7 +53001,7 @@ type UpdateSupportReportStatusResponse struct {
 
 func (x *UpdateSupportReportStatusResponse) Reset() {
 	*x = UpdateSupportReportStatusResponse{}
-	mi := &file_relay_server_v1_server_proto_msgTypes[792]
+	mi := &file_relay_server_v1_server_proto_msgTypes[794]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -52932,7 +53013,7 @@ func (x *UpdateSupportReportStatusResponse) String() string {
 func (*UpdateSupportReportStatusResponse) ProtoMessage() {}
 
 func (x *UpdateSupportReportStatusResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_relay_server_v1_server_proto_msgTypes[792]
+	mi := &file_relay_server_v1_server_proto_msgTypes[794]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -52945,7 +53026,7 @@ func (x *UpdateSupportReportStatusResponse) ProtoReflect() protoreflect.Message 
 
 // Deprecated: Use UpdateSupportReportStatusResponse.ProtoReflect.Descriptor instead.
 func (*UpdateSupportReportStatusResponse) Descriptor() ([]byte, []int) {
-	return file_relay_server_v1_server_proto_rawDescGZIP(), []int{792}
+	return file_relay_server_v1_server_proto_rawDescGZIP(), []int{794}
 }
 
 func (x *UpdateSupportReportStatusResponse) GetReport() *SupportReport {
@@ -52968,7 +53049,7 @@ type AdminListSupportReportsRequest struct {
 
 func (x *AdminListSupportReportsRequest) Reset() {
 	*x = AdminListSupportReportsRequest{}
-	mi := &file_relay_server_v1_server_proto_msgTypes[793]
+	mi := &file_relay_server_v1_server_proto_msgTypes[795]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -52980,7 +53061,7 @@ func (x *AdminListSupportReportsRequest) String() string {
 func (*AdminListSupportReportsRequest) ProtoMessage() {}
 
 func (x *AdminListSupportReportsRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_relay_server_v1_server_proto_msgTypes[793]
+	mi := &file_relay_server_v1_server_proto_msgTypes[795]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -52993,7 +53074,7 @@ func (x *AdminListSupportReportsRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use AdminListSupportReportsRequest.ProtoReflect.Descriptor instead.
 func (*AdminListSupportReportsRequest) Descriptor() ([]byte, []int) {
-	return file_relay_server_v1_server_proto_rawDescGZIP(), []int{793}
+	return file_relay_server_v1_server_proto_rawDescGZIP(), []int{795}
 }
 
 func (x *AdminListSupportReportsRequest) GetStatus() string {
@@ -53026,7 +53107,7 @@ type AdminListSupportReportsResponse struct {
 
 func (x *AdminListSupportReportsResponse) Reset() {
 	*x = AdminListSupportReportsResponse{}
-	mi := &file_relay_server_v1_server_proto_msgTypes[794]
+	mi := &file_relay_server_v1_server_proto_msgTypes[796]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -53038,7 +53119,7 @@ func (x *AdminListSupportReportsResponse) String() string {
 func (*AdminListSupportReportsResponse) ProtoMessage() {}
 
 func (x *AdminListSupportReportsResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_relay_server_v1_server_proto_msgTypes[794]
+	mi := &file_relay_server_v1_server_proto_msgTypes[796]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -53051,7 +53132,7 @@ func (x *AdminListSupportReportsResponse) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use AdminListSupportReportsResponse.ProtoReflect.Descriptor instead.
 func (*AdminListSupportReportsResponse) Descriptor() ([]byte, []int) {
-	return file_relay_server_v1_server_proto_rawDescGZIP(), []int{794}
+	return file_relay_server_v1_server_proto_rawDescGZIP(), []int{796}
 }
 
 func (x *AdminListSupportReportsResponse) GetReports() []*SupportReport {
@@ -53070,7 +53151,7 @@ type AdminGetSupportReportRequest struct {
 
 func (x *AdminGetSupportReportRequest) Reset() {
 	*x = AdminGetSupportReportRequest{}
-	mi := &file_relay_server_v1_server_proto_msgTypes[795]
+	mi := &file_relay_server_v1_server_proto_msgTypes[797]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -53082,7 +53163,7 @@ func (x *AdminGetSupportReportRequest) String() string {
 func (*AdminGetSupportReportRequest) ProtoMessage() {}
 
 func (x *AdminGetSupportReportRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_relay_server_v1_server_proto_msgTypes[795]
+	mi := &file_relay_server_v1_server_proto_msgTypes[797]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -53095,7 +53176,7 @@ func (x *AdminGetSupportReportRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use AdminGetSupportReportRequest.ProtoReflect.Descriptor instead.
 func (*AdminGetSupportReportRequest) Descriptor() ([]byte, []int) {
-	return file_relay_server_v1_server_proto_rawDescGZIP(), []int{795}
+	return file_relay_server_v1_server_proto_rawDescGZIP(), []int{797}
 }
 
 func (x *AdminGetSupportReportRequest) GetId() string {
@@ -53115,7 +53196,7 @@ type AdminGetSupportReportResponse struct {
 
 func (x *AdminGetSupportReportResponse) Reset() {
 	*x = AdminGetSupportReportResponse{}
-	mi := &file_relay_server_v1_server_proto_msgTypes[796]
+	mi := &file_relay_server_v1_server_proto_msgTypes[798]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -53127,7 +53208,7 @@ func (x *AdminGetSupportReportResponse) String() string {
 func (*AdminGetSupportReportResponse) ProtoMessage() {}
 
 func (x *AdminGetSupportReportResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_relay_server_v1_server_proto_msgTypes[796]
+	mi := &file_relay_server_v1_server_proto_msgTypes[798]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -53140,7 +53221,7 @@ func (x *AdminGetSupportReportResponse) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use AdminGetSupportReportResponse.ProtoReflect.Descriptor instead.
 func (*AdminGetSupportReportResponse) Descriptor() ([]byte, []int) {
-	return file_relay_server_v1_server_proto_rawDescGZIP(), []int{796}
+	return file_relay_server_v1_server_proto_rawDescGZIP(), []int{798}
 }
 
 func (x *AdminGetSupportReportResponse) GetReport() *SupportReport {
@@ -53169,7 +53250,7 @@ type AdminAddSupportReportCommentRequest struct {
 
 func (x *AdminAddSupportReportCommentRequest) Reset() {
 	*x = AdminAddSupportReportCommentRequest{}
-	mi := &file_relay_server_v1_server_proto_msgTypes[797]
+	mi := &file_relay_server_v1_server_proto_msgTypes[799]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -53181,7 +53262,7 @@ func (x *AdminAddSupportReportCommentRequest) String() string {
 func (*AdminAddSupportReportCommentRequest) ProtoMessage() {}
 
 func (x *AdminAddSupportReportCommentRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_relay_server_v1_server_proto_msgTypes[797]
+	mi := &file_relay_server_v1_server_proto_msgTypes[799]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -53194,7 +53275,7 @@ func (x *AdminAddSupportReportCommentRequest) ProtoReflect() protoreflect.Messag
 
 // Deprecated: Use AdminAddSupportReportCommentRequest.ProtoReflect.Descriptor instead.
 func (*AdminAddSupportReportCommentRequest) Descriptor() ([]byte, []int) {
-	return file_relay_server_v1_server_proto_rawDescGZIP(), []int{797}
+	return file_relay_server_v1_server_proto_rawDescGZIP(), []int{799}
 }
 
 func (x *AdminAddSupportReportCommentRequest) GetId() string {
@@ -53227,7 +53308,7 @@ type AdminAddSupportReportCommentResponse struct {
 
 func (x *AdminAddSupportReportCommentResponse) Reset() {
 	*x = AdminAddSupportReportCommentResponse{}
-	mi := &file_relay_server_v1_server_proto_msgTypes[798]
+	mi := &file_relay_server_v1_server_proto_msgTypes[800]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -53239,7 +53320,7 @@ func (x *AdminAddSupportReportCommentResponse) String() string {
 func (*AdminAddSupportReportCommentResponse) ProtoMessage() {}
 
 func (x *AdminAddSupportReportCommentResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_relay_server_v1_server_proto_msgTypes[798]
+	mi := &file_relay_server_v1_server_proto_msgTypes[800]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -53252,7 +53333,7 @@ func (x *AdminAddSupportReportCommentResponse) ProtoReflect() protoreflect.Messa
 
 // Deprecated: Use AdminAddSupportReportCommentResponse.ProtoReflect.Descriptor instead.
 func (*AdminAddSupportReportCommentResponse) Descriptor() ([]byte, []int) {
-	return file_relay_server_v1_server_proto_rawDescGZIP(), []int{798}
+	return file_relay_server_v1_server_proto_rawDescGZIP(), []int{800}
 }
 
 func (x *AdminAddSupportReportCommentResponse) GetComment() *SupportReportComment {
@@ -53272,7 +53353,7 @@ type AdminGetSupportAttachmentRequest struct {
 
 func (x *AdminGetSupportAttachmentRequest) Reset() {
 	*x = AdminGetSupportAttachmentRequest{}
-	mi := &file_relay_server_v1_server_proto_msgTypes[799]
+	mi := &file_relay_server_v1_server_proto_msgTypes[801]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -53284,7 +53365,7 @@ func (x *AdminGetSupportAttachmentRequest) String() string {
 func (*AdminGetSupportAttachmentRequest) ProtoMessage() {}
 
 func (x *AdminGetSupportAttachmentRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_relay_server_v1_server_proto_msgTypes[799]
+	mi := &file_relay_server_v1_server_proto_msgTypes[801]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -53297,7 +53378,7 @@ func (x *AdminGetSupportAttachmentRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use AdminGetSupportAttachmentRequest.ProtoReflect.Descriptor instead.
 func (*AdminGetSupportAttachmentRequest) Descriptor() ([]byte, []int) {
-	return file_relay_server_v1_server_proto_rawDescGZIP(), []int{799}
+	return file_relay_server_v1_server_proto_rawDescGZIP(), []int{801}
 }
 
 func (x *AdminGetSupportAttachmentRequest) GetReportId() string {
@@ -53324,7 +53405,7 @@ type AdminGetSupportAttachmentResponse struct {
 
 func (x *AdminGetSupportAttachmentResponse) Reset() {
 	*x = AdminGetSupportAttachmentResponse{}
-	mi := &file_relay_server_v1_server_proto_msgTypes[800]
+	mi := &file_relay_server_v1_server_proto_msgTypes[802]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -53336,7 +53417,7 @@ func (x *AdminGetSupportAttachmentResponse) String() string {
 func (*AdminGetSupportAttachmentResponse) ProtoMessage() {}
 
 func (x *AdminGetSupportAttachmentResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_relay_server_v1_server_proto_msgTypes[800]
+	mi := &file_relay_server_v1_server_proto_msgTypes[802]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -53349,7 +53430,7 @@ func (x *AdminGetSupportAttachmentResponse) ProtoReflect() protoreflect.Message 
 
 // Deprecated: Use AdminGetSupportAttachmentResponse.ProtoReflect.Descriptor instead.
 func (*AdminGetSupportAttachmentResponse) Descriptor() ([]byte, []int) {
-	return file_relay_server_v1_server_proto_rawDescGZIP(), []int{800}
+	return file_relay_server_v1_server_proto_rawDescGZIP(), []int{802}
 }
 
 func (x *AdminGetSupportAttachmentResponse) GetAttachment() *SupportAttachment {
@@ -53376,7 +53457,7 @@ type AdminUpdateSupportReportStatusRequest struct {
 
 func (x *AdminUpdateSupportReportStatusRequest) Reset() {
 	*x = AdminUpdateSupportReportStatusRequest{}
-	mi := &file_relay_server_v1_server_proto_msgTypes[801]
+	mi := &file_relay_server_v1_server_proto_msgTypes[803]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -53388,7 +53469,7 @@ func (x *AdminUpdateSupportReportStatusRequest) String() string {
 func (*AdminUpdateSupportReportStatusRequest) ProtoMessage() {}
 
 func (x *AdminUpdateSupportReportStatusRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_relay_server_v1_server_proto_msgTypes[801]
+	mi := &file_relay_server_v1_server_proto_msgTypes[803]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -53401,7 +53482,7 @@ func (x *AdminUpdateSupportReportStatusRequest) ProtoReflect() protoreflect.Mess
 
 // Deprecated: Use AdminUpdateSupportReportStatusRequest.ProtoReflect.Descriptor instead.
 func (*AdminUpdateSupportReportStatusRequest) Descriptor() ([]byte, []int) {
-	return file_relay_server_v1_server_proto_rawDescGZIP(), []int{801}
+	return file_relay_server_v1_server_proto_rawDescGZIP(), []int{803}
 }
 
 func (x *AdminUpdateSupportReportStatusRequest) GetId() string {
@@ -53427,7 +53508,7 @@ type AdminUpdateSupportReportStatusResponse struct {
 
 func (x *AdminUpdateSupportReportStatusResponse) Reset() {
 	*x = AdminUpdateSupportReportStatusResponse{}
-	mi := &file_relay_server_v1_server_proto_msgTypes[802]
+	mi := &file_relay_server_v1_server_proto_msgTypes[804]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -53439,7 +53520,7 @@ func (x *AdminUpdateSupportReportStatusResponse) String() string {
 func (*AdminUpdateSupportReportStatusResponse) ProtoMessage() {}
 
 func (x *AdminUpdateSupportReportStatusResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_relay_server_v1_server_proto_msgTypes[802]
+	mi := &file_relay_server_v1_server_proto_msgTypes[804]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -53452,7 +53533,7 @@ func (x *AdminUpdateSupportReportStatusResponse) ProtoReflect() protoreflect.Mes
 
 // Deprecated: Use AdminUpdateSupportReportStatusResponse.ProtoReflect.Descriptor instead.
 func (*AdminUpdateSupportReportStatusResponse) Descriptor() ([]byte, []int) {
-	return file_relay_server_v1_server_proto_rawDescGZIP(), []int{802}
+	return file_relay_server_v1_server_proto_rawDescGZIP(), []int{804}
 }
 
 func (x *AdminUpdateSupportReportStatusResponse) GetReport() *SupportReport {
@@ -53474,7 +53555,7 @@ type SupportComponent struct {
 
 func (x *SupportComponent) Reset() {
 	*x = SupportComponent{}
-	mi := &file_relay_server_v1_server_proto_msgTypes[803]
+	mi := &file_relay_server_v1_server_proto_msgTypes[805]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -53486,7 +53567,7 @@ func (x *SupportComponent) String() string {
 func (*SupportComponent) ProtoMessage() {}
 
 func (x *SupportComponent) ProtoReflect() protoreflect.Message {
-	mi := &file_relay_server_v1_server_proto_msgTypes[803]
+	mi := &file_relay_server_v1_server_proto_msgTypes[805]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -53499,7 +53580,7 @@ func (x *SupportComponent) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use SupportComponent.ProtoReflect.Descriptor instead.
 func (*SupportComponent) Descriptor() ([]byte, []int) {
-	return file_relay_server_v1_server_proto_rawDescGZIP(), []int{803}
+	return file_relay_server_v1_server_proto_rawDescGZIP(), []int{805}
 }
 
 func (x *SupportComponent) GetKey() string {
@@ -53535,7 +53616,7 @@ type SupportInternalComponent struct {
 
 func (x *SupportInternalComponent) Reset() {
 	*x = SupportInternalComponent{}
-	mi := &file_relay_server_v1_server_proto_msgTypes[804]
+	mi := &file_relay_server_v1_server_proto_msgTypes[806]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -53547,7 +53628,7 @@ func (x *SupportInternalComponent) String() string {
 func (*SupportInternalComponent) ProtoMessage() {}
 
 func (x *SupportInternalComponent) ProtoReflect() protoreflect.Message {
-	mi := &file_relay_server_v1_server_proto_msgTypes[804]
+	mi := &file_relay_server_v1_server_proto_msgTypes[806]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -53560,7 +53641,7 @@ func (x *SupportInternalComponent) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use SupportInternalComponent.ProtoReflect.Descriptor instead.
 func (*SupportInternalComponent) Descriptor() ([]byte, []int) {
-	return file_relay_server_v1_server_proto_rawDescGZIP(), []int{804}
+	return file_relay_server_v1_server_proto_rawDescGZIP(), []int{806}
 }
 
 func (x *SupportInternalComponent) GetKey() string {
@@ -53592,7 +53673,7 @@ type AdminListSupportComponentsRequest struct {
 
 func (x *AdminListSupportComponentsRequest) Reset() {
 	*x = AdminListSupportComponentsRequest{}
-	mi := &file_relay_server_v1_server_proto_msgTypes[805]
+	mi := &file_relay_server_v1_server_proto_msgTypes[807]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -53604,7 +53685,7 @@ func (x *AdminListSupportComponentsRequest) String() string {
 func (*AdminListSupportComponentsRequest) ProtoMessage() {}
 
 func (x *AdminListSupportComponentsRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_relay_server_v1_server_proto_msgTypes[805]
+	mi := &file_relay_server_v1_server_proto_msgTypes[807]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -53617,7 +53698,7 @@ func (x *AdminListSupportComponentsRequest) ProtoReflect() protoreflect.Message 
 
 // Deprecated: Use AdminListSupportComponentsRequest.ProtoReflect.Descriptor instead.
 func (*AdminListSupportComponentsRequest) Descriptor() ([]byte, []int) {
-	return file_relay_server_v1_server_proto_rawDescGZIP(), []int{805}
+	return file_relay_server_v1_server_proto_rawDescGZIP(), []int{807}
 }
 
 type AdminListSupportComponentsResponse struct {
@@ -53632,7 +53713,7 @@ type AdminListSupportComponentsResponse struct {
 
 func (x *AdminListSupportComponentsResponse) Reset() {
 	*x = AdminListSupportComponentsResponse{}
-	mi := &file_relay_server_v1_server_proto_msgTypes[806]
+	mi := &file_relay_server_v1_server_proto_msgTypes[808]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -53644,7 +53725,7 @@ func (x *AdminListSupportComponentsResponse) String() string {
 func (*AdminListSupportComponentsResponse) ProtoMessage() {}
 
 func (x *AdminListSupportComponentsResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_relay_server_v1_server_proto_msgTypes[806]
+	mi := &file_relay_server_v1_server_proto_msgTypes[808]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -53657,7 +53738,7 @@ func (x *AdminListSupportComponentsResponse) ProtoReflect() protoreflect.Message
 
 // Deprecated: Use AdminListSupportComponentsResponse.ProtoReflect.Descriptor instead.
 func (*AdminListSupportComponentsResponse) Descriptor() ([]byte, []int) {
-	return file_relay_server_v1_server_proto_rawDescGZIP(), []int{806}
+	return file_relay_server_v1_server_proto_rawDescGZIP(), []int{808}
 }
 
 func (x *AdminListSupportComponentsResponse) GetComponents() []*SupportComponent {
@@ -53692,7 +53773,7 @@ type AdminFileSupportReportIssueRequest struct {
 
 func (x *AdminFileSupportReportIssueRequest) Reset() {
 	*x = AdminFileSupportReportIssueRequest{}
-	mi := &file_relay_server_v1_server_proto_msgTypes[807]
+	mi := &file_relay_server_v1_server_proto_msgTypes[809]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -53704,7 +53785,7 @@ func (x *AdminFileSupportReportIssueRequest) String() string {
 func (*AdminFileSupportReportIssueRequest) ProtoMessage() {}
 
 func (x *AdminFileSupportReportIssueRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_relay_server_v1_server_proto_msgTypes[807]
+	mi := &file_relay_server_v1_server_proto_msgTypes[809]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -53717,7 +53798,7 @@ func (x *AdminFileSupportReportIssueRequest) ProtoReflect() protoreflect.Message
 
 // Deprecated: Use AdminFileSupportReportIssueRequest.ProtoReflect.Descriptor instead.
 func (*AdminFileSupportReportIssueRequest) Descriptor() ([]byte, []int) {
-	return file_relay_server_v1_server_proto_rawDescGZIP(), []int{807}
+	return file_relay_server_v1_server_proto_rawDescGZIP(), []int{809}
 }
 
 func (x *AdminFileSupportReportIssueRequest) GetId() string {
@@ -53743,7 +53824,7 @@ type AdminFileSupportReportIssueResponse struct {
 
 func (x *AdminFileSupportReportIssueResponse) Reset() {
 	*x = AdminFileSupportReportIssueResponse{}
-	mi := &file_relay_server_v1_server_proto_msgTypes[808]
+	mi := &file_relay_server_v1_server_proto_msgTypes[810]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -53755,7 +53836,7 @@ func (x *AdminFileSupportReportIssueResponse) String() string {
 func (*AdminFileSupportReportIssueResponse) ProtoMessage() {}
 
 func (x *AdminFileSupportReportIssueResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_relay_server_v1_server_proto_msgTypes[808]
+	mi := &file_relay_server_v1_server_proto_msgTypes[810]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -53768,7 +53849,7 @@ func (x *AdminFileSupportReportIssueResponse) ProtoReflect() protoreflect.Messag
 
 // Deprecated: Use AdminFileSupportReportIssueResponse.ProtoReflect.Descriptor instead.
 func (*AdminFileSupportReportIssueResponse) Descriptor() ([]byte, []int) {
-	return file_relay_server_v1_server_proto_rawDescGZIP(), []int{808}
+	return file_relay_server_v1_server_proto_rawDescGZIP(), []int{810}
 }
 
 func (x *AdminFileSupportReportIssueResponse) GetReport() *SupportReport {
@@ -53830,7 +53911,7 @@ type OrgSSOConnection struct {
 
 func (x *OrgSSOConnection) Reset() {
 	*x = OrgSSOConnection{}
-	mi := &file_relay_server_v1_server_proto_msgTypes[809]
+	mi := &file_relay_server_v1_server_proto_msgTypes[811]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -53842,7 +53923,7 @@ func (x *OrgSSOConnection) String() string {
 func (*OrgSSOConnection) ProtoMessage() {}
 
 func (x *OrgSSOConnection) ProtoReflect() protoreflect.Message {
-	mi := &file_relay_server_v1_server_proto_msgTypes[809]
+	mi := &file_relay_server_v1_server_proto_msgTypes[811]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -53855,7 +53936,7 @@ func (x *OrgSSOConnection) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use OrgSSOConnection.ProtoReflect.Descriptor instead.
 func (*OrgSSOConnection) Descriptor() ([]byte, []int) {
-	return file_relay_server_v1_server_proto_rawDescGZIP(), []int{809}
+	return file_relay_server_v1_server_proto_rawDescGZIP(), []int{811}
 }
 
 func (x *OrgSSOConnection) GetId() string {
@@ -54015,7 +54096,7 @@ type SSOClientKey struct {
 
 func (x *SSOClientKey) Reset() {
 	*x = SSOClientKey{}
-	mi := &file_relay_server_v1_server_proto_msgTypes[810]
+	mi := &file_relay_server_v1_server_proto_msgTypes[812]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -54027,7 +54108,7 @@ func (x *SSOClientKey) String() string {
 func (*SSOClientKey) ProtoMessage() {}
 
 func (x *SSOClientKey) ProtoReflect() protoreflect.Message {
-	mi := &file_relay_server_v1_server_proto_msgTypes[810]
+	mi := &file_relay_server_v1_server_proto_msgTypes[812]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -54040,7 +54121,7 @@ func (x *SSOClientKey) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use SSOClientKey.ProtoReflect.Descriptor instead.
 func (*SSOClientKey) Descriptor() ([]byte, []int) {
-	return file_relay_server_v1_server_proto_rawDescGZIP(), []int{810}
+	return file_relay_server_v1_server_proto_rawDescGZIP(), []int{812}
 }
 
 func (x *SSOClientKey) GetId() string {
@@ -54135,7 +54216,7 @@ type SSOSAMLSettings struct {
 
 func (x *SSOSAMLSettings) Reset() {
 	*x = SSOSAMLSettings{}
-	mi := &file_relay_server_v1_server_proto_msgTypes[811]
+	mi := &file_relay_server_v1_server_proto_msgTypes[813]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -54147,7 +54228,7 @@ func (x *SSOSAMLSettings) String() string {
 func (*SSOSAMLSettings) ProtoMessage() {}
 
 func (x *SSOSAMLSettings) ProtoReflect() protoreflect.Message {
-	mi := &file_relay_server_v1_server_proto_msgTypes[811]
+	mi := &file_relay_server_v1_server_proto_msgTypes[813]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -54160,7 +54241,7 @@ func (x *SSOSAMLSettings) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use SSOSAMLSettings.ProtoReflect.Descriptor instead.
 func (*SSOSAMLSettings) Descriptor() ([]byte, []int) {
-	return file_relay_server_v1_server_proto_rawDescGZIP(), []int{811}
+	return file_relay_server_v1_server_proto_rawDescGZIP(), []int{813}
 }
 
 func (x *SSOSAMLSettings) GetSpEntityId() string {
@@ -54291,7 +54372,7 @@ type SSOSAMLSPKey struct {
 
 func (x *SSOSAMLSPKey) Reset() {
 	*x = SSOSAMLSPKey{}
-	mi := &file_relay_server_v1_server_proto_msgTypes[812]
+	mi := &file_relay_server_v1_server_proto_msgTypes[814]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -54303,7 +54384,7 @@ func (x *SSOSAMLSPKey) String() string {
 func (*SSOSAMLSPKey) ProtoMessage() {}
 
 func (x *SSOSAMLSPKey) ProtoReflect() protoreflect.Message {
-	mi := &file_relay_server_v1_server_proto_msgTypes[812]
+	mi := &file_relay_server_v1_server_proto_msgTypes[814]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -54316,7 +54397,7 @@ func (x *SSOSAMLSPKey) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use SSOSAMLSPKey.ProtoReflect.Descriptor instead.
 func (*SSOSAMLSPKey) Descriptor() ([]byte, []int) {
-	return file_relay_server_v1_server_proto_rawDescGZIP(), []int{812}
+	return file_relay_server_v1_server_proto_rawDescGZIP(), []int{814}
 }
 
 func (x *SSOSAMLSPKey) GetId() string {
@@ -54374,7 +54455,7 @@ type SSOSAMLCertificate struct {
 
 func (x *SSOSAMLCertificate) Reset() {
 	*x = SSOSAMLCertificate{}
-	mi := &file_relay_server_v1_server_proto_msgTypes[813]
+	mi := &file_relay_server_v1_server_proto_msgTypes[815]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -54386,7 +54467,7 @@ func (x *SSOSAMLCertificate) String() string {
 func (*SSOSAMLCertificate) ProtoMessage() {}
 
 func (x *SSOSAMLCertificate) ProtoReflect() protoreflect.Message {
-	mi := &file_relay_server_v1_server_proto_msgTypes[813]
+	mi := &file_relay_server_v1_server_proto_msgTypes[815]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -54399,7 +54480,7 @@ func (x *SSOSAMLCertificate) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use SSOSAMLCertificate.ProtoReflect.Descriptor instead.
 func (*SSOSAMLCertificate) Descriptor() ([]byte, []int) {
-	return file_relay_server_v1_server_proto_rawDescGZIP(), []int{813}
+	return file_relay_server_v1_server_proto_rawDescGZIP(), []int{815}
 }
 
 func (x *SSOSAMLCertificate) GetPem() string {
@@ -54464,7 +54545,7 @@ type SSOSAMLInput struct {
 
 func (x *SSOSAMLInput) Reset() {
 	*x = SSOSAMLInput{}
-	mi := &file_relay_server_v1_server_proto_msgTypes[814]
+	mi := &file_relay_server_v1_server_proto_msgTypes[816]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -54476,7 +54557,7 @@ func (x *SSOSAMLInput) String() string {
 func (*SSOSAMLInput) ProtoMessage() {}
 
 func (x *SSOSAMLInput) ProtoReflect() protoreflect.Message {
-	mi := &file_relay_server_v1_server_proto_msgTypes[814]
+	mi := &file_relay_server_v1_server_proto_msgTypes[816]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -54489,7 +54570,7 @@ func (x *SSOSAMLInput) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use SSOSAMLInput.ProtoReflect.Descriptor instead.
 func (*SSOSAMLInput) Descriptor() ([]byte, []int) {
-	return file_relay_server_v1_server_proto_rawDescGZIP(), []int{814}
+	return file_relay_server_v1_server_proto_rawDescGZIP(), []int{816}
 }
 
 func (x *SSOSAMLInput) GetIdp() isSSOSAMLInput_Idp {
@@ -54606,7 +54687,7 @@ type SSOSAMLManualIdP struct {
 
 func (x *SSOSAMLManualIdP) Reset() {
 	*x = SSOSAMLManualIdP{}
-	mi := &file_relay_server_v1_server_proto_msgTypes[815]
+	mi := &file_relay_server_v1_server_proto_msgTypes[817]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -54618,7 +54699,7 @@ func (x *SSOSAMLManualIdP) String() string {
 func (*SSOSAMLManualIdP) ProtoMessage() {}
 
 func (x *SSOSAMLManualIdP) ProtoReflect() protoreflect.Message {
-	mi := &file_relay_server_v1_server_proto_msgTypes[815]
+	mi := &file_relay_server_v1_server_proto_msgTypes[817]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -54631,7 +54712,7 @@ func (x *SSOSAMLManualIdP) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use SSOSAMLManualIdP.ProtoReflect.Descriptor instead.
 func (*SSOSAMLManualIdP) Descriptor() ([]byte, []int) {
-	return file_relay_server_v1_server_proto_rawDescGZIP(), []int{815}
+	return file_relay_server_v1_server_proto_rawDescGZIP(), []int{817}
 }
 
 func (x *SSOSAMLManualIdP) GetEntityId() string {
@@ -54697,7 +54778,7 @@ type SSOAttributeMapping struct {
 
 func (x *SSOAttributeMapping) Reset() {
 	*x = SSOAttributeMapping{}
-	mi := &file_relay_server_v1_server_proto_msgTypes[816]
+	mi := &file_relay_server_v1_server_proto_msgTypes[818]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -54709,7 +54790,7 @@ func (x *SSOAttributeMapping) String() string {
 func (*SSOAttributeMapping) ProtoMessage() {}
 
 func (x *SSOAttributeMapping) ProtoReflect() protoreflect.Message {
-	mi := &file_relay_server_v1_server_proto_msgTypes[816]
+	mi := &file_relay_server_v1_server_proto_msgTypes[818]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -54722,7 +54803,7 @@ func (x *SSOAttributeMapping) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use SSOAttributeMapping.ProtoReflect.Descriptor instead.
 func (*SSOAttributeMapping) Descriptor() ([]byte, []int) {
-	return file_relay_server_v1_server_proto_rawDescGZIP(), []int{816}
+	return file_relay_server_v1_server_proto_rawDescGZIP(), []int{818}
 }
 
 func (x *SSOAttributeMapping) GetEmail() string {
@@ -54776,7 +54857,7 @@ type SSOClientSecret struct {
 
 func (x *SSOClientSecret) Reset() {
 	*x = SSOClientSecret{}
-	mi := &file_relay_server_v1_server_proto_msgTypes[817]
+	mi := &file_relay_server_v1_server_proto_msgTypes[819]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -54788,7 +54869,7 @@ func (x *SSOClientSecret) String() string {
 func (*SSOClientSecret) ProtoMessage() {}
 
 func (x *SSOClientSecret) ProtoReflect() protoreflect.Message {
-	mi := &file_relay_server_v1_server_proto_msgTypes[817]
+	mi := &file_relay_server_v1_server_proto_msgTypes[819]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -54801,7 +54882,7 @@ func (x *SSOClientSecret) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use SSOClientSecret.ProtoReflect.Descriptor instead.
 func (*SSOClientSecret) Descriptor() ([]byte, []int) {
-	return file_relay_server_v1_server_proto_rawDescGZIP(), []int{817}
+	return file_relay_server_v1_server_proto_rawDescGZIP(), []int{819}
 }
 
 func (x *SSOClientSecret) GetId() string {
@@ -54854,7 +54935,7 @@ type SSOProviderPreset struct {
 
 func (x *SSOProviderPreset) Reset() {
 	*x = SSOProviderPreset{}
-	mi := &file_relay_server_v1_server_proto_msgTypes[818]
+	mi := &file_relay_server_v1_server_proto_msgTypes[820]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -54866,7 +54947,7 @@ func (x *SSOProviderPreset) String() string {
 func (*SSOProviderPreset) ProtoMessage() {}
 
 func (x *SSOProviderPreset) ProtoReflect() protoreflect.Message {
-	mi := &file_relay_server_v1_server_proto_msgTypes[818]
+	mi := &file_relay_server_v1_server_proto_msgTypes[820]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -54879,7 +54960,7 @@ func (x *SSOProviderPreset) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use SSOProviderPreset.ProtoReflect.Descriptor instead.
 func (*SSOProviderPreset) Descriptor() ([]byte, []int) {
-	return file_relay_server_v1_server_proto_rawDescGZIP(), []int{818}
+	return file_relay_server_v1_server_proto_rawDescGZIP(), []int{820}
 }
 
 func (x *SSOProviderPreset) GetId() string {
@@ -54932,7 +55013,7 @@ type ListSSOProviderPresetsRequest struct {
 
 func (x *ListSSOProviderPresetsRequest) Reset() {
 	*x = ListSSOProviderPresetsRequest{}
-	mi := &file_relay_server_v1_server_proto_msgTypes[819]
+	mi := &file_relay_server_v1_server_proto_msgTypes[821]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -54944,7 +55025,7 @@ func (x *ListSSOProviderPresetsRequest) String() string {
 func (*ListSSOProviderPresetsRequest) ProtoMessage() {}
 
 func (x *ListSSOProviderPresetsRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_relay_server_v1_server_proto_msgTypes[819]
+	mi := &file_relay_server_v1_server_proto_msgTypes[821]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -54957,7 +55038,7 @@ func (x *ListSSOProviderPresetsRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use ListSSOProviderPresetsRequest.ProtoReflect.Descriptor instead.
 func (*ListSSOProviderPresetsRequest) Descriptor() ([]byte, []int) {
-	return file_relay_server_v1_server_proto_rawDescGZIP(), []int{819}
+	return file_relay_server_v1_server_proto_rawDescGZIP(), []int{821}
 }
 
 type ListSSOProviderPresetsResponse struct {
@@ -54969,7 +55050,7 @@ type ListSSOProviderPresetsResponse struct {
 
 func (x *ListSSOProviderPresetsResponse) Reset() {
 	*x = ListSSOProviderPresetsResponse{}
-	mi := &file_relay_server_v1_server_proto_msgTypes[820]
+	mi := &file_relay_server_v1_server_proto_msgTypes[822]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -54981,7 +55062,7 @@ func (x *ListSSOProviderPresetsResponse) String() string {
 func (*ListSSOProviderPresetsResponse) ProtoMessage() {}
 
 func (x *ListSSOProviderPresetsResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_relay_server_v1_server_proto_msgTypes[820]
+	mi := &file_relay_server_v1_server_proto_msgTypes[822]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -54994,7 +55075,7 @@ func (x *ListSSOProviderPresetsResponse) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use ListSSOProviderPresetsResponse.ProtoReflect.Descriptor instead.
 func (*ListSSOProviderPresetsResponse) Descriptor() ([]byte, []int) {
-	return file_relay_server_v1_server_proto_rawDescGZIP(), []int{820}
+	return file_relay_server_v1_server_proto_rawDescGZIP(), []int{822}
 }
 
 func (x *ListSSOProviderPresetsResponse) GetPresets() []*SSOProviderPreset {
@@ -55021,7 +55102,7 @@ type SSOJITSettings struct {
 
 func (x *SSOJITSettings) Reset() {
 	*x = SSOJITSettings{}
-	mi := &file_relay_server_v1_server_proto_msgTypes[821]
+	mi := &file_relay_server_v1_server_proto_msgTypes[823]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -55033,7 +55114,7 @@ func (x *SSOJITSettings) String() string {
 func (*SSOJITSettings) ProtoMessage() {}
 
 func (x *SSOJITSettings) ProtoReflect() protoreflect.Message {
-	mi := &file_relay_server_v1_server_proto_msgTypes[821]
+	mi := &file_relay_server_v1_server_proto_msgTypes[823]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -55046,7 +55127,7 @@ func (x *SSOJITSettings) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use SSOJITSettings.ProtoReflect.Descriptor instead.
 func (*SSOJITSettings) Descriptor() ([]byte, []int) {
-	return file_relay_server_v1_server_proto_rawDescGZIP(), []int{821}
+	return file_relay_server_v1_server_proto_rawDescGZIP(), []int{823}
 }
 
 func (x *SSOJITSettings) GetAllowed() bool {
@@ -55080,7 +55161,7 @@ type SSOJITWorkspace struct {
 
 func (x *SSOJITWorkspace) Reset() {
 	*x = SSOJITWorkspace{}
-	mi := &file_relay_server_v1_server_proto_msgTypes[822]
+	mi := &file_relay_server_v1_server_proto_msgTypes[824]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -55092,7 +55173,7 @@ func (x *SSOJITWorkspace) String() string {
 func (*SSOJITWorkspace) ProtoMessage() {}
 
 func (x *SSOJITWorkspace) ProtoReflect() protoreflect.Message {
-	mi := &file_relay_server_v1_server_proto_msgTypes[822]
+	mi := &file_relay_server_v1_server_proto_msgTypes[824]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -55105,7 +55186,7 @@ func (x *SSOJITWorkspace) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use SSOJITWorkspace.ProtoReflect.Descriptor instead.
 func (*SSOJITWorkspace) Descriptor() ([]byte, []int) {
-	return file_relay_server_v1_server_proto_rawDescGZIP(), []int{822}
+	return file_relay_server_v1_server_proto_rawDescGZIP(), []int{824}
 }
 
 func (x *SSOJITWorkspace) GetWorkspaceId() string {
@@ -55132,7 +55213,7 @@ type GetOrgSSOConnectionRequest struct {
 
 func (x *GetOrgSSOConnectionRequest) Reset() {
 	*x = GetOrgSSOConnectionRequest{}
-	mi := &file_relay_server_v1_server_proto_msgTypes[823]
+	mi := &file_relay_server_v1_server_proto_msgTypes[825]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -55144,7 +55225,7 @@ func (x *GetOrgSSOConnectionRequest) String() string {
 func (*GetOrgSSOConnectionRequest) ProtoMessage() {}
 
 func (x *GetOrgSSOConnectionRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_relay_server_v1_server_proto_msgTypes[823]
+	mi := &file_relay_server_v1_server_proto_msgTypes[825]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -55157,7 +55238,7 @@ func (x *GetOrgSSOConnectionRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use GetOrgSSOConnectionRequest.ProtoReflect.Descriptor instead.
 func (*GetOrgSSOConnectionRequest) Descriptor() ([]byte, []int) {
-	return file_relay_server_v1_server_proto_rawDescGZIP(), []int{823}
+	return file_relay_server_v1_server_proto_rawDescGZIP(), []int{825}
 }
 
 func (x *GetOrgSSOConnectionRequest) GetId() string {
@@ -55177,7 +55258,7 @@ type GetOrgSSOConnectionResponse struct {
 
 func (x *GetOrgSSOConnectionResponse) Reset() {
 	*x = GetOrgSSOConnectionResponse{}
-	mi := &file_relay_server_v1_server_proto_msgTypes[824]
+	mi := &file_relay_server_v1_server_proto_msgTypes[826]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -55189,7 +55270,7 @@ func (x *GetOrgSSOConnectionResponse) String() string {
 func (*GetOrgSSOConnectionResponse) ProtoMessage() {}
 
 func (x *GetOrgSSOConnectionResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_relay_server_v1_server_proto_msgTypes[824]
+	mi := &file_relay_server_v1_server_proto_msgTypes[826]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -55202,7 +55283,7 @@ func (x *GetOrgSSOConnectionResponse) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use GetOrgSSOConnectionResponse.ProtoReflect.Descriptor instead.
 func (*GetOrgSSOConnectionResponse) Descriptor() ([]byte, []int) {
-	return file_relay_server_v1_server_proto_rawDescGZIP(), []int{824}
+	return file_relay_server_v1_server_proto_rawDescGZIP(), []int{826}
 }
 
 func (x *GetOrgSSOConnectionResponse) GetConnection() *OrgSSOConnection {
@@ -55269,7 +55350,7 @@ type UpsertOrgSSOConnectionRequest struct {
 
 func (x *UpsertOrgSSOConnectionRequest) Reset() {
 	*x = UpsertOrgSSOConnectionRequest{}
-	mi := &file_relay_server_v1_server_proto_msgTypes[825]
+	mi := &file_relay_server_v1_server_proto_msgTypes[827]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -55281,7 +55362,7 @@ func (x *UpsertOrgSSOConnectionRequest) String() string {
 func (*UpsertOrgSSOConnectionRequest) ProtoMessage() {}
 
 func (x *UpsertOrgSSOConnectionRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_relay_server_v1_server_proto_msgTypes[825]
+	mi := &file_relay_server_v1_server_proto_msgTypes[827]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -55294,7 +55375,7 @@ func (x *UpsertOrgSSOConnectionRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use UpsertOrgSSOConnectionRequest.ProtoReflect.Descriptor instead.
 func (*UpsertOrgSSOConnectionRequest) Descriptor() ([]byte, []int) {
-	return file_relay_server_v1_server_proto_rawDescGZIP(), []int{825}
+	return file_relay_server_v1_server_proto_rawDescGZIP(), []int{827}
 }
 
 func (x *UpsertOrgSSOConnectionRequest) GetIssuer() string {
@@ -55440,7 +55521,7 @@ type UpsertOrgSSOConnectionResponse struct {
 
 func (x *UpsertOrgSSOConnectionResponse) Reset() {
 	*x = UpsertOrgSSOConnectionResponse{}
-	mi := &file_relay_server_v1_server_proto_msgTypes[826]
+	mi := &file_relay_server_v1_server_proto_msgTypes[828]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -55452,7 +55533,7 @@ func (x *UpsertOrgSSOConnectionResponse) String() string {
 func (*UpsertOrgSSOConnectionResponse) ProtoMessage() {}
 
 func (x *UpsertOrgSSOConnectionResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_relay_server_v1_server_proto_msgTypes[826]
+	mi := &file_relay_server_v1_server_proto_msgTypes[828]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -55465,7 +55546,7 @@ func (x *UpsertOrgSSOConnectionResponse) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use UpsertOrgSSOConnectionResponse.ProtoReflect.Descriptor instead.
 func (*UpsertOrgSSOConnectionResponse) Descriptor() ([]byte, []int) {
-	return file_relay_server_v1_server_proto_rawDescGZIP(), []int{826}
+	return file_relay_server_v1_server_proto_rawDescGZIP(), []int{828}
 }
 
 func (x *UpsertOrgSSOConnectionResponse) GetConnection() *OrgSSOConnection {
@@ -55494,7 +55575,7 @@ type DeleteOrgSSOConnectionRequest struct {
 
 func (x *DeleteOrgSSOConnectionRequest) Reset() {
 	*x = DeleteOrgSSOConnectionRequest{}
-	mi := &file_relay_server_v1_server_proto_msgTypes[827]
+	mi := &file_relay_server_v1_server_proto_msgTypes[829]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -55506,7 +55587,7 @@ func (x *DeleteOrgSSOConnectionRequest) String() string {
 func (*DeleteOrgSSOConnectionRequest) ProtoMessage() {}
 
 func (x *DeleteOrgSSOConnectionRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_relay_server_v1_server_proto_msgTypes[827]
+	mi := &file_relay_server_v1_server_proto_msgTypes[829]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -55519,7 +55600,7 @@ func (x *DeleteOrgSSOConnectionRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use DeleteOrgSSOConnectionRequest.ProtoReflect.Descriptor instead.
 func (*DeleteOrgSSOConnectionRequest) Descriptor() ([]byte, []int) {
-	return file_relay_server_v1_server_proto_rawDescGZIP(), []int{827}
+	return file_relay_server_v1_server_proto_rawDescGZIP(), []int{829}
 }
 
 func (x *DeleteOrgSSOConnectionRequest) GetId() string {
@@ -55537,7 +55618,7 @@ type DeleteOrgSSOConnectionResponse struct {
 
 func (x *DeleteOrgSSOConnectionResponse) Reset() {
 	*x = DeleteOrgSSOConnectionResponse{}
-	mi := &file_relay_server_v1_server_proto_msgTypes[828]
+	mi := &file_relay_server_v1_server_proto_msgTypes[830]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -55549,7 +55630,7 @@ func (x *DeleteOrgSSOConnectionResponse) String() string {
 func (*DeleteOrgSSOConnectionResponse) ProtoMessage() {}
 
 func (x *DeleteOrgSSOConnectionResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_relay_server_v1_server_proto_msgTypes[828]
+	mi := &file_relay_server_v1_server_proto_msgTypes[830]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -55562,7 +55643,7 @@ func (x *DeleteOrgSSOConnectionResponse) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use DeleteOrgSSOConnectionResponse.ProtoReflect.Descriptor instead.
 func (*DeleteOrgSSOConnectionResponse) Descriptor() ([]byte, []int) {
-	return file_relay_server_v1_server_proto_rawDescGZIP(), []int{828}
+	return file_relay_server_v1_server_proto_rawDescGZIP(), []int{830}
 }
 
 type ListOrgSSOConnectionsRequest struct {
@@ -55573,7 +55654,7 @@ type ListOrgSSOConnectionsRequest struct {
 
 func (x *ListOrgSSOConnectionsRequest) Reset() {
 	*x = ListOrgSSOConnectionsRequest{}
-	mi := &file_relay_server_v1_server_proto_msgTypes[829]
+	mi := &file_relay_server_v1_server_proto_msgTypes[831]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -55585,7 +55666,7 @@ func (x *ListOrgSSOConnectionsRequest) String() string {
 func (*ListOrgSSOConnectionsRequest) ProtoMessage() {}
 
 func (x *ListOrgSSOConnectionsRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_relay_server_v1_server_proto_msgTypes[829]
+	mi := &file_relay_server_v1_server_proto_msgTypes[831]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -55598,7 +55679,7 @@ func (x *ListOrgSSOConnectionsRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use ListOrgSSOConnectionsRequest.ProtoReflect.Descriptor instead.
 func (*ListOrgSSOConnectionsRequest) Descriptor() ([]byte, []int) {
-	return file_relay_server_v1_server_proto_rawDescGZIP(), []int{829}
+	return file_relay_server_v1_server_proto_rawDescGZIP(), []int{831}
 }
 
 type ListOrgSSOConnectionsResponse struct {
@@ -55611,7 +55692,7 @@ type ListOrgSSOConnectionsResponse struct {
 
 func (x *ListOrgSSOConnectionsResponse) Reset() {
 	*x = ListOrgSSOConnectionsResponse{}
-	mi := &file_relay_server_v1_server_proto_msgTypes[830]
+	mi := &file_relay_server_v1_server_proto_msgTypes[832]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -55623,7 +55704,7 @@ func (x *ListOrgSSOConnectionsResponse) String() string {
 func (*ListOrgSSOConnectionsResponse) ProtoMessage() {}
 
 func (x *ListOrgSSOConnectionsResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_relay_server_v1_server_proto_msgTypes[830]
+	mi := &file_relay_server_v1_server_proto_msgTypes[832]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -55636,7 +55717,7 @@ func (x *ListOrgSSOConnectionsResponse) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use ListOrgSSOConnectionsResponse.ProtoReflect.Descriptor instead.
 func (*ListOrgSSOConnectionsResponse) Descriptor() ([]byte, []int) {
-	return file_relay_server_v1_server_proto_rawDescGZIP(), []int{830}
+	return file_relay_server_v1_server_proto_rawDescGZIP(), []int{832}
 }
 
 func (x *ListOrgSSOConnectionsResponse) GetConnections() []*OrgSSOConnection {
@@ -55671,7 +55752,7 @@ type CreateOrgSSOConnectionRequest struct {
 
 func (x *CreateOrgSSOConnectionRequest) Reset() {
 	*x = CreateOrgSSOConnectionRequest{}
-	mi := &file_relay_server_v1_server_proto_msgTypes[831]
+	mi := &file_relay_server_v1_server_proto_msgTypes[833]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -55683,7 +55764,7 @@ func (x *CreateOrgSSOConnectionRequest) String() string {
 func (*CreateOrgSSOConnectionRequest) ProtoMessage() {}
 
 func (x *CreateOrgSSOConnectionRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_relay_server_v1_server_proto_msgTypes[831]
+	mi := &file_relay_server_v1_server_proto_msgTypes[833]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -55696,7 +55777,7 @@ func (x *CreateOrgSSOConnectionRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use CreateOrgSSOConnectionRequest.ProtoReflect.Descriptor instead.
 func (*CreateOrgSSOConnectionRequest) Descriptor() ([]byte, []int) {
-	return file_relay_server_v1_server_proto_rawDescGZIP(), []int{831}
+	return file_relay_server_v1_server_proto_rawDescGZIP(), []int{833}
 }
 
 func (x *CreateOrgSSOConnectionRequest) GetIssuer() string {
@@ -55785,7 +55866,7 @@ type CreateOrgSSOConnectionResponse struct {
 
 func (x *CreateOrgSSOConnectionResponse) Reset() {
 	*x = CreateOrgSSOConnectionResponse{}
-	mi := &file_relay_server_v1_server_proto_msgTypes[832]
+	mi := &file_relay_server_v1_server_proto_msgTypes[834]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -55797,7 +55878,7 @@ func (x *CreateOrgSSOConnectionResponse) String() string {
 func (*CreateOrgSSOConnectionResponse) ProtoMessage() {}
 
 func (x *CreateOrgSSOConnectionResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_relay_server_v1_server_proto_msgTypes[832]
+	mi := &file_relay_server_v1_server_proto_msgTypes[834]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -55810,7 +55891,7 @@ func (x *CreateOrgSSOConnectionResponse) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use CreateOrgSSOConnectionResponse.ProtoReflect.Descriptor instead.
 func (*CreateOrgSSOConnectionResponse) Descriptor() ([]byte, []int) {
-	return file_relay_server_v1_server_proto_rawDescGZIP(), []int{832}
+	return file_relay_server_v1_server_proto_rawDescGZIP(), []int{834}
 }
 
 func (x *CreateOrgSSOConnectionResponse) GetConnection() *OrgSSOConnection {
@@ -55833,7 +55914,7 @@ type AssignOrgDomainSSOConnectionRequest struct {
 
 func (x *AssignOrgDomainSSOConnectionRequest) Reset() {
 	*x = AssignOrgDomainSSOConnectionRequest{}
-	mi := &file_relay_server_v1_server_proto_msgTypes[833]
+	mi := &file_relay_server_v1_server_proto_msgTypes[835]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -55845,7 +55926,7 @@ func (x *AssignOrgDomainSSOConnectionRequest) String() string {
 func (*AssignOrgDomainSSOConnectionRequest) ProtoMessage() {}
 
 func (x *AssignOrgDomainSSOConnectionRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_relay_server_v1_server_proto_msgTypes[833]
+	mi := &file_relay_server_v1_server_proto_msgTypes[835]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -55858,7 +55939,7 @@ func (x *AssignOrgDomainSSOConnectionRequest) ProtoReflect() protoreflect.Messag
 
 // Deprecated: Use AssignOrgDomainSSOConnectionRequest.ProtoReflect.Descriptor instead.
 func (*AssignOrgDomainSSOConnectionRequest) Descriptor() ([]byte, []int) {
-	return file_relay_server_v1_server_proto_rawDescGZIP(), []int{833}
+	return file_relay_server_v1_server_proto_rawDescGZIP(), []int{835}
 }
 
 func (x *AssignOrgDomainSSOConnectionRequest) GetDomain() string {
@@ -55884,7 +55965,7 @@ type AssignOrgDomainSSOConnectionResponse struct {
 
 func (x *AssignOrgDomainSSOConnectionResponse) Reset() {
 	*x = AssignOrgDomainSSOConnectionResponse{}
-	mi := &file_relay_server_v1_server_proto_msgTypes[834]
+	mi := &file_relay_server_v1_server_proto_msgTypes[836]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -55896,7 +55977,7 @@ func (x *AssignOrgDomainSSOConnectionResponse) String() string {
 func (*AssignOrgDomainSSOConnectionResponse) ProtoMessage() {}
 
 func (x *AssignOrgDomainSSOConnectionResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_relay_server_v1_server_proto_msgTypes[834]
+	mi := &file_relay_server_v1_server_proto_msgTypes[836]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -55909,7 +55990,7 @@ func (x *AssignOrgDomainSSOConnectionResponse) ProtoReflect() protoreflect.Messa
 
 // Deprecated: Use AssignOrgDomainSSOConnectionResponse.ProtoReflect.Descriptor instead.
 func (*AssignOrgDomainSSOConnectionResponse) Descriptor() ([]byte, []int) {
-	return file_relay_server_v1_server_proto_rawDescGZIP(), []int{834}
+	return file_relay_server_v1_server_proto_rawDescGZIP(), []int{836}
 }
 
 func (x *AssignOrgDomainSSOConnectionResponse) GetDomain() *OrgDomain {
@@ -55928,7 +56009,7 @@ type TestOrgSSOConnectionRequest struct {
 
 func (x *TestOrgSSOConnectionRequest) Reset() {
 	*x = TestOrgSSOConnectionRequest{}
-	mi := &file_relay_server_v1_server_proto_msgTypes[835]
+	mi := &file_relay_server_v1_server_proto_msgTypes[837]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -55940,7 +56021,7 @@ func (x *TestOrgSSOConnectionRequest) String() string {
 func (*TestOrgSSOConnectionRequest) ProtoMessage() {}
 
 func (x *TestOrgSSOConnectionRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_relay_server_v1_server_proto_msgTypes[835]
+	mi := &file_relay_server_v1_server_proto_msgTypes[837]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -55953,7 +56034,7 @@ func (x *TestOrgSSOConnectionRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use TestOrgSSOConnectionRequest.ProtoReflect.Descriptor instead.
 func (*TestOrgSSOConnectionRequest) Descriptor() ([]byte, []int) {
-	return file_relay_server_v1_server_proto_rawDescGZIP(), []int{835}
+	return file_relay_server_v1_server_proto_rawDescGZIP(), []int{837}
 }
 
 func (x *TestOrgSSOConnectionRequest) GetIssuer() string {
@@ -55976,7 +56057,7 @@ type TestOrgSSOConnectionResponse struct {
 
 func (x *TestOrgSSOConnectionResponse) Reset() {
 	*x = TestOrgSSOConnectionResponse{}
-	mi := &file_relay_server_v1_server_proto_msgTypes[836]
+	mi := &file_relay_server_v1_server_proto_msgTypes[838]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -55988,7 +56069,7 @@ func (x *TestOrgSSOConnectionResponse) String() string {
 func (*TestOrgSSOConnectionResponse) ProtoMessage() {}
 
 func (x *TestOrgSSOConnectionResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_relay_server_v1_server_proto_msgTypes[836]
+	mi := &file_relay_server_v1_server_proto_msgTypes[838]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -56001,7 +56082,7 @@ func (x *TestOrgSSOConnectionResponse) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use TestOrgSSOConnectionResponse.ProtoReflect.Descriptor instead.
 func (*TestOrgSSOConnectionResponse) Descriptor() ([]byte, []int) {
-	return file_relay_server_v1_server_proto_rawDescGZIP(), []int{836}
+	return file_relay_server_v1_server_proto_rawDescGZIP(), []int{838}
 }
 
 func (x *TestOrgSSOConnectionResponse) GetIssuer() string {
@@ -56066,7 +56147,7 @@ type OrgSignInPolicy struct {
 
 func (x *OrgSignInPolicy) Reset() {
 	*x = OrgSignInPolicy{}
-	mi := &file_relay_server_v1_server_proto_msgTypes[837]
+	mi := &file_relay_server_v1_server_proto_msgTypes[839]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -56078,7 +56159,7 @@ func (x *OrgSignInPolicy) String() string {
 func (*OrgSignInPolicy) ProtoMessage() {}
 
 func (x *OrgSignInPolicy) ProtoReflect() protoreflect.Message {
-	mi := &file_relay_server_v1_server_proto_msgTypes[837]
+	mi := &file_relay_server_v1_server_proto_msgTypes[839]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -56091,7 +56172,7 @@ func (x *OrgSignInPolicy) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use OrgSignInPolicy.ProtoReflect.Descriptor instead.
 func (*OrgSignInPolicy) Descriptor() ([]byte, []int) {
-	return file_relay_server_v1_server_proto_rawDescGZIP(), []int{837}
+	return file_relay_server_v1_server_proto_rawDescGZIP(), []int{839}
 }
 
 func (x *OrgSignInPolicy) GetAllowedMethods() []string {
@@ -56144,7 +56225,7 @@ type APIKeyPolicy struct {
 
 func (x *APIKeyPolicy) Reset() {
 	*x = APIKeyPolicy{}
-	mi := &file_relay_server_v1_server_proto_msgTypes[838]
+	mi := &file_relay_server_v1_server_proto_msgTypes[840]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -56156,7 +56237,7 @@ func (x *APIKeyPolicy) String() string {
 func (*APIKeyPolicy) ProtoMessage() {}
 
 func (x *APIKeyPolicy) ProtoReflect() protoreflect.Message {
-	mi := &file_relay_server_v1_server_proto_msgTypes[838]
+	mi := &file_relay_server_v1_server_proto_msgTypes[840]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -56169,7 +56250,7 @@ func (x *APIKeyPolicy) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use APIKeyPolicy.ProtoReflect.Descriptor instead.
 func (*APIKeyPolicy) Descriptor() ([]byte, []int) {
-	return file_relay_server_v1_server_proto_rawDescGZIP(), []int{838}
+	return file_relay_server_v1_server_proto_rawDescGZIP(), []int{840}
 }
 
 func (x *APIKeyPolicy) GetApiKeyCreatorRoles() []string {
@@ -56220,7 +56301,7 @@ type APIKeyPolicyViolation struct {
 
 func (x *APIKeyPolicyViolation) Reset() {
 	*x = APIKeyPolicyViolation{}
-	mi := &file_relay_server_v1_server_proto_msgTypes[839]
+	mi := &file_relay_server_v1_server_proto_msgTypes[841]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -56232,7 +56313,7 @@ func (x *APIKeyPolicyViolation) String() string {
 func (*APIKeyPolicyViolation) ProtoMessage() {}
 
 func (x *APIKeyPolicyViolation) ProtoReflect() protoreflect.Message {
-	mi := &file_relay_server_v1_server_proto_msgTypes[839]
+	mi := &file_relay_server_v1_server_proto_msgTypes[841]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -56245,7 +56326,7 @@ func (x *APIKeyPolicyViolation) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use APIKeyPolicyViolation.ProtoReflect.Descriptor instead.
 func (*APIKeyPolicyViolation) Descriptor() ([]byte, []int) {
-	return file_relay_server_v1_server_proto_rawDescGZIP(), []int{839}
+	return file_relay_server_v1_server_proto_rawDescGZIP(), []int{841}
 }
 
 func (x *APIKeyPolicyViolation) GetKeyId() string {
@@ -56308,7 +56389,7 @@ type OrgBreakGlassUser struct {
 
 func (x *OrgBreakGlassUser) Reset() {
 	*x = OrgBreakGlassUser{}
-	mi := &file_relay_server_v1_server_proto_msgTypes[840]
+	mi := &file_relay_server_v1_server_proto_msgTypes[842]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -56320,7 +56401,7 @@ func (x *OrgBreakGlassUser) String() string {
 func (*OrgBreakGlassUser) ProtoMessage() {}
 
 func (x *OrgBreakGlassUser) ProtoReflect() protoreflect.Message {
-	mi := &file_relay_server_v1_server_proto_msgTypes[840]
+	mi := &file_relay_server_v1_server_proto_msgTypes[842]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -56333,7 +56414,7 @@ func (x *OrgBreakGlassUser) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use OrgBreakGlassUser.ProtoReflect.Descriptor instead.
 func (*OrgBreakGlassUser) Descriptor() ([]byte, []int) {
-	return file_relay_server_v1_server_proto_rawDescGZIP(), []int{840}
+	return file_relay_server_v1_server_proto_rawDescGZIP(), []int{842}
 }
 
 func (x *OrgBreakGlassUser) GetUserId() string {
@@ -56365,7 +56446,7 @@ type GetOrgSignInPolicyRequest struct {
 
 func (x *GetOrgSignInPolicyRequest) Reset() {
 	*x = GetOrgSignInPolicyRequest{}
-	mi := &file_relay_server_v1_server_proto_msgTypes[841]
+	mi := &file_relay_server_v1_server_proto_msgTypes[843]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -56377,7 +56458,7 @@ func (x *GetOrgSignInPolicyRequest) String() string {
 func (*GetOrgSignInPolicyRequest) ProtoMessage() {}
 
 func (x *GetOrgSignInPolicyRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_relay_server_v1_server_proto_msgTypes[841]
+	mi := &file_relay_server_v1_server_proto_msgTypes[843]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -56390,7 +56471,7 @@ func (x *GetOrgSignInPolicyRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use GetOrgSignInPolicyRequest.ProtoReflect.Descriptor instead.
 func (*GetOrgSignInPolicyRequest) Descriptor() ([]byte, []int) {
-	return file_relay_server_v1_server_proto_rawDescGZIP(), []int{841}
+	return file_relay_server_v1_server_proto_rawDescGZIP(), []int{843}
 }
 
 type GetOrgSignInPolicyResponse struct {
@@ -56412,7 +56493,7 @@ type GetOrgSignInPolicyResponse struct {
 
 func (x *GetOrgSignInPolicyResponse) Reset() {
 	*x = GetOrgSignInPolicyResponse{}
-	mi := &file_relay_server_v1_server_proto_msgTypes[842]
+	mi := &file_relay_server_v1_server_proto_msgTypes[844]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -56424,7 +56505,7 @@ func (x *GetOrgSignInPolicyResponse) String() string {
 func (*GetOrgSignInPolicyResponse) ProtoMessage() {}
 
 func (x *GetOrgSignInPolicyResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_relay_server_v1_server_proto_msgTypes[842]
+	mi := &file_relay_server_v1_server_proto_msgTypes[844]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -56437,7 +56518,7 @@ func (x *GetOrgSignInPolicyResponse) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use GetOrgSignInPolicyResponse.ProtoReflect.Descriptor instead.
 func (*GetOrgSignInPolicyResponse) Descriptor() ([]byte, []int) {
-	return file_relay_server_v1_server_proto_rawDescGZIP(), []int{842}
+	return file_relay_server_v1_server_proto_rawDescGZIP(), []int{844}
 }
 
 func (x *GetOrgSignInPolicyResponse) GetPolicy() *OrgSignInPolicy {
@@ -56496,7 +56577,7 @@ type OrgSignInPolicyAffectedMember struct {
 
 func (x *OrgSignInPolicyAffectedMember) Reset() {
 	*x = OrgSignInPolicyAffectedMember{}
-	mi := &file_relay_server_v1_server_proto_msgTypes[843]
+	mi := &file_relay_server_v1_server_proto_msgTypes[845]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -56508,7 +56589,7 @@ func (x *OrgSignInPolicyAffectedMember) String() string {
 func (*OrgSignInPolicyAffectedMember) ProtoMessage() {}
 
 func (x *OrgSignInPolicyAffectedMember) ProtoReflect() protoreflect.Message {
-	mi := &file_relay_server_v1_server_proto_msgTypes[843]
+	mi := &file_relay_server_v1_server_proto_msgTypes[845]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -56521,7 +56602,7 @@ func (x *OrgSignInPolicyAffectedMember) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use OrgSignInPolicyAffectedMember.ProtoReflect.Descriptor instead.
 func (*OrgSignInPolicyAffectedMember) Descriptor() ([]byte, []int) {
-	return file_relay_server_v1_server_proto_rawDescGZIP(), []int{843}
+	return file_relay_server_v1_server_proto_rawDescGZIP(), []int{845}
 }
 
 func (x *OrgSignInPolicyAffectedMember) GetUserId() string {
@@ -56561,7 +56642,7 @@ type PreviewOrgSignInPolicyRequest struct {
 
 func (x *PreviewOrgSignInPolicyRequest) Reset() {
 	*x = PreviewOrgSignInPolicyRequest{}
-	mi := &file_relay_server_v1_server_proto_msgTypes[844]
+	mi := &file_relay_server_v1_server_proto_msgTypes[846]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -56573,7 +56654,7 @@ func (x *PreviewOrgSignInPolicyRequest) String() string {
 func (*PreviewOrgSignInPolicyRequest) ProtoMessage() {}
 
 func (x *PreviewOrgSignInPolicyRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_relay_server_v1_server_proto_msgTypes[844]
+	mi := &file_relay_server_v1_server_proto_msgTypes[846]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -56586,7 +56667,7 @@ func (x *PreviewOrgSignInPolicyRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use PreviewOrgSignInPolicyRequest.ProtoReflect.Descriptor instead.
 func (*PreviewOrgSignInPolicyRequest) Descriptor() ([]byte, []int) {
-	return file_relay_server_v1_server_proto_rawDescGZIP(), []int{844}
+	return file_relay_server_v1_server_proto_rawDescGZIP(), []int{846}
 }
 
 func (x *PreviewOrgSignInPolicyRequest) GetPolicy() *OrgSignInPolicy {
@@ -56609,7 +56690,7 @@ type PreviewOrgSignInPolicyResponse struct {
 
 func (x *PreviewOrgSignInPolicyResponse) Reset() {
 	*x = PreviewOrgSignInPolicyResponse{}
-	mi := &file_relay_server_v1_server_proto_msgTypes[845]
+	mi := &file_relay_server_v1_server_proto_msgTypes[847]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -56621,7 +56702,7 @@ func (x *PreviewOrgSignInPolicyResponse) String() string {
 func (*PreviewOrgSignInPolicyResponse) ProtoMessage() {}
 
 func (x *PreviewOrgSignInPolicyResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_relay_server_v1_server_proto_msgTypes[845]
+	mi := &file_relay_server_v1_server_proto_msgTypes[847]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -56634,7 +56715,7 @@ func (x *PreviewOrgSignInPolicyResponse) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use PreviewOrgSignInPolicyResponse.ProtoReflect.Descriptor instead.
 func (*PreviewOrgSignInPolicyResponse) Descriptor() ([]byte, []int) {
-	return file_relay_server_v1_server_proto_rawDescGZIP(), []int{845}
+	return file_relay_server_v1_server_proto_rawDescGZIP(), []int{847}
 }
 
 func (x *PreviewOrgSignInPolicyResponse) GetMembers() []*OrgSignInPolicyAffectedMember {
@@ -56668,7 +56749,7 @@ type UpdateOrgSignInPolicyRequest struct {
 
 func (x *UpdateOrgSignInPolicyRequest) Reset() {
 	*x = UpdateOrgSignInPolicyRequest{}
-	mi := &file_relay_server_v1_server_proto_msgTypes[846]
+	mi := &file_relay_server_v1_server_proto_msgTypes[848]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -56680,7 +56761,7 @@ func (x *UpdateOrgSignInPolicyRequest) String() string {
 func (*UpdateOrgSignInPolicyRequest) ProtoMessage() {}
 
 func (x *UpdateOrgSignInPolicyRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_relay_server_v1_server_proto_msgTypes[846]
+	mi := &file_relay_server_v1_server_proto_msgTypes[848]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -56693,7 +56774,7 @@ func (x *UpdateOrgSignInPolicyRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use UpdateOrgSignInPolicyRequest.ProtoReflect.Descriptor instead.
 func (*UpdateOrgSignInPolicyRequest) Descriptor() ([]byte, []int) {
-	return file_relay_server_v1_server_proto_rawDescGZIP(), []int{846}
+	return file_relay_server_v1_server_proto_rawDescGZIP(), []int{848}
 }
 
 func (x *UpdateOrgSignInPolicyRequest) GetPolicy() *OrgSignInPolicy {
@@ -56722,7 +56803,7 @@ type UpdateOrgSignInPolicyResponse struct {
 
 func (x *UpdateOrgSignInPolicyResponse) Reset() {
 	*x = UpdateOrgSignInPolicyResponse{}
-	mi := &file_relay_server_v1_server_proto_msgTypes[847]
+	mi := &file_relay_server_v1_server_proto_msgTypes[849]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -56734,7 +56815,7 @@ func (x *UpdateOrgSignInPolicyResponse) String() string {
 func (*UpdateOrgSignInPolicyResponse) ProtoMessage() {}
 
 func (x *UpdateOrgSignInPolicyResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_relay_server_v1_server_proto_msgTypes[847]
+	mi := &file_relay_server_v1_server_proto_msgTypes[849]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -56747,7 +56828,7 @@ func (x *UpdateOrgSignInPolicyResponse) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use UpdateOrgSignInPolicyResponse.ProtoReflect.Descriptor instead.
 func (*UpdateOrgSignInPolicyResponse) Descriptor() ([]byte, []int) {
-	return file_relay_server_v1_server_proto_rawDescGZIP(), []int{847}
+	return file_relay_server_v1_server_proto_rawDescGZIP(), []int{849}
 }
 
 func (x *UpdateOrgSignInPolicyResponse) GetPolicy() *OrgSignInPolicy {
@@ -56799,7 +56880,7 @@ type OrgDomain struct {
 
 func (x *OrgDomain) Reset() {
 	*x = OrgDomain{}
-	mi := &file_relay_server_v1_server_proto_msgTypes[848]
+	mi := &file_relay_server_v1_server_proto_msgTypes[850]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -56811,7 +56892,7 @@ func (x *OrgDomain) String() string {
 func (*OrgDomain) ProtoMessage() {}
 
 func (x *OrgDomain) ProtoReflect() protoreflect.Message {
-	mi := &file_relay_server_v1_server_proto_msgTypes[848]
+	mi := &file_relay_server_v1_server_proto_msgTypes[850]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -56824,7 +56905,7 @@ func (x *OrgDomain) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use OrgDomain.ProtoReflect.Descriptor instead.
 func (*OrgDomain) Descriptor() ([]byte, []int) {
-	return file_relay_server_v1_server_proto_rawDescGZIP(), []int{848}
+	return file_relay_server_v1_server_proto_rawDescGZIP(), []int{850}
 }
 
 func (x *OrgDomain) GetDomain() string {
@@ -56891,7 +56972,7 @@ type ListOrgDomainsRequest struct {
 
 func (x *ListOrgDomainsRequest) Reset() {
 	*x = ListOrgDomainsRequest{}
-	mi := &file_relay_server_v1_server_proto_msgTypes[849]
+	mi := &file_relay_server_v1_server_proto_msgTypes[851]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -56903,7 +56984,7 @@ func (x *ListOrgDomainsRequest) String() string {
 func (*ListOrgDomainsRequest) ProtoMessage() {}
 
 func (x *ListOrgDomainsRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_relay_server_v1_server_proto_msgTypes[849]
+	mi := &file_relay_server_v1_server_proto_msgTypes[851]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -56916,7 +56997,7 @@ func (x *ListOrgDomainsRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use ListOrgDomainsRequest.ProtoReflect.Descriptor instead.
 func (*ListOrgDomainsRequest) Descriptor() ([]byte, []int) {
-	return file_relay_server_v1_server_proto_rawDescGZIP(), []int{849}
+	return file_relay_server_v1_server_proto_rawDescGZIP(), []int{851}
 }
 
 type ListOrgDomainsResponse struct {
@@ -56928,7 +57009,7 @@ type ListOrgDomainsResponse struct {
 
 func (x *ListOrgDomainsResponse) Reset() {
 	*x = ListOrgDomainsResponse{}
-	mi := &file_relay_server_v1_server_proto_msgTypes[850]
+	mi := &file_relay_server_v1_server_proto_msgTypes[852]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -56940,7 +57021,7 @@ func (x *ListOrgDomainsResponse) String() string {
 func (*ListOrgDomainsResponse) ProtoMessage() {}
 
 func (x *ListOrgDomainsResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_relay_server_v1_server_proto_msgTypes[850]
+	mi := &file_relay_server_v1_server_proto_msgTypes[852]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -56953,7 +57034,7 @@ func (x *ListOrgDomainsResponse) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use ListOrgDomainsResponse.ProtoReflect.Descriptor instead.
 func (*ListOrgDomainsResponse) Descriptor() ([]byte, []int) {
-	return file_relay_server_v1_server_proto_rawDescGZIP(), []int{850}
+	return file_relay_server_v1_server_proto_rawDescGZIP(), []int{852}
 }
 
 func (x *ListOrgDomainsResponse) GetDomains() []*OrgDomain {
@@ -56972,7 +57053,7 @@ type AddOrgDomainRequest struct {
 
 func (x *AddOrgDomainRequest) Reset() {
 	*x = AddOrgDomainRequest{}
-	mi := &file_relay_server_v1_server_proto_msgTypes[851]
+	mi := &file_relay_server_v1_server_proto_msgTypes[853]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -56984,7 +57065,7 @@ func (x *AddOrgDomainRequest) String() string {
 func (*AddOrgDomainRequest) ProtoMessage() {}
 
 func (x *AddOrgDomainRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_relay_server_v1_server_proto_msgTypes[851]
+	mi := &file_relay_server_v1_server_proto_msgTypes[853]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -56997,7 +57078,7 @@ func (x *AddOrgDomainRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use AddOrgDomainRequest.ProtoReflect.Descriptor instead.
 func (*AddOrgDomainRequest) Descriptor() ([]byte, []int) {
-	return file_relay_server_v1_server_proto_rawDescGZIP(), []int{851}
+	return file_relay_server_v1_server_proto_rawDescGZIP(), []int{853}
 }
 
 func (x *AddOrgDomainRequest) GetDomain() string {
@@ -57016,7 +57097,7 @@ type AddOrgDomainResponse struct {
 
 func (x *AddOrgDomainResponse) Reset() {
 	*x = AddOrgDomainResponse{}
-	mi := &file_relay_server_v1_server_proto_msgTypes[852]
+	mi := &file_relay_server_v1_server_proto_msgTypes[854]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -57028,7 +57109,7 @@ func (x *AddOrgDomainResponse) String() string {
 func (*AddOrgDomainResponse) ProtoMessage() {}
 
 func (x *AddOrgDomainResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_relay_server_v1_server_proto_msgTypes[852]
+	mi := &file_relay_server_v1_server_proto_msgTypes[854]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -57041,7 +57122,7 @@ func (x *AddOrgDomainResponse) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use AddOrgDomainResponse.ProtoReflect.Descriptor instead.
 func (*AddOrgDomainResponse) Descriptor() ([]byte, []int) {
-	return file_relay_server_v1_server_proto_rawDescGZIP(), []int{852}
+	return file_relay_server_v1_server_proto_rawDescGZIP(), []int{854}
 }
 
 func (x *AddOrgDomainResponse) GetDomain() *OrgDomain {
@@ -57060,7 +57141,7 @@ type VerifyOrgDomainRequest struct {
 
 func (x *VerifyOrgDomainRequest) Reset() {
 	*x = VerifyOrgDomainRequest{}
-	mi := &file_relay_server_v1_server_proto_msgTypes[853]
+	mi := &file_relay_server_v1_server_proto_msgTypes[855]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -57072,7 +57153,7 @@ func (x *VerifyOrgDomainRequest) String() string {
 func (*VerifyOrgDomainRequest) ProtoMessage() {}
 
 func (x *VerifyOrgDomainRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_relay_server_v1_server_proto_msgTypes[853]
+	mi := &file_relay_server_v1_server_proto_msgTypes[855]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -57085,7 +57166,7 @@ func (x *VerifyOrgDomainRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use VerifyOrgDomainRequest.ProtoReflect.Descriptor instead.
 func (*VerifyOrgDomainRequest) Descriptor() ([]byte, []int) {
-	return file_relay_server_v1_server_proto_rawDescGZIP(), []int{853}
+	return file_relay_server_v1_server_proto_rawDescGZIP(), []int{855}
 }
 
 func (x *VerifyOrgDomainRequest) GetDomain() string {
@@ -57106,7 +57187,7 @@ type VerifyOrgDomainResponse struct {
 
 func (x *VerifyOrgDomainResponse) Reset() {
 	*x = VerifyOrgDomainResponse{}
-	mi := &file_relay_server_v1_server_proto_msgTypes[854]
+	mi := &file_relay_server_v1_server_proto_msgTypes[856]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -57118,7 +57199,7 @@ func (x *VerifyOrgDomainResponse) String() string {
 func (*VerifyOrgDomainResponse) ProtoMessage() {}
 
 func (x *VerifyOrgDomainResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_relay_server_v1_server_proto_msgTypes[854]
+	mi := &file_relay_server_v1_server_proto_msgTypes[856]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -57131,7 +57212,7 @@ func (x *VerifyOrgDomainResponse) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use VerifyOrgDomainResponse.ProtoReflect.Descriptor instead.
 func (*VerifyOrgDomainResponse) Descriptor() ([]byte, []int) {
-	return file_relay_server_v1_server_proto_rawDescGZIP(), []int{854}
+	return file_relay_server_v1_server_proto_rawDescGZIP(), []int{856}
 }
 
 func (x *VerifyOrgDomainResponse) GetDomain() *OrgDomain {
@@ -57157,7 +57238,7 @@ type RemoveOrgDomainRequest struct {
 
 func (x *RemoveOrgDomainRequest) Reset() {
 	*x = RemoveOrgDomainRequest{}
-	mi := &file_relay_server_v1_server_proto_msgTypes[855]
+	mi := &file_relay_server_v1_server_proto_msgTypes[857]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -57169,7 +57250,7 @@ func (x *RemoveOrgDomainRequest) String() string {
 func (*RemoveOrgDomainRequest) ProtoMessage() {}
 
 func (x *RemoveOrgDomainRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_relay_server_v1_server_proto_msgTypes[855]
+	mi := &file_relay_server_v1_server_proto_msgTypes[857]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -57182,7 +57263,7 @@ func (x *RemoveOrgDomainRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use RemoveOrgDomainRequest.ProtoReflect.Descriptor instead.
 func (*RemoveOrgDomainRequest) Descriptor() ([]byte, []int) {
-	return file_relay_server_v1_server_proto_rawDescGZIP(), []int{855}
+	return file_relay_server_v1_server_proto_rawDescGZIP(), []int{857}
 }
 
 func (x *RemoveOrgDomainRequest) GetDomain() string {
@@ -57200,7 +57281,7 @@ type RemoveOrgDomainResponse struct {
 
 func (x *RemoveOrgDomainResponse) Reset() {
 	*x = RemoveOrgDomainResponse{}
-	mi := &file_relay_server_v1_server_proto_msgTypes[856]
+	mi := &file_relay_server_v1_server_proto_msgTypes[858]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -57212,7 +57293,7 @@ func (x *RemoveOrgDomainResponse) String() string {
 func (*RemoveOrgDomainResponse) ProtoMessage() {}
 
 func (x *RemoveOrgDomainResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_relay_server_v1_server_proto_msgTypes[856]
+	mi := &file_relay_server_v1_server_proto_msgTypes[858]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -57225,7 +57306,7 @@ func (x *RemoveOrgDomainResponse) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use RemoveOrgDomainResponse.ProtoReflect.Descriptor instead.
 func (*RemoveOrgDomainResponse) Descriptor() ([]byte, []int) {
-	return file_relay_server_v1_server_proto_rawDescGZIP(), []int{856}
+	return file_relay_server_v1_server_proto_rawDescGZIP(), []int{858}
 }
 
 type SCIMToken struct {
@@ -57247,7 +57328,7 @@ type SCIMToken struct {
 
 func (x *SCIMToken) Reset() {
 	*x = SCIMToken{}
-	mi := &file_relay_server_v1_server_proto_msgTypes[857]
+	mi := &file_relay_server_v1_server_proto_msgTypes[859]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -57259,7 +57340,7 @@ func (x *SCIMToken) String() string {
 func (*SCIMToken) ProtoMessage() {}
 
 func (x *SCIMToken) ProtoReflect() protoreflect.Message {
-	mi := &file_relay_server_v1_server_proto_msgTypes[857]
+	mi := &file_relay_server_v1_server_proto_msgTypes[859]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -57272,7 +57353,7 @@ func (x *SCIMToken) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use SCIMToken.ProtoReflect.Descriptor instead.
 func (*SCIMToken) Descriptor() ([]byte, []int) {
-	return file_relay_server_v1_server_proto_rawDescGZIP(), []int{857}
+	return file_relay_server_v1_server_proto_rawDescGZIP(), []int{859}
 }
 
 func (x *SCIMToken) GetId() string {
@@ -57342,7 +57423,7 @@ type CreateSCIMTokenRequest struct {
 
 func (x *CreateSCIMTokenRequest) Reset() {
 	*x = CreateSCIMTokenRequest{}
-	mi := &file_relay_server_v1_server_proto_msgTypes[858]
+	mi := &file_relay_server_v1_server_proto_msgTypes[860]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -57354,7 +57435,7 @@ func (x *CreateSCIMTokenRequest) String() string {
 func (*CreateSCIMTokenRequest) ProtoMessage() {}
 
 func (x *CreateSCIMTokenRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_relay_server_v1_server_proto_msgTypes[858]
+	mi := &file_relay_server_v1_server_proto_msgTypes[860]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -57367,7 +57448,7 @@ func (x *CreateSCIMTokenRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use CreateSCIMTokenRequest.ProtoReflect.Descriptor instead.
 func (*CreateSCIMTokenRequest) Descriptor() ([]byte, []int) {
-	return file_relay_server_v1_server_proto_rawDescGZIP(), []int{858}
+	return file_relay_server_v1_server_proto_rawDescGZIP(), []int{860}
 }
 
 func (x *CreateSCIMTokenRequest) GetName() string {
@@ -57395,7 +57476,7 @@ type CreateSCIMTokenResponse struct {
 
 func (x *CreateSCIMTokenResponse) Reset() {
 	*x = CreateSCIMTokenResponse{}
-	mi := &file_relay_server_v1_server_proto_msgTypes[859]
+	mi := &file_relay_server_v1_server_proto_msgTypes[861]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -57407,7 +57488,7 @@ func (x *CreateSCIMTokenResponse) String() string {
 func (*CreateSCIMTokenResponse) ProtoMessage() {}
 
 func (x *CreateSCIMTokenResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_relay_server_v1_server_proto_msgTypes[859]
+	mi := &file_relay_server_v1_server_proto_msgTypes[861]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -57420,7 +57501,7 @@ func (x *CreateSCIMTokenResponse) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use CreateSCIMTokenResponse.ProtoReflect.Descriptor instead.
 func (*CreateSCIMTokenResponse) Descriptor() ([]byte, []int) {
-	return file_relay_server_v1_server_proto_rawDescGZIP(), []int{859}
+	return file_relay_server_v1_server_proto_rawDescGZIP(), []int{861}
 }
 
 func (x *CreateSCIMTokenResponse) GetToken() *SCIMToken {
@@ -57445,7 +57526,7 @@ type ListSCIMTokensRequest struct {
 
 func (x *ListSCIMTokensRequest) Reset() {
 	*x = ListSCIMTokensRequest{}
-	mi := &file_relay_server_v1_server_proto_msgTypes[860]
+	mi := &file_relay_server_v1_server_proto_msgTypes[862]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -57457,7 +57538,7 @@ func (x *ListSCIMTokensRequest) String() string {
 func (*ListSCIMTokensRequest) ProtoMessage() {}
 
 func (x *ListSCIMTokensRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_relay_server_v1_server_proto_msgTypes[860]
+	mi := &file_relay_server_v1_server_proto_msgTypes[862]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -57470,7 +57551,7 @@ func (x *ListSCIMTokensRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use ListSCIMTokensRequest.ProtoReflect.Descriptor instead.
 func (*ListSCIMTokensRequest) Descriptor() ([]byte, []int) {
-	return file_relay_server_v1_server_proto_rawDescGZIP(), []int{860}
+	return file_relay_server_v1_server_proto_rawDescGZIP(), []int{862}
 }
 
 type ListSCIMTokensResponse struct {
@@ -57484,7 +57565,7 @@ type ListSCIMTokensResponse struct {
 
 func (x *ListSCIMTokensResponse) Reset() {
 	*x = ListSCIMTokensResponse{}
-	mi := &file_relay_server_v1_server_proto_msgTypes[861]
+	mi := &file_relay_server_v1_server_proto_msgTypes[863]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -57496,7 +57577,7 @@ func (x *ListSCIMTokensResponse) String() string {
 func (*ListSCIMTokensResponse) ProtoMessage() {}
 
 func (x *ListSCIMTokensResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_relay_server_v1_server_proto_msgTypes[861]
+	mi := &file_relay_server_v1_server_proto_msgTypes[863]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -57509,7 +57590,7 @@ func (x *ListSCIMTokensResponse) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use ListSCIMTokensResponse.ProtoReflect.Descriptor instead.
 func (*ListSCIMTokensResponse) Descriptor() ([]byte, []int) {
-	return file_relay_server_v1_server_proto_rawDescGZIP(), []int{861}
+	return file_relay_server_v1_server_proto_rawDescGZIP(), []int{863}
 }
 
 func (x *ListSCIMTokensResponse) GetTokens() []*SCIMToken {
@@ -57535,7 +57616,7 @@ type RotateSCIMTokenRequest struct {
 
 func (x *RotateSCIMTokenRequest) Reset() {
 	*x = RotateSCIMTokenRequest{}
-	mi := &file_relay_server_v1_server_proto_msgTypes[862]
+	mi := &file_relay_server_v1_server_proto_msgTypes[864]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -57547,7 +57628,7 @@ func (x *RotateSCIMTokenRequest) String() string {
 func (*RotateSCIMTokenRequest) ProtoMessage() {}
 
 func (x *RotateSCIMTokenRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_relay_server_v1_server_proto_msgTypes[862]
+	mi := &file_relay_server_v1_server_proto_msgTypes[864]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -57560,7 +57641,7 @@ func (x *RotateSCIMTokenRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use RotateSCIMTokenRequest.ProtoReflect.Descriptor instead.
 func (*RotateSCIMTokenRequest) Descriptor() ([]byte, []int) {
-	return file_relay_server_v1_server_proto_rawDescGZIP(), []int{862}
+	return file_relay_server_v1_server_proto_rawDescGZIP(), []int{864}
 }
 
 func (x *RotateSCIMTokenRequest) GetId() string {
@@ -57581,7 +57662,7 @@ type RotateSCIMTokenResponse struct {
 
 func (x *RotateSCIMTokenResponse) Reset() {
 	*x = RotateSCIMTokenResponse{}
-	mi := &file_relay_server_v1_server_proto_msgTypes[863]
+	mi := &file_relay_server_v1_server_proto_msgTypes[865]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -57593,7 +57674,7 @@ func (x *RotateSCIMTokenResponse) String() string {
 func (*RotateSCIMTokenResponse) ProtoMessage() {}
 
 func (x *RotateSCIMTokenResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_relay_server_v1_server_proto_msgTypes[863]
+	mi := &file_relay_server_v1_server_proto_msgTypes[865]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -57606,7 +57687,7 @@ func (x *RotateSCIMTokenResponse) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use RotateSCIMTokenResponse.ProtoReflect.Descriptor instead.
 func (*RotateSCIMTokenResponse) Descriptor() ([]byte, []int) {
-	return file_relay_server_v1_server_proto_rawDescGZIP(), []int{863}
+	return file_relay_server_v1_server_proto_rawDescGZIP(), []int{865}
 }
 
 func (x *RotateSCIMTokenResponse) GetToken() *SCIMToken {
@@ -57632,7 +57713,7 @@ type RevokeSCIMTokenRequest struct {
 
 func (x *RevokeSCIMTokenRequest) Reset() {
 	*x = RevokeSCIMTokenRequest{}
-	mi := &file_relay_server_v1_server_proto_msgTypes[864]
+	mi := &file_relay_server_v1_server_proto_msgTypes[866]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -57644,7 +57725,7 @@ func (x *RevokeSCIMTokenRequest) String() string {
 func (*RevokeSCIMTokenRequest) ProtoMessage() {}
 
 func (x *RevokeSCIMTokenRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_relay_server_v1_server_proto_msgTypes[864]
+	mi := &file_relay_server_v1_server_proto_msgTypes[866]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -57657,7 +57738,7 @@ func (x *RevokeSCIMTokenRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use RevokeSCIMTokenRequest.ProtoReflect.Descriptor instead.
 func (*RevokeSCIMTokenRequest) Descriptor() ([]byte, []int) {
-	return file_relay_server_v1_server_proto_rawDescGZIP(), []int{864}
+	return file_relay_server_v1_server_proto_rawDescGZIP(), []int{866}
 }
 
 func (x *RevokeSCIMTokenRequest) GetId() string {
@@ -57675,7 +57756,7 @@ type RevokeSCIMTokenResponse struct {
 
 func (x *RevokeSCIMTokenResponse) Reset() {
 	*x = RevokeSCIMTokenResponse{}
-	mi := &file_relay_server_v1_server_proto_msgTypes[865]
+	mi := &file_relay_server_v1_server_proto_msgTypes[867]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -57687,7 +57768,7 @@ func (x *RevokeSCIMTokenResponse) String() string {
 func (*RevokeSCIMTokenResponse) ProtoMessage() {}
 
 func (x *RevokeSCIMTokenResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_relay_server_v1_server_proto_msgTypes[865]
+	mi := &file_relay_server_v1_server_proto_msgTypes[867]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -57700,7 +57781,7 @@ func (x *RevokeSCIMTokenResponse) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use RevokeSCIMTokenResponse.ProtoReflect.Descriptor instead.
 func (*RevokeSCIMTokenResponse) Descriptor() ([]byte, []int) {
-	return file_relay_server_v1_server_proto_rawDescGZIP(), []int{865}
+	return file_relay_server_v1_server_proto_rawDescGZIP(), []int{867}
 }
 
 type IdPGroupMapping struct {
@@ -57728,7 +57809,7 @@ type IdPGroupMapping struct {
 
 func (x *IdPGroupMapping) Reset() {
 	*x = IdPGroupMapping{}
-	mi := &file_relay_server_v1_server_proto_msgTypes[866]
+	mi := &file_relay_server_v1_server_proto_msgTypes[868]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -57740,7 +57821,7 @@ func (x *IdPGroupMapping) String() string {
 func (*IdPGroupMapping) ProtoMessage() {}
 
 func (x *IdPGroupMapping) ProtoReflect() protoreflect.Message {
-	mi := &file_relay_server_v1_server_proto_msgTypes[866]
+	mi := &file_relay_server_v1_server_proto_msgTypes[868]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -57753,7 +57834,7 @@ func (x *IdPGroupMapping) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use IdPGroupMapping.ProtoReflect.Descriptor instead.
 func (*IdPGroupMapping) Descriptor() ([]byte, []int) {
-	return file_relay_server_v1_server_proto_rawDescGZIP(), []int{866}
+	return file_relay_server_v1_server_proto_rawDescGZIP(), []int{868}
 }
 
 func (x *IdPGroupMapping) GetId() string {
@@ -57834,7 +57915,7 @@ type ListIdPGroupMappingsRequest struct {
 
 func (x *ListIdPGroupMappingsRequest) Reset() {
 	*x = ListIdPGroupMappingsRequest{}
-	mi := &file_relay_server_v1_server_proto_msgTypes[867]
+	mi := &file_relay_server_v1_server_proto_msgTypes[869]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -57846,7 +57927,7 @@ func (x *ListIdPGroupMappingsRequest) String() string {
 func (*ListIdPGroupMappingsRequest) ProtoMessage() {}
 
 func (x *ListIdPGroupMappingsRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_relay_server_v1_server_proto_msgTypes[867]
+	mi := &file_relay_server_v1_server_proto_msgTypes[869]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -57859,7 +57940,7 @@ func (x *ListIdPGroupMappingsRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use ListIdPGroupMappingsRequest.ProtoReflect.Descriptor instead.
 func (*ListIdPGroupMappingsRequest) Descriptor() ([]byte, []int) {
-	return file_relay_server_v1_server_proto_rawDescGZIP(), []int{867}
+	return file_relay_server_v1_server_proto_rawDescGZIP(), []int{869}
 }
 
 type ListIdPGroupMappingsResponse struct {
@@ -57871,7 +57952,7 @@ type ListIdPGroupMappingsResponse struct {
 
 func (x *ListIdPGroupMappingsResponse) Reset() {
 	*x = ListIdPGroupMappingsResponse{}
-	mi := &file_relay_server_v1_server_proto_msgTypes[868]
+	mi := &file_relay_server_v1_server_proto_msgTypes[870]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -57883,7 +57964,7 @@ func (x *ListIdPGroupMappingsResponse) String() string {
 func (*ListIdPGroupMappingsResponse) ProtoMessage() {}
 
 func (x *ListIdPGroupMappingsResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_relay_server_v1_server_proto_msgTypes[868]
+	mi := &file_relay_server_v1_server_proto_msgTypes[870]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -57896,7 +57977,7 @@ func (x *ListIdPGroupMappingsResponse) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use ListIdPGroupMappingsResponse.ProtoReflect.Descriptor instead.
 func (*ListIdPGroupMappingsResponse) Descriptor() ([]byte, []int) {
-	return file_relay_server_v1_server_proto_rawDescGZIP(), []int{868}
+	return file_relay_server_v1_server_proto_rawDescGZIP(), []int{870}
 }
 
 func (x *ListIdPGroupMappingsResponse) GetMappings() []*IdPGroupMapping {
@@ -57925,7 +58006,7 @@ type UpsertIdPGroupMappingRequest struct {
 
 func (x *UpsertIdPGroupMappingRequest) Reset() {
 	*x = UpsertIdPGroupMappingRequest{}
-	mi := &file_relay_server_v1_server_proto_msgTypes[869]
+	mi := &file_relay_server_v1_server_proto_msgTypes[871]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -57937,7 +58018,7 @@ func (x *UpsertIdPGroupMappingRequest) String() string {
 func (*UpsertIdPGroupMappingRequest) ProtoMessage() {}
 
 func (x *UpsertIdPGroupMappingRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_relay_server_v1_server_proto_msgTypes[869]
+	mi := &file_relay_server_v1_server_proto_msgTypes[871]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -57950,7 +58031,7 @@ func (x *UpsertIdPGroupMappingRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use UpsertIdPGroupMappingRequest.ProtoReflect.Descriptor instead.
 func (*UpsertIdPGroupMappingRequest) Descriptor() ([]byte, []int) {
-	return file_relay_server_v1_server_proto_rawDescGZIP(), []int{869}
+	return file_relay_server_v1_server_proto_rawDescGZIP(), []int{871}
 }
 
 func (x *UpsertIdPGroupMappingRequest) GetSource() string {
@@ -58004,7 +58085,7 @@ type UpsertIdPGroupMappingResponse struct {
 
 func (x *UpsertIdPGroupMappingResponse) Reset() {
 	*x = UpsertIdPGroupMappingResponse{}
-	mi := &file_relay_server_v1_server_proto_msgTypes[870]
+	mi := &file_relay_server_v1_server_proto_msgTypes[872]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -58016,7 +58097,7 @@ func (x *UpsertIdPGroupMappingResponse) String() string {
 func (*UpsertIdPGroupMappingResponse) ProtoMessage() {}
 
 func (x *UpsertIdPGroupMappingResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_relay_server_v1_server_proto_msgTypes[870]
+	mi := &file_relay_server_v1_server_proto_msgTypes[872]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -58029,7 +58110,7 @@ func (x *UpsertIdPGroupMappingResponse) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use UpsertIdPGroupMappingResponse.ProtoReflect.Descriptor instead.
 func (*UpsertIdPGroupMappingResponse) Descriptor() ([]byte, []int) {
-	return file_relay_server_v1_server_proto_rawDescGZIP(), []int{870}
+	return file_relay_server_v1_server_proto_rawDescGZIP(), []int{872}
 }
 
 func (x *UpsertIdPGroupMappingResponse) GetMapping() *IdPGroupMapping {
@@ -58048,7 +58129,7 @@ type DeleteIdPGroupMappingRequest struct {
 
 func (x *DeleteIdPGroupMappingRequest) Reset() {
 	*x = DeleteIdPGroupMappingRequest{}
-	mi := &file_relay_server_v1_server_proto_msgTypes[871]
+	mi := &file_relay_server_v1_server_proto_msgTypes[873]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -58060,7 +58141,7 @@ func (x *DeleteIdPGroupMappingRequest) String() string {
 func (*DeleteIdPGroupMappingRequest) ProtoMessage() {}
 
 func (x *DeleteIdPGroupMappingRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_relay_server_v1_server_proto_msgTypes[871]
+	mi := &file_relay_server_v1_server_proto_msgTypes[873]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -58073,7 +58154,7 @@ func (x *DeleteIdPGroupMappingRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use DeleteIdPGroupMappingRequest.ProtoReflect.Descriptor instead.
 func (*DeleteIdPGroupMappingRequest) Descriptor() ([]byte, []int) {
-	return file_relay_server_v1_server_proto_rawDescGZIP(), []int{871}
+	return file_relay_server_v1_server_proto_rawDescGZIP(), []int{873}
 }
 
 func (x *DeleteIdPGroupMappingRequest) GetId() string {
@@ -58091,7 +58172,7 @@ type DeleteIdPGroupMappingResponse struct {
 
 func (x *DeleteIdPGroupMappingResponse) Reset() {
 	*x = DeleteIdPGroupMappingResponse{}
-	mi := &file_relay_server_v1_server_proto_msgTypes[872]
+	mi := &file_relay_server_v1_server_proto_msgTypes[874]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -58103,7 +58184,7 @@ func (x *DeleteIdPGroupMappingResponse) String() string {
 func (*DeleteIdPGroupMappingResponse) ProtoMessage() {}
 
 func (x *DeleteIdPGroupMappingResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_relay_server_v1_server_proto_msgTypes[872]
+	mi := &file_relay_server_v1_server_proto_msgTypes[874]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -58116,7 +58197,7 @@ func (x *DeleteIdPGroupMappingResponse) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use DeleteIdPGroupMappingResponse.ProtoReflect.Descriptor instead.
 func (*DeleteIdPGroupMappingResponse) Descriptor() ([]byte, []int) {
-	return file_relay_server_v1_server_proto_rawDescGZIP(), []int{872}
+	return file_relay_server_v1_server_proto_rawDescGZIP(), []int{874}
 }
 
 type AdminOrgDomain struct {
@@ -58129,7 +58210,7 @@ type AdminOrgDomain struct {
 
 func (x *AdminOrgDomain) Reset() {
 	*x = AdminOrgDomain{}
-	mi := &file_relay_server_v1_server_proto_msgTypes[873]
+	mi := &file_relay_server_v1_server_proto_msgTypes[875]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -58141,7 +58222,7 @@ func (x *AdminOrgDomain) String() string {
 func (*AdminOrgDomain) ProtoMessage() {}
 
 func (x *AdminOrgDomain) ProtoReflect() protoreflect.Message {
-	mi := &file_relay_server_v1_server_proto_msgTypes[873]
+	mi := &file_relay_server_v1_server_proto_msgTypes[875]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -58154,7 +58235,7 @@ func (x *AdminOrgDomain) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use AdminOrgDomain.ProtoReflect.Descriptor instead.
 func (*AdminOrgDomain) Descriptor() ([]byte, []int) {
-	return file_relay_server_v1_server_proto_rawDescGZIP(), []int{873}
+	return file_relay_server_v1_server_proto_rawDescGZIP(), []int{875}
 }
 
 func (x *AdminOrgDomain) GetOrgId() string {
@@ -58180,7 +58261,7 @@ type AdminListOrgDomainsRequest struct {
 
 func (x *AdminListOrgDomainsRequest) Reset() {
 	*x = AdminListOrgDomainsRequest{}
-	mi := &file_relay_server_v1_server_proto_msgTypes[874]
+	mi := &file_relay_server_v1_server_proto_msgTypes[876]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -58192,7 +58273,7 @@ func (x *AdminListOrgDomainsRequest) String() string {
 func (*AdminListOrgDomainsRequest) ProtoMessage() {}
 
 func (x *AdminListOrgDomainsRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_relay_server_v1_server_proto_msgTypes[874]
+	mi := &file_relay_server_v1_server_proto_msgTypes[876]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -58205,7 +58286,7 @@ func (x *AdminListOrgDomainsRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use AdminListOrgDomainsRequest.ProtoReflect.Descriptor instead.
 func (*AdminListOrgDomainsRequest) Descriptor() ([]byte, []int) {
-	return file_relay_server_v1_server_proto_rawDescGZIP(), []int{874}
+	return file_relay_server_v1_server_proto_rawDescGZIP(), []int{876}
 }
 
 func (x *AdminListOrgDomainsRequest) GetDomain() string {
@@ -58224,7 +58305,7 @@ type AdminListOrgDomainsResponse struct {
 
 func (x *AdminListOrgDomainsResponse) Reset() {
 	*x = AdminListOrgDomainsResponse{}
-	mi := &file_relay_server_v1_server_proto_msgTypes[875]
+	mi := &file_relay_server_v1_server_proto_msgTypes[877]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -58236,7 +58317,7 @@ func (x *AdminListOrgDomainsResponse) String() string {
 func (*AdminListOrgDomainsResponse) ProtoMessage() {}
 
 func (x *AdminListOrgDomainsResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_relay_server_v1_server_proto_msgTypes[875]
+	mi := &file_relay_server_v1_server_proto_msgTypes[877]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -58249,7 +58330,7 @@ func (x *AdminListOrgDomainsResponse) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use AdminListOrgDomainsResponse.ProtoReflect.Descriptor instead.
 func (*AdminListOrgDomainsResponse) Descriptor() ([]byte, []int) {
-	return file_relay_server_v1_server_proto_rawDescGZIP(), []int{875}
+	return file_relay_server_v1_server_proto_rawDescGZIP(), []int{877}
 }
 
 func (x *AdminListOrgDomainsResponse) GetDomains() []*AdminOrgDomain {
@@ -58269,7 +58350,7 @@ type AdminRemoveOrgDomainRequest struct {
 
 func (x *AdminRemoveOrgDomainRequest) Reset() {
 	*x = AdminRemoveOrgDomainRequest{}
-	mi := &file_relay_server_v1_server_proto_msgTypes[876]
+	mi := &file_relay_server_v1_server_proto_msgTypes[878]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -58281,7 +58362,7 @@ func (x *AdminRemoveOrgDomainRequest) String() string {
 func (*AdminRemoveOrgDomainRequest) ProtoMessage() {}
 
 func (x *AdminRemoveOrgDomainRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_relay_server_v1_server_proto_msgTypes[876]
+	mi := &file_relay_server_v1_server_proto_msgTypes[878]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -58294,7 +58375,7 @@ func (x *AdminRemoveOrgDomainRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use AdminRemoveOrgDomainRequest.ProtoReflect.Descriptor instead.
 func (*AdminRemoveOrgDomainRequest) Descriptor() ([]byte, []int) {
-	return file_relay_server_v1_server_proto_rawDescGZIP(), []int{876}
+	return file_relay_server_v1_server_proto_rawDescGZIP(), []int{878}
 }
 
 func (x *AdminRemoveOrgDomainRequest) GetOrgId() string {
@@ -58319,7 +58400,7 @@ type AdminRemoveOrgDomainResponse struct {
 
 func (x *AdminRemoveOrgDomainResponse) Reset() {
 	*x = AdminRemoveOrgDomainResponse{}
-	mi := &file_relay_server_v1_server_proto_msgTypes[877]
+	mi := &file_relay_server_v1_server_proto_msgTypes[879]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -58331,7 +58412,7 @@ func (x *AdminRemoveOrgDomainResponse) String() string {
 func (*AdminRemoveOrgDomainResponse) ProtoMessage() {}
 
 func (x *AdminRemoveOrgDomainResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_relay_server_v1_server_proto_msgTypes[877]
+	mi := &file_relay_server_v1_server_proto_msgTypes[879]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -58344,7 +58425,7 @@ func (x *AdminRemoveOrgDomainResponse) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use AdminRemoveOrgDomainResponse.ProtoReflect.Descriptor instead.
 func (*AdminRemoveOrgDomainResponse) Descriptor() ([]byte, []int) {
-	return file_relay_server_v1_server_proto_rawDescGZIP(), []int{877}
+	return file_relay_server_v1_server_proto_rawDescGZIP(), []int{879}
 }
 
 type PostgreSQLExtensionInfo struct {
@@ -58357,7 +58438,7 @@ type PostgreSQLExtensionInfo struct {
 
 func (x *PostgreSQLExtensionInfo) Reset() {
 	*x = PostgreSQLExtensionInfo{}
-	mi := &file_relay_server_v1_server_proto_msgTypes[878]
+	mi := &file_relay_server_v1_server_proto_msgTypes[880]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -58369,7 +58450,7 @@ func (x *PostgreSQLExtensionInfo) String() string {
 func (*PostgreSQLExtensionInfo) ProtoMessage() {}
 
 func (x *PostgreSQLExtensionInfo) ProtoReflect() protoreflect.Message {
-	mi := &file_relay_server_v1_server_proto_msgTypes[878]
+	mi := &file_relay_server_v1_server_proto_msgTypes[880]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -58382,7 +58463,7 @@ func (x *PostgreSQLExtensionInfo) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use PostgreSQLExtensionInfo.ProtoReflect.Descriptor instead.
 func (*PostgreSQLExtensionInfo) Descriptor() ([]byte, []int) {
-	return file_relay_server_v1_server_proto_rawDescGZIP(), []int{878}
+	return file_relay_server_v1_server_proto_rawDescGZIP(), []int{880}
 }
 
 func (x *PostgreSQLExtensionInfo) GetName() string {
@@ -58408,7 +58489,7 @@ type ListPostgreSQLExtensionsRequest struct {
 
 func (x *ListPostgreSQLExtensionsRequest) Reset() {
 	*x = ListPostgreSQLExtensionsRequest{}
-	mi := &file_relay_server_v1_server_proto_msgTypes[879]
+	mi := &file_relay_server_v1_server_proto_msgTypes[881]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -58420,7 +58501,7 @@ func (x *ListPostgreSQLExtensionsRequest) String() string {
 func (*ListPostgreSQLExtensionsRequest) ProtoMessage() {}
 
 func (x *ListPostgreSQLExtensionsRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_relay_server_v1_server_proto_msgTypes[879]
+	mi := &file_relay_server_v1_server_proto_msgTypes[881]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -58433,7 +58514,7 @@ func (x *ListPostgreSQLExtensionsRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use ListPostgreSQLExtensionsRequest.ProtoReflect.Descriptor instead.
 func (*ListPostgreSQLExtensionsRequest) Descriptor() ([]byte, []int) {
-	return file_relay_server_v1_server_proto_rawDescGZIP(), []int{879}
+	return file_relay_server_v1_server_proto_rawDescGZIP(), []int{881}
 }
 
 func (x *ListPostgreSQLExtensionsRequest) GetVersion() string {
@@ -58452,7 +58533,7 @@ type ListPostgreSQLExtensionsResponse struct {
 
 func (x *ListPostgreSQLExtensionsResponse) Reset() {
 	*x = ListPostgreSQLExtensionsResponse{}
-	mi := &file_relay_server_v1_server_proto_msgTypes[880]
+	mi := &file_relay_server_v1_server_proto_msgTypes[882]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -58464,7 +58545,7 @@ func (x *ListPostgreSQLExtensionsResponse) String() string {
 func (*ListPostgreSQLExtensionsResponse) ProtoMessage() {}
 
 func (x *ListPostgreSQLExtensionsResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_relay_server_v1_server_proto_msgTypes[880]
+	mi := &file_relay_server_v1_server_proto_msgTypes[882]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -58477,7 +58558,7 @@ func (x *ListPostgreSQLExtensionsResponse) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use ListPostgreSQLExtensionsResponse.ProtoReflect.Descriptor instead.
 func (*ListPostgreSQLExtensionsResponse) Descriptor() ([]byte, []int) {
-	return file_relay_server_v1_server_proto_rawDescGZIP(), []int{880}
+	return file_relay_server_v1_server_proto_rawDescGZIP(), []int{882}
 }
 
 func (x *ListPostgreSQLExtensionsResponse) GetExtensions() []*PostgreSQLExtensionInfo {
@@ -58512,7 +58593,7 @@ type FeatureFlag struct {
 
 func (x *FeatureFlag) Reset() {
 	*x = FeatureFlag{}
-	mi := &file_relay_server_v1_server_proto_msgTypes[881]
+	mi := &file_relay_server_v1_server_proto_msgTypes[883]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -58524,7 +58605,7 @@ func (x *FeatureFlag) String() string {
 func (*FeatureFlag) ProtoMessage() {}
 
 func (x *FeatureFlag) ProtoReflect() protoreflect.Message {
-	mi := &file_relay_server_v1_server_proto_msgTypes[881]
+	mi := &file_relay_server_v1_server_proto_msgTypes[883]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -58537,7 +58618,7 @@ func (x *FeatureFlag) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use FeatureFlag.ProtoReflect.Descriptor instead.
 func (*FeatureFlag) Descriptor() ([]byte, []int) {
-	return file_relay_server_v1_server_proto_rawDescGZIP(), []int{881}
+	return file_relay_server_v1_server_proto_rawDescGZIP(), []int{883}
 }
 
 func (x *FeatureFlag) GetKey() string {
@@ -58627,7 +58708,7 @@ type AdminListFeatureFlagsRequest struct {
 
 func (x *AdminListFeatureFlagsRequest) Reset() {
 	*x = AdminListFeatureFlagsRequest{}
-	mi := &file_relay_server_v1_server_proto_msgTypes[882]
+	mi := &file_relay_server_v1_server_proto_msgTypes[884]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -58639,7 +58720,7 @@ func (x *AdminListFeatureFlagsRequest) String() string {
 func (*AdminListFeatureFlagsRequest) ProtoMessage() {}
 
 func (x *AdminListFeatureFlagsRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_relay_server_v1_server_proto_msgTypes[882]
+	mi := &file_relay_server_v1_server_proto_msgTypes[884]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -58652,7 +58733,7 @@ func (x *AdminListFeatureFlagsRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use AdminListFeatureFlagsRequest.ProtoReflect.Descriptor instead.
 func (*AdminListFeatureFlagsRequest) Descriptor() ([]byte, []int) {
-	return file_relay_server_v1_server_proto_rawDescGZIP(), []int{882}
+	return file_relay_server_v1_server_proto_rawDescGZIP(), []int{884}
 }
 
 func (x *AdminListFeatureFlagsRequest) GetIncludeArchived() bool {
@@ -58671,7 +58752,7 @@ type AdminListFeatureFlagsResponse struct {
 
 func (x *AdminListFeatureFlagsResponse) Reset() {
 	*x = AdminListFeatureFlagsResponse{}
-	mi := &file_relay_server_v1_server_proto_msgTypes[883]
+	mi := &file_relay_server_v1_server_proto_msgTypes[885]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -58683,7 +58764,7 @@ func (x *AdminListFeatureFlagsResponse) String() string {
 func (*AdminListFeatureFlagsResponse) ProtoMessage() {}
 
 func (x *AdminListFeatureFlagsResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_relay_server_v1_server_proto_msgTypes[883]
+	mi := &file_relay_server_v1_server_proto_msgTypes[885]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -58696,7 +58777,7 @@ func (x *AdminListFeatureFlagsResponse) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use AdminListFeatureFlagsResponse.ProtoReflect.Descriptor instead.
 func (*AdminListFeatureFlagsResponse) Descriptor() ([]byte, []int) {
-	return file_relay_server_v1_server_proto_rawDescGZIP(), []int{883}
+	return file_relay_server_v1_server_proto_rawDescGZIP(), []int{885}
 }
 
 func (x *AdminListFeatureFlagsResponse) GetFlags() []*FeatureFlag {
@@ -58715,7 +58796,7 @@ type AdminGetFeatureFlagRequest struct {
 
 func (x *AdminGetFeatureFlagRequest) Reset() {
 	*x = AdminGetFeatureFlagRequest{}
-	mi := &file_relay_server_v1_server_proto_msgTypes[884]
+	mi := &file_relay_server_v1_server_proto_msgTypes[886]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -58727,7 +58808,7 @@ func (x *AdminGetFeatureFlagRequest) String() string {
 func (*AdminGetFeatureFlagRequest) ProtoMessage() {}
 
 func (x *AdminGetFeatureFlagRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_relay_server_v1_server_proto_msgTypes[884]
+	mi := &file_relay_server_v1_server_proto_msgTypes[886]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -58740,7 +58821,7 @@ func (x *AdminGetFeatureFlagRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use AdminGetFeatureFlagRequest.ProtoReflect.Descriptor instead.
 func (*AdminGetFeatureFlagRequest) Descriptor() ([]byte, []int) {
-	return file_relay_server_v1_server_proto_rawDescGZIP(), []int{884}
+	return file_relay_server_v1_server_proto_rawDescGZIP(), []int{886}
 }
 
 func (x *AdminGetFeatureFlagRequest) GetKey() string {
@@ -58759,7 +58840,7 @@ type AdminGetFeatureFlagResponse struct {
 
 func (x *AdminGetFeatureFlagResponse) Reset() {
 	*x = AdminGetFeatureFlagResponse{}
-	mi := &file_relay_server_v1_server_proto_msgTypes[885]
+	mi := &file_relay_server_v1_server_proto_msgTypes[887]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -58771,7 +58852,7 @@ func (x *AdminGetFeatureFlagResponse) String() string {
 func (*AdminGetFeatureFlagResponse) ProtoMessage() {}
 
 func (x *AdminGetFeatureFlagResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_relay_server_v1_server_proto_msgTypes[885]
+	mi := &file_relay_server_v1_server_proto_msgTypes[887]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -58784,7 +58865,7 @@ func (x *AdminGetFeatureFlagResponse) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use AdminGetFeatureFlagResponse.ProtoReflect.Descriptor instead.
 func (*AdminGetFeatureFlagResponse) Descriptor() ([]byte, []int) {
-	return file_relay_server_v1_server_proto_rawDescGZIP(), []int{885}
+	return file_relay_server_v1_server_proto_rawDescGZIP(), []int{887}
 }
 
 func (x *AdminGetFeatureFlagResponse) GetFlag() *FeatureFlag {
@@ -58804,7 +58885,7 @@ type AdminCreateFeatureFlagRequest struct {
 
 func (x *AdminCreateFeatureFlagRequest) Reset() {
 	*x = AdminCreateFeatureFlagRequest{}
-	mi := &file_relay_server_v1_server_proto_msgTypes[886]
+	mi := &file_relay_server_v1_server_proto_msgTypes[888]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -58816,7 +58897,7 @@ func (x *AdminCreateFeatureFlagRequest) String() string {
 func (*AdminCreateFeatureFlagRequest) ProtoMessage() {}
 
 func (x *AdminCreateFeatureFlagRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_relay_server_v1_server_proto_msgTypes[886]
+	mi := &file_relay_server_v1_server_proto_msgTypes[888]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -58829,7 +58910,7 @@ func (x *AdminCreateFeatureFlagRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use AdminCreateFeatureFlagRequest.ProtoReflect.Descriptor instead.
 func (*AdminCreateFeatureFlagRequest) Descriptor() ([]byte, []int) {
-	return file_relay_server_v1_server_proto_rawDescGZIP(), []int{886}
+	return file_relay_server_v1_server_proto_rawDescGZIP(), []int{888}
 }
 
 func (x *AdminCreateFeatureFlagRequest) GetKey() string {
@@ -58855,7 +58936,7 @@ type AdminCreateFeatureFlagResponse struct {
 
 func (x *AdminCreateFeatureFlagResponse) Reset() {
 	*x = AdminCreateFeatureFlagResponse{}
-	mi := &file_relay_server_v1_server_proto_msgTypes[887]
+	mi := &file_relay_server_v1_server_proto_msgTypes[889]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -58867,7 +58948,7 @@ func (x *AdminCreateFeatureFlagResponse) String() string {
 func (*AdminCreateFeatureFlagResponse) ProtoMessage() {}
 
 func (x *AdminCreateFeatureFlagResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_relay_server_v1_server_proto_msgTypes[887]
+	mi := &file_relay_server_v1_server_proto_msgTypes[889]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -58880,7 +58961,7 @@ func (x *AdminCreateFeatureFlagResponse) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use AdminCreateFeatureFlagResponse.ProtoReflect.Descriptor instead.
 func (*AdminCreateFeatureFlagResponse) Descriptor() ([]byte, []int) {
-	return file_relay_server_v1_server_proto_rawDescGZIP(), []int{887}
+	return file_relay_server_v1_server_proto_rawDescGZIP(), []int{889}
 }
 
 func (x *AdminCreateFeatureFlagResponse) GetFlag() *FeatureFlag {
@@ -58904,7 +58985,7 @@ type AdminUpdateFeatureFlagRequest struct {
 
 func (x *AdminUpdateFeatureFlagRequest) Reset() {
 	*x = AdminUpdateFeatureFlagRequest{}
-	mi := &file_relay_server_v1_server_proto_msgTypes[888]
+	mi := &file_relay_server_v1_server_proto_msgTypes[890]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -58916,7 +58997,7 @@ func (x *AdminUpdateFeatureFlagRequest) String() string {
 func (*AdminUpdateFeatureFlagRequest) ProtoMessage() {}
 
 func (x *AdminUpdateFeatureFlagRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_relay_server_v1_server_proto_msgTypes[888]
+	mi := &file_relay_server_v1_server_proto_msgTypes[890]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -58929,7 +59010,7 @@ func (x *AdminUpdateFeatureFlagRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use AdminUpdateFeatureFlagRequest.ProtoReflect.Descriptor instead.
 func (*AdminUpdateFeatureFlagRequest) Descriptor() ([]byte, []int) {
-	return file_relay_server_v1_server_proto_rawDescGZIP(), []int{888}
+	return file_relay_server_v1_server_proto_rawDescGZIP(), []int{890}
 }
 
 func (x *AdminUpdateFeatureFlagRequest) GetKey() string {
@@ -58983,7 +59064,7 @@ type AdminUpdateFeatureFlagResponse struct {
 
 func (x *AdminUpdateFeatureFlagResponse) Reset() {
 	*x = AdminUpdateFeatureFlagResponse{}
-	mi := &file_relay_server_v1_server_proto_msgTypes[889]
+	mi := &file_relay_server_v1_server_proto_msgTypes[891]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -58995,7 +59076,7 @@ func (x *AdminUpdateFeatureFlagResponse) String() string {
 func (*AdminUpdateFeatureFlagResponse) ProtoMessage() {}
 
 func (x *AdminUpdateFeatureFlagResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_relay_server_v1_server_proto_msgTypes[889]
+	mi := &file_relay_server_v1_server_proto_msgTypes[891]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -59008,7 +59089,7 @@ func (x *AdminUpdateFeatureFlagResponse) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use AdminUpdateFeatureFlagResponse.ProtoReflect.Descriptor instead.
 func (*AdminUpdateFeatureFlagResponse) Descriptor() ([]byte, []int) {
-	return file_relay_server_v1_server_proto_rawDescGZIP(), []int{889}
+	return file_relay_server_v1_server_proto_rawDescGZIP(), []int{891}
 }
 
 func (x *AdminUpdateFeatureFlagResponse) GetFlag() *FeatureFlag {
@@ -59028,7 +59109,7 @@ type AdminArchiveFeatureFlagRequest struct {
 
 func (x *AdminArchiveFeatureFlagRequest) Reset() {
 	*x = AdminArchiveFeatureFlagRequest{}
-	mi := &file_relay_server_v1_server_proto_msgTypes[890]
+	mi := &file_relay_server_v1_server_proto_msgTypes[892]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -59040,7 +59121,7 @@ func (x *AdminArchiveFeatureFlagRequest) String() string {
 func (*AdminArchiveFeatureFlagRequest) ProtoMessage() {}
 
 func (x *AdminArchiveFeatureFlagRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_relay_server_v1_server_proto_msgTypes[890]
+	mi := &file_relay_server_v1_server_proto_msgTypes[892]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -59053,7 +59134,7 @@ func (x *AdminArchiveFeatureFlagRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use AdminArchiveFeatureFlagRequest.ProtoReflect.Descriptor instead.
 func (*AdminArchiveFeatureFlagRequest) Descriptor() ([]byte, []int) {
-	return file_relay_server_v1_server_proto_rawDescGZIP(), []int{890}
+	return file_relay_server_v1_server_proto_rawDescGZIP(), []int{892}
 }
 
 func (x *AdminArchiveFeatureFlagRequest) GetKey() string {
@@ -59079,7 +59160,7 @@ type AdminArchiveFeatureFlagResponse struct {
 
 func (x *AdminArchiveFeatureFlagResponse) Reset() {
 	*x = AdminArchiveFeatureFlagResponse{}
-	mi := &file_relay_server_v1_server_proto_msgTypes[891]
+	mi := &file_relay_server_v1_server_proto_msgTypes[893]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -59091,7 +59172,7 @@ func (x *AdminArchiveFeatureFlagResponse) String() string {
 func (*AdminArchiveFeatureFlagResponse) ProtoMessage() {}
 
 func (x *AdminArchiveFeatureFlagResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_relay_server_v1_server_proto_msgTypes[891]
+	mi := &file_relay_server_v1_server_proto_msgTypes[893]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -59104,7 +59185,7 @@ func (x *AdminArchiveFeatureFlagResponse) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use AdminArchiveFeatureFlagResponse.ProtoReflect.Descriptor instead.
 func (*AdminArchiveFeatureFlagResponse) Descriptor() ([]byte, []int) {
-	return file_relay_server_v1_server_proto_rawDescGZIP(), []int{891}
+	return file_relay_server_v1_server_proto_rawDescGZIP(), []int{893}
 }
 
 func (x *AdminArchiveFeatureFlagResponse) GetFlag() *FeatureFlag {
@@ -59126,7 +59207,7 @@ type AdminSetOrgFeatureOverrideRequest struct {
 
 func (x *AdminSetOrgFeatureOverrideRequest) Reset() {
 	*x = AdminSetOrgFeatureOverrideRequest{}
-	mi := &file_relay_server_v1_server_proto_msgTypes[892]
+	mi := &file_relay_server_v1_server_proto_msgTypes[894]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -59138,7 +59219,7 @@ func (x *AdminSetOrgFeatureOverrideRequest) String() string {
 func (*AdminSetOrgFeatureOverrideRequest) ProtoMessage() {}
 
 func (x *AdminSetOrgFeatureOverrideRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_relay_server_v1_server_proto_msgTypes[892]
+	mi := &file_relay_server_v1_server_proto_msgTypes[894]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -59151,7 +59232,7 @@ func (x *AdminSetOrgFeatureOverrideRequest) ProtoReflect() protoreflect.Message 
 
 // Deprecated: Use AdminSetOrgFeatureOverrideRequest.ProtoReflect.Descriptor instead.
 func (*AdminSetOrgFeatureOverrideRequest) Descriptor() ([]byte, []int) {
-	return file_relay_server_v1_server_proto_rawDescGZIP(), []int{892}
+	return file_relay_server_v1_server_proto_rawDescGZIP(), []int{894}
 }
 
 func (x *AdminSetOrgFeatureOverrideRequest) GetKey() string {
@@ -59183,7 +59264,7 @@ type AdminSetOrgFeatureOverrideResponse struct {
 
 func (x *AdminSetOrgFeatureOverrideResponse) Reset() {
 	*x = AdminSetOrgFeatureOverrideResponse{}
-	mi := &file_relay_server_v1_server_proto_msgTypes[893]
+	mi := &file_relay_server_v1_server_proto_msgTypes[895]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -59195,7 +59276,7 @@ func (x *AdminSetOrgFeatureOverrideResponse) String() string {
 func (*AdminSetOrgFeatureOverrideResponse) ProtoMessage() {}
 
 func (x *AdminSetOrgFeatureOverrideResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_relay_server_v1_server_proto_msgTypes[893]
+	mi := &file_relay_server_v1_server_proto_msgTypes[895]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -59208,7 +59289,7 @@ func (x *AdminSetOrgFeatureOverrideResponse) ProtoReflect() protoreflect.Message
 
 // Deprecated: Use AdminSetOrgFeatureOverrideResponse.ProtoReflect.Descriptor instead.
 func (*AdminSetOrgFeatureOverrideResponse) Descriptor() ([]byte, []int) {
-	return file_relay_server_v1_server_proto_rawDescGZIP(), []int{893}
+	return file_relay_server_v1_server_proto_rawDescGZIP(), []int{895}
 }
 
 type AdminClearOrgFeatureOverrideRequest struct {
@@ -59221,7 +59302,7 @@ type AdminClearOrgFeatureOverrideRequest struct {
 
 func (x *AdminClearOrgFeatureOverrideRequest) Reset() {
 	*x = AdminClearOrgFeatureOverrideRequest{}
-	mi := &file_relay_server_v1_server_proto_msgTypes[894]
+	mi := &file_relay_server_v1_server_proto_msgTypes[896]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -59233,7 +59314,7 @@ func (x *AdminClearOrgFeatureOverrideRequest) String() string {
 func (*AdminClearOrgFeatureOverrideRequest) ProtoMessage() {}
 
 func (x *AdminClearOrgFeatureOverrideRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_relay_server_v1_server_proto_msgTypes[894]
+	mi := &file_relay_server_v1_server_proto_msgTypes[896]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -59246,7 +59327,7 @@ func (x *AdminClearOrgFeatureOverrideRequest) ProtoReflect() protoreflect.Messag
 
 // Deprecated: Use AdminClearOrgFeatureOverrideRequest.ProtoReflect.Descriptor instead.
 func (*AdminClearOrgFeatureOverrideRequest) Descriptor() ([]byte, []int) {
-	return file_relay_server_v1_server_proto_rawDescGZIP(), []int{894}
+	return file_relay_server_v1_server_proto_rawDescGZIP(), []int{896}
 }
 
 func (x *AdminClearOrgFeatureOverrideRequest) GetKey() string {
@@ -59271,7 +59352,7 @@ type AdminClearOrgFeatureOverrideResponse struct {
 
 func (x *AdminClearOrgFeatureOverrideResponse) Reset() {
 	*x = AdminClearOrgFeatureOverrideResponse{}
-	mi := &file_relay_server_v1_server_proto_msgTypes[895]
+	mi := &file_relay_server_v1_server_proto_msgTypes[897]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -59283,7 +59364,7 @@ func (x *AdminClearOrgFeatureOverrideResponse) String() string {
 func (*AdminClearOrgFeatureOverrideResponse) ProtoMessage() {}
 
 func (x *AdminClearOrgFeatureOverrideResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_relay_server_v1_server_proto_msgTypes[895]
+	mi := &file_relay_server_v1_server_proto_msgTypes[897]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -59296,7 +59377,7 @@ func (x *AdminClearOrgFeatureOverrideResponse) ProtoReflect() protoreflect.Messa
 
 // Deprecated: Use AdminClearOrgFeatureOverrideResponse.ProtoReflect.Descriptor instead.
 func (*AdminClearOrgFeatureOverrideResponse) Descriptor() ([]byte, []int) {
-	return file_relay_server_v1_server_proto_rawDescGZIP(), []int{895}
+	return file_relay_server_v1_server_proto_rawDescGZIP(), []int{897}
 }
 
 // FeatureFlagOrganization is one org a flag reaches, with the source of its state.
@@ -59314,7 +59395,7 @@ type FeatureFlagOrganization struct {
 
 func (x *FeatureFlagOrganization) Reset() {
 	*x = FeatureFlagOrganization{}
-	mi := &file_relay_server_v1_server_proto_msgTypes[896]
+	mi := &file_relay_server_v1_server_proto_msgTypes[898]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -59326,7 +59407,7 @@ func (x *FeatureFlagOrganization) String() string {
 func (*FeatureFlagOrganization) ProtoMessage() {}
 
 func (x *FeatureFlagOrganization) ProtoReflect() protoreflect.Message {
-	mi := &file_relay_server_v1_server_proto_msgTypes[896]
+	mi := &file_relay_server_v1_server_proto_msgTypes[898]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -59339,7 +59420,7 @@ func (x *FeatureFlagOrganization) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use FeatureFlagOrganization.ProtoReflect.Descriptor instead.
 func (*FeatureFlagOrganization) Descriptor() ([]byte, []int) {
-	return file_relay_server_v1_server_proto_rawDescGZIP(), []int{896}
+	return file_relay_server_v1_server_proto_rawDescGZIP(), []int{898}
 }
 
 func (x *FeatureFlagOrganization) GetOrgId() string {
@@ -59386,7 +59467,7 @@ type AdminListFeatureFlagOrganizationsRequest struct {
 
 func (x *AdminListFeatureFlagOrganizationsRequest) Reset() {
 	*x = AdminListFeatureFlagOrganizationsRequest{}
-	mi := &file_relay_server_v1_server_proto_msgTypes[897]
+	mi := &file_relay_server_v1_server_proto_msgTypes[899]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -59398,7 +59479,7 @@ func (x *AdminListFeatureFlagOrganizationsRequest) String() string {
 func (*AdminListFeatureFlagOrganizationsRequest) ProtoMessage() {}
 
 func (x *AdminListFeatureFlagOrganizationsRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_relay_server_v1_server_proto_msgTypes[897]
+	mi := &file_relay_server_v1_server_proto_msgTypes[899]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -59411,7 +59492,7 @@ func (x *AdminListFeatureFlagOrganizationsRequest) ProtoReflect() protoreflect.M
 
 // Deprecated: Use AdminListFeatureFlagOrganizationsRequest.ProtoReflect.Descriptor instead.
 func (*AdminListFeatureFlagOrganizationsRequest) Descriptor() ([]byte, []int) {
-	return file_relay_server_v1_server_proto_rawDescGZIP(), []int{897}
+	return file_relay_server_v1_server_proto_rawDescGZIP(), []int{899}
 }
 
 func (x *AdminListFeatureFlagOrganizationsRequest) GetKey() string {
@@ -59430,7 +59511,7 @@ type AdminListFeatureFlagOrganizationsResponse struct {
 
 func (x *AdminListFeatureFlagOrganizationsResponse) Reset() {
 	*x = AdminListFeatureFlagOrganizationsResponse{}
-	mi := &file_relay_server_v1_server_proto_msgTypes[898]
+	mi := &file_relay_server_v1_server_proto_msgTypes[900]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -59442,7 +59523,7 @@ func (x *AdminListFeatureFlagOrganizationsResponse) String() string {
 func (*AdminListFeatureFlagOrganizationsResponse) ProtoMessage() {}
 
 func (x *AdminListFeatureFlagOrganizationsResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_relay_server_v1_server_proto_msgTypes[898]
+	mi := &file_relay_server_v1_server_proto_msgTypes[900]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -59455,7 +59536,7 @@ func (x *AdminListFeatureFlagOrganizationsResponse) ProtoReflect() protoreflect.
 
 // Deprecated: Use AdminListFeatureFlagOrganizationsResponse.ProtoReflect.Descriptor instead.
 func (*AdminListFeatureFlagOrganizationsResponse) Descriptor() ([]byte, []int) {
-	return file_relay_server_v1_server_proto_rawDescGZIP(), []int{898}
+	return file_relay_server_v1_server_proto_rawDescGZIP(), []int{900}
 }
 
 func (x *AdminListFeatureFlagOrganizationsResponse) GetOrganizations() []*FeatureFlagOrganization {
@@ -59479,7 +59560,7 @@ type AdminPreviewFeatureFlagRolloutRequest struct {
 
 func (x *AdminPreviewFeatureFlagRolloutRequest) Reset() {
 	*x = AdminPreviewFeatureFlagRolloutRequest{}
-	mi := &file_relay_server_v1_server_proto_msgTypes[899]
+	mi := &file_relay_server_v1_server_proto_msgTypes[901]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -59491,7 +59572,7 @@ func (x *AdminPreviewFeatureFlagRolloutRequest) String() string {
 func (*AdminPreviewFeatureFlagRolloutRequest) ProtoMessage() {}
 
 func (x *AdminPreviewFeatureFlagRolloutRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_relay_server_v1_server_proto_msgTypes[899]
+	mi := &file_relay_server_v1_server_proto_msgTypes[901]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -59504,7 +59585,7 @@ func (x *AdminPreviewFeatureFlagRolloutRequest) ProtoReflect() protoreflect.Mess
 
 // Deprecated: Use AdminPreviewFeatureFlagRolloutRequest.ProtoReflect.Descriptor instead.
 func (*AdminPreviewFeatureFlagRolloutRequest) Descriptor() ([]byte, []int) {
-	return file_relay_server_v1_server_proto_rawDescGZIP(), []int{899}
+	return file_relay_server_v1_server_proto_rawDescGZIP(), []int{901}
 }
 
 func (x *AdminPreviewFeatureFlagRolloutRequest) GetDefaultOn() bool {
@@ -59547,7 +59628,7 @@ type AdminPreviewFeatureFlagRolloutResponse struct {
 
 func (x *AdminPreviewFeatureFlagRolloutResponse) Reset() {
 	*x = AdminPreviewFeatureFlagRolloutResponse{}
-	mi := &file_relay_server_v1_server_proto_msgTypes[900]
+	mi := &file_relay_server_v1_server_proto_msgTypes[902]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -59559,7 +59640,7 @@ func (x *AdminPreviewFeatureFlagRolloutResponse) String() string {
 func (*AdminPreviewFeatureFlagRolloutResponse) ProtoMessage() {}
 
 func (x *AdminPreviewFeatureFlagRolloutResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_relay_server_v1_server_proto_msgTypes[900]
+	mi := &file_relay_server_v1_server_proto_msgTypes[902]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -59572,7 +59653,7 @@ func (x *AdminPreviewFeatureFlagRolloutResponse) ProtoReflect() protoreflect.Mes
 
 // Deprecated: Use AdminPreviewFeatureFlagRolloutResponse.ProtoReflect.Descriptor instead.
 func (*AdminPreviewFeatureFlagRolloutResponse) Descriptor() ([]byte, []int) {
-	return file_relay_server_v1_server_proto_rawDescGZIP(), []int{900}
+	return file_relay_server_v1_server_proto_rawDescGZIP(), []int{902}
 }
 
 func (x *AdminPreviewFeatureFlagRolloutResponse) GetMatchedOrgCount() int32 {
@@ -59597,7 +59678,7 @@ type GetLicenseStatusRequest struct {
 
 func (x *GetLicenseStatusRequest) Reset() {
 	*x = GetLicenseStatusRequest{}
-	mi := &file_relay_server_v1_server_proto_msgTypes[901]
+	mi := &file_relay_server_v1_server_proto_msgTypes[903]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -59609,7 +59690,7 @@ func (x *GetLicenseStatusRequest) String() string {
 func (*GetLicenseStatusRequest) ProtoMessage() {}
 
 func (x *GetLicenseStatusRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_relay_server_v1_server_proto_msgTypes[901]
+	mi := &file_relay_server_v1_server_proto_msgTypes[903]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -59622,7 +59703,7 @@ func (x *GetLicenseStatusRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use GetLicenseStatusRequest.ProtoReflect.Descriptor instead.
 func (*GetLicenseStatusRequest) Descriptor() ([]byte, []int) {
-	return file_relay_server_v1_server_proto_rawDescGZIP(), []int{901}
+	return file_relay_server_v1_server_proto_rawDescGZIP(), []int{903}
 }
 
 type GetLicenseStatusResponse struct {
@@ -59662,7 +59743,7 @@ type GetLicenseStatusResponse struct {
 
 func (x *GetLicenseStatusResponse) Reset() {
 	*x = GetLicenseStatusResponse{}
-	mi := &file_relay_server_v1_server_proto_msgTypes[902]
+	mi := &file_relay_server_v1_server_proto_msgTypes[904]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -59674,7 +59755,7 @@ func (x *GetLicenseStatusResponse) String() string {
 func (*GetLicenseStatusResponse) ProtoMessage() {}
 
 func (x *GetLicenseStatusResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_relay_server_v1_server_proto_msgTypes[902]
+	mi := &file_relay_server_v1_server_proto_msgTypes[904]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -59687,7 +59768,7 @@ func (x *GetLicenseStatusResponse) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use GetLicenseStatusResponse.ProtoReflect.Descriptor instead.
 func (*GetLicenseStatusResponse) Descriptor() ([]byte, []int) {
-	return file_relay_server_v1_server_proto_rawDescGZIP(), []int{902}
+	return file_relay_server_v1_server_proto_rawDescGZIP(), []int{904}
 }
 
 func (x *GetLicenseStatusResponse) GetState() string {
@@ -59828,7 +59909,7 @@ type ExportLicenseUsageReportRequest struct {
 
 func (x *ExportLicenseUsageReportRequest) Reset() {
 	*x = ExportLicenseUsageReportRequest{}
-	mi := &file_relay_server_v1_server_proto_msgTypes[903]
+	mi := &file_relay_server_v1_server_proto_msgTypes[905]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -59840,7 +59921,7 @@ func (x *ExportLicenseUsageReportRequest) String() string {
 func (*ExportLicenseUsageReportRequest) ProtoMessage() {}
 
 func (x *ExportLicenseUsageReportRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_relay_server_v1_server_proto_msgTypes[903]
+	mi := &file_relay_server_v1_server_proto_msgTypes[905]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -59853,7 +59934,7 @@ func (x *ExportLicenseUsageReportRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use ExportLicenseUsageReportRequest.ProtoReflect.Descriptor instead.
 func (*ExportLicenseUsageReportRequest) Descriptor() ([]byte, []int) {
-	return file_relay_server_v1_server_proto_rawDescGZIP(), []int{903}
+	return file_relay_server_v1_server_proto_rawDescGZIP(), []int{905}
 }
 
 func (x *ExportLicenseUsageReportRequest) GetStart() *timestamppb.Timestamp {
@@ -59885,7 +59966,7 @@ type ExportLicenseUsageReportResponse struct {
 
 func (x *ExportLicenseUsageReportResponse) Reset() {
 	*x = ExportLicenseUsageReportResponse{}
-	mi := &file_relay_server_v1_server_proto_msgTypes[904]
+	mi := &file_relay_server_v1_server_proto_msgTypes[906]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -59897,7 +59978,7 @@ func (x *ExportLicenseUsageReportResponse) String() string {
 func (*ExportLicenseUsageReportResponse) ProtoMessage() {}
 
 func (x *ExportLicenseUsageReportResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_relay_server_v1_server_proto_msgTypes[904]
+	mi := &file_relay_server_v1_server_proto_msgTypes[906]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -59910,7 +59991,7 @@ func (x *ExportLicenseUsageReportResponse) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use ExportLicenseUsageReportResponse.ProtoReflect.Descriptor instead.
 func (*ExportLicenseUsageReportResponse) Descriptor() ([]byte, []int) {
-	return file_relay_server_v1_server_proto_rawDescGZIP(), []int{904}
+	return file_relay_server_v1_server_proto_rawDescGZIP(), []int{906}
 }
 
 func (x *ExportLicenseUsageReportResponse) GetReport() string {
@@ -59977,7 +60058,7 @@ type RunbookSource struct {
 
 func (x *RunbookSource) Reset() {
 	*x = RunbookSource{}
-	mi := &file_relay_server_v1_server_proto_msgTypes[905]
+	mi := &file_relay_server_v1_server_proto_msgTypes[907]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -59989,7 +60070,7 @@ func (x *RunbookSource) String() string {
 func (*RunbookSource) ProtoMessage() {}
 
 func (x *RunbookSource) ProtoReflect() protoreflect.Message {
-	mi := &file_relay_server_v1_server_proto_msgTypes[905]
+	mi := &file_relay_server_v1_server_proto_msgTypes[907]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -60002,7 +60083,7 @@ func (x *RunbookSource) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use RunbookSource.ProtoReflect.Descriptor instead.
 func (*RunbookSource) Descriptor() ([]byte, []int) {
-	return file_relay_server_v1_server_proto_rawDescGZIP(), []int{905}
+	return file_relay_server_v1_server_proto_rawDescGZIP(), []int{907}
 }
 
 func (x *RunbookSource) GetUrl() string {
@@ -60132,7 +60213,7 @@ type GetRunbookSourceRequest struct {
 
 func (x *GetRunbookSourceRequest) Reset() {
 	*x = GetRunbookSourceRequest{}
-	mi := &file_relay_server_v1_server_proto_msgTypes[906]
+	mi := &file_relay_server_v1_server_proto_msgTypes[908]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -60144,7 +60225,7 @@ func (x *GetRunbookSourceRequest) String() string {
 func (*GetRunbookSourceRequest) ProtoMessage() {}
 
 func (x *GetRunbookSourceRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_relay_server_v1_server_proto_msgTypes[906]
+	mi := &file_relay_server_v1_server_proto_msgTypes[908]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -60157,7 +60238,7 @@ func (x *GetRunbookSourceRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use GetRunbookSourceRequest.ProtoReflect.Descriptor instead.
 func (*GetRunbookSourceRequest) Descriptor() ([]byte, []int) {
-	return file_relay_server_v1_server_proto_rawDescGZIP(), []int{906}
+	return file_relay_server_v1_server_proto_rawDescGZIP(), []int{908}
 }
 
 type GetRunbookSourceResponse struct {
@@ -60170,7 +60251,7 @@ type GetRunbookSourceResponse struct {
 
 func (x *GetRunbookSourceResponse) Reset() {
 	*x = GetRunbookSourceResponse{}
-	mi := &file_relay_server_v1_server_proto_msgTypes[907]
+	mi := &file_relay_server_v1_server_proto_msgTypes[909]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -60182,7 +60263,7 @@ func (x *GetRunbookSourceResponse) String() string {
 func (*GetRunbookSourceResponse) ProtoMessage() {}
 
 func (x *GetRunbookSourceResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_relay_server_v1_server_proto_msgTypes[907]
+	mi := &file_relay_server_v1_server_proto_msgTypes[909]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -60195,7 +60276,7 @@ func (x *GetRunbookSourceResponse) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use GetRunbookSourceResponse.ProtoReflect.Descriptor instead.
 func (*GetRunbookSourceResponse) Descriptor() ([]byte, []int) {
-	return file_relay_server_v1_server_proto_rawDescGZIP(), []int{907}
+	return file_relay_server_v1_server_proto_rawDescGZIP(), []int{909}
 }
 
 func (x *GetRunbookSourceResponse) GetSource() *RunbookSource {
@@ -60228,7 +60309,7 @@ type UpsertRunbookSourceRequest struct {
 
 func (x *UpsertRunbookSourceRequest) Reset() {
 	*x = UpsertRunbookSourceRequest{}
-	mi := &file_relay_server_v1_server_proto_msgTypes[908]
+	mi := &file_relay_server_v1_server_proto_msgTypes[910]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -60240,7 +60321,7 @@ func (x *UpsertRunbookSourceRequest) String() string {
 func (*UpsertRunbookSourceRequest) ProtoMessage() {}
 
 func (x *UpsertRunbookSourceRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_relay_server_v1_server_proto_msgTypes[908]
+	mi := &file_relay_server_v1_server_proto_msgTypes[910]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -60253,7 +60334,7 @@ func (x *UpsertRunbookSourceRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use UpsertRunbookSourceRequest.ProtoReflect.Descriptor instead.
 func (*UpsertRunbookSourceRequest) Descriptor() ([]byte, []int) {
-	return file_relay_server_v1_server_proto_rawDescGZIP(), []int{908}
+	return file_relay_server_v1_server_proto_rawDescGZIP(), []int{910}
 }
 
 func (x *UpsertRunbookSourceRequest) GetUrl() string {
@@ -60321,7 +60402,7 @@ type UpsertRunbookSourceResponse struct {
 
 func (x *UpsertRunbookSourceResponse) Reset() {
 	*x = UpsertRunbookSourceResponse{}
-	mi := &file_relay_server_v1_server_proto_msgTypes[909]
+	mi := &file_relay_server_v1_server_proto_msgTypes[911]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -60333,7 +60414,7 @@ func (x *UpsertRunbookSourceResponse) String() string {
 func (*UpsertRunbookSourceResponse) ProtoMessage() {}
 
 func (x *UpsertRunbookSourceResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_relay_server_v1_server_proto_msgTypes[909]
+	mi := &file_relay_server_v1_server_proto_msgTypes[911]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -60346,7 +60427,7 @@ func (x *UpsertRunbookSourceResponse) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use UpsertRunbookSourceResponse.ProtoReflect.Descriptor instead.
 func (*UpsertRunbookSourceResponse) Descriptor() ([]byte, []int) {
-	return file_relay_server_v1_server_proto_rawDescGZIP(), []int{909}
+	return file_relay_server_v1_server_proto_rawDescGZIP(), []int{911}
 }
 
 func (x *UpsertRunbookSourceResponse) GetSource() *RunbookSource {
@@ -60364,7 +60445,7 @@ type DeleteRunbookSourceRequest struct {
 
 func (x *DeleteRunbookSourceRequest) Reset() {
 	*x = DeleteRunbookSourceRequest{}
-	mi := &file_relay_server_v1_server_proto_msgTypes[910]
+	mi := &file_relay_server_v1_server_proto_msgTypes[912]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -60376,7 +60457,7 @@ func (x *DeleteRunbookSourceRequest) String() string {
 func (*DeleteRunbookSourceRequest) ProtoMessage() {}
 
 func (x *DeleteRunbookSourceRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_relay_server_v1_server_proto_msgTypes[910]
+	mi := &file_relay_server_v1_server_proto_msgTypes[912]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -60389,7 +60470,7 @@ func (x *DeleteRunbookSourceRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use DeleteRunbookSourceRequest.ProtoReflect.Descriptor instead.
 func (*DeleteRunbookSourceRequest) Descriptor() ([]byte, []int) {
-	return file_relay_server_v1_server_proto_rawDescGZIP(), []int{910}
+	return file_relay_server_v1_server_proto_rawDescGZIP(), []int{912}
 }
 
 type DeleteRunbookSourceResponse struct {
@@ -60400,7 +60481,7 @@ type DeleteRunbookSourceResponse struct {
 
 func (x *DeleteRunbookSourceResponse) Reset() {
 	*x = DeleteRunbookSourceResponse{}
-	mi := &file_relay_server_v1_server_proto_msgTypes[911]
+	mi := &file_relay_server_v1_server_proto_msgTypes[913]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -60412,7 +60493,7 @@ func (x *DeleteRunbookSourceResponse) String() string {
 func (*DeleteRunbookSourceResponse) ProtoMessage() {}
 
 func (x *DeleteRunbookSourceResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_relay_server_v1_server_proto_msgTypes[911]
+	mi := &file_relay_server_v1_server_proto_msgTypes[913]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -60425,7 +60506,7 @@ func (x *DeleteRunbookSourceResponse) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use DeleteRunbookSourceResponse.ProtoReflect.Descriptor instead.
 func (*DeleteRunbookSourceResponse) Descriptor() ([]byte, []int) {
-	return file_relay_server_v1_server_proto_rawDescGZIP(), []int{911}
+	return file_relay_server_v1_server_proto_rawDescGZIP(), []int{913}
 }
 
 type SyncRunbooksRequest struct {
@@ -60436,7 +60517,7 @@ type SyncRunbooksRequest struct {
 
 func (x *SyncRunbooksRequest) Reset() {
 	*x = SyncRunbooksRequest{}
-	mi := &file_relay_server_v1_server_proto_msgTypes[912]
+	mi := &file_relay_server_v1_server_proto_msgTypes[914]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -60448,7 +60529,7 @@ func (x *SyncRunbooksRequest) String() string {
 func (*SyncRunbooksRequest) ProtoMessage() {}
 
 func (x *SyncRunbooksRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_relay_server_v1_server_proto_msgTypes[912]
+	mi := &file_relay_server_v1_server_proto_msgTypes[914]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -60461,7 +60542,7 @@ func (x *SyncRunbooksRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use SyncRunbooksRequest.ProtoReflect.Descriptor instead.
 func (*SyncRunbooksRequest) Descriptor() ([]byte, []int) {
-	return file_relay_server_v1_server_proto_rawDescGZIP(), []int{912}
+	return file_relay_server_v1_server_proto_rawDescGZIP(), []int{914}
 }
 
 type RotateRunbookWebhookSecretRequest struct {
@@ -60474,7 +60555,7 @@ type RotateRunbookWebhookSecretRequest struct {
 
 func (x *RotateRunbookWebhookSecretRequest) Reset() {
 	*x = RotateRunbookWebhookSecretRequest{}
-	mi := &file_relay_server_v1_server_proto_msgTypes[913]
+	mi := &file_relay_server_v1_server_proto_msgTypes[915]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -60486,7 +60567,7 @@ func (x *RotateRunbookWebhookSecretRequest) String() string {
 func (*RotateRunbookWebhookSecretRequest) ProtoMessage() {}
 
 func (x *RotateRunbookWebhookSecretRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_relay_server_v1_server_proto_msgTypes[913]
+	mi := &file_relay_server_v1_server_proto_msgTypes[915]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -60499,7 +60580,7 @@ func (x *RotateRunbookWebhookSecretRequest) ProtoReflect() protoreflect.Message 
 
 // Deprecated: Use RotateRunbookWebhookSecretRequest.ProtoReflect.Descriptor instead.
 func (*RotateRunbookWebhookSecretRequest) Descriptor() ([]byte, []int) {
-	return file_relay_server_v1_server_proto_rawDescGZIP(), []int{913}
+	return file_relay_server_v1_server_proto_rawDescGZIP(), []int{915}
 }
 
 func (x *RotateRunbookWebhookSecretRequest) GetDisable() bool {
@@ -60520,7 +60601,7 @@ type RotateRunbookWebhookSecretResponse struct {
 
 func (x *RotateRunbookWebhookSecretResponse) Reset() {
 	*x = RotateRunbookWebhookSecretResponse{}
-	mi := &file_relay_server_v1_server_proto_msgTypes[914]
+	mi := &file_relay_server_v1_server_proto_msgTypes[916]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -60532,7 +60613,7 @@ func (x *RotateRunbookWebhookSecretResponse) String() string {
 func (*RotateRunbookWebhookSecretResponse) ProtoMessage() {}
 
 func (x *RotateRunbookWebhookSecretResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_relay_server_v1_server_proto_msgTypes[914]
+	mi := &file_relay_server_v1_server_proto_msgTypes[916]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -60545,7 +60626,7 @@ func (x *RotateRunbookWebhookSecretResponse) ProtoReflect() protoreflect.Message
 
 // Deprecated: Use RotateRunbookWebhookSecretResponse.ProtoReflect.Descriptor instead.
 func (*RotateRunbookWebhookSecretResponse) Descriptor() ([]byte, []int) {
-	return file_relay_server_v1_server_proto_rawDescGZIP(), []int{914}
+	return file_relay_server_v1_server_proto_rawDescGZIP(), []int{916}
 }
 
 func (x *RotateRunbookWebhookSecretResponse) GetSecret() string {
@@ -60571,7 +60652,7 @@ type FetchRunbookHostKeyRequest struct {
 
 func (x *FetchRunbookHostKeyRequest) Reset() {
 	*x = FetchRunbookHostKeyRequest{}
-	mi := &file_relay_server_v1_server_proto_msgTypes[915]
+	mi := &file_relay_server_v1_server_proto_msgTypes[917]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -60583,7 +60664,7 @@ func (x *FetchRunbookHostKeyRequest) String() string {
 func (*FetchRunbookHostKeyRequest) ProtoMessage() {}
 
 func (x *FetchRunbookHostKeyRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_relay_server_v1_server_proto_msgTypes[915]
+	mi := &file_relay_server_v1_server_proto_msgTypes[917]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -60596,7 +60677,7 @@ func (x *FetchRunbookHostKeyRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use FetchRunbookHostKeyRequest.ProtoReflect.Descriptor instead.
 func (*FetchRunbookHostKeyRequest) Descriptor() ([]byte, []int) {
-	return file_relay_server_v1_server_proto_rawDescGZIP(), []int{915}
+	return file_relay_server_v1_server_proto_rawDescGZIP(), []int{917}
 }
 
 func (x *FetchRunbookHostKeyRequest) GetUrl() string {
@@ -60617,7 +60698,7 @@ type FetchRunbookHostKeyResponse struct {
 
 func (x *FetchRunbookHostKeyResponse) Reset() {
 	*x = FetchRunbookHostKeyResponse{}
-	mi := &file_relay_server_v1_server_proto_msgTypes[916]
+	mi := &file_relay_server_v1_server_proto_msgTypes[918]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -60629,7 +60710,7 @@ func (x *FetchRunbookHostKeyResponse) String() string {
 func (*FetchRunbookHostKeyResponse) ProtoMessage() {}
 
 func (x *FetchRunbookHostKeyResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_relay_server_v1_server_proto_msgTypes[916]
+	mi := &file_relay_server_v1_server_proto_msgTypes[918]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -60642,7 +60723,7 @@ func (x *FetchRunbookHostKeyResponse) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use FetchRunbookHostKeyResponse.ProtoReflect.Descriptor instead.
 func (*FetchRunbookHostKeyResponse) Descriptor() ([]byte, []int) {
-	return file_relay_server_v1_server_proto_rawDescGZIP(), []int{916}
+	return file_relay_server_v1_server_proto_rawDescGZIP(), []int{918}
 }
 
 func (x *FetchRunbookHostKeyResponse) GetKeyType() string {
@@ -60676,7 +60757,7 @@ type RunbookSyncError struct {
 
 func (x *RunbookSyncError) Reset() {
 	*x = RunbookSyncError{}
-	mi := &file_relay_server_v1_server_proto_msgTypes[917]
+	mi := &file_relay_server_v1_server_proto_msgTypes[919]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -60688,7 +60769,7 @@ func (x *RunbookSyncError) String() string {
 func (*RunbookSyncError) ProtoMessage() {}
 
 func (x *RunbookSyncError) ProtoReflect() protoreflect.Message {
-	mi := &file_relay_server_v1_server_proto_msgTypes[917]
+	mi := &file_relay_server_v1_server_proto_msgTypes[919]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -60701,7 +60782,7 @@ func (x *RunbookSyncError) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use RunbookSyncError.ProtoReflect.Descriptor instead.
 func (*RunbookSyncError) Descriptor() ([]byte, []int) {
-	return file_relay_server_v1_server_proto_rawDescGZIP(), []int{917}
+	return file_relay_server_v1_server_proto_rawDescGZIP(), []int{919}
 }
 
 func (x *RunbookSyncError) GetPath() string {
@@ -60734,7 +60815,7 @@ type SyncRunbooksResponse struct {
 
 func (x *SyncRunbooksResponse) Reset() {
 	*x = SyncRunbooksResponse{}
-	mi := &file_relay_server_v1_server_proto_msgTypes[918]
+	mi := &file_relay_server_v1_server_proto_msgTypes[920]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -60746,7 +60827,7 @@ func (x *SyncRunbooksResponse) String() string {
 func (*SyncRunbooksResponse) ProtoMessage() {}
 
 func (x *SyncRunbooksResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_relay_server_v1_server_proto_msgTypes[918]
+	mi := &file_relay_server_v1_server_proto_msgTypes[920]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -60759,7 +60840,7 @@ func (x *SyncRunbooksResponse) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use SyncRunbooksResponse.ProtoReflect.Descriptor instead.
 func (*SyncRunbooksResponse) Descriptor() ([]byte, []int) {
-	return file_relay_server_v1_server_proto_rawDescGZIP(), []int{918}
+	return file_relay_server_v1_server_proto_rawDescGZIP(), []int{920}
 }
 
 func (x *SyncRunbooksResponse) GetCommitSha() string {
@@ -60821,7 +60902,7 @@ type RunbookParam struct {
 
 func (x *RunbookParam) Reset() {
 	*x = RunbookParam{}
-	mi := &file_relay_server_v1_server_proto_msgTypes[919]
+	mi := &file_relay_server_v1_server_proto_msgTypes[921]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -60833,7 +60914,7 @@ func (x *RunbookParam) String() string {
 func (*RunbookParam) ProtoMessage() {}
 
 func (x *RunbookParam) ProtoReflect() protoreflect.Message {
-	mi := &file_relay_server_v1_server_proto_msgTypes[919]
+	mi := &file_relay_server_v1_server_proto_msgTypes[921]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -60846,7 +60927,7 @@ func (x *RunbookParam) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use RunbookParam.ProtoReflect.Descriptor instead.
 func (*RunbookParam) Descriptor() ([]byte, []int) {
-	return file_relay_server_v1_server_proto_rawDescGZIP(), []int{919}
+	return file_relay_server_v1_server_proto_rawDescGZIP(), []int{921}
 }
 
 func (x *RunbookParam) GetName() string {
@@ -60927,7 +61008,7 @@ type Runbook struct {
 
 func (x *Runbook) Reset() {
 	*x = Runbook{}
-	mi := &file_relay_server_v1_server_proto_msgTypes[920]
+	mi := &file_relay_server_v1_server_proto_msgTypes[922]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -60939,7 +61020,7 @@ func (x *Runbook) String() string {
 func (*Runbook) ProtoMessage() {}
 
 func (x *Runbook) ProtoReflect() protoreflect.Message {
-	mi := &file_relay_server_v1_server_proto_msgTypes[920]
+	mi := &file_relay_server_v1_server_proto_msgTypes[922]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -60952,7 +61033,7 @@ func (x *Runbook) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use Runbook.ProtoReflect.Descriptor instead.
 func (*Runbook) Descriptor() ([]byte, []int) {
-	return file_relay_server_v1_server_proto_rawDescGZIP(), []int{920}
+	return file_relay_server_v1_server_proto_rawDescGZIP(), []int{922}
 }
 
 func (x *Runbook) GetName() string {
@@ -61056,7 +61137,7 @@ type ListRunbooksRequest struct {
 
 func (x *ListRunbooksRequest) Reset() {
 	*x = ListRunbooksRequest{}
-	mi := &file_relay_server_v1_server_proto_msgTypes[921]
+	mi := &file_relay_server_v1_server_proto_msgTypes[923]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -61068,7 +61149,7 @@ func (x *ListRunbooksRequest) String() string {
 func (*ListRunbooksRequest) ProtoMessage() {}
 
 func (x *ListRunbooksRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_relay_server_v1_server_proto_msgTypes[921]
+	mi := &file_relay_server_v1_server_proto_msgTypes[923]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -61081,7 +61162,7 @@ func (x *ListRunbooksRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use ListRunbooksRequest.ProtoReflect.Descriptor instead.
 func (*ListRunbooksRequest) Descriptor() ([]byte, []int) {
-	return file_relay_server_v1_server_proto_rawDescGZIP(), []int{921}
+	return file_relay_server_v1_server_proto_rawDescGZIP(), []int{923}
 }
 
 func (x *ListRunbooksRequest) GetConnectionName() string {
@@ -61100,7 +61181,7 @@ type ListRunbooksResponse struct {
 
 func (x *ListRunbooksResponse) Reset() {
 	*x = ListRunbooksResponse{}
-	mi := &file_relay_server_v1_server_proto_msgTypes[922]
+	mi := &file_relay_server_v1_server_proto_msgTypes[924]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -61112,7 +61193,7 @@ func (x *ListRunbooksResponse) String() string {
 func (*ListRunbooksResponse) ProtoMessage() {}
 
 func (x *ListRunbooksResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_relay_server_v1_server_proto_msgTypes[922]
+	mi := &file_relay_server_v1_server_proto_msgTypes[924]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -61125,7 +61206,7 @@ func (x *ListRunbooksResponse) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use ListRunbooksResponse.ProtoReflect.Descriptor instead.
 func (*ListRunbooksResponse) Descriptor() ([]byte, []int) {
-	return file_relay_server_v1_server_proto_rawDescGZIP(), []int{922}
+	return file_relay_server_v1_server_proto_rawDescGZIP(), []int{924}
 }
 
 func (x *ListRunbooksResponse) GetRunbooks() []*Runbook {
@@ -61144,7 +61225,7 @@ type GetRunbookRequest struct {
 
 func (x *GetRunbookRequest) Reset() {
 	*x = GetRunbookRequest{}
-	mi := &file_relay_server_v1_server_proto_msgTypes[923]
+	mi := &file_relay_server_v1_server_proto_msgTypes[925]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -61156,7 +61237,7 @@ func (x *GetRunbookRequest) String() string {
 func (*GetRunbookRequest) ProtoMessage() {}
 
 func (x *GetRunbookRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_relay_server_v1_server_proto_msgTypes[923]
+	mi := &file_relay_server_v1_server_proto_msgTypes[925]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -61169,7 +61250,7 @@ func (x *GetRunbookRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use GetRunbookRequest.ProtoReflect.Descriptor instead.
 func (*GetRunbookRequest) Descriptor() ([]byte, []int) {
-	return file_relay_server_v1_server_proto_rawDescGZIP(), []int{923}
+	return file_relay_server_v1_server_proto_rawDescGZIP(), []int{925}
 }
 
 func (x *GetRunbookRequest) GetName() string {
@@ -61188,7 +61269,7 @@ type GetRunbookResponse struct {
 
 func (x *GetRunbookResponse) Reset() {
 	*x = GetRunbookResponse{}
-	mi := &file_relay_server_v1_server_proto_msgTypes[924]
+	mi := &file_relay_server_v1_server_proto_msgTypes[926]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -61200,7 +61281,7 @@ func (x *GetRunbookResponse) String() string {
 func (*GetRunbookResponse) ProtoMessage() {}
 
 func (x *GetRunbookResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_relay_server_v1_server_proto_msgTypes[924]
+	mi := &file_relay_server_v1_server_proto_msgTypes[926]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -61213,7 +61294,7 @@ func (x *GetRunbookResponse) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use GetRunbookResponse.ProtoReflect.Descriptor instead.
 func (*GetRunbookResponse) Descriptor() ([]byte, []int) {
-	return file_relay_server_v1_server_proto_rawDescGZIP(), []int{924}
+	return file_relay_server_v1_server_proto_rawDescGZIP(), []int{926}
 }
 
 func (x *GetRunbookResponse) GetRunbook() *Runbook {
@@ -61240,7 +61321,7 @@ type RunRunbookRequest struct {
 
 func (x *RunRunbookRequest) Reset() {
 	*x = RunRunbookRequest{}
-	mi := &file_relay_server_v1_server_proto_msgTypes[925]
+	mi := &file_relay_server_v1_server_proto_msgTypes[927]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -61252,7 +61333,7 @@ func (x *RunRunbookRequest) String() string {
 func (*RunRunbookRequest) ProtoMessage() {}
 
 func (x *RunRunbookRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_relay_server_v1_server_proto_msgTypes[925]
+	mi := &file_relay_server_v1_server_proto_msgTypes[927]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -61265,7 +61346,7 @@ func (x *RunRunbookRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use RunRunbookRequest.ProtoReflect.Descriptor instead.
 func (*RunRunbookRequest) Descriptor() ([]byte, []int) {
-	return file_relay_server_v1_server_proto_rawDescGZIP(), []int{925}
+	return file_relay_server_v1_server_proto_rawDescGZIP(), []int{927}
 }
 
 func (x *RunRunbookRequest) GetRunbook() string {
@@ -61312,7 +61393,7 @@ type RunRunbookResponse struct {
 
 func (x *RunRunbookResponse) Reset() {
 	*x = RunRunbookResponse{}
-	mi := &file_relay_server_v1_server_proto_msgTypes[926]
+	mi := &file_relay_server_v1_server_proto_msgTypes[928]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -61324,7 +61405,7 @@ func (x *RunRunbookResponse) String() string {
 func (*RunRunbookResponse) ProtoMessage() {}
 
 func (x *RunRunbookResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_relay_server_v1_server_proto_msgTypes[926]
+	mi := &file_relay_server_v1_server_proto_msgTypes[928]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -61337,7 +61418,7 @@ func (x *RunRunbookResponse) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use RunRunbookResponse.ProtoReflect.Descriptor instead.
 func (*RunRunbookResponse) Descriptor() ([]byte, []int) {
-	return file_relay_server_v1_server_proto_rawDescGZIP(), []int{926}
+	return file_relay_server_v1_server_proto_rawDescGZIP(), []int{928}
 }
 
 func (x *RunRunbookResponse) GetExecutionId() string {
@@ -61357,7 +61438,7 @@ type RunbookValue struct {
 
 func (x *RunbookValue) Reset() {
 	*x = RunbookValue{}
-	mi := &file_relay_server_v1_server_proto_msgTypes[927]
+	mi := &file_relay_server_v1_server_proto_msgTypes[929]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -61369,7 +61450,7 @@ func (x *RunbookValue) String() string {
 func (*RunbookValue) ProtoMessage() {}
 
 func (x *RunbookValue) ProtoReflect() protoreflect.Message {
-	mi := &file_relay_server_v1_server_proto_msgTypes[927]
+	mi := &file_relay_server_v1_server_proto_msgTypes[929]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -61382,7 +61463,7 @@ func (x *RunbookValue) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use RunbookValue.ProtoReflect.Descriptor instead.
 func (*RunbookValue) Descriptor() ([]byte, []int) {
-	return file_relay_server_v1_server_proto_rawDescGZIP(), []int{927}
+	return file_relay_server_v1_server_proto_rawDescGZIP(), []int{929}
 }
 
 func (x *RunbookValue) GetValue() string {
@@ -61408,7 +61489,7 @@ type RunbookRow struct {
 
 func (x *RunbookRow) Reset() {
 	*x = RunbookRow{}
-	mi := &file_relay_server_v1_server_proto_msgTypes[928]
+	mi := &file_relay_server_v1_server_proto_msgTypes[930]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -61420,7 +61501,7 @@ func (x *RunbookRow) String() string {
 func (*RunbookRow) ProtoMessage() {}
 
 func (x *RunbookRow) ProtoReflect() protoreflect.Message {
-	mi := &file_relay_server_v1_server_proto_msgTypes[928]
+	mi := &file_relay_server_v1_server_proto_msgTypes[930]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -61433,7 +61514,7 @@ func (x *RunbookRow) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use RunbookRow.ProtoReflect.Descriptor instead.
 func (*RunbookRow) Descriptor() ([]byte, []int) {
-	return file_relay_server_v1_server_proto_rawDescGZIP(), []int{928}
+	return file_relay_server_v1_server_proto_rawDescGZIP(), []int{930}
 }
 
 func (x *RunbookRow) GetValues() []*RunbookValue {
@@ -61485,7 +61566,7 @@ type RunbookExecution struct {
 
 func (x *RunbookExecution) Reset() {
 	*x = RunbookExecution{}
-	mi := &file_relay_server_v1_server_proto_msgTypes[929]
+	mi := &file_relay_server_v1_server_proto_msgTypes[931]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -61497,7 +61578,7 @@ func (x *RunbookExecution) String() string {
 func (*RunbookExecution) ProtoMessage() {}
 
 func (x *RunbookExecution) ProtoReflect() protoreflect.Message {
-	mi := &file_relay_server_v1_server_proto_msgTypes[929]
+	mi := &file_relay_server_v1_server_proto_msgTypes[931]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -61510,7 +61591,7 @@ func (x *RunbookExecution) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use RunbookExecution.ProtoReflect.Descriptor instead.
 func (*RunbookExecution) Descriptor() ([]byte, []int) {
-	return file_relay_server_v1_server_proto_rawDescGZIP(), []int{929}
+	return file_relay_server_v1_server_proto_rawDescGZIP(), []int{931}
 }
 
 func (x *RunbookExecution) GetId() string {
@@ -61690,7 +61771,7 @@ type GetRunbookExecutionRequest struct {
 
 func (x *GetRunbookExecutionRequest) Reset() {
 	*x = GetRunbookExecutionRequest{}
-	mi := &file_relay_server_v1_server_proto_msgTypes[930]
+	mi := &file_relay_server_v1_server_proto_msgTypes[932]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -61702,7 +61783,7 @@ func (x *GetRunbookExecutionRequest) String() string {
 func (*GetRunbookExecutionRequest) ProtoMessage() {}
 
 func (x *GetRunbookExecutionRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_relay_server_v1_server_proto_msgTypes[930]
+	mi := &file_relay_server_v1_server_proto_msgTypes[932]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -61715,7 +61796,7 @@ func (x *GetRunbookExecutionRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use GetRunbookExecutionRequest.ProtoReflect.Descriptor instead.
 func (*GetRunbookExecutionRequest) Descriptor() ([]byte, []int) {
-	return file_relay_server_v1_server_proto_rawDescGZIP(), []int{930}
+	return file_relay_server_v1_server_proto_rawDescGZIP(), []int{932}
 }
 
 func (x *GetRunbookExecutionRequest) GetId() string {
@@ -61734,7 +61815,7 @@ type GetRunbookExecutionResponse struct {
 
 func (x *GetRunbookExecutionResponse) Reset() {
 	*x = GetRunbookExecutionResponse{}
-	mi := &file_relay_server_v1_server_proto_msgTypes[931]
+	mi := &file_relay_server_v1_server_proto_msgTypes[933]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -61746,7 +61827,7 @@ func (x *GetRunbookExecutionResponse) String() string {
 func (*GetRunbookExecutionResponse) ProtoMessage() {}
 
 func (x *GetRunbookExecutionResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_relay_server_v1_server_proto_msgTypes[931]
+	mi := &file_relay_server_v1_server_proto_msgTypes[933]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -61759,7 +61840,7 @@ func (x *GetRunbookExecutionResponse) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use GetRunbookExecutionResponse.ProtoReflect.Descriptor instead.
 func (*GetRunbookExecutionResponse) Descriptor() ([]byte, []int) {
-	return file_relay_server_v1_server_proto_rawDescGZIP(), []int{931}
+	return file_relay_server_v1_server_proto_rawDescGZIP(), []int{933}
 }
 
 func (x *GetRunbookExecutionResponse) GetExecution() *RunbookExecution {
@@ -61780,7 +61861,7 @@ type ListRunbookExecutionsRequest struct {
 
 func (x *ListRunbookExecutionsRequest) Reset() {
 	*x = ListRunbookExecutionsRequest{}
-	mi := &file_relay_server_v1_server_proto_msgTypes[932]
+	mi := &file_relay_server_v1_server_proto_msgTypes[934]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -61792,7 +61873,7 @@ func (x *ListRunbookExecutionsRequest) String() string {
 func (*ListRunbookExecutionsRequest) ProtoMessage() {}
 
 func (x *ListRunbookExecutionsRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_relay_server_v1_server_proto_msgTypes[932]
+	mi := &file_relay_server_v1_server_proto_msgTypes[934]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -61805,7 +61886,7 @@ func (x *ListRunbookExecutionsRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use ListRunbookExecutionsRequest.ProtoReflect.Descriptor instead.
 func (*ListRunbookExecutionsRequest) Descriptor() ([]byte, []int) {
-	return file_relay_server_v1_server_proto_rawDescGZIP(), []int{932}
+	return file_relay_server_v1_server_proto_rawDescGZIP(), []int{934}
 }
 
 func (x *ListRunbookExecutionsRequest) GetRunbook() string {
@@ -61838,7 +61919,7 @@ type ListRunbookExecutionsResponse struct {
 
 func (x *ListRunbookExecutionsResponse) Reset() {
 	*x = ListRunbookExecutionsResponse{}
-	mi := &file_relay_server_v1_server_proto_msgTypes[933]
+	mi := &file_relay_server_v1_server_proto_msgTypes[935]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -61850,7 +61931,7 @@ func (x *ListRunbookExecutionsResponse) String() string {
 func (*ListRunbookExecutionsResponse) ProtoMessage() {}
 
 func (x *ListRunbookExecutionsResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_relay_server_v1_server_proto_msgTypes[933]
+	mi := &file_relay_server_v1_server_proto_msgTypes[935]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -61863,7 +61944,7 @@ func (x *ListRunbookExecutionsResponse) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use ListRunbookExecutionsResponse.ProtoReflect.Descriptor instead.
 func (*ListRunbookExecutionsResponse) Descriptor() ([]byte, []int) {
-	return file_relay_server_v1_server_proto_rawDescGZIP(), []int{933}
+	return file_relay_server_v1_server_proto_rawDescGZIP(), []int{935}
 }
 
 func (x *ListRunbookExecutionsResponse) GetExecutions() []*RunbookExecution {
@@ -61889,7 +61970,7 @@ type ClaimRunbookExecutionsRequest struct {
 
 func (x *ClaimRunbookExecutionsRequest) Reset() {
 	*x = ClaimRunbookExecutionsRequest{}
-	mi := &file_relay_server_v1_server_proto_msgTypes[934]
+	mi := &file_relay_server_v1_server_proto_msgTypes[936]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -61901,7 +61982,7 @@ func (x *ClaimRunbookExecutionsRequest) String() string {
 func (*ClaimRunbookExecutionsRequest) ProtoMessage() {}
 
 func (x *ClaimRunbookExecutionsRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_relay_server_v1_server_proto_msgTypes[934]
+	mi := &file_relay_server_v1_server_proto_msgTypes[936]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -61914,7 +61995,7 @@ func (x *ClaimRunbookExecutionsRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use ClaimRunbookExecutionsRequest.ProtoReflect.Descriptor instead.
 func (*ClaimRunbookExecutionsRequest) Descriptor() ([]byte, []int) {
-	return file_relay_server_v1_server_proto_rawDescGZIP(), []int{934}
+	return file_relay_server_v1_server_proto_rawDescGZIP(), []int{936}
 }
 
 func (x *ClaimRunbookExecutionsRequest) GetMax() int32 {
@@ -61957,7 +62038,7 @@ type RunbookJobParam struct {
 
 func (x *RunbookJobParam) Reset() {
 	*x = RunbookJobParam{}
-	mi := &file_relay_server_v1_server_proto_msgTypes[935]
+	mi := &file_relay_server_v1_server_proto_msgTypes[937]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -61969,7 +62050,7 @@ func (x *RunbookJobParam) String() string {
 func (*RunbookJobParam) ProtoMessage() {}
 
 func (x *RunbookJobParam) ProtoReflect() protoreflect.Message {
-	mi := &file_relay_server_v1_server_proto_msgTypes[935]
+	mi := &file_relay_server_v1_server_proto_msgTypes[937]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -61982,7 +62063,7 @@ func (x *RunbookJobParam) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use RunbookJobParam.ProtoReflect.Descriptor instead.
 func (*RunbookJobParam) Descriptor() ([]byte, []int) {
-	return file_relay_server_v1_server_proto_rawDescGZIP(), []int{935}
+	return file_relay_server_v1_server_proto_rawDescGZIP(), []int{937}
 }
 
 func (x *RunbookJobParam) GetName() string {
@@ -62045,7 +62126,7 @@ type RunbookJob struct {
 
 func (x *RunbookJob) Reset() {
 	*x = RunbookJob{}
-	mi := &file_relay_server_v1_server_proto_msgTypes[936]
+	mi := &file_relay_server_v1_server_proto_msgTypes[938]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -62057,7 +62138,7 @@ func (x *RunbookJob) String() string {
 func (*RunbookJob) ProtoMessage() {}
 
 func (x *RunbookJob) ProtoReflect() protoreflect.Message {
-	mi := &file_relay_server_v1_server_proto_msgTypes[936]
+	mi := &file_relay_server_v1_server_proto_msgTypes[938]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -62070,7 +62151,7 @@ func (x *RunbookJob) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use RunbookJob.ProtoReflect.Descriptor instead.
 func (*RunbookJob) Descriptor() ([]byte, []int) {
-	return file_relay_server_v1_server_proto_rawDescGZIP(), []int{936}
+	return file_relay_server_v1_server_proto_rawDescGZIP(), []int{938}
 }
 
 func (x *RunbookJob) GetExecutionId() string {
@@ -62187,7 +62268,7 @@ type ClaimRunbookExecutionsResponse struct {
 
 func (x *ClaimRunbookExecutionsResponse) Reset() {
 	*x = ClaimRunbookExecutionsResponse{}
-	mi := &file_relay_server_v1_server_proto_msgTypes[937]
+	mi := &file_relay_server_v1_server_proto_msgTypes[939]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -62199,7 +62280,7 @@ func (x *ClaimRunbookExecutionsResponse) String() string {
 func (*ClaimRunbookExecutionsResponse) ProtoMessage() {}
 
 func (x *ClaimRunbookExecutionsResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_relay_server_v1_server_proto_msgTypes[937]
+	mi := &file_relay_server_v1_server_proto_msgTypes[939]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -62212,7 +62293,7 @@ func (x *ClaimRunbookExecutionsResponse) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use ClaimRunbookExecutionsResponse.ProtoReflect.Descriptor instead.
 func (*ClaimRunbookExecutionsResponse) Descriptor() ([]byte, []int) {
-	return file_relay_server_v1_server_proto_rawDescGZIP(), []int{937}
+	return file_relay_server_v1_server_proto_rawDescGZIP(), []int{939}
 }
 
 func (x *ClaimRunbookExecutionsResponse) GetJobs() []*RunbookJob {
@@ -62239,7 +62320,7 @@ type ReportRunbookExecutionRequest struct {
 
 func (x *ReportRunbookExecutionRequest) Reset() {
 	*x = ReportRunbookExecutionRequest{}
-	mi := &file_relay_server_v1_server_proto_msgTypes[938]
+	mi := &file_relay_server_v1_server_proto_msgTypes[940]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -62251,7 +62332,7 @@ func (x *ReportRunbookExecutionRequest) String() string {
 func (*ReportRunbookExecutionRequest) ProtoMessage() {}
 
 func (x *ReportRunbookExecutionRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_relay_server_v1_server_proto_msgTypes[938]
+	mi := &file_relay_server_v1_server_proto_msgTypes[940]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -62264,7 +62345,7 @@ func (x *ReportRunbookExecutionRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use ReportRunbookExecutionRequest.ProtoReflect.Descriptor instead.
 func (*ReportRunbookExecutionRequest) Descriptor() ([]byte, []int) {
-	return file_relay_server_v1_server_proto_rawDescGZIP(), []int{938}
+	return file_relay_server_v1_server_proto_rawDescGZIP(), []int{940}
 }
 
 func (x *ReportRunbookExecutionRequest) GetExecutionId() string {
@@ -62331,7 +62412,7 @@ type ReportRunbookExecutionResponse struct {
 
 func (x *ReportRunbookExecutionResponse) Reset() {
 	*x = ReportRunbookExecutionResponse{}
-	mi := &file_relay_server_v1_server_proto_msgTypes[939]
+	mi := &file_relay_server_v1_server_proto_msgTypes[941]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -62343,7 +62424,7 @@ func (x *ReportRunbookExecutionResponse) String() string {
 func (*ReportRunbookExecutionResponse) ProtoMessage() {}
 
 func (x *ReportRunbookExecutionResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_relay_server_v1_server_proto_msgTypes[939]
+	mi := &file_relay_server_v1_server_proto_msgTypes[941]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -62356,7 +62437,7 @@ func (x *ReportRunbookExecutionResponse) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use ReportRunbookExecutionResponse.ProtoReflect.Descriptor instead.
 func (*ReportRunbookExecutionResponse) Descriptor() ([]byte, []int) {
-	return file_relay_server_v1_server_proto_rawDescGZIP(), []int{939}
+	return file_relay_server_v1_server_proto_rawDescGZIP(), []int{941}
 }
 
 type QueryTemplateParam struct {
@@ -62381,7 +62462,7 @@ type QueryTemplateParam struct {
 
 func (x *QueryTemplateParam) Reset() {
 	*x = QueryTemplateParam{}
-	mi := &file_relay_server_v1_server_proto_msgTypes[940]
+	mi := &file_relay_server_v1_server_proto_msgTypes[942]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -62393,7 +62474,7 @@ func (x *QueryTemplateParam) String() string {
 func (*QueryTemplateParam) ProtoMessage() {}
 
 func (x *QueryTemplateParam) ProtoReflect() protoreflect.Message {
-	mi := &file_relay_server_v1_server_proto_msgTypes[940]
+	mi := &file_relay_server_v1_server_proto_msgTypes[942]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -62406,7 +62487,7 @@ func (x *QueryTemplateParam) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use QueryTemplateParam.ProtoReflect.Descriptor instead.
 func (*QueryTemplateParam) Descriptor() ([]byte, []int) {
-	return file_relay_server_v1_server_proto_rawDescGZIP(), []int{940}
+	return file_relay_server_v1_server_proto_rawDescGZIP(), []int{942}
 }
 
 func (x *QueryTemplateParam) GetName() string {
@@ -62510,7 +62591,7 @@ type QueryTemplateSpec struct {
 
 func (x *QueryTemplateSpec) Reset() {
 	*x = QueryTemplateSpec{}
-	mi := &file_relay_server_v1_server_proto_msgTypes[941]
+	mi := &file_relay_server_v1_server_proto_msgTypes[943]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -62522,7 +62603,7 @@ func (x *QueryTemplateSpec) String() string {
 func (*QueryTemplateSpec) ProtoMessage() {}
 
 func (x *QueryTemplateSpec) ProtoReflect() protoreflect.Message {
-	mi := &file_relay_server_v1_server_proto_msgTypes[941]
+	mi := &file_relay_server_v1_server_proto_msgTypes[943]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -62535,7 +62616,7 @@ func (x *QueryTemplateSpec) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use QueryTemplateSpec.ProtoReflect.Descriptor instead.
 func (*QueryTemplateSpec) Descriptor() ([]byte, []int) {
-	return file_relay_server_v1_server_proto_rawDescGZIP(), []int{941}
+	return file_relay_server_v1_server_proto_rawDescGZIP(), []int{943}
 }
 
 func (x *QueryTemplateSpec) GetDescription() string {
@@ -62649,7 +62730,7 @@ type QueryTemplateVersion struct {
 
 func (x *QueryTemplateVersion) Reset() {
 	*x = QueryTemplateVersion{}
-	mi := &file_relay_server_v1_server_proto_msgTypes[942]
+	mi := &file_relay_server_v1_server_proto_msgTypes[944]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -62661,7 +62742,7 @@ func (x *QueryTemplateVersion) String() string {
 func (*QueryTemplateVersion) ProtoMessage() {}
 
 func (x *QueryTemplateVersion) ProtoReflect() protoreflect.Message {
-	mi := &file_relay_server_v1_server_proto_msgTypes[942]
+	mi := &file_relay_server_v1_server_proto_msgTypes[944]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -62674,7 +62755,7 @@ func (x *QueryTemplateVersion) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use QueryTemplateVersion.ProtoReflect.Descriptor instead.
 func (*QueryTemplateVersion) Descriptor() ([]byte, []int) {
-	return file_relay_server_v1_server_proto_rawDescGZIP(), []int{942}
+	return file_relay_server_v1_server_proto_rawDescGZIP(), []int{944}
 }
 
 func (x *QueryTemplateVersion) GetId() string {
@@ -62794,7 +62875,7 @@ type QueryTemplate struct {
 
 func (x *QueryTemplate) Reset() {
 	*x = QueryTemplate{}
-	mi := &file_relay_server_v1_server_proto_msgTypes[943]
+	mi := &file_relay_server_v1_server_proto_msgTypes[945]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -62806,7 +62887,7 @@ func (x *QueryTemplate) String() string {
 func (*QueryTemplate) ProtoMessage() {}
 
 func (x *QueryTemplate) ProtoReflect() protoreflect.Message {
-	mi := &file_relay_server_v1_server_proto_msgTypes[943]
+	mi := &file_relay_server_v1_server_proto_msgTypes[945]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -62819,7 +62900,7 @@ func (x *QueryTemplate) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use QueryTemplate.ProtoReflect.Descriptor instead.
 func (*QueryTemplate) Descriptor() ([]byte, []int) {
-	return file_relay_server_v1_server_proto_rawDescGZIP(), []int{943}
+	return file_relay_server_v1_server_proto_rawDescGZIP(), []int{945}
 }
 
 func (x *QueryTemplate) GetId() string {
@@ -62889,7 +62970,7 @@ type CreateQueryTemplateRequest struct {
 
 func (x *CreateQueryTemplateRequest) Reset() {
 	*x = CreateQueryTemplateRequest{}
-	mi := &file_relay_server_v1_server_proto_msgTypes[944]
+	mi := &file_relay_server_v1_server_proto_msgTypes[946]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -62901,7 +62982,7 @@ func (x *CreateQueryTemplateRequest) String() string {
 func (*CreateQueryTemplateRequest) ProtoMessage() {}
 
 func (x *CreateQueryTemplateRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_relay_server_v1_server_proto_msgTypes[944]
+	mi := &file_relay_server_v1_server_proto_msgTypes[946]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -62914,7 +62995,7 @@ func (x *CreateQueryTemplateRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use CreateQueryTemplateRequest.ProtoReflect.Descriptor instead.
 func (*CreateQueryTemplateRequest) Descriptor() ([]byte, []int) {
-	return file_relay_server_v1_server_proto_rawDescGZIP(), []int{944}
+	return file_relay_server_v1_server_proto_rawDescGZIP(), []int{946}
 }
 
 func (x *CreateQueryTemplateRequest) GetName() string {
@@ -62951,7 +63032,7 @@ type NotifiedApprovalIntegration struct {
 
 func (x *NotifiedApprovalIntegration) Reset() {
 	*x = NotifiedApprovalIntegration{}
-	mi := &file_relay_server_v1_server_proto_msgTypes[945]
+	mi := &file_relay_server_v1_server_proto_msgTypes[947]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -62963,7 +63044,7 @@ func (x *NotifiedApprovalIntegration) String() string {
 func (*NotifiedApprovalIntegration) ProtoMessage() {}
 
 func (x *NotifiedApprovalIntegration) ProtoReflect() protoreflect.Message {
-	mi := &file_relay_server_v1_server_proto_msgTypes[945]
+	mi := &file_relay_server_v1_server_proto_msgTypes[947]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -62976,7 +63057,7 @@ func (x *NotifiedApprovalIntegration) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use NotifiedApprovalIntegration.ProtoReflect.Descriptor instead.
 func (*NotifiedApprovalIntegration) Descriptor() ([]byte, []int) {
-	return file_relay_server_v1_server_proto_rawDescGZIP(), []int{945}
+	return file_relay_server_v1_server_proto_rawDescGZIP(), []int{947}
 }
 
 func (x *NotifiedApprovalIntegration) GetName() string {
@@ -63005,7 +63086,7 @@ type CreateQueryTemplateResponse struct {
 
 func (x *CreateQueryTemplateResponse) Reset() {
 	*x = CreateQueryTemplateResponse{}
-	mi := &file_relay_server_v1_server_proto_msgTypes[946]
+	mi := &file_relay_server_v1_server_proto_msgTypes[948]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -63017,7 +63098,7 @@ func (x *CreateQueryTemplateResponse) String() string {
 func (*CreateQueryTemplateResponse) ProtoMessage() {}
 
 func (x *CreateQueryTemplateResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_relay_server_v1_server_proto_msgTypes[946]
+	mi := &file_relay_server_v1_server_proto_msgTypes[948]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -63030,7 +63111,7 @@ func (x *CreateQueryTemplateResponse) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use CreateQueryTemplateResponse.ProtoReflect.Descriptor instead.
 func (*CreateQueryTemplateResponse) Descriptor() ([]byte, []int) {
-	return file_relay_server_v1_server_proto_rawDescGZIP(), []int{946}
+	return file_relay_server_v1_server_proto_rawDescGZIP(), []int{948}
 }
 
 func (x *CreateQueryTemplateResponse) GetTemplate() *QueryTemplate {
@@ -63057,7 +63138,7 @@ type UpdateQueryTemplateRequest struct {
 
 func (x *UpdateQueryTemplateRequest) Reset() {
 	*x = UpdateQueryTemplateRequest{}
-	mi := &file_relay_server_v1_server_proto_msgTypes[947]
+	mi := &file_relay_server_v1_server_proto_msgTypes[949]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -63069,7 +63150,7 @@ func (x *UpdateQueryTemplateRequest) String() string {
 func (*UpdateQueryTemplateRequest) ProtoMessage() {}
 
 func (x *UpdateQueryTemplateRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_relay_server_v1_server_proto_msgTypes[947]
+	mi := &file_relay_server_v1_server_proto_msgTypes[949]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -63082,7 +63163,7 @@ func (x *UpdateQueryTemplateRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use UpdateQueryTemplateRequest.ProtoReflect.Descriptor instead.
 func (*UpdateQueryTemplateRequest) Descriptor() ([]byte, []int) {
-	return file_relay_server_v1_server_proto_rawDescGZIP(), []int{947}
+	return file_relay_server_v1_server_proto_rawDescGZIP(), []int{949}
 }
 
 func (x *UpdateQueryTemplateRequest) GetId() string {
@@ -63109,7 +63190,7 @@ type UpdateQueryTemplateResponse struct {
 
 func (x *UpdateQueryTemplateResponse) Reset() {
 	*x = UpdateQueryTemplateResponse{}
-	mi := &file_relay_server_v1_server_proto_msgTypes[948]
+	mi := &file_relay_server_v1_server_proto_msgTypes[950]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -63121,7 +63202,7 @@ func (x *UpdateQueryTemplateResponse) String() string {
 func (*UpdateQueryTemplateResponse) ProtoMessage() {}
 
 func (x *UpdateQueryTemplateResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_relay_server_v1_server_proto_msgTypes[948]
+	mi := &file_relay_server_v1_server_proto_msgTypes[950]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -63134,7 +63215,7 @@ func (x *UpdateQueryTemplateResponse) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use UpdateQueryTemplateResponse.ProtoReflect.Descriptor instead.
 func (*UpdateQueryTemplateResponse) Descriptor() ([]byte, []int) {
-	return file_relay_server_v1_server_proto_rawDescGZIP(), []int{948}
+	return file_relay_server_v1_server_proto_rawDescGZIP(), []int{950}
 }
 
 func (x *UpdateQueryTemplateResponse) GetVersion() *QueryTemplateVersion {
@@ -63160,7 +63241,7 @@ type GetQueryTemplateRequest struct {
 
 func (x *GetQueryTemplateRequest) Reset() {
 	*x = GetQueryTemplateRequest{}
-	mi := &file_relay_server_v1_server_proto_msgTypes[949]
+	mi := &file_relay_server_v1_server_proto_msgTypes[951]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -63172,7 +63253,7 @@ func (x *GetQueryTemplateRequest) String() string {
 func (*GetQueryTemplateRequest) ProtoMessage() {}
 
 func (x *GetQueryTemplateRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_relay_server_v1_server_proto_msgTypes[949]
+	mi := &file_relay_server_v1_server_proto_msgTypes[951]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -63185,7 +63266,7 @@ func (x *GetQueryTemplateRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use GetQueryTemplateRequest.ProtoReflect.Descriptor instead.
 func (*GetQueryTemplateRequest) Descriptor() ([]byte, []int) {
-	return file_relay_server_v1_server_proto_rawDescGZIP(), []int{949}
+	return file_relay_server_v1_server_proto_rawDescGZIP(), []int{951}
 }
 
 func (x *GetQueryTemplateRequest) GetId() string {
@@ -63204,7 +63285,7 @@ type GetQueryTemplateResponse struct {
 
 func (x *GetQueryTemplateResponse) Reset() {
 	*x = GetQueryTemplateResponse{}
-	mi := &file_relay_server_v1_server_proto_msgTypes[950]
+	mi := &file_relay_server_v1_server_proto_msgTypes[952]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -63216,7 +63297,7 @@ func (x *GetQueryTemplateResponse) String() string {
 func (*GetQueryTemplateResponse) ProtoMessage() {}
 
 func (x *GetQueryTemplateResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_relay_server_v1_server_proto_msgTypes[950]
+	mi := &file_relay_server_v1_server_proto_msgTypes[952]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -63229,7 +63310,7 @@ func (x *GetQueryTemplateResponse) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use GetQueryTemplateResponse.ProtoReflect.Descriptor instead.
 func (*GetQueryTemplateResponse) Descriptor() ([]byte, []int) {
-	return file_relay_server_v1_server_proto_rawDescGZIP(), []int{950}
+	return file_relay_server_v1_server_proto_rawDescGZIP(), []int{952}
 }
 
 func (x *GetQueryTemplateResponse) GetTemplate() *QueryTemplate {
@@ -63250,7 +63331,7 @@ type ListQueryTemplatesRequest struct {
 
 func (x *ListQueryTemplatesRequest) Reset() {
 	*x = ListQueryTemplatesRequest{}
-	mi := &file_relay_server_v1_server_proto_msgTypes[951]
+	mi := &file_relay_server_v1_server_proto_msgTypes[953]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -63262,7 +63343,7 @@ func (x *ListQueryTemplatesRequest) String() string {
 func (*ListQueryTemplatesRequest) ProtoMessage() {}
 
 func (x *ListQueryTemplatesRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_relay_server_v1_server_proto_msgTypes[951]
+	mi := &file_relay_server_v1_server_proto_msgTypes[953]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -63275,7 +63356,7 @@ func (x *ListQueryTemplatesRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use ListQueryTemplatesRequest.ProtoReflect.Descriptor instead.
 func (*ListQueryTemplatesRequest) Descriptor() ([]byte, []int) {
-	return file_relay_server_v1_server_proto_rawDescGZIP(), []int{951}
+	return file_relay_server_v1_server_proto_rawDescGZIP(), []int{953}
 }
 
 func (x *ListQueryTemplatesRequest) GetConnectionName() string {
@@ -63294,7 +63375,7 @@ type ListQueryTemplatesResponse struct {
 
 func (x *ListQueryTemplatesResponse) Reset() {
 	*x = ListQueryTemplatesResponse{}
-	mi := &file_relay_server_v1_server_proto_msgTypes[952]
+	mi := &file_relay_server_v1_server_proto_msgTypes[954]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -63306,7 +63387,7 @@ func (x *ListQueryTemplatesResponse) String() string {
 func (*ListQueryTemplatesResponse) ProtoMessage() {}
 
 func (x *ListQueryTemplatesResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_relay_server_v1_server_proto_msgTypes[952]
+	mi := &file_relay_server_v1_server_proto_msgTypes[954]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -63319,7 +63400,7 @@ func (x *ListQueryTemplatesResponse) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use ListQueryTemplatesResponse.ProtoReflect.Descriptor instead.
 func (*ListQueryTemplatesResponse) Descriptor() ([]byte, []int) {
-	return file_relay_server_v1_server_proto_rawDescGZIP(), []int{952}
+	return file_relay_server_v1_server_proto_rawDescGZIP(), []int{954}
 }
 
 func (x *ListQueryTemplatesResponse) GetTemplates() []*QueryTemplate {
@@ -63338,7 +63419,7 @@ type ListQueryTemplateVersionsRequest struct {
 
 func (x *ListQueryTemplateVersionsRequest) Reset() {
 	*x = ListQueryTemplateVersionsRequest{}
-	mi := &file_relay_server_v1_server_proto_msgTypes[953]
+	mi := &file_relay_server_v1_server_proto_msgTypes[955]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -63350,7 +63431,7 @@ func (x *ListQueryTemplateVersionsRequest) String() string {
 func (*ListQueryTemplateVersionsRequest) ProtoMessage() {}
 
 func (x *ListQueryTemplateVersionsRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_relay_server_v1_server_proto_msgTypes[953]
+	mi := &file_relay_server_v1_server_proto_msgTypes[955]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -63363,7 +63444,7 @@ func (x *ListQueryTemplateVersionsRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use ListQueryTemplateVersionsRequest.ProtoReflect.Descriptor instead.
 func (*ListQueryTemplateVersionsRequest) Descriptor() ([]byte, []int) {
-	return file_relay_server_v1_server_proto_rawDescGZIP(), []int{953}
+	return file_relay_server_v1_server_proto_rawDescGZIP(), []int{955}
 }
 
 func (x *ListQueryTemplateVersionsRequest) GetId() string {
@@ -63382,7 +63463,7 @@ type ListQueryTemplateVersionsResponse struct {
 
 func (x *ListQueryTemplateVersionsResponse) Reset() {
 	*x = ListQueryTemplateVersionsResponse{}
-	mi := &file_relay_server_v1_server_proto_msgTypes[954]
+	mi := &file_relay_server_v1_server_proto_msgTypes[956]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -63394,7 +63475,7 @@ func (x *ListQueryTemplateVersionsResponse) String() string {
 func (*ListQueryTemplateVersionsResponse) ProtoMessage() {}
 
 func (x *ListQueryTemplateVersionsResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_relay_server_v1_server_proto_msgTypes[954]
+	mi := &file_relay_server_v1_server_proto_msgTypes[956]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -63407,7 +63488,7 @@ func (x *ListQueryTemplateVersionsResponse) ProtoReflect() protoreflect.Message 
 
 // Deprecated: Use ListQueryTemplateVersionsResponse.ProtoReflect.Descriptor instead.
 func (*ListQueryTemplateVersionsResponse) Descriptor() ([]byte, []int) {
-	return file_relay_server_v1_server_proto_rawDescGZIP(), []int{954}
+	return file_relay_server_v1_server_proto_rawDescGZIP(), []int{956}
 }
 
 func (x *ListQueryTemplateVersionsResponse) GetVersions() []*QueryTemplateVersion {
@@ -63427,7 +63508,7 @@ type ApproveQueryTemplateVersionRequest struct {
 
 func (x *ApproveQueryTemplateVersionRequest) Reset() {
 	*x = ApproveQueryTemplateVersionRequest{}
-	mi := &file_relay_server_v1_server_proto_msgTypes[955]
+	mi := &file_relay_server_v1_server_proto_msgTypes[957]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -63439,7 +63520,7 @@ func (x *ApproveQueryTemplateVersionRequest) String() string {
 func (*ApproveQueryTemplateVersionRequest) ProtoMessage() {}
 
 func (x *ApproveQueryTemplateVersionRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_relay_server_v1_server_proto_msgTypes[955]
+	mi := &file_relay_server_v1_server_proto_msgTypes[957]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -63452,7 +63533,7 @@ func (x *ApproveQueryTemplateVersionRequest) ProtoReflect() protoreflect.Message
 
 // Deprecated: Use ApproveQueryTemplateVersionRequest.ProtoReflect.Descriptor instead.
 func (*ApproveQueryTemplateVersionRequest) Descriptor() ([]byte, []int) {
-	return file_relay_server_v1_server_proto_rawDescGZIP(), []int{955}
+	return file_relay_server_v1_server_proto_rawDescGZIP(), []int{957}
 }
 
 func (x *ApproveQueryTemplateVersionRequest) GetId() string {
@@ -63478,7 +63559,7 @@ type ApproveQueryTemplateVersionResponse struct {
 
 func (x *ApproveQueryTemplateVersionResponse) Reset() {
 	*x = ApproveQueryTemplateVersionResponse{}
-	mi := &file_relay_server_v1_server_proto_msgTypes[956]
+	mi := &file_relay_server_v1_server_proto_msgTypes[958]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -63490,7 +63571,7 @@ func (x *ApproveQueryTemplateVersionResponse) String() string {
 func (*ApproveQueryTemplateVersionResponse) ProtoMessage() {}
 
 func (x *ApproveQueryTemplateVersionResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_relay_server_v1_server_proto_msgTypes[956]
+	mi := &file_relay_server_v1_server_proto_msgTypes[958]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -63503,7 +63584,7 @@ func (x *ApproveQueryTemplateVersionResponse) ProtoReflect() protoreflect.Messag
 
 // Deprecated: Use ApproveQueryTemplateVersionResponse.ProtoReflect.Descriptor instead.
 func (*ApproveQueryTemplateVersionResponse) Descriptor() ([]byte, []int) {
-	return file_relay_server_v1_server_proto_rawDescGZIP(), []int{956}
+	return file_relay_server_v1_server_proto_rawDescGZIP(), []int{958}
 }
 
 func (x *ApproveQueryTemplateVersionResponse) GetVersion() *QueryTemplateVersion {
@@ -63523,7 +63604,7 @@ type WithdrawQueryTemplateVersionRequest struct {
 
 func (x *WithdrawQueryTemplateVersionRequest) Reset() {
 	*x = WithdrawQueryTemplateVersionRequest{}
-	mi := &file_relay_server_v1_server_proto_msgTypes[957]
+	mi := &file_relay_server_v1_server_proto_msgTypes[959]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -63535,7 +63616,7 @@ func (x *WithdrawQueryTemplateVersionRequest) String() string {
 func (*WithdrawQueryTemplateVersionRequest) ProtoMessage() {}
 
 func (x *WithdrawQueryTemplateVersionRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_relay_server_v1_server_proto_msgTypes[957]
+	mi := &file_relay_server_v1_server_proto_msgTypes[959]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -63548,7 +63629,7 @@ func (x *WithdrawQueryTemplateVersionRequest) ProtoReflect() protoreflect.Messag
 
 // Deprecated: Use WithdrawQueryTemplateVersionRequest.ProtoReflect.Descriptor instead.
 func (*WithdrawQueryTemplateVersionRequest) Descriptor() ([]byte, []int) {
-	return file_relay_server_v1_server_proto_rawDescGZIP(), []int{957}
+	return file_relay_server_v1_server_proto_rawDescGZIP(), []int{959}
 }
 
 func (x *WithdrawQueryTemplateVersionRequest) GetId() string {
@@ -63574,7 +63655,7 @@ type WithdrawQueryTemplateVersionResponse struct {
 
 func (x *WithdrawQueryTemplateVersionResponse) Reset() {
 	*x = WithdrawQueryTemplateVersionResponse{}
-	mi := &file_relay_server_v1_server_proto_msgTypes[958]
+	mi := &file_relay_server_v1_server_proto_msgTypes[960]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -63586,7 +63667,7 @@ func (x *WithdrawQueryTemplateVersionResponse) String() string {
 func (*WithdrawQueryTemplateVersionResponse) ProtoMessage() {}
 
 func (x *WithdrawQueryTemplateVersionResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_relay_server_v1_server_proto_msgTypes[958]
+	mi := &file_relay_server_v1_server_proto_msgTypes[960]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -63599,7 +63680,7 @@ func (x *WithdrawQueryTemplateVersionResponse) ProtoReflect() protoreflect.Messa
 
 // Deprecated: Use WithdrawQueryTemplateVersionResponse.ProtoReflect.Descriptor instead.
 func (*WithdrawQueryTemplateVersionResponse) Descriptor() ([]byte, []int) {
-	return file_relay_server_v1_server_proto_rawDescGZIP(), []int{958}
+	return file_relay_server_v1_server_proto_rawDescGZIP(), []int{960}
 }
 
 func (x *WithdrawQueryTemplateVersionResponse) GetVersion() *QueryTemplateVersion {
@@ -63619,7 +63700,7 @@ type RevokeQueryTemplateRequest struct {
 
 func (x *RevokeQueryTemplateRequest) Reset() {
 	*x = RevokeQueryTemplateRequest{}
-	mi := &file_relay_server_v1_server_proto_msgTypes[959]
+	mi := &file_relay_server_v1_server_proto_msgTypes[961]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -63631,7 +63712,7 @@ func (x *RevokeQueryTemplateRequest) String() string {
 func (*RevokeQueryTemplateRequest) ProtoMessage() {}
 
 func (x *RevokeQueryTemplateRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_relay_server_v1_server_proto_msgTypes[959]
+	mi := &file_relay_server_v1_server_proto_msgTypes[961]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -63644,7 +63725,7 @@ func (x *RevokeQueryTemplateRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use RevokeQueryTemplateRequest.ProtoReflect.Descriptor instead.
 func (*RevokeQueryTemplateRequest) Descriptor() ([]byte, []int) {
-	return file_relay_server_v1_server_proto_rawDescGZIP(), []int{959}
+	return file_relay_server_v1_server_proto_rawDescGZIP(), []int{961}
 }
 
 func (x *RevokeQueryTemplateRequest) GetId() string {
@@ -63670,7 +63751,7 @@ type RevokeQueryTemplateResponse struct {
 
 func (x *RevokeQueryTemplateResponse) Reset() {
 	*x = RevokeQueryTemplateResponse{}
-	mi := &file_relay_server_v1_server_proto_msgTypes[960]
+	mi := &file_relay_server_v1_server_proto_msgTypes[962]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -63682,7 +63763,7 @@ func (x *RevokeQueryTemplateResponse) String() string {
 func (*RevokeQueryTemplateResponse) ProtoMessage() {}
 
 func (x *RevokeQueryTemplateResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_relay_server_v1_server_proto_msgTypes[960]
+	mi := &file_relay_server_v1_server_proto_msgTypes[962]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -63695,7 +63776,7 @@ func (x *RevokeQueryTemplateResponse) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use RevokeQueryTemplateResponse.ProtoReflect.Descriptor instead.
 func (*RevokeQueryTemplateResponse) Descriptor() ([]byte, []int) {
-	return file_relay_server_v1_server_proto_rawDescGZIP(), []int{960}
+	return file_relay_server_v1_server_proto_rawDescGZIP(), []int{962}
 }
 
 func (x *RevokeQueryTemplateResponse) GetTemplate() *QueryTemplate {
@@ -63721,7 +63802,7 @@ type RunQueryTemplateRequest struct {
 
 func (x *RunQueryTemplateRequest) Reset() {
 	*x = RunQueryTemplateRequest{}
-	mi := &file_relay_server_v1_server_proto_msgTypes[961]
+	mi := &file_relay_server_v1_server_proto_msgTypes[963]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -63733,7 +63814,7 @@ func (x *RunQueryTemplateRequest) String() string {
 func (*RunQueryTemplateRequest) ProtoMessage() {}
 
 func (x *RunQueryTemplateRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_relay_server_v1_server_proto_msgTypes[961]
+	mi := &file_relay_server_v1_server_proto_msgTypes[963]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -63746,7 +63827,7 @@ func (x *RunQueryTemplateRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use RunQueryTemplateRequest.ProtoReflect.Descriptor instead.
 func (*RunQueryTemplateRequest) Descriptor() ([]byte, []int) {
-	return file_relay_server_v1_server_proto_rawDescGZIP(), []int{961}
+	return file_relay_server_v1_server_proto_rawDescGZIP(), []int{963}
 }
 
 func (x *RunQueryTemplateRequest) GetTemplateId() string {
@@ -63793,7 +63874,7 @@ type RunQueryTemplateResponse struct {
 
 func (x *RunQueryTemplateResponse) Reset() {
 	*x = RunQueryTemplateResponse{}
-	mi := &file_relay_server_v1_server_proto_msgTypes[962]
+	mi := &file_relay_server_v1_server_proto_msgTypes[964]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -63805,7 +63886,7 @@ func (x *RunQueryTemplateResponse) String() string {
 func (*RunQueryTemplateResponse) ProtoMessage() {}
 
 func (x *RunQueryTemplateResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_relay_server_v1_server_proto_msgTypes[962]
+	mi := &file_relay_server_v1_server_proto_msgTypes[964]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -63818,7 +63899,7 @@ func (x *RunQueryTemplateResponse) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use RunQueryTemplateResponse.ProtoReflect.Descriptor instead.
 func (*RunQueryTemplateResponse) Descriptor() ([]byte, []int) {
-	return file_relay_server_v1_server_proto_rawDescGZIP(), []int{962}
+	return file_relay_server_v1_server_proto_rawDescGZIP(), []int{964}
 }
 
 func (x *RunQueryTemplateResponse) GetExecutionId() string {
@@ -63843,7 +63924,7 @@ type MaskingClassificationReport struct {
 
 func (x *MaskingClassificationReport) Reset() {
 	*x = MaskingClassificationReport{}
-	mi := &file_relay_server_v1_server_proto_msgTypes[963]
+	mi := &file_relay_server_v1_server_proto_msgTypes[965]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -63855,7 +63936,7 @@ func (x *MaskingClassificationReport) String() string {
 func (*MaskingClassificationReport) ProtoMessage() {}
 
 func (x *MaskingClassificationReport) ProtoReflect() protoreflect.Message {
-	mi := &file_relay_server_v1_server_proto_msgTypes[963]
+	mi := &file_relay_server_v1_server_proto_msgTypes[965]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -63868,7 +63949,7 @@ func (x *MaskingClassificationReport) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use MaskingClassificationReport.ProtoReflect.Descriptor instead.
 func (*MaskingClassificationReport) Descriptor() ([]byte, []int) {
-	return file_relay_server_v1_server_proto_rawDescGZIP(), []int{963}
+	return file_relay_server_v1_server_proto_rawDescGZIP(), []int{965}
 }
 
 func (x *MaskingClassificationReport) GetConnectionName() string {
@@ -63923,7 +64004,7 @@ type ReportMaskingClassificationsRequest struct {
 
 func (x *ReportMaskingClassificationsRequest) Reset() {
 	*x = ReportMaskingClassificationsRequest{}
-	mi := &file_relay_server_v1_server_proto_msgTypes[964]
+	mi := &file_relay_server_v1_server_proto_msgTypes[966]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -63935,7 +64016,7 @@ func (x *ReportMaskingClassificationsRequest) String() string {
 func (*ReportMaskingClassificationsRequest) ProtoMessage() {}
 
 func (x *ReportMaskingClassificationsRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_relay_server_v1_server_proto_msgTypes[964]
+	mi := &file_relay_server_v1_server_proto_msgTypes[966]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -63948,7 +64029,7 @@ func (x *ReportMaskingClassificationsRequest) ProtoReflect() protoreflect.Messag
 
 // Deprecated: Use ReportMaskingClassificationsRequest.ProtoReflect.Descriptor instead.
 func (*ReportMaskingClassificationsRequest) Descriptor() ([]byte, []int) {
-	return file_relay_server_v1_server_proto_rawDescGZIP(), []int{964}
+	return file_relay_server_v1_server_proto_rawDescGZIP(), []int{966}
 }
 
 func (x *ReportMaskingClassificationsRequest) GetClassifications() []*MaskingClassificationReport {
@@ -63966,7 +64047,7 @@ type ReportMaskingClassificationsResponse struct {
 
 func (x *ReportMaskingClassificationsResponse) Reset() {
 	*x = ReportMaskingClassificationsResponse{}
-	mi := &file_relay_server_v1_server_proto_msgTypes[965]
+	mi := &file_relay_server_v1_server_proto_msgTypes[967]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -63978,7 +64059,7 @@ func (x *ReportMaskingClassificationsResponse) String() string {
 func (*ReportMaskingClassificationsResponse) ProtoMessage() {}
 
 func (x *ReportMaskingClassificationsResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_relay_server_v1_server_proto_msgTypes[965]
+	mi := &file_relay_server_v1_server_proto_msgTypes[967]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -63991,7 +64072,7 @@ func (x *ReportMaskingClassificationsResponse) ProtoReflect() protoreflect.Messa
 
 // Deprecated: Use ReportMaskingClassificationsResponse.ProtoReflect.Descriptor instead.
 func (*ReportMaskingClassificationsResponse) Descriptor() ([]byte, []int) {
-	return file_relay_server_v1_server_proto_rawDescGZIP(), []int{965}
+	return file_relay_server_v1_server_proto_rawDescGZIP(), []int{967}
 }
 
 type MaskingClassification struct {
@@ -64012,7 +64093,7 @@ type MaskingClassification struct {
 
 func (x *MaskingClassification) Reset() {
 	*x = MaskingClassification{}
-	mi := &file_relay_server_v1_server_proto_msgTypes[966]
+	mi := &file_relay_server_v1_server_proto_msgTypes[968]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -64024,7 +64105,7 @@ func (x *MaskingClassification) String() string {
 func (*MaskingClassification) ProtoMessage() {}
 
 func (x *MaskingClassification) ProtoReflect() protoreflect.Message {
-	mi := &file_relay_server_v1_server_proto_msgTypes[966]
+	mi := &file_relay_server_v1_server_proto_msgTypes[968]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -64037,7 +64118,7 @@ func (x *MaskingClassification) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use MaskingClassification.ProtoReflect.Descriptor instead.
 func (*MaskingClassification) Descriptor() ([]byte, []int) {
-	return file_relay_server_v1_server_proto_rawDescGZIP(), []int{966}
+	return file_relay_server_v1_server_proto_rawDescGZIP(), []int{968}
 }
 
 func (x *MaskingClassification) GetId() string {
@@ -64115,7 +64196,7 @@ type ListMaskingClassificationsRequest struct {
 
 func (x *ListMaskingClassificationsRequest) Reset() {
 	*x = ListMaskingClassificationsRequest{}
-	mi := &file_relay_server_v1_server_proto_msgTypes[967]
+	mi := &file_relay_server_v1_server_proto_msgTypes[969]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -64127,7 +64208,7 @@ func (x *ListMaskingClassificationsRequest) String() string {
 func (*ListMaskingClassificationsRequest) ProtoMessage() {}
 
 func (x *ListMaskingClassificationsRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_relay_server_v1_server_proto_msgTypes[967]
+	mi := &file_relay_server_v1_server_proto_msgTypes[969]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -64140,7 +64221,7 @@ func (x *ListMaskingClassificationsRequest) ProtoReflect() protoreflect.Message 
 
 // Deprecated: Use ListMaskingClassificationsRequest.ProtoReflect.Descriptor instead.
 func (*ListMaskingClassificationsRequest) Descriptor() ([]byte, []int) {
-	return file_relay_server_v1_server_proto_rawDescGZIP(), []int{967}
+	return file_relay_server_v1_server_proto_rawDescGZIP(), []int{969}
 }
 
 func (x *ListMaskingClassificationsRequest) GetConnectionName() string {
@@ -64166,7 +64247,7 @@ type ListMaskingClassificationsResponse struct {
 
 func (x *ListMaskingClassificationsResponse) Reset() {
 	*x = ListMaskingClassificationsResponse{}
-	mi := &file_relay_server_v1_server_proto_msgTypes[968]
+	mi := &file_relay_server_v1_server_proto_msgTypes[970]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -64178,7 +64259,7 @@ func (x *ListMaskingClassificationsResponse) String() string {
 func (*ListMaskingClassificationsResponse) ProtoMessage() {}
 
 func (x *ListMaskingClassificationsResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_relay_server_v1_server_proto_msgTypes[968]
+	mi := &file_relay_server_v1_server_proto_msgTypes[970]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -64191,7 +64272,7 @@ func (x *ListMaskingClassificationsResponse) ProtoReflect() protoreflect.Message
 
 // Deprecated: Use ListMaskingClassificationsResponse.ProtoReflect.Descriptor instead.
 func (*ListMaskingClassificationsResponse) Descriptor() ([]byte, []int) {
-	return file_relay_server_v1_server_proto_rawDescGZIP(), []int{968}
+	return file_relay_server_v1_server_proto_rawDescGZIP(), []int{970}
 }
 
 func (x *ListMaskingClassificationsResponse) GetClassifications() []*MaskingClassification {
@@ -64212,7 +64293,7 @@ type ResolveMaskingClassificationRequest struct {
 
 func (x *ResolveMaskingClassificationRequest) Reset() {
 	*x = ResolveMaskingClassificationRequest{}
-	mi := &file_relay_server_v1_server_proto_msgTypes[969]
+	mi := &file_relay_server_v1_server_proto_msgTypes[971]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -64224,7 +64305,7 @@ func (x *ResolveMaskingClassificationRequest) String() string {
 func (*ResolveMaskingClassificationRequest) ProtoMessage() {}
 
 func (x *ResolveMaskingClassificationRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_relay_server_v1_server_proto_msgTypes[969]
+	mi := &file_relay_server_v1_server_proto_msgTypes[971]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -64237,7 +64318,7 @@ func (x *ResolveMaskingClassificationRequest) ProtoReflect() protoreflect.Messag
 
 // Deprecated: Use ResolveMaskingClassificationRequest.ProtoReflect.Descriptor instead.
 func (*ResolveMaskingClassificationRequest) Descriptor() ([]byte, []int) {
-	return file_relay_server_v1_server_proto_rawDescGZIP(), []int{969}
+	return file_relay_server_v1_server_proto_rawDescGZIP(), []int{971}
 }
 
 func (x *ResolveMaskingClassificationRequest) GetId() string {
@@ -64264,7 +64345,7 @@ type ResolveMaskingClassificationResponse struct {
 
 func (x *ResolveMaskingClassificationResponse) Reset() {
 	*x = ResolveMaskingClassificationResponse{}
-	mi := &file_relay_server_v1_server_proto_msgTypes[970]
+	mi := &file_relay_server_v1_server_proto_msgTypes[972]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -64276,7 +64357,7 @@ func (x *ResolveMaskingClassificationResponse) String() string {
 func (*ResolveMaskingClassificationResponse) ProtoMessage() {}
 
 func (x *ResolveMaskingClassificationResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_relay_server_v1_server_proto_msgTypes[970]
+	mi := &file_relay_server_v1_server_proto_msgTypes[972]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -64289,7 +64370,7 @@ func (x *ResolveMaskingClassificationResponse) ProtoReflect() protoreflect.Messa
 
 // Deprecated: Use ResolveMaskingClassificationResponse.ProtoReflect.Descriptor instead.
 func (*ResolveMaskingClassificationResponse) Descriptor() ([]byte, []int) {
-	return file_relay_server_v1_server_proto_rawDescGZIP(), []int{970}
+	return file_relay_server_v1_server_proto_rawDescGZIP(), []int{972}
 }
 
 func (x *ResolveMaskingClassificationResponse) GetClassification() *MaskingClassification {
@@ -64344,7 +64425,7 @@ type AccessGrantRequest struct {
 
 func (x *AccessGrantRequest) Reset() {
 	*x = AccessGrantRequest{}
-	mi := &file_relay_server_v1_server_proto_msgTypes[971]
+	mi := &file_relay_server_v1_server_proto_msgTypes[973]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -64356,7 +64437,7 @@ func (x *AccessGrantRequest) String() string {
 func (*AccessGrantRequest) ProtoMessage() {}
 
 func (x *AccessGrantRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_relay_server_v1_server_proto_msgTypes[971]
+	mi := &file_relay_server_v1_server_proto_msgTypes[973]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -64369,7 +64450,7 @@ func (x *AccessGrantRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use AccessGrantRequest.ProtoReflect.Descriptor instead.
 func (*AccessGrantRequest) Descriptor() ([]byte, []int) {
-	return file_relay_server_v1_server_proto_rawDescGZIP(), []int{971}
+	return file_relay_server_v1_server_proto_rawDescGZIP(), []int{973}
 }
 
 func (x *AccessGrantRequest) GetId() string {
@@ -64554,7 +64635,7 @@ type RequestAccessGrantRequest struct {
 
 func (x *RequestAccessGrantRequest) Reset() {
 	*x = RequestAccessGrantRequest{}
-	mi := &file_relay_server_v1_server_proto_msgTypes[972]
+	mi := &file_relay_server_v1_server_proto_msgTypes[974]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -64566,7 +64647,7 @@ func (x *RequestAccessGrantRequest) String() string {
 func (*RequestAccessGrantRequest) ProtoMessage() {}
 
 func (x *RequestAccessGrantRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_relay_server_v1_server_proto_msgTypes[972]
+	mi := &file_relay_server_v1_server_proto_msgTypes[974]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -64579,7 +64660,7 @@ func (x *RequestAccessGrantRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use RequestAccessGrantRequest.ProtoReflect.Descriptor instead.
 func (*RequestAccessGrantRequest) Descriptor() ([]byte, []int) {
-	return file_relay_server_v1_server_proto_rawDescGZIP(), []int{972}
+	return file_relay_server_v1_server_proto_rawDescGZIP(), []int{974}
 }
 
 func (x *RequestAccessGrantRequest) GetTargetType() string {
@@ -64619,7 +64700,7 @@ type RequestAccessGrantResponse struct {
 
 func (x *RequestAccessGrantResponse) Reset() {
 	*x = RequestAccessGrantResponse{}
-	mi := &file_relay_server_v1_server_proto_msgTypes[973]
+	mi := &file_relay_server_v1_server_proto_msgTypes[975]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -64631,7 +64712,7 @@ func (x *RequestAccessGrantResponse) String() string {
 func (*RequestAccessGrantResponse) ProtoMessage() {}
 
 func (x *RequestAccessGrantResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_relay_server_v1_server_proto_msgTypes[973]
+	mi := &file_relay_server_v1_server_proto_msgTypes[975]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -64644,7 +64725,7 @@ func (x *RequestAccessGrantResponse) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use RequestAccessGrantResponse.ProtoReflect.Descriptor instead.
 func (*RequestAccessGrantResponse) Descriptor() ([]byte, []int) {
-	return file_relay_server_v1_server_proto_rawDescGZIP(), []int{973}
+	return file_relay_server_v1_server_proto_rawDescGZIP(), []int{975}
 }
 
 func (x *RequestAccessGrantResponse) GetRequest() *AccessGrantRequest {
@@ -64668,7 +64749,7 @@ type ListAccessGrantRequestsRequest struct {
 
 func (x *ListAccessGrantRequestsRequest) Reset() {
 	*x = ListAccessGrantRequestsRequest{}
-	mi := &file_relay_server_v1_server_proto_msgTypes[974]
+	mi := &file_relay_server_v1_server_proto_msgTypes[976]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -64680,7 +64761,7 @@ func (x *ListAccessGrantRequestsRequest) String() string {
 func (*ListAccessGrantRequestsRequest) ProtoMessage() {}
 
 func (x *ListAccessGrantRequestsRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_relay_server_v1_server_proto_msgTypes[974]
+	mi := &file_relay_server_v1_server_proto_msgTypes[976]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -64693,7 +64774,7 @@ func (x *ListAccessGrantRequestsRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use ListAccessGrantRequestsRequest.ProtoReflect.Descriptor instead.
 func (*ListAccessGrantRequestsRequest) Descriptor() ([]byte, []int) {
-	return file_relay_server_v1_server_proto_rawDescGZIP(), []int{974}
+	return file_relay_server_v1_server_proto_rawDescGZIP(), []int{976}
 }
 
 func (x *ListAccessGrantRequestsRequest) GetStatus() QueryApprovalStatus {
@@ -64734,7 +64815,7 @@ type ListAccessGrantRequestsResponse struct {
 
 func (x *ListAccessGrantRequestsResponse) Reset() {
 	*x = ListAccessGrantRequestsResponse{}
-	mi := &file_relay_server_v1_server_proto_msgTypes[975]
+	mi := &file_relay_server_v1_server_proto_msgTypes[977]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -64746,7 +64827,7 @@ func (x *ListAccessGrantRequestsResponse) String() string {
 func (*ListAccessGrantRequestsResponse) ProtoMessage() {}
 
 func (x *ListAccessGrantRequestsResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_relay_server_v1_server_proto_msgTypes[975]
+	mi := &file_relay_server_v1_server_proto_msgTypes[977]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -64759,7 +64840,7 @@ func (x *ListAccessGrantRequestsResponse) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use ListAccessGrantRequestsResponse.ProtoReflect.Descriptor instead.
 func (*ListAccessGrantRequestsResponse) Descriptor() ([]byte, []int) {
-	return file_relay_server_v1_server_proto_rawDescGZIP(), []int{975}
+	return file_relay_server_v1_server_proto_rawDescGZIP(), []int{977}
 }
 
 func (x *ListAccessGrantRequestsResponse) GetRequests() []*AccessGrantRequest {
@@ -64785,7 +64866,7 @@ type GetAccessGrantRequestRequest struct {
 
 func (x *GetAccessGrantRequestRequest) Reset() {
 	*x = GetAccessGrantRequestRequest{}
-	mi := &file_relay_server_v1_server_proto_msgTypes[976]
+	mi := &file_relay_server_v1_server_proto_msgTypes[978]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -64797,7 +64878,7 @@ func (x *GetAccessGrantRequestRequest) String() string {
 func (*GetAccessGrantRequestRequest) ProtoMessage() {}
 
 func (x *GetAccessGrantRequestRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_relay_server_v1_server_proto_msgTypes[976]
+	mi := &file_relay_server_v1_server_proto_msgTypes[978]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -64810,7 +64891,7 @@ func (x *GetAccessGrantRequestRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use GetAccessGrantRequestRequest.ProtoReflect.Descriptor instead.
 func (*GetAccessGrantRequestRequest) Descriptor() ([]byte, []int) {
-	return file_relay_server_v1_server_proto_rawDescGZIP(), []int{976}
+	return file_relay_server_v1_server_proto_rawDescGZIP(), []int{978}
 }
 
 func (x *GetAccessGrantRequestRequest) GetId() string {
@@ -64829,7 +64910,7 @@ type GetAccessGrantRequestResponse struct {
 
 func (x *GetAccessGrantRequestResponse) Reset() {
 	*x = GetAccessGrantRequestResponse{}
-	mi := &file_relay_server_v1_server_proto_msgTypes[977]
+	mi := &file_relay_server_v1_server_proto_msgTypes[979]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -64841,7 +64922,7 @@ func (x *GetAccessGrantRequestResponse) String() string {
 func (*GetAccessGrantRequestResponse) ProtoMessage() {}
 
 func (x *GetAccessGrantRequestResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_relay_server_v1_server_proto_msgTypes[977]
+	mi := &file_relay_server_v1_server_proto_msgTypes[979]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -64854,7 +64935,7 @@ func (x *GetAccessGrantRequestResponse) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use GetAccessGrantRequestResponse.ProtoReflect.Descriptor instead.
 func (*GetAccessGrantRequestResponse) Descriptor() ([]byte, []int) {
-	return file_relay_server_v1_server_proto_rawDescGZIP(), []int{977}
+	return file_relay_server_v1_server_proto_rawDescGZIP(), []int{979}
 }
 
 func (x *GetAccessGrantRequestResponse) GetRequest() *AccessGrantRequest {
@@ -64874,7 +64955,7 @@ type ApproveAccessGrantRequestRequest struct {
 
 func (x *ApproveAccessGrantRequestRequest) Reset() {
 	*x = ApproveAccessGrantRequestRequest{}
-	mi := &file_relay_server_v1_server_proto_msgTypes[978]
+	mi := &file_relay_server_v1_server_proto_msgTypes[980]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -64886,7 +64967,7 @@ func (x *ApproveAccessGrantRequestRequest) String() string {
 func (*ApproveAccessGrantRequestRequest) ProtoMessage() {}
 
 func (x *ApproveAccessGrantRequestRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_relay_server_v1_server_proto_msgTypes[978]
+	mi := &file_relay_server_v1_server_proto_msgTypes[980]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -64899,7 +64980,7 @@ func (x *ApproveAccessGrantRequestRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use ApproveAccessGrantRequestRequest.ProtoReflect.Descriptor instead.
 func (*ApproveAccessGrantRequestRequest) Descriptor() ([]byte, []int) {
-	return file_relay_server_v1_server_proto_rawDescGZIP(), []int{978}
+	return file_relay_server_v1_server_proto_rawDescGZIP(), []int{980}
 }
 
 func (x *ApproveAccessGrantRequestRequest) GetId() string {
@@ -64925,7 +65006,7 @@ type ApproveAccessGrantRequestResponse struct {
 
 func (x *ApproveAccessGrantRequestResponse) Reset() {
 	*x = ApproveAccessGrantRequestResponse{}
-	mi := &file_relay_server_v1_server_proto_msgTypes[979]
+	mi := &file_relay_server_v1_server_proto_msgTypes[981]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -64937,7 +65018,7 @@ func (x *ApproveAccessGrantRequestResponse) String() string {
 func (*ApproveAccessGrantRequestResponse) ProtoMessage() {}
 
 func (x *ApproveAccessGrantRequestResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_relay_server_v1_server_proto_msgTypes[979]
+	mi := &file_relay_server_v1_server_proto_msgTypes[981]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -64950,7 +65031,7 @@ func (x *ApproveAccessGrantRequestResponse) ProtoReflect() protoreflect.Message 
 
 // Deprecated: Use ApproveAccessGrantRequestResponse.ProtoReflect.Descriptor instead.
 func (*ApproveAccessGrantRequestResponse) Descriptor() ([]byte, []int) {
-	return file_relay_server_v1_server_proto_rawDescGZIP(), []int{979}
+	return file_relay_server_v1_server_proto_rawDescGZIP(), []int{981}
 }
 
 func (x *ApproveAccessGrantRequestResponse) GetRequest() *AccessGrantRequest {
@@ -64970,7 +65051,7 @@ type DenyAccessGrantRequestRequest struct {
 
 func (x *DenyAccessGrantRequestRequest) Reset() {
 	*x = DenyAccessGrantRequestRequest{}
-	mi := &file_relay_server_v1_server_proto_msgTypes[980]
+	mi := &file_relay_server_v1_server_proto_msgTypes[982]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -64982,7 +65063,7 @@ func (x *DenyAccessGrantRequestRequest) String() string {
 func (*DenyAccessGrantRequestRequest) ProtoMessage() {}
 
 func (x *DenyAccessGrantRequestRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_relay_server_v1_server_proto_msgTypes[980]
+	mi := &file_relay_server_v1_server_proto_msgTypes[982]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -64995,7 +65076,7 @@ func (x *DenyAccessGrantRequestRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use DenyAccessGrantRequestRequest.ProtoReflect.Descriptor instead.
 func (*DenyAccessGrantRequestRequest) Descriptor() ([]byte, []int) {
-	return file_relay_server_v1_server_proto_rawDescGZIP(), []int{980}
+	return file_relay_server_v1_server_proto_rawDescGZIP(), []int{982}
 }
 
 func (x *DenyAccessGrantRequestRequest) GetId() string {
@@ -65021,7 +65102,7 @@ type DenyAccessGrantRequestResponse struct {
 
 func (x *DenyAccessGrantRequestResponse) Reset() {
 	*x = DenyAccessGrantRequestResponse{}
-	mi := &file_relay_server_v1_server_proto_msgTypes[981]
+	mi := &file_relay_server_v1_server_proto_msgTypes[983]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -65033,7 +65114,7 @@ func (x *DenyAccessGrantRequestResponse) String() string {
 func (*DenyAccessGrantRequestResponse) ProtoMessage() {}
 
 func (x *DenyAccessGrantRequestResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_relay_server_v1_server_proto_msgTypes[981]
+	mi := &file_relay_server_v1_server_proto_msgTypes[983]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -65046,7 +65127,7 @@ func (x *DenyAccessGrantRequestResponse) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use DenyAccessGrantRequestResponse.ProtoReflect.Descriptor instead.
 func (*DenyAccessGrantRequestResponse) Descriptor() ([]byte, []int) {
-	return file_relay_server_v1_server_proto_rawDescGZIP(), []int{981}
+	return file_relay_server_v1_server_proto_rawDescGZIP(), []int{983}
 }
 
 func (x *DenyAccessGrantRequestResponse) GetRequest() *AccessGrantRequest {
@@ -65065,7 +65146,7 @@ type CancelAccessGrantRequestRequest struct {
 
 func (x *CancelAccessGrantRequestRequest) Reset() {
 	*x = CancelAccessGrantRequestRequest{}
-	mi := &file_relay_server_v1_server_proto_msgTypes[982]
+	mi := &file_relay_server_v1_server_proto_msgTypes[984]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -65077,7 +65158,7 @@ func (x *CancelAccessGrantRequestRequest) String() string {
 func (*CancelAccessGrantRequestRequest) ProtoMessage() {}
 
 func (x *CancelAccessGrantRequestRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_relay_server_v1_server_proto_msgTypes[982]
+	mi := &file_relay_server_v1_server_proto_msgTypes[984]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -65090,7 +65171,7 @@ func (x *CancelAccessGrantRequestRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use CancelAccessGrantRequestRequest.ProtoReflect.Descriptor instead.
 func (*CancelAccessGrantRequestRequest) Descriptor() ([]byte, []int) {
-	return file_relay_server_v1_server_proto_rawDescGZIP(), []int{982}
+	return file_relay_server_v1_server_proto_rawDescGZIP(), []int{984}
 }
 
 func (x *CancelAccessGrantRequestRequest) GetId() string {
@@ -65109,7 +65190,7 @@ type CancelAccessGrantRequestResponse struct {
 
 func (x *CancelAccessGrantRequestResponse) Reset() {
 	*x = CancelAccessGrantRequestResponse{}
-	mi := &file_relay_server_v1_server_proto_msgTypes[983]
+	mi := &file_relay_server_v1_server_proto_msgTypes[985]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -65121,7 +65202,7 @@ func (x *CancelAccessGrantRequestResponse) String() string {
 func (*CancelAccessGrantRequestResponse) ProtoMessage() {}
 
 func (x *CancelAccessGrantRequestResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_relay_server_v1_server_proto_msgTypes[983]
+	mi := &file_relay_server_v1_server_proto_msgTypes[985]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -65134,7 +65215,7 @@ func (x *CancelAccessGrantRequestResponse) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use CancelAccessGrantRequestResponse.ProtoReflect.Descriptor instead.
 func (*CancelAccessGrantRequestResponse) Descriptor() ([]byte, []int) {
-	return file_relay_server_v1_server_proto_rawDescGZIP(), []int{983}
+	return file_relay_server_v1_server_proto_rawDescGZIP(), []int{985}
 }
 
 func (x *CancelAccessGrantRequestResponse) GetRequest() *AccessGrantRequest {
@@ -65154,7 +65235,7 @@ type RevokeAccessGrantRequestRequest struct {
 
 func (x *RevokeAccessGrantRequestRequest) Reset() {
 	*x = RevokeAccessGrantRequestRequest{}
-	mi := &file_relay_server_v1_server_proto_msgTypes[984]
+	mi := &file_relay_server_v1_server_proto_msgTypes[986]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -65166,7 +65247,7 @@ func (x *RevokeAccessGrantRequestRequest) String() string {
 func (*RevokeAccessGrantRequestRequest) ProtoMessage() {}
 
 func (x *RevokeAccessGrantRequestRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_relay_server_v1_server_proto_msgTypes[984]
+	mi := &file_relay_server_v1_server_proto_msgTypes[986]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -65179,7 +65260,7 @@ func (x *RevokeAccessGrantRequestRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use RevokeAccessGrantRequestRequest.ProtoReflect.Descriptor instead.
 func (*RevokeAccessGrantRequestRequest) Descriptor() ([]byte, []int) {
-	return file_relay_server_v1_server_proto_rawDescGZIP(), []int{984}
+	return file_relay_server_v1_server_proto_rawDescGZIP(), []int{986}
 }
 
 func (x *RevokeAccessGrantRequestRequest) GetId() string {
@@ -65205,7 +65286,7 @@ type RevokeAccessGrantRequestResponse struct {
 
 func (x *RevokeAccessGrantRequestResponse) Reset() {
 	*x = RevokeAccessGrantRequestResponse{}
-	mi := &file_relay_server_v1_server_proto_msgTypes[985]
+	mi := &file_relay_server_v1_server_proto_msgTypes[987]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -65217,7 +65298,7 @@ func (x *RevokeAccessGrantRequestResponse) String() string {
 func (*RevokeAccessGrantRequestResponse) ProtoMessage() {}
 
 func (x *RevokeAccessGrantRequestResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_relay_server_v1_server_proto_msgTypes[985]
+	mi := &file_relay_server_v1_server_proto_msgTypes[987]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -65230,7 +65311,7 @@ func (x *RevokeAccessGrantRequestResponse) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use RevokeAccessGrantRequestResponse.ProtoReflect.Descriptor instead.
 func (*RevokeAccessGrantRequestResponse) Descriptor() ([]byte, []int) {
-	return file_relay_server_v1_server_proto_rawDescGZIP(), []int{985}
+	return file_relay_server_v1_server_proto_rawDescGZIP(), []int{987}
 }
 
 func (x *RevokeAccessGrantRequestResponse) GetRequest() *AccessGrantRequest {
@@ -65250,7 +65331,7 @@ type RequestableConnection struct {
 
 func (x *RequestableConnection) Reset() {
 	*x = RequestableConnection{}
-	mi := &file_relay_server_v1_server_proto_msgTypes[986]
+	mi := &file_relay_server_v1_server_proto_msgTypes[988]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -65262,7 +65343,7 @@ func (x *RequestableConnection) String() string {
 func (*RequestableConnection) ProtoMessage() {}
 
 func (x *RequestableConnection) ProtoReflect() protoreflect.Message {
-	mi := &file_relay_server_v1_server_proto_msgTypes[986]
+	mi := &file_relay_server_v1_server_proto_msgTypes[988]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -65275,7 +65356,7 @@ func (x *RequestableConnection) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use RequestableConnection.ProtoReflect.Descriptor instead.
 func (*RequestableConnection) Descriptor() ([]byte, []int) {
-	return file_relay_server_v1_server_proto_rawDescGZIP(), []int{986}
+	return file_relay_server_v1_server_proto_rawDescGZIP(), []int{988}
 }
 
 func (x *RequestableConnection) GetName() string {
@@ -65300,7 +65381,7 @@ type ListRequestableConnectionsRequest struct {
 
 func (x *ListRequestableConnectionsRequest) Reset() {
 	*x = ListRequestableConnectionsRequest{}
-	mi := &file_relay_server_v1_server_proto_msgTypes[987]
+	mi := &file_relay_server_v1_server_proto_msgTypes[989]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -65312,7 +65393,7 @@ func (x *ListRequestableConnectionsRequest) String() string {
 func (*ListRequestableConnectionsRequest) ProtoMessage() {}
 
 func (x *ListRequestableConnectionsRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_relay_server_v1_server_proto_msgTypes[987]
+	mi := &file_relay_server_v1_server_proto_msgTypes[989]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -65325,7 +65406,7 @@ func (x *ListRequestableConnectionsRequest) ProtoReflect() protoreflect.Message 
 
 // Deprecated: Use ListRequestableConnectionsRequest.ProtoReflect.Descriptor instead.
 func (*ListRequestableConnectionsRequest) Descriptor() ([]byte, []int) {
-	return file_relay_server_v1_server_proto_rawDescGZIP(), []int{987}
+	return file_relay_server_v1_server_proto_rawDescGZIP(), []int{989}
 }
 
 type ListRequestableConnectionsResponse struct {
@@ -65338,7 +65419,7 @@ type ListRequestableConnectionsResponse struct {
 
 func (x *ListRequestableConnectionsResponse) Reset() {
 	*x = ListRequestableConnectionsResponse{}
-	mi := &file_relay_server_v1_server_proto_msgTypes[988]
+	mi := &file_relay_server_v1_server_proto_msgTypes[990]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -65350,7 +65431,7 @@ func (x *ListRequestableConnectionsResponse) String() string {
 func (*ListRequestableConnectionsResponse) ProtoMessage() {}
 
 func (x *ListRequestableConnectionsResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_relay_server_v1_server_proto_msgTypes[988]
+	mi := &file_relay_server_v1_server_proto_msgTypes[990]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -65363,7 +65444,7 @@ func (x *ListRequestableConnectionsResponse) ProtoReflect() protoreflect.Message
 
 // Deprecated: Use ListRequestableConnectionsResponse.ProtoReflect.Descriptor instead.
 func (*ListRequestableConnectionsResponse) Descriptor() ([]byte, []int) {
-	return file_relay_server_v1_server_proto_rawDescGZIP(), []int{988}
+	return file_relay_server_v1_server_proto_rawDescGZIP(), []int{990}
 }
 
 func (x *ListRequestableConnectionsResponse) GetConnections() []*RequestableConnection {
@@ -65395,7 +65476,7 @@ type AccessRequestSettings struct {
 
 func (x *AccessRequestSettings) Reset() {
 	*x = AccessRequestSettings{}
-	mi := &file_relay_server_v1_server_proto_msgTypes[989]
+	mi := &file_relay_server_v1_server_proto_msgTypes[991]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -65407,7 +65488,7 @@ func (x *AccessRequestSettings) String() string {
 func (*AccessRequestSettings) ProtoMessage() {}
 
 func (x *AccessRequestSettings) ProtoReflect() protoreflect.Message {
-	mi := &file_relay_server_v1_server_proto_msgTypes[989]
+	mi := &file_relay_server_v1_server_proto_msgTypes[991]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -65420,7 +65501,7 @@ func (x *AccessRequestSettings) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use AccessRequestSettings.ProtoReflect.Descriptor instead.
 func (*AccessRequestSettings) Descriptor() ([]byte, []int) {
-	return file_relay_server_v1_server_proto_rawDescGZIP(), []int{989}
+	return file_relay_server_v1_server_proto_rawDescGZIP(), []int{991}
 }
 
 func (x *AccessRequestSettings) GetMaxDurationSeconds() int32 {
@@ -65466,7 +65547,7 @@ type GetAccessRequestSettingsRequest struct {
 
 func (x *GetAccessRequestSettingsRequest) Reset() {
 	*x = GetAccessRequestSettingsRequest{}
-	mi := &file_relay_server_v1_server_proto_msgTypes[990]
+	mi := &file_relay_server_v1_server_proto_msgTypes[992]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -65478,7 +65559,7 @@ func (x *GetAccessRequestSettingsRequest) String() string {
 func (*GetAccessRequestSettingsRequest) ProtoMessage() {}
 
 func (x *GetAccessRequestSettingsRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_relay_server_v1_server_proto_msgTypes[990]
+	mi := &file_relay_server_v1_server_proto_msgTypes[992]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -65491,7 +65572,7 @@ func (x *GetAccessRequestSettingsRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use GetAccessRequestSettingsRequest.ProtoReflect.Descriptor instead.
 func (*GetAccessRequestSettingsRequest) Descriptor() ([]byte, []int) {
-	return file_relay_server_v1_server_proto_rawDescGZIP(), []int{990}
+	return file_relay_server_v1_server_proto_rawDescGZIP(), []int{992}
 }
 
 type GetAccessRequestSettingsResponse struct {
@@ -65503,7 +65584,7 @@ type GetAccessRequestSettingsResponse struct {
 
 func (x *GetAccessRequestSettingsResponse) Reset() {
 	*x = GetAccessRequestSettingsResponse{}
-	mi := &file_relay_server_v1_server_proto_msgTypes[991]
+	mi := &file_relay_server_v1_server_proto_msgTypes[993]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -65515,7 +65596,7 @@ func (x *GetAccessRequestSettingsResponse) String() string {
 func (*GetAccessRequestSettingsResponse) ProtoMessage() {}
 
 func (x *GetAccessRequestSettingsResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_relay_server_v1_server_proto_msgTypes[991]
+	mi := &file_relay_server_v1_server_proto_msgTypes[993]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -65528,7 +65609,7 @@ func (x *GetAccessRequestSettingsResponse) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use GetAccessRequestSettingsResponse.ProtoReflect.Descriptor instead.
 func (*GetAccessRequestSettingsResponse) Descriptor() ([]byte, []int) {
-	return file_relay_server_v1_server_proto_rawDescGZIP(), []int{991}
+	return file_relay_server_v1_server_proto_rawDescGZIP(), []int{993}
 }
 
 func (x *GetAccessRequestSettingsResponse) GetSettings() *AccessRequestSettings {
@@ -65547,7 +65628,7 @@ type UpdateAccessRequestSettingsRequest struct {
 
 func (x *UpdateAccessRequestSettingsRequest) Reset() {
 	*x = UpdateAccessRequestSettingsRequest{}
-	mi := &file_relay_server_v1_server_proto_msgTypes[992]
+	mi := &file_relay_server_v1_server_proto_msgTypes[994]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -65559,7 +65640,7 @@ func (x *UpdateAccessRequestSettingsRequest) String() string {
 func (*UpdateAccessRequestSettingsRequest) ProtoMessage() {}
 
 func (x *UpdateAccessRequestSettingsRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_relay_server_v1_server_proto_msgTypes[992]
+	mi := &file_relay_server_v1_server_proto_msgTypes[994]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -65572,7 +65653,7 @@ func (x *UpdateAccessRequestSettingsRequest) ProtoReflect() protoreflect.Message
 
 // Deprecated: Use UpdateAccessRequestSettingsRequest.ProtoReflect.Descriptor instead.
 func (*UpdateAccessRequestSettingsRequest) Descriptor() ([]byte, []int) {
-	return file_relay_server_v1_server_proto_rawDescGZIP(), []int{992}
+	return file_relay_server_v1_server_proto_rawDescGZIP(), []int{994}
 }
 
 func (x *UpdateAccessRequestSettingsRequest) GetSettings() *AccessRequestSettings {
@@ -65591,7 +65672,7 @@ type UpdateAccessRequestSettingsResponse struct {
 
 func (x *UpdateAccessRequestSettingsResponse) Reset() {
 	*x = UpdateAccessRequestSettingsResponse{}
-	mi := &file_relay_server_v1_server_proto_msgTypes[993]
+	mi := &file_relay_server_v1_server_proto_msgTypes[995]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -65603,7 +65684,7 @@ func (x *UpdateAccessRequestSettingsResponse) String() string {
 func (*UpdateAccessRequestSettingsResponse) ProtoMessage() {}
 
 func (x *UpdateAccessRequestSettingsResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_relay_server_v1_server_proto_msgTypes[993]
+	mi := &file_relay_server_v1_server_proto_msgTypes[995]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -65616,7 +65697,7 @@ func (x *UpdateAccessRequestSettingsResponse) ProtoReflect() protoreflect.Messag
 
 // Deprecated: Use UpdateAccessRequestSettingsResponse.ProtoReflect.Descriptor instead.
 func (*UpdateAccessRequestSettingsResponse) Descriptor() ([]byte, []int) {
-	return file_relay_server_v1_server_proto_rawDescGZIP(), []int{993}
+	return file_relay_server_v1_server_proto_rawDescGZIP(), []int{995}
 }
 
 func (x *UpdateAccessRequestSettingsResponse) GetSettings() *AccessRequestSettings {
@@ -65645,7 +65726,7 @@ type CreateMCPGrantRequest struct {
 
 func (x *CreateMCPGrantRequest) Reset() {
 	*x = CreateMCPGrantRequest{}
-	mi := &file_relay_server_v1_server_proto_msgTypes[994]
+	mi := &file_relay_server_v1_server_proto_msgTypes[996]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -65657,7 +65738,7 @@ func (x *CreateMCPGrantRequest) String() string {
 func (*CreateMCPGrantRequest) ProtoMessage() {}
 
 func (x *CreateMCPGrantRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_relay_server_v1_server_proto_msgTypes[994]
+	mi := &file_relay_server_v1_server_proto_msgTypes[996]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -65670,7 +65751,7 @@ func (x *CreateMCPGrantRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use CreateMCPGrantRequest.ProtoReflect.Descriptor instead.
 func (*CreateMCPGrantRequest) Descriptor() ([]byte, []int) {
-	return file_relay_server_v1_server_proto_rawDescGZIP(), []int{994}
+	return file_relay_server_v1_server_proto_rawDescGZIP(), []int{996}
 }
 
 func (x *CreateMCPGrantRequest) GetSessionToken() string {
@@ -65722,7 +65803,7 @@ type CreateMCPGrantResponse struct {
 
 func (x *CreateMCPGrantResponse) Reset() {
 	*x = CreateMCPGrantResponse{}
-	mi := &file_relay_server_v1_server_proto_msgTypes[995]
+	mi := &file_relay_server_v1_server_proto_msgTypes[997]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -65734,7 +65815,7 @@ func (x *CreateMCPGrantResponse) String() string {
 func (*CreateMCPGrantResponse) ProtoMessage() {}
 
 func (x *CreateMCPGrantResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_relay_server_v1_server_proto_msgTypes[995]
+	mi := &file_relay_server_v1_server_proto_msgTypes[997]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -65747,7 +65828,7 @@ func (x *CreateMCPGrantResponse) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use CreateMCPGrantResponse.ProtoReflect.Descriptor instead.
 func (*CreateMCPGrantResponse) Descriptor() ([]byte, []int) {
-	return file_relay_server_v1_server_proto_rawDescGZIP(), []int{995}
+	return file_relay_server_v1_server_proto_rawDescGZIP(), []int{997}
 }
 
 func (x *CreateMCPGrantResponse) GetGrantId() string {
@@ -65795,7 +65876,7 @@ type RotateMCPGrantRequest struct {
 
 func (x *RotateMCPGrantRequest) Reset() {
 	*x = RotateMCPGrantRequest{}
-	mi := &file_relay_server_v1_server_proto_msgTypes[996]
+	mi := &file_relay_server_v1_server_proto_msgTypes[998]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -65807,7 +65888,7 @@ func (x *RotateMCPGrantRequest) String() string {
 func (*RotateMCPGrantRequest) ProtoMessage() {}
 
 func (x *RotateMCPGrantRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_relay_server_v1_server_proto_msgTypes[996]
+	mi := &file_relay_server_v1_server_proto_msgTypes[998]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -65820,7 +65901,7 @@ func (x *RotateMCPGrantRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use RotateMCPGrantRequest.ProtoReflect.Descriptor instead.
 func (*RotateMCPGrantRequest) Descriptor() ([]byte, []int) {
-	return file_relay_server_v1_server_proto_rawDescGZIP(), []int{996}
+	return file_relay_server_v1_server_proto_rawDescGZIP(), []int{998}
 }
 
 func (x *RotateMCPGrantRequest) GetRefreshToken() string {
@@ -65851,7 +65932,7 @@ type RotateMCPGrantResponse struct {
 
 func (x *RotateMCPGrantResponse) Reset() {
 	*x = RotateMCPGrantResponse{}
-	mi := &file_relay_server_v1_server_proto_msgTypes[997]
+	mi := &file_relay_server_v1_server_proto_msgTypes[999]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -65863,7 +65944,7 @@ func (x *RotateMCPGrantResponse) String() string {
 func (*RotateMCPGrantResponse) ProtoMessage() {}
 
 func (x *RotateMCPGrantResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_relay_server_v1_server_proto_msgTypes[997]
+	mi := &file_relay_server_v1_server_proto_msgTypes[999]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -65876,7 +65957,7 @@ func (x *RotateMCPGrantResponse) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use RotateMCPGrantResponse.ProtoReflect.Descriptor instead.
 func (*RotateMCPGrantResponse) Descriptor() ([]byte, []int) {
-	return file_relay_server_v1_server_proto_rawDescGZIP(), []int{997}
+	return file_relay_server_v1_server_proto_rawDescGZIP(), []int{999}
 }
 
 func (x *RotateMCPGrantResponse) GetGrantId() string {
@@ -65930,7 +66011,7 @@ type ResolveMCPGrantRequest struct {
 
 func (x *ResolveMCPGrantRequest) Reset() {
 	*x = ResolveMCPGrantRequest{}
-	mi := &file_relay_server_v1_server_proto_msgTypes[998]
+	mi := &file_relay_server_v1_server_proto_msgTypes[1000]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -65942,7 +66023,7 @@ func (x *ResolveMCPGrantRequest) String() string {
 func (*ResolveMCPGrantRequest) ProtoMessage() {}
 
 func (x *ResolveMCPGrantRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_relay_server_v1_server_proto_msgTypes[998]
+	mi := &file_relay_server_v1_server_proto_msgTypes[1000]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -65955,7 +66036,7 @@ func (x *ResolveMCPGrantRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use ResolveMCPGrantRequest.ProtoReflect.Descriptor instead.
 func (*ResolveMCPGrantRequest) Descriptor() ([]byte, []int) {
-	return file_relay_server_v1_server_proto_rawDescGZIP(), []int{998}
+	return file_relay_server_v1_server_proto_rawDescGZIP(), []int{1000}
 }
 
 func (x *ResolveMCPGrantRequest) GetGrantId() string {
@@ -65979,7 +66060,7 @@ type ResolveMCPGrantResponse struct {
 
 func (x *ResolveMCPGrantResponse) Reset() {
 	*x = ResolveMCPGrantResponse{}
-	mi := &file_relay_server_v1_server_proto_msgTypes[999]
+	mi := &file_relay_server_v1_server_proto_msgTypes[1001]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -65991,7 +66072,7 @@ func (x *ResolveMCPGrantResponse) String() string {
 func (*ResolveMCPGrantResponse) ProtoMessage() {}
 
 func (x *ResolveMCPGrantResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_relay_server_v1_server_proto_msgTypes[999]
+	mi := &file_relay_server_v1_server_proto_msgTypes[1001]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -66004,7 +66085,7 @@ func (x *ResolveMCPGrantResponse) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use ResolveMCPGrantResponse.ProtoReflect.Descriptor instead.
 func (*ResolveMCPGrantResponse) Descriptor() ([]byte, []int) {
-	return file_relay_server_v1_server_proto_rawDescGZIP(), []int{999}
+	return file_relay_server_v1_server_proto_rawDescGZIP(), []int{1001}
 }
 
 func (x *ResolveMCPGrantResponse) GetSessionTokenCiphertext() []byte {
@@ -66063,7 +66144,7 @@ type RevokeMCPGrantRequest struct {
 
 func (x *RevokeMCPGrantRequest) Reset() {
 	*x = RevokeMCPGrantRequest{}
-	mi := &file_relay_server_v1_server_proto_msgTypes[1000]
+	mi := &file_relay_server_v1_server_proto_msgTypes[1002]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -66075,7 +66156,7 @@ func (x *RevokeMCPGrantRequest) String() string {
 func (*RevokeMCPGrantRequest) ProtoMessage() {}
 
 func (x *RevokeMCPGrantRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_relay_server_v1_server_proto_msgTypes[1000]
+	mi := &file_relay_server_v1_server_proto_msgTypes[1002]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -66088,7 +66169,7 @@ func (x *RevokeMCPGrantRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use RevokeMCPGrantRequest.ProtoReflect.Descriptor instead.
 func (*RevokeMCPGrantRequest) Descriptor() ([]byte, []int) {
-	return file_relay_server_v1_server_proto_rawDescGZIP(), []int{1000}
+	return file_relay_server_v1_server_proto_rawDescGZIP(), []int{1002}
 }
 
 func (x *RevokeMCPGrantRequest) GetTarget() isRevokeMCPGrantRequest_Target {
@@ -66148,7 +66229,7 @@ type RevokeMCPGrantResponse struct {
 
 func (x *RevokeMCPGrantResponse) Reset() {
 	*x = RevokeMCPGrantResponse{}
-	mi := &file_relay_server_v1_server_proto_msgTypes[1001]
+	mi := &file_relay_server_v1_server_proto_msgTypes[1003]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -66160,7 +66241,7 @@ func (x *RevokeMCPGrantResponse) String() string {
 func (*RevokeMCPGrantResponse) ProtoMessage() {}
 
 func (x *RevokeMCPGrantResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_relay_server_v1_server_proto_msgTypes[1001]
+	mi := &file_relay_server_v1_server_proto_msgTypes[1003]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -66173,7 +66254,7 @@ func (x *RevokeMCPGrantResponse) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use RevokeMCPGrantResponse.ProtoReflect.Descriptor instead.
 func (*RevokeMCPGrantResponse) Descriptor() ([]byte, []int) {
-	return file_relay_server_v1_server_proto_rawDescGZIP(), []int{1001}
+	return file_relay_server_v1_server_proto_rawDescGZIP(), []int{1003}
 }
 
 func (x *RevokeMCPGrantResponse) GetRevoked() bool {
@@ -66208,7 +66289,7 @@ type BillingPromo struct {
 
 func (x *BillingPromo) Reset() {
 	*x = BillingPromo{}
-	mi := &file_relay_server_v1_server_proto_msgTypes[1002]
+	mi := &file_relay_server_v1_server_proto_msgTypes[1004]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -66220,7 +66301,7 @@ func (x *BillingPromo) String() string {
 func (*BillingPromo) ProtoMessage() {}
 
 func (x *BillingPromo) ProtoReflect() protoreflect.Message {
-	mi := &file_relay_server_v1_server_proto_msgTypes[1002]
+	mi := &file_relay_server_v1_server_proto_msgTypes[1004]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -66233,7 +66314,7 @@ func (x *BillingPromo) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use BillingPromo.ProtoReflect.Descriptor instead.
 func (*BillingPromo) Descriptor() ([]byte, []int) {
-	return file_relay_server_v1_server_proto_rawDescGZIP(), []int{1002}
+	return file_relay_server_v1_server_proto_rawDescGZIP(), []int{1004}
 }
 
 func (x *BillingPromo) GetId() string {
@@ -66339,7 +66420,7 @@ type RedeemPromoCodeRequest struct {
 
 func (x *RedeemPromoCodeRequest) Reset() {
 	*x = RedeemPromoCodeRequest{}
-	mi := &file_relay_server_v1_server_proto_msgTypes[1003]
+	mi := &file_relay_server_v1_server_proto_msgTypes[1005]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -66351,7 +66432,7 @@ func (x *RedeemPromoCodeRequest) String() string {
 func (*RedeemPromoCodeRequest) ProtoMessage() {}
 
 func (x *RedeemPromoCodeRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_relay_server_v1_server_proto_msgTypes[1003]
+	mi := &file_relay_server_v1_server_proto_msgTypes[1005]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -66364,7 +66445,7 @@ func (x *RedeemPromoCodeRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use RedeemPromoCodeRequest.ProtoReflect.Descriptor instead.
 func (*RedeemPromoCodeRequest) Descriptor() ([]byte, []int) {
-	return file_relay_server_v1_server_proto_rawDescGZIP(), []int{1003}
+	return file_relay_server_v1_server_proto_rawDescGZIP(), []int{1005}
 }
 
 func (x *RedeemPromoCodeRequest) GetCode() string {
@@ -66390,7 +66471,7 @@ type RedeemPromoCodeResponse struct {
 
 func (x *RedeemPromoCodeResponse) Reset() {
 	*x = RedeemPromoCodeResponse{}
-	mi := &file_relay_server_v1_server_proto_msgTypes[1004]
+	mi := &file_relay_server_v1_server_proto_msgTypes[1006]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -66402,7 +66483,7 @@ func (x *RedeemPromoCodeResponse) String() string {
 func (*RedeemPromoCodeResponse) ProtoMessage() {}
 
 func (x *RedeemPromoCodeResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_relay_server_v1_server_proto_msgTypes[1004]
+	mi := &file_relay_server_v1_server_proto_msgTypes[1006]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -66415,7 +66496,7 @@ func (x *RedeemPromoCodeResponse) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use RedeemPromoCodeResponse.ProtoReflect.Descriptor instead.
 func (*RedeemPromoCodeResponse) Descriptor() ([]byte, []int) {
-	return file_relay_server_v1_server_proto_rawDescGZIP(), []int{1004}
+	return file_relay_server_v1_server_proto_rawDescGZIP(), []int{1006}
 }
 
 func (x *RedeemPromoCodeResponse) GetPromo() *BillingPromo {
@@ -66454,7 +66535,7 @@ type AdminPromoCampaign struct {
 
 func (x *AdminPromoCampaign) Reset() {
 	*x = AdminPromoCampaign{}
-	mi := &file_relay_server_v1_server_proto_msgTypes[1005]
+	mi := &file_relay_server_v1_server_proto_msgTypes[1007]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -66466,7 +66547,7 @@ func (x *AdminPromoCampaign) String() string {
 func (*AdminPromoCampaign) ProtoMessage() {}
 
 func (x *AdminPromoCampaign) ProtoReflect() protoreflect.Message {
-	mi := &file_relay_server_v1_server_proto_msgTypes[1005]
+	mi := &file_relay_server_v1_server_proto_msgTypes[1007]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -66479,7 +66560,7 @@ func (x *AdminPromoCampaign) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use AdminPromoCampaign.ProtoReflect.Descriptor instead.
 func (*AdminPromoCampaign) Descriptor() ([]byte, []int) {
-	return file_relay_server_v1_server_proto_rawDescGZIP(), []int{1005}
+	return file_relay_server_v1_server_proto_rawDescGZIP(), []int{1007}
 }
 
 func (x *AdminPromoCampaign) GetId() string {
@@ -66624,7 +66705,7 @@ type AdminPromoRedemption struct {
 
 func (x *AdminPromoRedemption) Reset() {
 	*x = AdminPromoRedemption{}
-	mi := &file_relay_server_v1_server_proto_msgTypes[1006]
+	mi := &file_relay_server_v1_server_proto_msgTypes[1008]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -66636,7 +66717,7 @@ func (x *AdminPromoRedemption) String() string {
 func (*AdminPromoRedemption) ProtoMessage() {}
 
 func (x *AdminPromoRedemption) ProtoReflect() protoreflect.Message {
-	mi := &file_relay_server_v1_server_proto_msgTypes[1006]
+	mi := &file_relay_server_v1_server_proto_msgTypes[1008]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -66649,7 +66730,7 @@ func (x *AdminPromoRedemption) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use AdminPromoRedemption.ProtoReflect.Descriptor instead.
 func (*AdminPromoRedemption) Descriptor() ([]byte, []int) {
-	return file_relay_server_v1_server_proto_rawDescGZIP(), []int{1006}
+	return file_relay_server_v1_server_proto_rawDescGZIP(), []int{1008}
 }
 
 func (x *AdminPromoRedemption) GetPromo() *BillingPromo {
@@ -66721,7 +66802,7 @@ type AdminCreatePromoCampaignRequest struct {
 
 func (x *AdminCreatePromoCampaignRequest) Reset() {
 	*x = AdminCreatePromoCampaignRequest{}
-	mi := &file_relay_server_v1_server_proto_msgTypes[1007]
+	mi := &file_relay_server_v1_server_proto_msgTypes[1009]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -66733,7 +66814,7 @@ func (x *AdminCreatePromoCampaignRequest) String() string {
 func (*AdminCreatePromoCampaignRequest) ProtoMessage() {}
 
 func (x *AdminCreatePromoCampaignRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_relay_server_v1_server_proto_msgTypes[1007]
+	mi := &file_relay_server_v1_server_proto_msgTypes[1009]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -66746,7 +66827,7 @@ func (x *AdminCreatePromoCampaignRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use AdminCreatePromoCampaignRequest.ProtoReflect.Descriptor instead.
 func (*AdminCreatePromoCampaignRequest) Descriptor() ([]byte, []int) {
-	return file_relay_server_v1_server_proto_rawDescGZIP(), []int{1007}
+	return file_relay_server_v1_server_proto_rawDescGZIP(), []int{1009}
 }
 
 func (x *AdminCreatePromoCampaignRequest) GetCode() string {
@@ -66821,7 +66902,7 @@ type AdminCreatePromoCampaignResponse struct {
 
 func (x *AdminCreatePromoCampaignResponse) Reset() {
 	*x = AdminCreatePromoCampaignResponse{}
-	mi := &file_relay_server_v1_server_proto_msgTypes[1008]
+	mi := &file_relay_server_v1_server_proto_msgTypes[1010]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -66833,7 +66914,7 @@ func (x *AdminCreatePromoCampaignResponse) String() string {
 func (*AdminCreatePromoCampaignResponse) ProtoMessage() {}
 
 func (x *AdminCreatePromoCampaignResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_relay_server_v1_server_proto_msgTypes[1008]
+	mi := &file_relay_server_v1_server_proto_msgTypes[1010]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -66846,7 +66927,7 @@ func (x *AdminCreatePromoCampaignResponse) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use AdminCreatePromoCampaignResponse.ProtoReflect.Descriptor instead.
 func (*AdminCreatePromoCampaignResponse) Descriptor() ([]byte, []int) {
-	return file_relay_server_v1_server_proto_rawDescGZIP(), []int{1008}
+	return file_relay_server_v1_server_proto_rawDescGZIP(), []int{1010}
 }
 
 func (x *AdminCreatePromoCampaignResponse) GetCampaign() *AdminPromoCampaign {
@@ -66864,7 +66945,7 @@ type AdminListPromoCampaignsRequest struct {
 
 func (x *AdminListPromoCampaignsRequest) Reset() {
 	*x = AdminListPromoCampaignsRequest{}
-	mi := &file_relay_server_v1_server_proto_msgTypes[1009]
+	mi := &file_relay_server_v1_server_proto_msgTypes[1011]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -66876,7 +66957,7 @@ func (x *AdminListPromoCampaignsRequest) String() string {
 func (*AdminListPromoCampaignsRequest) ProtoMessage() {}
 
 func (x *AdminListPromoCampaignsRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_relay_server_v1_server_proto_msgTypes[1009]
+	mi := &file_relay_server_v1_server_proto_msgTypes[1011]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -66889,7 +66970,7 @@ func (x *AdminListPromoCampaignsRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use AdminListPromoCampaignsRequest.ProtoReflect.Descriptor instead.
 func (*AdminListPromoCampaignsRequest) Descriptor() ([]byte, []int) {
-	return file_relay_server_v1_server_proto_rawDescGZIP(), []int{1009}
+	return file_relay_server_v1_server_proto_rawDescGZIP(), []int{1011}
 }
 
 type AdminListPromoCampaignsResponse struct {
@@ -66901,7 +66982,7 @@ type AdminListPromoCampaignsResponse struct {
 
 func (x *AdminListPromoCampaignsResponse) Reset() {
 	*x = AdminListPromoCampaignsResponse{}
-	mi := &file_relay_server_v1_server_proto_msgTypes[1010]
+	mi := &file_relay_server_v1_server_proto_msgTypes[1012]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -66913,7 +66994,7 @@ func (x *AdminListPromoCampaignsResponse) String() string {
 func (*AdminListPromoCampaignsResponse) ProtoMessage() {}
 
 func (x *AdminListPromoCampaignsResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_relay_server_v1_server_proto_msgTypes[1010]
+	mi := &file_relay_server_v1_server_proto_msgTypes[1012]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -66926,7 +67007,7 @@ func (x *AdminListPromoCampaignsResponse) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use AdminListPromoCampaignsResponse.ProtoReflect.Descriptor instead.
 func (*AdminListPromoCampaignsResponse) Descriptor() ([]byte, []int) {
-	return file_relay_server_v1_server_proto_rawDescGZIP(), []int{1010}
+	return file_relay_server_v1_server_proto_rawDescGZIP(), []int{1012}
 }
 
 func (x *AdminListPromoCampaignsResponse) GetCampaigns() []*AdminPromoCampaign {
@@ -66946,7 +67027,7 @@ type AdminSetPromoCampaignActiveRequest struct {
 
 func (x *AdminSetPromoCampaignActiveRequest) Reset() {
 	*x = AdminSetPromoCampaignActiveRequest{}
-	mi := &file_relay_server_v1_server_proto_msgTypes[1011]
+	mi := &file_relay_server_v1_server_proto_msgTypes[1013]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -66958,7 +67039,7 @@ func (x *AdminSetPromoCampaignActiveRequest) String() string {
 func (*AdminSetPromoCampaignActiveRequest) ProtoMessage() {}
 
 func (x *AdminSetPromoCampaignActiveRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_relay_server_v1_server_proto_msgTypes[1011]
+	mi := &file_relay_server_v1_server_proto_msgTypes[1013]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -66971,7 +67052,7 @@ func (x *AdminSetPromoCampaignActiveRequest) ProtoReflect() protoreflect.Message
 
 // Deprecated: Use AdminSetPromoCampaignActiveRequest.ProtoReflect.Descriptor instead.
 func (*AdminSetPromoCampaignActiveRequest) Descriptor() ([]byte, []int) {
-	return file_relay_server_v1_server_proto_rawDescGZIP(), []int{1011}
+	return file_relay_server_v1_server_proto_rawDescGZIP(), []int{1013}
 }
 
 func (x *AdminSetPromoCampaignActiveRequest) GetCampaignId() string {
@@ -66997,7 +67078,7 @@ type AdminSetPromoCampaignActiveResponse struct {
 
 func (x *AdminSetPromoCampaignActiveResponse) Reset() {
 	*x = AdminSetPromoCampaignActiveResponse{}
-	mi := &file_relay_server_v1_server_proto_msgTypes[1012]
+	mi := &file_relay_server_v1_server_proto_msgTypes[1014]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -67009,7 +67090,7 @@ func (x *AdminSetPromoCampaignActiveResponse) String() string {
 func (*AdminSetPromoCampaignActiveResponse) ProtoMessage() {}
 
 func (x *AdminSetPromoCampaignActiveResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_relay_server_v1_server_proto_msgTypes[1012]
+	mi := &file_relay_server_v1_server_proto_msgTypes[1014]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -67022,7 +67103,7 @@ func (x *AdminSetPromoCampaignActiveResponse) ProtoReflect() protoreflect.Messag
 
 // Deprecated: Use AdminSetPromoCampaignActiveResponse.ProtoReflect.Descriptor instead.
 func (*AdminSetPromoCampaignActiveResponse) Descriptor() ([]byte, []int) {
-	return file_relay_server_v1_server_proto_rawDescGZIP(), []int{1012}
+	return file_relay_server_v1_server_proto_rawDescGZIP(), []int{1014}
 }
 
 func (x *AdminSetPromoCampaignActiveResponse) GetUpdated() bool {
@@ -67043,7 +67124,7 @@ type AdminListPromoRedemptionsRequest struct {
 
 func (x *AdminListPromoRedemptionsRequest) Reset() {
 	*x = AdminListPromoRedemptionsRequest{}
-	mi := &file_relay_server_v1_server_proto_msgTypes[1013]
+	mi := &file_relay_server_v1_server_proto_msgTypes[1015]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -67055,7 +67136,7 @@ func (x *AdminListPromoRedemptionsRequest) String() string {
 func (*AdminListPromoRedemptionsRequest) ProtoMessage() {}
 
 func (x *AdminListPromoRedemptionsRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_relay_server_v1_server_proto_msgTypes[1013]
+	mi := &file_relay_server_v1_server_proto_msgTypes[1015]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -67068,7 +67149,7 @@ func (x *AdminListPromoRedemptionsRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use AdminListPromoRedemptionsRequest.ProtoReflect.Descriptor instead.
 func (*AdminListPromoRedemptionsRequest) Descriptor() ([]byte, []int) {
-	return file_relay_server_v1_server_proto_rawDescGZIP(), []int{1013}
+	return file_relay_server_v1_server_proto_rawDescGZIP(), []int{1015}
 }
 
 func (x *AdminListPromoRedemptionsRequest) GetCampaignId() string {
@@ -67101,7 +67182,7 @@ type AdminListPromoRedemptionsResponse struct {
 
 func (x *AdminListPromoRedemptionsResponse) Reset() {
 	*x = AdminListPromoRedemptionsResponse{}
-	mi := &file_relay_server_v1_server_proto_msgTypes[1014]
+	mi := &file_relay_server_v1_server_proto_msgTypes[1016]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -67113,7 +67194,7 @@ func (x *AdminListPromoRedemptionsResponse) String() string {
 func (*AdminListPromoRedemptionsResponse) ProtoMessage() {}
 
 func (x *AdminListPromoRedemptionsResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_relay_server_v1_server_proto_msgTypes[1014]
+	mi := &file_relay_server_v1_server_proto_msgTypes[1016]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -67126,7 +67207,7 @@ func (x *AdminListPromoRedemptionsResponse) ProtoReflect() protoreflect.Message 
 
 // Deprecated: Use AdminListPromoRedemptionsResponse.ProtoReflect.Descriptor instead.
 func (*AdminListPromoRedemptionsResponse) Descriptor() ([]byte, []int) {
-	return file_relay_server_v1_server_proto_rawDescGZIP(), []int{1014}
+	return file_relay_server_v1_server_proto_rawDescGZIP(), []int{1016}
 }
 
 func (x *AdminListPromoRedemptionsResponse) GetRedemptions() []*AdminPromoRedemption {
@@ -67146,7 +67227,7 @@ type AdminRevokePromoRedemptionRequest struct {
 
 func (x *AdminRevokePromoRedemptionRequest) Reset() {
 	*x = AdminRevokePromoRedemptionRequest{}
-	mi := &file_relay_server_v1_server_proto_msgTypes[1015]
+	mi := &file_relay_server_v1_server_proto_msgTypes[1017]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -67158,7 +67239,7 @@ func (x *AdminRevokePromoRedemptionRequest) String() string {
 func (*AdminRevokePromoRedemptionRequest) ProtoMessage() {}
 
 func (x *AdminRevokePromoRedemptionRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_relay_server_v1_server_proto_msgTypes[1015]
+	mi := &file_relay_server_v1_server_proto_msgTypes[1017]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -67171,7 +67252,7 @@ func (x *AdminRevokePromoRedemptionRequest) ProtoReflect() protoreflect.Message 
 
 // Deprecated: Use AdminRevokePromoRedemptionRequest.ProtoReflect.Descriptor instead.
 func (*AdminRevokePromoRedemptionRequest) Descriptor() ([]byte, []int) {
-	return file_relay_server_v1_server_proto_rawDescGZIP(), []int{1015}
+	return file_relay_server_v1_server_proto_rawDescGZIP(), []int{1017}
 }
 
 func (x *AdminRevokePromoRedemptionRequest) GetRedemptionId() string {
@@ -67198,7 +67279,7 @@ type AdminRevokePromoRedemptionResponse struct {
 
 func (x *AdminRevokePromoRedemptionResponse) Reset() {
 	*x = AdminRevokePromoRedemptionResponse{}
-	mi := &file_relay_server_v1_server_proto_msgTypes[1016]
+	mi := &file_relay_server_v1_server_proto_msgTypes[1018]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -67210,7 +67291,7 @@ func (x *AdminRevokePromoRedemptionResponse) String() string {
 func (*AdminRevokePromoRedemptionResponse) ProtoMessage() {}
 
 func (x *AdminRevokePromoRedemptionResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_relay_server_v1_server_proto_msgTypes[1016]
+	mi := &file_relay_server_v1_server_proto_msgTypes[1018]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -67223,7 +67304,7 @@ func (x *AdminRevokePromoRedemptionResponse) ProtoReflect() protoreflect.Message
 
 // Deprecated: Use AdminRevokePromoRedemptionResponse.ProtoReflect.Descriptor instead.
 func (*AdminRevokePromoRedemptionResponse) Descriptor() ([]byte, []int) {
-	return file_relay_server_v1_server_proto_rawDescGZIP(), []int{1016}
+	return file_relay_server_v1_server_proto_rawDescGZIP(), []int{1018}
 }
 
 func (x *AdminRevokePromoRedemptionResponse) GetRevoked() bool {
@@ -67261,7 +67342,7 @@ type GetAccessUsageRequest struct {
 
 func (x *GetAccessUsageRequest) Reset() {
 	*x = GetAccessUsageRequest{}
-	mi := &file_relay_server_v1_server_proto_msgTypes[1017]
+	mi := &file_relay_server_v1_server_proto_msgTypes[1019]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -67273,7 +67354,7 @@ func (x *GetAccessUsageRequest) String() string {
 func (*GetAccessUsageRequest) ProtoMessage() {}
 
 func (x *GetAccessUsageRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_relay_server_v1_server_proto_msgTypes[1017]
+	mi := &file_relay_server_v1_server_proto_msgTypes[1019]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -67286,7 +67367,7 @@ func (x *GetAccessUsageRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use GetAccessUsageRequest.ProtoReflect.Descriptor instead.
 func (*GetAccessUsageRequest) Descriptor() ([]byte, []int) {
-	return file_relay_server_v1_server_proto_rawDescGZIP(), []int{1017}
+	return file_relay_server_v1_server_proto_rawDescGZIP(), []int{1019}
 }
 
 func (x *GetAccessUsageRequest) GetSince() *timestamppb.Timestamp {
@@ -67343,7 +67424,7 @@ type AccessUsageCounts struct {
 
 func (x *AccessUsageCounts) Reset() {
 	*x = AccessUsageCounts{}
-	mi := &file_relay_server_v1_server_proto_msgTypes[1018]
+	mi := &file_relay_server_v1_server_proto_msgTypes[1020]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -67355,7 +67436,7 @@ func (x *AccessUsageCounts) String() string {
 func (*AccessUsageCounts) ProtoMessage() {}
 
 func (x *AccessUsageCounts) ProtoReflect() protoreflect.Message {
-	mi := &file_relay_server_v1_server_proto_msgTypes[1018]
+	mi := &file_relay_server_v1_server_proto_msgTypes[1020]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -67368,7 +67449,7 @@ func (x *AccessUsageCounts) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use AccessUsageCounts.ProtoReflect.Descriptor instead.
 func (*AccessUsageCounts) Descriptor() ([]byte, []int) {
-	return file_relay_server_v1_server_proto_rawDescGZIP(), []int{1018}
+	return file_relay_server_v1_server_proto_rawDescGZIP(), []int{1020}
 }
 
 func (x *AccessUsageCounts) GetSessions() int64 {
@@ -67444,7 +67525,7 @@ type AccessUsageGroup struct {
 
 func (x *AccessUsageGroup) Reset() {
 	*x = AccessUsageGroup{}
-	mi := &file_relay_server_v1_server_proto_msgTypes[1019]
+	mi := &file_relay_server_v1_server_proto_msgTypes[1021]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -67456,7 +67537,7 @@ func (x *AccessUsageGroup) String() string {
 func (*AccessUsageGroup) ProtoMessage() {}
 
 func (x *AccessUsageGroup) ProtoReflect() protoreflect.Message {
-	mi := &file_relay_server_v1_server_proto_msgTypes[1019]
+	mi := &file_relay_server_v1_server_proto_msgTypes[1021]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -67469,7 +67550,7 @@ func (x *AccessUsageGroup) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use AccessUsageGroup.ProtoReflect.Descriptor instead.
 func (*AccessUsageGroup) Descriptor() ([]byte, []int) {
-	return file_relay_server_v1_server_proto_rawDescGZIP(), []int{1019}
+	return file_relay_server_v1_server_proto_rawDescGZIP(), []int{1021}
 }
 
 func (x *AccessUsageGroup) GetKey() string {
@@ -67496,7 +67577,7 @@ type AccessUsageBucket struct {
 
 func (x *AccessUsageBucket) Reset() {
 	*x = AccessUsageBucket{}
-	mi := &file_relay_server_v1_server_proto_msgTypes[1020]
+	mi := &file_relay_server_v1_server_proto_msgTypes[1022]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -67508,7 +67589,7 @@ func (x *AccessUsageBucket) String() string {
 func (*AccessUsageBucket) ProtoMessage() {}
 
 func (x *AccessUsageBucket) ProtoReflect() protoreflect.Message {
-	mi := &file_relay_server_v1_server_proto_msgTypes[1020]
+	mi := &file_relay_server_v1_server_proto_msgTypes[1022]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -67521,7 +67602,7 @@ func (x *AccessUsageBucket) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use AccessUsageBucket.ProtoReflect.Descriptor instead.
 func (*AccessUsageBucket) Descriptor() ([]byte, []int) {
-	return file_relay_server_v1_server_proto_rawDescGZIP(), []int{1020}
+	return file_relay_server_v1_server_proto_rawDescGZIP(), []int{1022}
 }
 
 func (x *AccessUsageBucket) GetBucket() *timestamppb.Timestamp {
@@ -67558,7 +67639,7 @@ type GetAccessUsageResponse struct {
 
 func (x *GetAccessUsageResponse) Reset() {
 	*x = GetAccessUsageResponse{}
-	mi := &file_relay_server_v1_server_proto_msgTypes[1021]
+	mi := &file_relay_server_v1_server_proto_msgTypes[1023]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -67570,7 +67651,7 @@ func (x *GetAccessUsageResponse) String() string {
 func (*GetAccessUsageResponse) ProtoMessage() {}
 
 func (x *GetAccessUsageResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_relay_server_v1_server_proto_msgTypes[1021]
+	mi := &file_relay_server_v1_server_proto_msgTypes[1023]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -67583,7 +67664,7 @@ func (x *GetAccessUsageResponse) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use GetAccessUsageResponse.ProtoReflect.Descriptor instead.
 func (*GetAccessUsageResponse) Descriptor() ([]byte, []int) {
-	return file_relay_server_v1_server_proto_rawDescGZIP(), []int{1021}
+	return file_relay_server_v1_server_proto_rawDescGZIP(), []int{1023}
 }
 
 func (x *GetAccessUsageResponse) GetTotals() *AccessUsageCounts {
@@ -67659,7 +67740,7 @@ type AdminUpdatePromoCampaignRequest struct {
 
 func (x *AdminUpdatePromoCampaignRequest) Reset() {
 	*x = AdminUpdatePromoCampaignRequest{}
-	mi := &file_relay_server_v1_server_proto_msgTypes[1022]
+	mi := &file_relay_server_v1_server_proto_msgTypes[1024]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -67671,7 +67752,7 @@ func (x *AdminUpdatePromoCampaignRequest) String() string {
 func (*AdminUpdatePromoCampaignRequest) ProtoMessage() {}
 
 func (x *AdminUpdatePromoCampaignRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_relay_server_v1_server_proto_msgTypes[1022]
+	mi := &file_relay_server_v1_server_proto_msgTypes[1024]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -67684,7 +67765,7 @@ func (x *AdminUpdatePromoCampaignRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use AdminUpdatePromoCampaignRequest.ProtoReflect.Descriptor instead.
 func (*AdminUpdatePromoCampaignRequest) Descriptor() ([]byte, []int) {
-	return file_relay_server_v1_server_proto_rawDescGZIP(), []int{1022}
+	return file_relay_server_v1_server_proto_rawDescGZIP(), []int{1024}
 }
 
 func (x *AdminUpdatePromoCampaignRequest) GetCampaignId() string {
@@ -67710,7 +67791,7 @@ type AdminUpdatePromoCampaignResponse struct {
 
 func (x *AdminUpdatePromoCampaignResponse) Reset() {
 	*x = AdminUpdatePromoCampaignResponse{}
-	mi := &file_relay_server_v1_server_proto_msgTypes[1023]
+	mi := &file_relay_server_v1_server_proto_msgTypes[1025]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -67722,7 +67803,7 @@ func (x *AdminUpdatePromoCampaignResponse) String() string {
 func (*AdminUpdatePromoCampaignResponse) ProtoMessage() {}
 
 func (x *AdminUpdatePromoCampaignResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_relay_server_v1_server_proto_msgTypes[1023]
+	mi := &file_relay_server_v1_server_proto_msgTypes[1025]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -67735,7 +67816,7 @@ func (x *AdminUpdatePromoCampaignResponse) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use AdminUpdatePromoCampaignResponse.ProtoReflect.Descriptor instead.
 func (*AdminUpdatePromoCampaignResponse) Descriptor() ([]byte, []int) {
-	return file_relay_server_v1_server_proto_rawDescGZIP(), []int{1023}
+	return file_relay_server_v1_server_proto_rawDescGZIP(), []int{1025}
 }
 
 func (x *AdminUpdatePromoCampaignResponse) GetUpdated() bool {
@@ -67901,7 +67982,7 @@ const file_relay_server_v1_server_proto_rawDesc = "" +
 	"\avolumes\x18\x0e \x03(\v2\x1c.relay.server.v1.VolumeUsageR\avolumes\x12E\n" +
 	"\x0ebackup_storage\x18\x0f \x01(\v2\x1e.relay.server.v1.BackupStorageR\rbackupStorage\x12;\n" +
 	"\acompute\x18\x10 \x03(\v2!.relay.server.v1.NodeGroupComputeR\acompute\x127\n" +
-	"\aregions\x18\x11 \x03(\v2\x1d.relay.server.v1.RegionStatusR\aregions\"\xa3\x02\n" +
+	"\aregions\x18\x11 \x03(\v2\x1d.relay.server.v1.RegionStatusR\aregions\"\xbf\x02\n" +
 	"\fRegionStatus\x12\x14\n" +
 	"\x05cloud\x18\x01 \x01(\tR\x05cloud\x12\x16\n" +
 	"\x06region\x18\x02 \x01(\tR\x06region\x12\x12\n" +
@@ -67915,7 +67996,8 @@ const file_relay_server_v1_server_proto_rawDesc = "" +
 	"\vunreachable\x18\b \x01(\bR\vunreachable\x12)\n" +
 	"\x10replication_link\x18\t \x01(\tR\x0freplicationLink\x12\x12\n" +
 	"\x04held\x18\n" +
-	" \x01(\tR\x04held\"\xfe\x01\n" +
+	" \x01(\tR\x04held\x12\x1a\n" +
+	"\bendpoint\x18\v \x01(\tR\bendpoint\"\xfe\x01\n" +
 	"\x10NodeGroupCompute\x12\x1d\n" +
 	"\n" +
 	"node_group\x18\x01 \x01(\tR\tnodeGroup\x12\x12\n" +
@@ -71484,7 +71566,9 @@ const file_relay_server_v1_server_proto_rawDesc = "" +
 	"\"UpdateOrganizationSettingsResponse\x12A\n" +
 	"\forganization\x18\x01 \x01(\v2\x1d.relay.server.v1.OrganizationR\forganization\"\x1b\n" +
 	"\x19DeleteOrganizationRequest\"\x1c\n" +
-	"\x1aDeleteOrganizationResponse\"\x9f\x02\n" +
+	"\x1aDeleteOrganizationResponse\"\x16\n" +
+	"\x14DeleteAccountRequest\"\x17\n" +
+	"\x15DeleteAccountResponse\"\x9f\x02\n" +
 	"\tWorkspace\x12\x0e\n" +
 	"\x02id\x18\x01 \x01(\tR\x02id\x12\x12\n" +
 	"\x04name\x18\x02 \x01(\tR\x04name\x12 \n" +
@@ -73319,7 +73403,7 @@ const file_relay_server_v1_server_proto_rawDesc = "" +
 	"'QUERY_APPROVAL_STATUS_EXECUTED_DETACHED\x10\x06\x12%\n" +
 	"!QUERY_APPROVAL_STATUS_NEEDS_RERUN\x10\a\x12#\n" +
 	"\x1fQUERY_APPROVAL_STATUS_CANCELLED\x10\b\x12!\n" +
-	"\x1dQUERY_APPROVAL_STATUS_REVOKED\x10\t2׃\x02\n" +
+	"\x1dQUERY_APPROVAL_STATUS_REVOKED\x10\t2\xb7\x84\x02\n" +
 	"\rServerService\x12I\n" +
 	"\x06WhoAmI\x12\x1e.relay.server.v1.WhoAmIRequest\x1a\x1f.relay.server.v1.WhoAmIResponse\x12[\n" +
 	"\fSetUserFlags\x12$.relay.server.v1.SetUserFlagsRequest\x1a%.relay.server.v1.SetUserFlagsResponse\x12I\n" +
@@ -73458,7 +73542,8 @@ const file_relay_server_v1_server_proto_rawDesc = "" +
 	"\x12UpdateOrganization\x12*.relay.server.v1.UpdateOrganizationRequest\x1a+.relay.server.v1.UpdateOrganizationResponse\x12\x85\x01\n" +
 	"\x1aUpdateOrganizationSettings\x122.relay.server.v1.UpdateOrganizationSettingsRequest\x1a3.relay.server.v1.UpdateOrganizationSettingsResponse\x12m\n" +
 	"\x12DeleteOrganization\x12*.relay.server.v1.DeleteOrganizationRequest\x1a+.relay.server.v1.DeleteOrganizationResponse\x12m\n" +
-	"\x12SwitchOrganization\x12*.relay.server.v1.SwitchOrganizationRequest\x1a+.relay.server.v1.SwitchOrganizationResponse\x12a\n" +
+	"\x12SwitchOrganization\x12*.relay.server.v1.SwitchOrganizationRequest\x1a+.relay.server.v1.SwitchOrganizationResponse\x12^\n" +
+	"\rDeleteAccount\x12%.relay.server.v1.DeleteAccountRequest\x1a&.relay.server.v1.DeleteAccountResponse\x12a\n" +
 	"\x0eGetOrgOverview\x12&.relay.server.v1.GetOrgOverviewRequest\x1a'.relay.server.v1.GetOrgOverviewResponse\x12a\n" +
 	"\x0eListWorkspaces\x12&.relay.server.v1.ListWorkspacesRequest\x1a'.relay.server.v1.ListWorkspacesResponse\x12[\n" +
 	"\fGetWorkspace\x12$.relay.server.v1.GetWorkspaceRequest\x1a%.relay.server.v1.GetWorkspaceResponse\x12d\n" +
@@ -73732,7 +73817,7 @@ func file_relay_server_v1_server_proto_rawDescGZIP() []byte {
 }
 
 var file_relay_server_v1_server_proto_enumTypes = make([]protoimpl.EnumInfo, 8)
-var file_relay_server_v1_server_proto_msgTypes = make([]protoimpl.MessageInfo, 1043)
+var file_relay_server_v1_server_proto_msgTypes = make([]protoimpl.MessageInfo, 1045)
 var file_relay_server_v1_server_proto_goTypes = []any{
 	(MigrationPhase)(0),                               // 0: relay.server.v1.MigrationPhase
 	(MigrationSslMode)(0),                             // 1: relay.server.v1.MigrationSslMode
@@ -74397,406 +74482,408 @@ var file_relay_server_v1_server_proto_goTypes = []any{
 	(*UpdateOrganizationSettingsResponse)(nil),        // 660: relay.server.v1.UpdateOrganizationSettingsResponse
 	(*DeleteOrganizationRequest)(nil),                 // 661: relay.server.v1.DeleteOrganizationRequest
 	(*DeleteOrganizationResponse)(nil),                // 662: relay.server.v1.DeleteOrganizationResponse
-	(*Workspace)(nil),                                 // 663: relay.server.v1.Workspace
-	(*ListWorkspacesRequest)(nil),                     // 664: relay.server.v1.ListWorkspacesRequest
-	(*ListWorkspacesResponse)(nil),                    // 665: relay.server.v1.ListWorkspacesResponse
-	(*GetWorkspaceRequest)(nil),                       // 666: relay.server.v1.GetWorkspaceRequest
-	(*GetWorkspaceResponse)(nil),                      // 667: relay.server.v1.GetWorkspaceResponse
-	(*CreateWorkspaceRequest)(nil),                    // 668: relay.server.v1.CreateWorkspaceRequest
-	(*CreateWorkspaceResponse)(nil),                   // 669: relay.server.v1.CreateWorkspaceResponse
-	(*UpdateWorkspaceRequest)(nil),                    // 670: relay.server.v1.UpdateWorkspaceRequest
-	(*UpdateWorkspaceResponse)(nil),                   // 671: relay.server.v1.UpdateWorkspaceResponse
-	(*DeleteWorkspaceRequest)(nil),                    // 672: relay.server.v1.DeleteWorkspaceRequest
-	(*DeleteWorkspaceResponse)(nil),                   // 673: relay.server.v1.DeleteWorkspaceResponse
-	(*GetOrgOverviewRequest)(nil),                     // 674: relay.server.v1.GetOrgOverviewRequest
-	(*GetOrgOverviewResponse)(nil),                    // 675: relay.server.v1.GetOrgOverviewResponse
-	(*WorkspaceOverview)(nil),                         // 676: relay.server.v1.WorkspaceOverview
-	(*WorkspaceSpend)(nil),                            // 677: relay.server.v1.WorkspaceSpend
-	(*WorkspaceMember)(nil),                           // 678: relay.server.v1.WorkspaceMember
-	(*AddWorkspaceMemberRequest)(nil),                 // 679: relay.server.v1.AddWorkspaceMemberRequest
-	(*AddWorkspaceMemberResponse)(nil),                // 680: relay.server.v1.AddWorkspaceMemberResponse
-	(*RemoveWorkspaceMemberRequest)(nil),              // 681: relay.server.v1.RemoveWorkspaceMemberRequest
-	(*RemoveWorkspaceMemberResponse)(nil),             // 682: relay.server.v1.RemoveWorkspaceMemberResponse
-	(*ListWorkspaceMembersRequest)(nil),               // 683: relay.server.v1.ListWorkspaceMembersRequest
-	(*ListWorkspaceMembersResponse)(nil),              // 684: relay.server.v1.ListWorkspaceMembersResponse
-	(*AddWorkspaceTeamRequest)(nil),                   // 685: relay.server.v1.AddWorkspaceTeamRequest
-	(*AddWorkspaceTeamResponse)(nil),                  // 686: relay.server.v1.AddWorkspaceTeamResponse
-	(*RemoveWorkspaceTeamRequest)(nil),                // 687: relay.server.v1.RemoveWorkspaceTeamRequest
-	(*RemoveWorkspaceTeamResponse)(nil),               // 688: relay.server.v1.RemoveWorkspaceTeamResponse
-	(*ListWorkspaceTeamsRequest)(nil),                 // 689: relay.server.v1.ListWorkspaceTeamsRequest
-	(*ListWorkspaceTeamsResponse)(nil),                // 690: relay.server.v1.ListWorkspaceTeamsResponse
-	(*SetWorkspaceMemberRoleRequest)(nil),             // 691: relay.server.v1.SetWorkspaceMemberRoleRequest
-	(*SetWorkspaceMemberRoleResponse)(nil),            // 692: relay.server.v1.SetWorkspaceMemberRoleResponse
-	(*SetWorkspaceTeamRoleRequest)(nil),               // 693: relay.server.v1.SetWorkspaceTeamRoleRequest
-	(*SetWorkspaceTeamRoleResponse)(nil),              // 694: relay.server.v1.SetWorkspaceTeamRoleResponse
-	(*WorkspaceTeamInfo)(nil),                         // 695: relay.server.v1.WorkspaceTeamInfo
-	(*RoleInfo)(nil),                                  // 696: relay.server.v1.RoleInfo
-	(*ListRolesRequest)(nil),                          // 697: relay.server.v1.ListRolesRequest
-	(*ListRolesResponse)(nil),                         // 698: relay.server.v1.ListRolesResponse
-	(*CreateRoleRequest)(nil),                         // 699: relay.server.v1.CreateRoleRequest
-	(*CreateRoleResponse)(nil),                        // 700: relay.server.v1.CreateRoleResponse
-	(*UpdateRoleRequest)(nil),                         // 701: relay.server.v1.UpdateRoleRequest
-	(*UpdateRoleResponse)(nil),                        // 702: relay.server.v1.UpdateRoleResponse
-	(*DeleteRoleRequest)(nil),                         // 703: relay.server.v1.DeleteRoleRequest
-	(*DeleteRoleResponse)(nil),                        // 704: relay.server.v1.DeleteRoleResponse
-	(*RoleBinding)(nil),                               // 705: relay.server.v1.RoleBinding
-	(*ListRoleBindingsRequest)(nil),                   // 706: relay.server.v1.ListRoleBindingsRequest
-	(*ListRoleBindingsResponse)(nil),                  // 707: relay.server.v1.ListRoleBindingsResponse
-	(*CreateRoleBindingRequest)(nil),                  // 708: relay.server.v1.CreateRoleBindingRequest
-	(*CreateRoleBindingResponse)(nil),                 // 709: relay.server.v1.CreateRoleBindingResponse
-	(*DeleteRoleBindingRequest)(nil),                  // 710: relay.server.v1.DeleteRoleBindingRequest
-	(*DeleteRoleBindingResponse)(nil),                 // 711: relay.server.v1.DeleteRoleBindingResponse
-	(*BillingMachineTier)(nil),                        // 712: relay.server.v1.BillingMachineTier
-	(*BillingProjectionLine)(nil),                     // 713: relay.server.v1.BillingProjectionLine
-	(*BillingCycleUsageLine)(nil),                     // 714: relay.server.v1.BillingCycleUsageLine
-	(*GetBillingStateRequest)(nil),                    // 715: relay.server.v1.GetBillingStateRequest
-	(*GetBillingStateResponse)(nil),                   // 716: relay.server.v1.GetBillingStateResponse
-	(*BillingBackupPriceTier)(nil),                    // 717: relay.server.v1.BillingBackupPriceTier
-	(*BillingBackupLine)(nil),                         // 718: relay.server.v1.BillingBackupLine
-	(*BillingPlanFeatures)(nil),                       // 719: relay.server.v1.BillingPlanFeatures
-	(*BillingFeatureRequirement)(nil),                 // 720: relay.server.v1.BillingFeatureRequirement
-	(*CreateCheckoutSessionRequest)(nil),              // 721: relay.server.v1.CreateCheckoutSessionRequest
-	(*CreateCheckoutSessionResponse)(nil),             // 722: relay.server.v1.CreateCheckoutSessionResponse
-	(*ChangePlanRequest)(nil),                         // 723: relay.server.v1.ChangePlanRequest
-	(*ChangePlanResponse)(nil),                        // 724: relay.server.v1.ChangePlanResponse
-	(*CreateBillingPortalSessionRequest)(nil),         // 725: relay.server.v1.CreateBillingPortalSessionRequest
-	(*CreateBillingPortalSessionResponse)(nil),        // 726: relay.server.v1.CreateBillingPortalSessionResponse
-	(*ExternalSecretSource)(nil),                      // 727: relay.server.v1.ExternalSecretSource
-	(*ListExternalSecretSourcesRequest)(nil),          // 728: relay.server.v1.ListExternalSecretSourcesRequest
-	(*ListExternalSecretSourcesResponse)(nil),         // 729: relay.server.v1.ListExternalSecretSourcesResponse
-	(*GetExternalSecretSourceRequest)(nil),            // 730: relay.server.v1.GetExternalSecretSourceRequest
-	(*GetExternalSecretSourceResponse)(nil),           // 731: relay.server.v1.GetExternalSecretSourceResponse
-	(*UpsertExternalSecretSourceRequest)(nil),         // 732: relay.server.v1.UpsertExternalSecretSourceRequest
-	(*UpsertExternalSecretSourceResponse)(nil),        // 733: relay.server.v1.UpsertExternalSecretSourceResponse
-	(*DeleteExternalSecretSourceRequest)(nil),         // 734: relay.server.v1.DeleteExternalSecretSourceRequest
-	(*DeleteExternalSecretSourceResponse)(nil),        // 735: relay.server.v1.DeleteExternalSecretSourceResponse
-	(*ResolveConnectionCredentialRequest)(nil),        // 736: relay.server.v1.ResolveConnectionCredentialRequest
-	(*ResolveConnectionCredentialResponse)(nil),       // 737: relay.server.v1.ResolveConnectionCredentialResponse
-	(*ResolveExternalSecretSourceRequest)(nil),        // 738: relay.server.v1.ResolveExternalSecretSourceRequest
-	(*ResolveExternalSecretSourceResponse)(nil),       // 739: relay.server.v1.ResolveExternalSecretSourceResponse
-	(*CloudIntegration)(nil),                          // 740: relay.server.v1.CloudIntegration
-	(*GetCloudIntegrationSetupRequest)(nil),           // 741: relay.server.v1.GetCloudIntegrationSetupRequest
-	(*GetCloudIntegrationSetupResponse)(nil),          // 742: relay.server.v1.GetCloudIntegrationSetupResponse
-	(*ListCloudIntegrationsRequest)(nil),              // 743: relay.server.v1.ListCloudIntegrationsRequest
-	(*ListCloudIntegrationsResponse)(nil),             // 744: relay.server.v1.ListCloudIntegrationsResponse
-	(*GetCloudIntegrationRequest)(nil),                // 745: relay.server.v1.GetCloudIntegrationRequest
-	(*GetCloudIntegrationResponse)(nil),               // 746: relay.server.v1.GetCloudIntegrationResponse
-	(*CreateCloudIntegrationRequest)(nil),             // 747: relay.server.v1.CreateCloudIntegrationRequest
-	(*CreateCloudIntegrationResponse)(nil),            // 748: relay.server.v1.CreateCloudIntegrationResponse
-	(*UpdateCloudIntegrationRequest)(nil),             // 749: relay.server.v1.UpdateCloudIntegrationRequest
-	(*UpdateCloudIntegrationResponse)(nil),            // 750: relay.server.v1.UpdateCloudIntegrationResponse
-	(*DeleteCloudIntegrationRequest)(nil),             // 751: relay.server.v1.DeleteCloudIntegrationRequest
-	(*DeleteCloudIntegrationResponse)(nil),            // 752: relay.server.v1.DeleteCloudIntegrationResponse
-	(*TestCloudIntegrationRequest)(nil),               // 753: relay.server.v1.TestCloudIntegrationRequest
-	(*TestCloudIntegrationResponse)(nil),              // 754: relay.server.v1.TestCloudIntegrationResponse
-	(*ClusterScope)(nil),                              // 755: relay.server.v1.ClusterScope
-	(*LogStream)(nil),                                 // 756: relay.server.v1.LogStream
-	(*GetLogStreamRequest)(nil),                       // 757: relay.server.v1.GetLogStreamRequest
-	(*GetLogStreamResponse)(nil),                      // 758: relay.server.v1.GetLogStreamResponse
-	(*UpsertLogStreamRequest)(nil),                    // 759: relay.server.v1.UpsertLogStreamRequest
-	(*UpsertLogStreamResponse)(nil),                   // 760: relay.server.v1.UpsertLogStreamResponse
-	(*DeleteLogStreamRequest)(nil),                    // 761: relay.server.v1.DeleteLogStreamRequest
-	(*DeleteLogStreamResponse)(nil),                   // 762: relay.server.v1.DeleteLogStreamResponse
-	(*LogDestinationConfig)(nil),                      // 763: relay.server.v1.LogDestinationConfig
-	(*LogDestinationHealth)(nil),                      // 764: relay.server.v1.LogDestinationHealth
-	(*LogDestination)(nil),                            // 765: relay.server.v1.LogDestination
-	(*ListLogDestinationsRequest)(nil),                // 766: relay.server.v1.ListLogDestinationsRequest
-	(*ListLogDestinationsResponse)(nil),               // 767: relay.server.v1.ListLogDestinationsResponse
-	(*CreateLogDestinationRequest)(nil),               // 768: relay.server.v1.CreateLogDestinationRequest
-	(*CreateLogDestinationResponse)(nil),              // 769: relay.server.v1.CreateLogDestinationResponse
-	(*UpdateLogDestinationRequest)(nil),               // 770: relay.server.v1.UpdateLogDestinationRequest
-	(*UpdateLogDestinationResponse)(nil),              // 771: relay.server.v1.UpdateLogDestinationResponse
-	(*DeleteLogDestinationRequest)(nil),               // 772: relay.server.v1.DeleteLogDestinationRequest
-	(*DeleteLogDestinationResponse)(nil),              // 773: relay.server.v1.DeleteLogDestinationResponse
-	(*TestLogDestinationRequest)(nil),                 // 774: relay.server.v1.TestLogDestinationRequest
-	(*TestLogDestinationResponse)(nil),                // 775: relay.server.v1.TestLogDestinationResponse
-	(*BackupAutoExport)(nil),                          // 776: relay.server.v1.BackupAutoExport
-	(*GetBackupAutoExportRequest)(nil),                // 777: relay.server.v1.GetBackupAutoExportRequest
-	(*GetBackupAutoExportResponse)(nil),               // 778: relay.server.v1.GetBackupAutoExportResponse
-	(*UpsertBackupAutoExportRequest)(nil),             // 779: relay.server.v1.UpsertBackupAutoExportRequest
-	(*UpsertBackupAutoExportResponse)(nil),            // 780: relay.server.v1.UpsertBackupAutoExportResponse
-	(*DeleteBackupAutoExportRequest)(nil),             // 781: relay.server.v1.DeleteBackupAutoExportRequest
-	(*DeleteBackupAutoExportResponse)(nil),            // 782: relay.server.v1.DeleteBackupAutoExportResponse
-	(*ExportToCloudRequest)(nil),                      // 783: relay.server.v1.ExportToCloudRequest
-	(*ExportToCloudResponse)(nil),                     // 784: relay.server.v1.ExportToCloudResponse
-	(*SupportReport)(nil),                             // 785: relay.server.v1.SupportReport
-	(*SupportReportComment)(nil),                      // 786: relay.server.v1.SupportReportComment
-	(*SupportAttachment)(nil),                         // 787: relay.server.v1.SupportAttachment
-	(*SupportAttachmentUpload)(nil),                   // 788: relay.server.v1.SupportAttachmentUpload
-	(*CreateSupportReportRequest)(nil),                // 789: relay.server.v1.CreateSupportReportRequest
-	(*CreateSupportReportResponse)(nil),               // 790: relay.server.v1.CreateSupportReportResponse
-	(*ListSupportReportsRequest)(nil),                 // 791: relay.server.v1.ListSupportReportsRequest
-	(*ListSupportReportsResponse)(nil),                // 792: relay.server.v1.ListSupportReportsResponse
-	(*GetSupportReportRequest)(nil),                   // 793: relay.server.v1.GetSupportReportRequest
-	(*GetSupportReportResponse)(nil),                  // 794: relay.server.v1.GetSupportReportResponse
-	(*AddSupportReportCommentRequest)(nil),            // 795: relay.server.v1.AddSupportReportCommentRequest
-	(*AddSupportReportCommentResponse)(nil),           // 796: relay.server.v1.AddSupportReportCommentResponse
-	(*GetSupportAttachmentRequest)(nil),               // 797: relay.server.v1.GetSupportAttachmentRequest
-	(*GetSupportAttachmentResponse)(nil),              // 798: relay.server.v1.GetSupportAttachmentResponse
-	(*UpdateSupportReportStatusRequest)(nil),          // 799: relay.server.v1.UpdateSupportReportStatusRequest
-	(*UpdateSupportReportStatusResponse)(nil),         // 800: relay.server.v1.UpdateSupportReportStatusResponse
-	(*AdminListSupportReportsRequest)(nil),            // 801: relay.server.v1.AdminListSupportReportsRequest
-	(*AdminListSupportReportsResponse)(nil),           // 802: relay.server.v1.AdminListSupportReportsResponse
-	(*AdminGetSupportReportRequest)(nil),              // 803: relay.server.v1.AdminGetSupportReportRequest
-	(*AdminGetSupportReportResponse)(nil),             // 804: relay.server.v1.AdminGetSupportReportResponse
-	(*AdminAddSupportReportCommentRequest)(nil),       // 805: relay.server.v1.AdminAddSupportReportCommentRequest
-	(*AdminAddSupportReportCommentResponse)(nil),      // 806: relay.server.v1.AdminAddSupportReportCommentResponse
-	(*AdminGetSupportAttachmentRequest)(nil),          // 807: relay.server.v1.AdminGetSupportAttachmentRequest
-	(*AdminGetSupportAttachmentResponse)(nil),         // 808: relay.server.v1.AdminGetSupportAttachmentResponse
-	(*AdminUpdateSupportReportStatusRequest)(nil),     // 809: relay.server.v1.AdminUpdateSupportReportStatusRequest
-	(*AdminUpdateSupportReportStatusResponse)(nil),    // 810: relay.server.v1.AdminUpdateSupportReportStatusResponse
-	(*SupportComponent)(nil),                          // 811: relay.server.v1.SupportComponent
-	(*SupportInternalComponent)(nil),                  // 812: relay.server.v1.SupportInternalComponent
-	(*AdminListSupportComponentsRequest)(nil),         // 813: relay.server.v1.AdminListSupportComponentsRequest
-	(*AdminListSupportComponentsResponse)(nil),        // 814: relay.server.v1.AdminListSupportComponentsResponse
-	(*AdminFileSupportReportIssueRequest)(nil),        // 815: relay.server.v1.AdminFileSupportReportIssueRequest
-	(*AdminFileSupportReportIssueResponse)(nil),       // 816: relay.server.v1.AdminFileSupportReportIssueResponse
-	(*OrgSSOConnection)(nil),                          // 817: relay.server.v1.OrgSSOConnection
-	(*SSOClientKey)(nil),                              // 818: relay.server.v1.SSOClientKey
-	(*SSOSAMLSettings)(nil),                           // 819: relay.server.v1.SSOSAMLSettings
-	(*SSOSAMLSPKey)(nil),                              // 820: relay.server.v1.SSOSAMLSPKey
-	(*SSOSAMLCertificate)(nil),                        // 821: relay.server.v1.SSOSAMLCertificate
-	(*SSOSAMLInput)(nil),                              // 822: relay.server.v1.SSOSAMLInput
-	(*SSOSAMLManualIdP)(nil),                          // 823: relay.server.v1.SSOSAMLManualIdP
-	(*SSOAttributeMapping)(nil),                       // 824: relay.server.v1.SSOAttributeMapping
-	(*SSOClientSecret)(nil),                           // 825: relay.server.v1.SSOClientSecret
-	(*SSOProviderPreset)(nil),                         // 826: relay.server.v1.SSOProviderPreset
-	(*ListSSOProviderPresetsRequest)(nil),             // 827: relay.server.v1.ListSSOProviderPresetsRequest
-	(*ListSSOProviderPresetsResponse)(nil),            // 828: relay.server.v1.ListSSOProviderPresetsResponse
-	(*SSOJITSettings)(nil),                            // 829: relay.server.v1.SSOJITSettings
-	(*SSOJITWorkspace)(nil),                           // 830: relay.server.v1.SSOJITWorkspace
-	(*GetOrgSSOConnectionRequest)(nil),                // 831: relay.server.v1.GetOrgSSOConnectionRequest
-	(*GetOrgSSOConnectionResponse)(nil),               // 832: relay.server.v1.GetOrgSSOConnectionResponse
-	(*UpsertOrgSSOConnectionRequest)(nil),             // 833: relay.server.v1.UpsertOrgSSOConnectionRequest
-	(*UpsertOrgSSOConnectionResponse)(nil),            // 834: relay.server.v1.UpsertOrgSSOConnectionResponse
-	(*DeleteOrgSSOConnectionRequest)(nil),             // 835: relay.server.v1.DeleteOrgSSOConnectionRequest
-	(*DeleteOrgSSOConnectionResponse)(nil),            // 836: relay.server.v1.DeleteOrgSSOConnectionResponse
-	(*ListOrgSSOConnectionsRequest)(nil),              // 837: relay.server.v1.ListOrgSSOConnectionsRequest
-	(*ListOrgSSOConnectionsResponse)(nil),             // 838: relay.server.v1.ListOrgSSOConnectionsResponse
-	(*CreateOrgSSOConnectionRequest)(nil),             // 839: relay.server.v1.CreateOrgSSOConnectionRequest
-	(*CreateOrgSSOConnectionResponse)(nil),            // 840: relay.server.v1.CreateOrgSSOConnectionResponse
-	(*AssignOrgDomainSSOConnectionRequest)(nil),       // 841: relay.server.v1.AssignOrgDomainSSOConnectionRequest
-	(*AssignOrgDomainSSOConnectionResponse)(nil),      // 842: relay.server.v1.AssignOrgDomainSSOConnectionResponse
-	(*TestOrgSSOConnectionRequest)(nil),               // 843: relay.server.v1.TestOrgSSOConnectionRequest
-	(*TestOrgSSOConnectionResponse)(nil),              // 844: relay.server.v1.TestOrgSSOConnectionResponse
-	(*OrgSignInPolicy)(nil),                           // 845: relay.server.v1.OrgSignInPolicy
-	(*APIKeyPolicy)(nil),                              // 846: relay.server.v1.APIKeyPolicy
-	(*APIKeyPolicyViolation)(nil),                     // 847: relay.server.v1.APIKeyPolicyViolation
-	(*OrgBreakGlassUser)(nil),                         // 848: relay.server.v1.OrgBreakGlassUser
-	(*GetOrgSignInPolicyRequest)(nil),                 // 849: relay.server.v1.GetOrgSignInPolicyRequest
-	(*GetOrgSignInPolicyResponse)(nil),                // 850: relay.server.v1.GetOrgSignInPolicyResponse
-	(*OrgSignInPolicyAffectedMember)(nil),             // 851: relay.server.v1.OrgSignInPolicyAffectedMember
-	(*PreviewOrgSignInPolicyRequest)(nil),             // 852: relay.server.v1.PreviewOrgSignInPolicyRequest
-	(*PreviewOrgSignInPolicyResponse)(nil),            // 853: relay.server.v1.PreviewOrgSignInPolicyResponse
-	(*UpdateOrgSignInPolicyRequest)(nil),              // 854: relay.server.v1.UpdateOrgSignInPolicyRequest
-	(*UpdateOrgSignInPolicyResponse)(nil),             // 855: relay.server.v1.UpdateOrgSignInPolicyResponse
-	(*OrgDomain)(nil),                                 // 856: relay.server.v1.OrgDomain
-	(*ListOrgDomainsRequest)(nil),                     // 857: relay.server.v1.ListOrgDomainsRequest
-	(*ListOrgDomainsResponse)(nil),                    // 858: relay.server.v1.ListOrgDomainsResponse
-	(*AddOrgDomainRequest)(nil),                       // 859: relay.server.v1.AddOrgDomainRequest
-	(*AddOrgDomainResponse)(nil),                      // 860: relay.server.v1.AddOrgDomainResponse
-	(*VerifyOrgDomainRequest)(nil),                    // 861: relay.server.v1.VerifyOrgDomainRequest
-	(*VerifyOrgDomainResponse)(nil),                   // 862: relay.server.v1.VerifyOrgDomainResponse
-	(*RemoveOrgDomainRequest)(nil),                    // 863: relay.server.v1.RemoveOrgDomainRequest
-	(*RemoveOrgDomainResponse)(nil),                   // 864: relay.server.v1.RemoveOrgDomainResponse
-	(*SCIMToken)(nil),                                 // 865: relay.server.v1.SCIMToken
-	(*CreateSCIMTokenRequest)(nil),                    // 866: relay.server.v1.CreateSCIMTokenRequest
-	(*CreateSCIMTokenResponse)(nil),                   // 867: relay.server.v1.CreateSCIMTokenResponse
-	(*ListSCIMTokensRequest)(nil),                     // 868: relay.server.v1.ListSCIMTokensRequest
-	(*ListSCIMTokensResponse)(nil),                    // 869: relay.server.v1.ListSCIMTokensResponse
-	(*RotateSCIMTokenRequest)(nil),                    // 870: relay.server.v1.RotateSCIMTokenRequest
-	(*RotateSCIMTokenResponse)(nil),                   // 871: relay.server.v1.RotateSCIMTokenResponse
-	(*RevokeSCIMTokenRequest)(nil),                    // 872: relay.server.v1.RevokeSCIMTokenRequest
-	(*RevokeSCIMTokenResponse)(nil),                   // 873: relay.server.v1.RevokeSCIMTokenResponse
-	(*IdPGroupMapping)(nil),                           // 874: relay.server.v1.IdPGroupMapping
-	(*ListIdPGroupMappingsRequest)(nil),               // 875: relay.server.v1.ListIdPGroupMappingsRequest
-	(*ListIdPGroupMappingsResponse)(nil),              // 876: relay.server.v1.ListIdPGroupMappingsResponse
-	(*UpsertIdPGroupMappingRequest)(nil),              // 877: relay.server.v1.UpsertIdPGroupMappingRequest
-	(*UpsertIdPGroupMappingResponse)(nil),             // 878: relay.server.v1.UpsertIdPGroupMappingResponse
-	(*DeleteIdPGroupMappingRequest)(nil),              // 879: relay.server.v1.DeleteIdPGroupMappingRequest
-	(*DeleteIdPGroupMappingResponse)(nil),             // 880: relay.server.v1.DeleteIdPGroupMappingResponse
-	(*AdminOrgDomain)(nil),                            // 881: relay.server.v1.AdminOrgDomain
-	(*AdminListOrgDomainsRequest)(nil),                // 882: relay.server.v1.AdminListOrgDomainsRequest
-	(*AdminListOrgDomainsResponse)(nil),               // 883: relay.server.v1.AdminListOrgDomainsResponse
-	(*AdminRemoveOrgDomainRequest)(nil),               // 884: relay.server.v1.AdminRemoveOrgDomainRequest
-	(*AdminRemoveOrgDomainResponse)(nil),              // 885: relay.server.v1.AdminRemoveOrgDomainResponse
-	(*PostgreSQLExtensionInfo)(nil),                   // 886: relay.server.v1.PostgreSQLExtensionInfo
-	(*ListPostgreSQLExtensionsRequest)(nil),           // 887: relay.server.v1.ListPostgreSQLExtensionsRequest
-	(*ListPostgreSQLExtensionsResponse)(nil),          // 888: relay.server.v1.ListPostgreSQLExtensionsResponse
-	(*FeatureFlag)(nil),                               // 889: relay.server.v1.FeatureFlag
-	(*AdminListFeatureFlagsRequest)(nil),              // 890: relay.server.v1.AdminListFeatureFlagsRequest
-	(*AdminListFeatureFlagsResponse)(nil),             // 891: relay.server.v1.AdminListFeatureFlagsResponse
-	(*AdminGetFeatureFlagRequest)(nil),                // 892: relay.server.v1.AdminGetFeatureFlagRequest
-	(*AdminGetFeatureFlagResponse)(nil),               // 893: relay.server.v1.AdminGetFeatureFlagResponse
-	(*AdminCreateFeatureFlagRequest)(nil),             // 894: relay.server.v1.AdminCreateFeatureFlagRequest
-	(*AdminCreateFeatureFlagResponse)(nil),            // 895: relay.server.v1.AdminCreateFeatureFlagResponse
-	(*AdminUpdateFeatureFlagRequest)(nil),             // 896: relay.server.v1.AdminUpdateFeatureFlagRequest
-	(*AdminUpdateFeatureFlagResponse)(nil),            // 897: relay.server.v1.AdminUpdateFeatureFlagResponse
-	(*AdminArchiveFeatureFlagRequest)(nil),            // 898: relay.server.v1.AdminArchiveFeatureFlagRequest
-	(*AdminArchiveFeatureFlagResponse)(nil),           // 899: relay.server.v1.AdminArchiveFeatureFlagResponse
-	(*AdminSetOrgFeatureOverrideRequest)(nil),         // 900: relay.server.v1.AdminSetOrgFeatureOverrideRequest
-	(*AdminSetOrgFeatureOverrideResponse)(nil),        // 901: relay.server.v1.AdminSetOrgFeatureOverrideResponse
-	(*AdminClearOrgFeatureOverrideRequest)(nil),       // 902: relay.server.v1.AdminClearOrgFeatureOverrideRequest
-	(*AdminClearOrgFeatureOverrideResponse)(nil),      // 903: relay.server.v1.AdminClearOrgFeatureOverrideResponse
-	(*FeatureFlagOrganization)(nil),                   // 904: relay.server.v1.FeatureFlagOrganization
-	(*AdminListFeatureFlagOrganizationsRequest)(nil),  // 905: relay.server.v1.AdminListFeatureFlagOrganizationsRequest
-	(*AdminListFeatureFlagOrganizationsResponse)(nil), // 906: relay.server.v1.AdminListFeatureFlagOrganizationsResponse
-	(*AdminPreviewFeatureFlagRolloutRequest)(nil),     // 907: relay.server.v1.AdminPreviewFeatureFlagRolloutRequest
-	(*AdminPreviewFeatureFlagRolloutResponse)(nil),    // 908: relay.server.v1.AdminPreviewFeatureFlagRolloutResponse
-	(*GetLicenseStatusRequest)(nil),                   // 909: relay.server.v1.GetLicenseStatusRequest
-	(*GetLicenseStatusResponse)(nil),                  // 910: relay.server.v1.GetLicenseStatusResponse
-	(*ExportLicenseUsageReportRequest)(nil),           // 911: relay.server.v1.ExportLicenseUsageReportRequest
-	(*ExportLicenseUsageReportResponse)(nil),          // 912: relay.server.v1.ExportLicenseUsageReportResponse
-	(*RunbookSource)(nil),                             // 913: relay.server.v1.RunbookSource
-	(*GetRunbookSourceRequest)(nil),                   // 914: relay.server.v1.GetRunbookSourceRequest
-	(*GetRunbookSourceResponse)(nil),                  // 915: relay.server.v1.GetRunbookSourceResponse
-	(*UpsertRunbookSourceRequest)(nil),                // 916: relay.server.v1.UpsertRunbookSourceRequest
-	(*UpsertRunbookSourceResponse)(nil),               // 917: relay.server.v1.UpsertRunbookSourceResponse
-	(*DeleteRunbookSourceRequest)(nil),                // 918: relay.server.v1.DeleteRunbookSourceRequest
-	(*DeleteRunbookSourceResponse)(nil),               // 919: relay.server.v1.DeleteRunbookSourceResponse
-	(*SyncRunbooksRequest)(nil),                       // 920: relay.server.v1.SyncRunbooksRequest
-	(*RotateRunbookWebhookSecretRequest)(nil),         // 921: relay.server.v1.RotateRunbookWebhookSecretRequest
-	(*RotateRunbookWebhookSecretResponse)(nil),        // 922: relay.server.v1.RotateRunbookWebhookSecretResponse
-	(*FetchRunbookHostKeyRequest)(nil),                // 923: relay.server.v1.FetchRunbookHostKeyRequest
-	(*FetchRunbookHostKeyResponse)(nil),               // 924: relay.server.v1.FetchRunbookHostKeyResponse
-	(*RunbookSyncError)(nil),                          // 925: relay.server.v1.RunbookSyncError
-	(*SyncRunbooksResponse)(nil),                      // 926: relay.server.v1.SyncRunbooksResponse
-	(*RunbookParam)(nil),                              // 927: relay.server.v1.RunbookParam
-	(*Runbook)(nil),                                   // 928: relay.server.v1.Runbook
-	(*ListRunbooksRequest)(nil),                       // 929: relay.server.v1.ListRunbooksRequest
-	(*ListRunbooksResponse)(nil),                      // 930: relay.server.v1.ListRunbooksResponse
-	(*GetRunbookRequest)(nil),                         // 931: relay.server.v1.GetRunbookRequest
-	(*GetRunbookResponse)(nil),                        // 932: relay.server.v1.GetRunbookResponse
-	(*RunRunbookRequest)(nil),                         // 933: relay.server.v1.RunRunbookRequest
-	(*RunRunbookResponse)(nil),                        // 934: relay.server.v1.RunRunbookResponse
-	(*RunbookValue)(nil),                              // 935: relay.server.v1.RunbookValue
-	(*RunbookRow)(nil),                                // 936: relay.server.v1.RunbookRow
-	(*RunbookExecution)(nil),                          // 937: relay.server.v1.RunbookExecution
-	(*GetRunbookExecutionRequest)(nil),                // 938: relay.server.v1.GetRunbookExecutionRequest
-	(*GetRunbookExecutionResponse)(nil),               // 939: relay.server.v1.GetRunbookExecutionResponse
-	(*ListRunbookExecutionsRequest)(nil),              // 940: relay.server.v1.ListRunbookExecutionsRequest
-	(*ListRunbookExecutionsResponse)(nil),             // 941: relay.server.v1.ListRunbookExecutionsResponse
-	(*ClaimRunbookExecutionsRequest)(nil),             // 942: relay.server.v1.ClaimRunbookExecutionsRequest
-	(*RunbookJobParam)(nil),                           // 943: relay.server.v1.RunbookJobParam
-	(*RunbookJob)(nil),                                // 944: relay.server.v1.RunbookJob
-	(*ClaimRunbookExecutionsResponse)(nil),            // 945: relay.server.v1.ClaimRunbookExecutionsResponse
-	(*ReportRunbookExecutionRequest)(nil),             // 946: relay.server.v1.ReportRunbookExecutionRequest
-	(*ReportRunbookExecutionResponse)(nil),            // 947: relay.server.v1.ReportRunbookExecutionResponse
-	(*QueryTemplateParam)(nil),                        // 948: relay.server.v1.QueryTemplateParam
-	(*QueryTemplateSpec)(nil),                         // 949: relay.server.v1.QueryTemplateSpec
-	(*QueryTemplateVersion)(nil),                      // 950: relay.server.v1.QueryTemplateVersion
-	(*QueryTemplate)(nil),                             // 951: relay.server.v1.QueryTemplate
-	(*CreateQueryTemplateRequest)(nil),                // 952: relay.server.v1.CreateQueryTemplateRequest
-	(*NotifiedApprovalIntegration)(nil),               // 953: relay.server.v1.NotifiedApprovalIntegration
-	(*CreateQueryTemplateResponse)(nil),               // 954: relay.server.v1.CreateQueryTemplateResponse
-	(*UpdateQueryTemplateRequest)(nil),                // 955: relay.server.v1.UpdateQueryTemplateRequest
-	(*UpdateQueryTemplateResponse)(nil),               // 956: relay.server.v1.UpdateQueryTemplateResponse
-	(*GetQueryTemplateRequest)(nil),                   // 957: relay.server.v1.GetQueryTemplateRequest
-	(*GetQueryTemplateResponse)(nil),                  // 958: relay.server.v1.GetQueryTemplateResponse
-	(*ListQueryTemplatesRequest)(nil),                 // 959: relay.server.v1.ListQueryTemplatesRequest
-	(*ListQueryTemplatesResponse)(nil),                // 960: relay.server.v1.ListQueryTemplatesResponse
-	(*ListQueryTemplateVersionsRequest)(nil),          // 961: relay.server.v1.ListQueryTemplateVersionsRequest
-	(*ListQueryTemplateVersionsResponse)(nil),         // 962: relay.server.v1.ListQueryTemplateVersionsResponse
-	(*ApproveQueryTemplateVersionRequest)(nil),        // 963: relay.server.v1.ApproveQueryTemplateVersionRequest
-	(*ApproveQueryTemplateVersionResponse)(nil),       // 964: relay.server.v1.ApproveQueryTemplateVersionResponse
-	(*WithdrawQueryTemplateVersionRequest)(nil),       // 965: relay.server.v1.WithdrawQueryTemplateVersionRequest
-	(*WithdrawQueryTemplateVersionResponse)(nil),      // 966: relay.server.v1.WithdrawQueryTemplateVersionResponse
-	(*RevokeQueryTemplateRequest)(nil),                // 967: relay.server.v1.RevokeQueryTemplateRequest
-	(*RevokeQueryTemplateResponse)(nil),               // 968: relay.server.v1.RevokeQueryTemplateResponse
-	(*RunQueryTemplateRequest)(nil),                   // 969: relay.server.v1.RunQueryTemplateRequest
-	(*RunQueryTemplateResponse)(nil),                  // 970: relay.server.v1.RunQueryTemplateResponse
-	(*MaskingClassificationReport)(nil),               // 971: relay.server.v1.MaskingClassificationReport
-	(*ReportMaskingClassificationsRequest)(nil),       // 972: relay.server.v1.ReportMaskingClassificationsRequest
-	(*ReportMaskingClassificationsResponse)(nil),      // 973: relay.server.v1.ReportMaskingClassificationsResponse
-	(*MaskingClassification)(nil),                     // 974: relay.server.v1.MaskingClassification
-	(*ListMaskingClassificationsRequest)(nil),         // 975: relay.server.v1.ListMaskingClassificationsRequest
-	(*ListMaskingClassificationsResponse)(nil),        // 976: relay.server.v1.ListMaskingClassificationsResponse
-	(*ResolveMaskingClassificationRequest)(nil),       // 977: relay.server.v1.ResolveMaskingClassificationRequest
-	(*ResolveMaskingClassificationResponse)(nil),      // 978: relay.server.v1.ResolveMaskingClassificationResponse
-	(*AccessGrantRequest)(nil),                        // 979: relay.server.v1.AccessGrantRequest
-	(*RequestAccessGrantRequest)(nil),                 // 980: relay.server.v1.RequestAccessGrantRequest
-	(*RequestAccessGrantResponse)(nil),                // 981: relay.server.v1.RequestAccessGrantResponse
-	(*ListAccessGrantRequestsRequest)(nil),            // 982: relay.server.v1.ListAccessGrantRequestsRequest
-	(*ListAccessGrantRequestsResponse)(nil),           // 983: relay.server.v1.ListAccessGrantRequestsResponse
-	(*GetAccessGrantRequestRequest)(nil),              // 984: relay.server.v1.GetAccessGrantRequestRequest
-	(*GetAccessGrantRequestResponse)(nil),             // 985: relay.server.v1.GetAccessGrantRequestResponse
-	(*ApproveAccessGrantRequestRequest)(nil),          // 986: relay.server.v1.ApproveAccessGrantRequestRequest
-	(*ApproveAccessGrantRequestResponse)(nil),         // 987: relay.server.v1.ApproveAccessGrantRequestResponse
-	(*DenyAccessGrantRequestRequest)(nil),             // 988: relay.server.v1.DenyAccessGrantRequestRequest
-	(*DenyAccessGrantRequestResponse)(nil),            // 989: relay.server.v1.DenyAccessGrantRequestResponse
-	(*CancelAccessGrantRequestRequest)(nil),           // 990: relay.server.v1.CancelAccessGrantRequestRequest
-	(*CancelAccessGrantRequestResponse)(nil),          // 991: relay.server.v1.CancelAccessGrantRequestResponse
-	(*RevokeAccessGrantRequestRequest)(nil),           // 992: relay.server.v1.RevokeAccessGrantRequestRequest
-	(*RevokeAccessGrantRequestResponse)(nil),          // 993: relay.server.v1.RevokeAccessGrantRequestResponse
-	(*RequestableConnection)(nil),                     // 994: relay.server.v1.RequestableConnection
-	(*ListRequestableConnectionsRequest)(nil),         // 995: relay.server.v1.ListRequestableConnectionsRequest
-	(*ListRequestableConnectionsResponse)(nil),        // 996: relay.server.v1.ListRequestableConnectionsResponse
-	(*AccessRequestSettings)(nil),                     // 997: relay.server.v1.AccessRequestSettings
-	(*GetAccessRequestSettingsRequest)(nil),           // 998: relay.server.v1.GetAccessRequestSettingsRequest
-	(*GetAccessRequestSettingsResponse)(nil),          // 999: relay.server.v1.GetAccessRequestSettingsResponse
-	(*UpdateAccessRequestSettingsRequest)(nil),        // 1000: relay.server.v1.UpdateAccessRequestSettingsRequest
-	(*UpdateAccessRequestSettingsResponse)(nil),       // 1001: relay.server.v1.UpdateAccessRequestSettingsResponse
-	(*CreateMCPGrantRequest)(nil),                     // 1002: relay.server.v1.CreateMCPGrantRequest
-	(*CreateMCPGrantResponse)(nil),                    // 1003: relay.server.v1.CreateMCPGrantResponse
-	(*RotateMCPGrantRequest)(nil),                     // 1004: relay.server.v1.RotateMCPGrantRequest
-	(*RotateMCPGrantResponse)(nil),                    // 1005: relay.server.v1.RotateMCPGrantResponse
-	(*ResolveMCPGrantRequest)(nil),                    // 1006: relay.server.v1.ResolveMCPGrantRequest
-	(*ResolveMCPGrantResponse)(nil),                   // 1007: relay.server.v1.ResolveMCPGrantResponse
-	(*RevokeMCPGrantRequest)(nil),                     // 1008: relay.server.v1.RevokeMCPGrantRequest
-	(*RevokeMCPGrantResponse)(nil),                    // 1009: relay.server.v1.RevokeMCPGrantResponse
-	(*BillingPromo)(nil),                              // 1010: relay.server.v1.BillingPromo
-	(*RedeemPromoCodeRequest)(nil),                    // 1011: relay.server.v1.RedeemPromoCodeRequest
-	(*RedeemPromoCodeResponse)(nil),                   // 1012: relay.server.v1.RedeemPromoCodeResponse
-	(*AdminPromoCampaign)(nil),                        // 1013: relay.server.v1.AdminPromoCampaign
-	(*AdminPromoRedemption)(nil),                      // 1014: relay.server.v1.AdminPromoRedemption
-	(*AdminCreatePromoCampaignRequest)(nil),           // 1015: relay.server.v1.AdminCreatePromoCampaignRequest
-	(*AdminCreatePromoCampaignResponse)(nil),          // 1016: relay.server.v1.AdminCreatePromoCampaignResponse
-	(*AdminListPromoCampaignsRequest)(nil),            // 1017: relay.server.v1.AdminListPromoCampaignsRequest
-	(*AdminListPromoCampaignsResponse)(nil),           // 1018: relay.server.v1.AdminListPromoCampaignsResponse
-	(*AdminSetPromoCampaignActiveRequest)(nil),        // 1019: relay.server.v1.AdminSetPromoCampaignActiveRequest
-	(*AdminSetPromoCampaignActiveResponse)(nil),       // 1020: relay.server.v1.AdminSetPromoCampaignActiveResponse
-	(*AdminListPromoRedemptionsRequest)(nil),          // 1021: relay.server.v1.AdminListPromoRedemptionsRequest
-	(*AdminListPromoRedemptionsResponse)(nil),         // 1022: relay.server.v1.AdminListPromoRedemptionsResponse
-	(*AdminRevokePromoRedemptionRequest)(nil),         // 1023: relay.server.v1.AdminRevokePromoRedemptionRequest
-	(*AdminRevokePromoRedemptionResponse)(nil),        // 1024: relay.server.v1.AdminRevokePromoRedemptionResponse
-	(*GetAccessUsageRequest)(nil),                     // 1025: relay.server.v1.GetAccessUsageRequest
-	(*AccessUsageCounts)(nil),                         // 1026: relay.server.v1.AccessUsageCounts
-	(*AccessUsageGroup)(nil),                          // 1027: relay.server.v1.AccessUsageGroup
-	(*AccessUsageBucket)(nil),                         // 1028: relay.server.v1.AccessUsageBucket
-	(*GetAccessUsageResponse)(nil),                    // 1029: relay.server.v1.GetAccessUsageResponse
-	(*AdminUpdatePromoCampaignRequest)(nil),           // 1030: relay.server.v1.AdminUpdatePromoCampaignRequest
-	(*AdminUpdatePromoCampaignResponse)(nil),          // 1031: relay.server.v1.AdminUpdatePromoCampaignResponse
-	nil,                                               // 1032: relay.server.v1.DatabaseSpec.ParamsEntry
-	nil,                                               // 1033: relay.server.v1.ValkeyConfig.ParametersEntry
-	nil,                                               // 1034: relay.server.v1.PostgreSQLConfig.ParametersEntry
-	nil,                                               // 1035: relay.server.v1.Distribution.CloudsEntry
-	nil,                                               // 1036: relay.server.v1.CloudRegions.RegionsEntry
-	nil,                                               // 1037: relay.server.v1.WhoAmIResponse.FlagsEntry
-	nil,                                               // 1038: relay.server.v1.SetUserFlagsRequest.FlagsEntry
-	nil,                                               // 1039: relay.server.v1.SetUserFlagsResponse.FlagsEntry
-	nil,                                               // 1040: relay.server.v1.AdminGetPlatformOverviewResponse.ClustersByPhaseEntry
-	nil,                                               // 1041: relay.server.v1.AdminListClustersResponse.ByPhaseEntry
-	nil,                                               // 1042: relay.server.v1.RiskConfig.ActionsEntry
-	nil,                                               // 1043: relay.server.v1.ReportTunnelSessionsResponse.ConnectionPolicyRevisionsEntry
-	nil,                                               // 1044: relay.server.v1.ReportTunnelSessionsResponse.RevokedSessionReasonsEntry
-	nil,                                               // 1045: relay.server.v1.DatabaseEvent.MetadataEntry
-	nil,                                               // 1046: relay.server.v1.RecordDatabaseEventRequest.MetadataEntry
-	nil,                                               // 1047: relay.server.v1.EmitActivityRequest.MetadataEntry
-	nil,                                               // 1048: relay.server.v1.RunRunbookRequest.ParamsEntry
-	nil,                                               // 1049: relay.server.v1.RunbookExecution.ParamsEntry
-	nil,                                               // 1050: relay.server.v1.RunQueryTemplateRequest.ParamsEntry
-	(*durationpb.Duration)(nil),                       // 1051: google.protobuf.Duration
-	(*timestamppb.Timestamp)(nil),                     // 1052: google.protobuf.Timestamp
-	(*fieldmaskpb.FieldMask)(nil),                     // 1053: google.protobuf.FieldMask
+	(*DeleteAccountRequest)(nil),                      // 663: relay.server.v1.DeleteAccountRequest
+	(*DeleteAccountResponse)(nil),                     // 664: relay.server.v1.DeleteAccountResponse
+	(*Workspace)(nil),                                 // 665: relay.server.v1.Workspace
+	(*ListWorkspacesRequest)(nil),                     // 666: relay.server.v1.ListWorkspacesRequest
+	(*ListWorkspacesResponse)(nil),                    // 667: relay.server.v1.ListWorkspacesResponse
+	(*GetWorkspaceRequest)(nil),                       // 668: relay.server.v1.GetWorkspaceRequest
+	(*GetWorkspaceResponse)(nil),                      // 669: relay.server.v1.GetWorkspaceResponse
+	(*CreateWorkspaceRequest)(nil),                    // 670: relay.server.v1.CreateWorkspaceRequest
+	(*CreateWorkspaceResponse)(nil),                   // 671: relay.server.v1.CreateWorkspaceResponse
+	(*UpdateWorkspaceRequest)(nil),                    // 672: relay.server.v1.UpdateWorkspaceRequest
+	(*UpdateWorkspaceResponse)(nil),                   // 673: relay.server.v1.UpdateWorkspaceResponse
+	(*DeleteWorkspaceRequest)(nil),                    // 674: relay.server.v1.DeleteWorkspaceRequest
+	(*DeleteWorkspaceResponse)(nil),                   // 675: relay.server.v1.DeleteWorkspaceResponse
+	(*GetOrgOverviewRequest)(nil),                     // 676: relay.server.v1.GetOrgOverviewRequest
+	(*GetOrgOverviewResponse)(nil),                    // 677: relay.server.v1.GetOrgOverviewResponse
+	(*WorkspaceOverview)(nil),                         // 678: relay.server.v1.WorkspaceOverview
+	(*WorkspaceSpend)(nil),                            // 679: relay.server.v1.WorkspaceSpend
+	(*WorkspaceMember)(nil),                           // 680: relay.server.v1.WorkspaceMember
+	(*AddWorkspaceMemberRequest)(nil),                 // 681: relay.server.v1.AddWorkspaceMemberRequest
+	(*AddWorkspaceMemberResponse)(nil),                // 682: relay.server.v1.AddWorkspaceMemberResponse
+	(*RemoveWorkspaceMemberRequest)(nil),              // 683: relay.server.v1.RemoveWorkspaceMemberRequest
+	(*RemoveWorkspaceMemberResponse)(nil),             // 684: relay.server.v1.RemoveWorkspaceMemberResponse
+	(*ListWorkspaceMembersRequest)(nil),               // 685: relay.server.v1.ListWorkspaceMembersRequest
+	(*ListWorkspaceMembersResponse)(nil),              // 686: relay.server.v1.ListWorkspaceMembersResponse
+	(*AddWorkspaceTeamRequest)(nil),                   // 687: relay.server.v1.AddWorkspaceTeamRequest
+	(*AddWorkspaceTeamResponse)(nil),                  // 688: relay.server.v1.AddWorkspaceTeamResponse
+	(*RemoveWorkspaceTeamRequest)(nil),                // 689: relay.server.v1.RemoveWorkspaceTeamRequest
+	(*RemoveWorkspaceTeamResponse)(nil),               // 690: relay.server.v1.RemoveWorkspaceTeamResponse
+	(*ListWorkspaceTeamsRequest)(nil),                 // 691: relay.server.v1.ListWorkspaceTeamsRequest
+	(*ListWorkspaceTeamsResponse)(nil),                // 692: relay.server.v1.ListWorkspaceTeamsResponse
+	(*SetWorkspaceMemberRoleRequest)(nil),             // 693: relay.server.v1.SetWorkspaceMemberRoleRequest
+	(*SetWorkspaceMemberRoleResponse)(nil),            // 694: relay.server.v1.SetWorkspaceMemberRoleResponse
+	(*SetWorkspaceTeamRoleRequest)(nil),               // 695: relay.server.v1.SetWorkspaceTeamRoleRequest
+	(*SetWorkspaceTeamRoleResponse)(nil),              // 696: relay.server.v1.SetWorkspaceTeamRoleResponse
+	(*WorkspaceTeamInfo)(nil),                         // 697: relay.server.v1.WorkspaceTeamInfo
+	(*RoleInfo)(nil),                                  // 698: relay.server.v1.RoleInfo
+	(*ListRolesRequest)(nil),                          // 699: relay.server.v1.ListRolesRequest
+	(*ListRolesResponse)(nil),                         // 700: relay.server.v1.ListRolesResponse
+	(*CreateRoleRequest)(nil),                         // 701: relay.server.v1.CreateRoleRequest
+	(*CreateRoleResponse)(nil),                        // 702: relay.server.v1.CreateRoleResponse
+	(*UpdateRoleRequest)(nil),                         // 703: relay.server.v1.UpdateRoleRequest
+	(*UpdateRoleResponse)(nil),                        // 704: relay.server.v1.UpdateRoleResponse
+	(*DeleteRoleRequest)(nil),                         // 705: relay.server.v1.DeleteRoleRequest
+	(*DeleteRoleResponse)(nil),                        // 706: relay.server.v1.DeleteRoleResponse
+	(*RoleBinding)(nil),                               // 707: relay.server.v1.RoleBinding
+	(*ListRoleBindingsRequest)(nil),                   // 708: relay.server.v1.ListRoleBindingsRequest
+	(*ListRoleBindingsResponse)(nil),                  // 709: relay.server.v1.ListRoleBindingsResponse
+	(*CreateRoleBindingRequest)(nil),                  // 710: relay.server.v1.CreateRoleBindingRequest
+	(*CreateRoleBindingResponse)(nil),                 // 711: relay.server.v1.CreateRoleBindingResponse
+	(*DeleteRoleBindingRequest)(nil),                  // 712: relay.server.v1.DeleteRoleBindingRequest
+	(*DeleteRoleBindingResponse)(nil),                 // 713: relay.server.v1.DeleteRoleBindingResponse
+	(*BillingMachineTier)(nil),                        // 714: relay.server.v1.BillingMachineTier
+	(*BillingProjectionLine)(nil),                     // 715: relay.server.v1.BillingProjectionLine
+	(*BillingCycleUsageLine)(nil),                     // 716: relay.server.v1.BillingCycleUsageLine
+	(*GetBillingStateRequest)(nil),                    // 717: relay.server.v1.GetBillingStateRequest
+	(*GetBillingStateResponse)(nil),                   // 718: relay.server.v1.GetBillingStateResponse
+	(*BillingBackupPriceTier)(nil),                    // 719: relay.server.v1.BillingBackupPriceTier
+	(*BillingBackupLine)(nil),                         // 720: relay.server.v1.BillingBackupLine
+	(*BillingPlanFeatures)(nil),                       // 721: relay.server.v1.BillingPlanFeatures
+	(*BillingFeatureRequirement)(nil),                 // 722: relay.server.v1.BillingFeatureRequirement
+	(*CreateCheckoutSessionRequest)(nil),              // 723: relay.server.v1.CreateCheckoutSessionRequest
+	(*CreateCheckoutSessionResponse)(nil),             // 724: relay.server.v1.CreateCheckoutSessionResponse
+	(*ChangePlanRequest)(nil),                         // 725: relay.server.v1.ChangePlanRequest
+	(*ChangePlanResponse)(nil),                        // 726: relay.server.v1.ChangePlanResponse
+	(*CreateBillingPortalSessionRequest)(nil),         // 727: relay.server.v1.CreateBillingPortalSessionRequest
+	(*CreateBillingPortalSessionResponse)(nil),        // 728: relay.server.v1.CreateBillingPortalSessionResponse
+	(*ExternalSecretSource)(nil),                      // 729: relay.server.v1.ExternalSecretSource
+	(*ListExternalSecretSourcesRequest)(nil),          // 730: relay.server.v1.ListExternalSecretSourcesRequest
+	(*ListExternalSecretSourcesResponse)(nil),         // 731: relay.server.v1.ListExternalSecretSourcesResponse
+	(*GetExternalSecretSourceRequest)(nil),            // 732: relay.server.v1.GetExternalSecretSourceRequest
+	(*GetExternalSecretSourceResponse)(nil),           // 733: relay.server.v1.GetExternalSecretSourceResponse
+	(*UpsertExternalSecretSourceRequest)(nil),         // 734: relay.server.v1.UpsertExternalSecretSourceRequest
+	(*UpsertExternalSecretSourceResponse)(nil),        // 735: relay.server.v1.UpsertExternalSecretSourceResponse
+	(*DeleteExternalSecretSourceRequest)(nil),         // 736: relay.server.v1.DeleteExternalSecretSourceRequest
+	(*DeleteExternalSecretSourceResponse)(nil),        // 737: relay.server.v1.DeleteExternalSecretSourceResponse
+	(*ResolveConnectionCredentialRequest)(nil),        // 738: relay.server.v1.ResolveConnectionCredentialRequest
+	(*ResolveConnectionCredentialResponse)(nil),       // 739: relay.server.v1.ResolveConnectionCredentialResponse
+	(*ResolveExternalSecretSourceRequest)(nil),        // 740: relay.server.v1.ResolveExternalSecretSourceRequest
+	(*ResolveExternalSecretSourceResponse)(nil),       // 741: relay.server.v1.ResolveExternalSecretSourceResponse
+	(*CloudIntegration)(nil),                          // 742: relay.server.v1.CloudIntegration
+	(*GetCloudIntegrationSetupRequest)(nil),           // 743: relay.server.v1.GetCloudIntegrationSetupRequest
+	(*GetCloudIntegrationSetupResponse)(nil),          // 744: relay.server.v1.GetCloudIntegrationSetupResponse
+	(*ListCloudIntegrationsRequest)(nil),              // 745: relay.server.v1.ListCloudIntegrationsRequest
+	(*ListCloudIntegrationsResponse)(nil),             // 746: relay.server.v1.ListCloudIntegrationsResponse
+	(*GetCloudIntegrationRequest)(nil),                // 747: relay.server.v1.GetCloudIntegrationRequest
+	(*GetCloudIntegrationResponse)(nil),               // 748: relay.server.v1.GetCloudIntegrationResponse
+	(*CreateCloudIntegrationRequest)(nil),             // 749: relay.server.v1.CreateCloudIntegrationRequest
+	(*CreateCloudIntegrationResponse)(nil),            // 750: relay.server.v1.CreateCloudIntegrationResponse
+	(*UpdateCloudIntegrationRequest)(nil),             // 751: relay.server.v1.UpdateCloudIntegrationRequest
+	(*UpdateCloudIntegrationResponse)(nil),            // 752: relay.server.v1.UpdateCloudIntegrationResponse
+	(*DeleteCloudIntegrationRequest)(nil),             // 753: relay.server.v1.DeleteCloudIntegrationRequest
+	(*DeleteCloudIntegrationResponse)(nil),            // 754: relay.server.v1.DeleteCloudIntegrationResponse
+	(*TestCloudIntegrationRequest)(nil),               // 755: relay.server.v1.TestCloudIntegrationRequest
+	(*TestCloudIntegrationResponse)(nil),              // 756: relay.server.v1.TestCloudIntegrationResponse
+	(*ClusterScope)(nil),                              // 757: relay.server.v1.ClusterScope
+	(*LogStream)(nil),                                 // 758: relay.server.v1.LogStream
+	(*GetLogStreamRequest)(nil),                       // 759: relay.server.v1.GetLogStreamRequest
+	(*GetLogStreamResponse)(nil),                      // 760: relay.server.v1.GetLogStreamResponse
+	(*UpsertLogStreamRequest)(nil),                    // 761: relay.server.v1.UpsertLogStreamRequest
+	(*UpsertLogStreamResponse)(nil),                   // 762: relay.server.v1.UpsertLogStreamResponse
+	(*DeleteLogStreamRequest)(nil),                    // 763: relay.server.v1.DeleteLogStreamRequest
+	(*DeleteLogStreamResponse)(nil),                   // 764: relay.server.v1.DeleteLogStreamResponse
+	(*LogDestinationConfig)(nil),                      // 765: relay.server.v1.LogDestinationConfig
+	(*LogDestinationHealth)(nil),                      // 766: relay.server.v1.LogDestinationHealth
+	(*LogDestination)(nil),                            // 767: relay.server.v1.LogDestination
+	(*ListLogDestinationsRequest)(nil),                // 768: relay.server.v1.ListLogDestinationsRequest
+	(*ListLogDestinationsResponse)(nil),               // 769: relay.server.v1.ListLogDestinationsResponse
+	(*CreateLogDestinationRequest)(nil),               // 770: relay.server.v1.CreateLogDestinationRequest
+	(*CreateLogDestinationResponse)(nil),              // 771: relay.server.v1.CreateLogDestinationResponse
+	(*UpdateLogDestinationRequest)(nil),               // 772: relay.server.v1.UpdateLogDestinationRequest
+	(*UpdateLogDestinationResponse)(nil),              // 773: relay.server.v1.UpdateLogDestinationResponse
+	(*DeleteLogDestinationRequest)(nil),               // 774: relay.server.v1.DeleteLogDestinationRequest
+	(*DeleteLogDestinationResponse)(nil),              // 775: relay.server.v1.DeleteLogDestinationResponse
+	(*TestLogDestinationRequest)(nil),                 // 776: relay.server.v1.TestLogDestinationRequest
+	(*TestLogDestinationResponse)(nil),                // 777: relay.server.v1.TestLogDestinationResponse
+	(*BackupAutoExport)(nil),                          // 778: relay.server.v1.BackupAutoExport
+	(*GetBackupAutoExportRequest)(nil),                // 779: relay.server.v1.GetBackupAutoExportRequest
+	(*GetBackupAutoExportResponse)(nil),               // 780: relay.server.v1.GetBackupAutoExportResponse
+	(*UpsertBackupAutoExportRequest)(nil),             // 781: relay.server.v1.UpsertBackupAutoExportRequest
+	(*UpsertBackupAutoExportResponse)(nil),            // 782: relay.server.v1.UpsertBackupAutoExportResponse
+	(*DeleteBackupAutoExportRequest)(nil),             // 783: relay.server.v1.DeleteBackupAutoExportRequest
+	(*DeleteBackupAutoExportResponse)(nil),            // 784: relay.server.v1.DeleteBackupAutoExportResponse
+	(*ExportToCloudRequest)(nil),                      // 785: relay.server.v1.ExportToCloudRequest
+	(*ExportToCloudResponse)(nil),                     // 786: relay.server.v1.ExportToCloudResponse
+	(*SupportReport)(nil),                             // 787: relay.server.v1.SupportReport
+	(*SupportReportComment)(nil),                      // 788: relay.server.v1.SupportReportComment
+	(*SupportAttachment)(nil),                         // 789: relay.server.v1.SupportAttachment
+	(*SupportAttachmentUpload)(nil),                   // 790: relay.server.v1.SupportAttachmentUpload
+	(*CreateSupportReportRequest)(nil),                // 791: relay.server.v1.CreateSupportReportRequest
+	(*CreateSupportReportResponse)(nil),               // 792: relay.server.v1.CreateSupportReportResponse
+	(*ListSupportReportsRequest)(nil),                 // 793: relay.server.v1.ListSupportReportsRequest
+	(*ListSupportReportsResponse)(nil),                // 794: relay.server.v1.ListSupportReportsResponse
+	(*GetSupportReportRequest)(nil),                   // 795: relay.server.v1.GetSupportReportRequest
+	(*GetSupportReportResponse)(nil),                  // 796: relay.server.v1.GetSupportReportResponse
+	(*AddSupportReportCommentRequest)(nil),            // 797: relay.server.v1.AddSupportReportCommentRequest
+	(*AddSupportReportCommentResponse)(nil),           // 798: relay.server.v1.AddSupportReportCommentResponse
+	(*GetSupportAttachmentRequest)(nil),               // 799: relay.server.v1.GetSupportAttachmentRequest
+	(*GetSupportAttachmentResponse)(nil),              // 800: relay.server.v1.GetSupportAttachmentResponse
+	(*UpdateSupportReportStatusRequest)(nil),          // 801: relay.server.v1.UpdateSupportReportStatusRequest
+	(*UpdateSupportReportStatusResponse)(nil),         // 802: relay.server.v1.UpdateSupportReportStatusResponse
+	(*AdminListSupportReportsRequest)(nil),            // 803: relay.server.v1.AdminListSupportReportsRequest
+	(*AdminListSupportReportsResponse)(nil),           // 804: relay.server.v1.AdminListSupportReportsResponse
+	(*AdminGetSupportReportRequest)(nil),              // 805: relay.server.v1.AdminGetSupportReportRequest
+	(*AdminGetSupportReportResponse)(nil),             // 806: relay.server.v1.AdminGetSupportReportResponse
+	(*AdminAddSupportReportCommentRequest)(nil),       // 807: relay.server.v1.AdminAddSupportReportCommentRequest
+	(*AdminAddSupportReportCommentResponse)(nil),      // 808: relay.server.v1.AdminAddSupportReportCommentResponse
+	(*AdminGetSupportAttachmentRequest)(nil),          // 809: relay.server.v1.AdminGetSupportAttachmentRequest
+	(*AdminGetSupportAttachmentResponse)(nil),         // 810: relay.server.v1.AdminGetSupportAttachmentResponse
+	(*AdminUpdateSupportReportStatusRequest)(nil),     // 811: relay.server.v1.AdminUpdateSupportReportStatusRequest
+	(*AdminUpdateSupportReportStatusResponse)(nil),    // 812: relay.server.v1.AdminUpdateSupportReportStatusResponse
+	(*SupportComponent)(nil),                          // 813: relay.server.v1.SupportComponent
+	(*SupportInternalComponent)(nil),                  // 814: relay.server.v1.SupportInternalComponent
+	(*AdminListSupportComponentsRequest)(nil),         // 815: relay.server.v1.AdminListSupportComponentsRequest
+	(*AdminListSupportComponentsResponse)(nil),        // 816: relay.server.v1.AdminListSupportComponentsResponse
+	(*AdminFileSupportReportIssueRequest)(nil),        // 817: relay.server.v1.AdminFileSupportReportIssueRequest
+	(*AdminFileSupportReportIssueResponse)(nil),       // 818: relay.server.v1.AdminFileSupportReportIssueResponse
+	(*OrgSSOConnection)(nil),                          // 819: relay.server.v1.OrgSSOConnection
+	(*SSOClientKey)(nil),                              // 820: relay.server.v1.SSOClientKey
+	(*SSOSAMLSettings)(nil),                           // 821: relay.server.v1.SSOSAMLSettings
+	(*SSOSAMLSPKey)(nil),                              // 822: relay.server.v1.SSOSAMLSPKey
+	(*SSOSAMLCertificate)(nil),                        // 823: relay.server.v1.SSOSAMLCertificate
+	(*SSOSAMLInput)(nil),                              // 824: relay.server.v1.SSOSAMLInput
+	(*SSOSAMLManualIdP)(nil),                          // 825: relay.server.v1.SSOSAMLManualIdP
+	(*SSOAttributeMapping)(nil),                       // 826: relay.server.v1.SSOAttributeMapping
+	(*SSOClientSecret)(nil),                           // 827: relay.server.v1.SSOClientSecret
+	(*SSOProviderPreset)(nil),                         // 828: relay.server.v1.SSOProviderPreset
+	(*ListSSOProviderPresetsRequest)(nil),             // 829: relay.server.v1.ListSSOProviderPresetsRequest
+	(*ListSSOProviderPresetsResponse)(nil),            // 830: relay.server.v1.ListSSOProviderPresetsResponse
+	(*SSOJITSettings)(nil),                            // 831: relay.server.v1.SSOJITSettings
+	(*SSOJITWorkspace)(nil),                           // 832: relay.server.v1.SSOJITWorkspace
+	(*GetOrgSSOConnectionRequest)(nil),                // 833: relay.server.v1.GetOrgSSOConnectionRequest
+	(*GetOrgSSOConnectionResponse)(nil),               // 834: relay.server.v1.GetOrgSSOConnectionResponse
+	(*UpsertOrgSSOConnectionRequest)(nil),             // 835: relay.server.v1.UpsertOrgSSOConnectionRequest
+	(*UpsertOrgSSOConnectionResponse)(nil),            // 836: relay.server.v1.UpsertOrgSSOConnectionResponse
+	(*DeleteOrgSSOConnectionRequest)(nil),             // 837: relay.server.v1.DeleteOrgSSOConnectionRequest
+	(*DeleteOrgSSOConnectionResponse)(nil),            // 838: relay.server.v1.DeleteOrgSSOConnectionResponse
+	(*ListOrgSSOConnectionsRequest)(nil),              // 839: relay.server.v1.ListOrgSSOConnectionsRequest
+	(*ListOrgSSOConnectionsResponse)(nil),             // 840: relay.server.v1.ListOrgSSOConnectionsResponse
+	(*CreateOrgSSOConnectionRequest)(nil),             // 841: relay.server.v1.CreateOrgSSOConnectionRequest
+	(*CreateOrgSSOConnectionResponse)(nil),            // 842: relay.server.v1.CreateOrgSSOConnectionResponse
+	(*AssignOrgDomainSSOConnectionRequest)(nil),       // 843: relay.server.v1.AssignOrgDomainSSOConnectionRequest
+	(*AssignOrgDomainSSOConnectionResponse)(nil),      // 844: relay.server.v1.AssignOrgDomainSSOConnectionResponse
+	(*TestOrgSSOConnectionRequest)(nil),               // 845: relay.server.v1.TestOrgSSOConnectionRequest
+	(*TestOrgSSOConnectionResponse)(nil),              // 846: relay.server.v1.TestOrgSSOConnectionResponse
+	(*OrgSignInPolicy)(nil),                           // 847: relay.server.v1.OrgSignInPolicy
+	(*APIKeyPolicy)(nil),                              // 848: relay.server.v1.APIKeyPolicy
+	(*APIKeyPolicyViolation)(nil),                     // 849: relay.server.v1.APIKeyPolicyViolation
+	(*OrgBreakGlassUser)(nil),                         // 850: relay.server.v1.OrgBreakGlassUser
+	(*GetOrgSignInPolicyRequest)(nil),                 // 851: relay.server.v1.GetOrgSignInPolicyRequest
+	(*GetOrgSignInPolicyResponse)(nil),                // 852: relay.server.v1.GetOrgSignInPolicyResponse
+	(*OrgSignInPolicyAffectedMember)(nil),             // 853: relay.server.v1.OrgSignInPolicyAffectedMember
+	(*PreviewOrgSignInPolicyRequest)(nil),             // 854: relay.server.v1.PreviewOrgSignInPolicyRequest
+	(*PreviewOrgSignInPolicyResponse)(nil),            // 855: relay.server.v1.PreviewOrgSignInPolicyResponse
+	(*UpdateOrgSignInPolicyRequest)(nil),              // 856: relay.server.v1.UpdateOrgSignInPolicyRequest
+	(*UpdateOrgSignInPolicyResponse)(nil),             // 857: relay.server.v1.UpdateOrgSignInPolicyResponse
+	(*OrgDomain)(nil),                                 // 858: relay.server.v1.OrgDomain
+	(*ListOrgDomainsRequest)(nil),                     // 859: relay.server.v1.ListOrgDomainsRequest
+	(*ListOrgDomainsResponse)(nil),                    // 860: relay.server.v1.ListOrgDomainsResponse
+	(*AddOrgDomainRequest)(nil),                       // 861: relay.server.v1.AddOrgDomainRequest
+	(*AddOrgDomainResponse)(nil),                      // 862: relay.server.v1.AddOrgDomainResponse
+	(*VerifyOrgDomainRequest)(nil),                    // 863: relay.server.v1.VerifyOrgDomainRequest
+	(*VerifyOrgDomainResponse)(nil),                   // 864: relay.server.v1.VerifyOrgDomainResponse
+	(*RemoveOrgDomainRequest)(nil),                    // 865: relay.server.v1.RemoveOrgDomainRequest
+	(*RemoveOrgDomainResponse)(nil),                   // 866: relay.server.v1.RemoveOrgDomainResponse
+	(*SCIMToken)(nil),                                 // 867: relay.server.v1.SCIMToken
+	(*CreateSCIMTokenRequest)(nil),                    // 868: relay.server.v1.CreateSCIMTokenRequest
+	(*CreateSCIMTokenResponse)(nil),                   // 869: relay.server.v1.CreateSCIMTokenResponse
+	(*ListSCIMTokensRequest)(nil),                     // 870: relay.server.v1.ListSCIMTokensRequest
+	(*ListSCIMTokensResponse)(nil),                    // 871: relay.server.v1.ListSCIMTokensResponse
+	(*RotateSCIMTokenRequest)(nil),                    // 872: relay.server.v1.RotateSCIMTokenRequest
+	(*RotateSCIMTokenResponse)(nil),                   // 873: relay.server.v1.RotateSCIMTokenResponse
+	(*RevokeSCIMTokenRequest)(nil),                    // 874: relay.server.v1.RevokeSCIMTokenRequest
+	(*RevokeSCIMTokenResponse)(nil),                   // 875: relay.server.v1.RevokeSCIMTokenResponse
+	(*IdPGroupMapping)(nil),                           // 876: relay.server.v1.IdPGroupMapping
+	(*ListIdPGroupMappingsRequest)(nil),               // 877: relay.server.v1.ListIdPGroupMappingsRequest
+	(*ListIdPGroupMappingsResponse)(nil),              // 878: relay.server.v1.ListIdPGroupMappingsResponse
+	(*UpsertIdPGroupMappingRequest)(nil),              // 879: relay.server.v1.UpsertIdPGroupMappingRequest
+	(*UpsertIdPGroupMappingResponse)(nil),             // 880: relay.server.v1.UpsertIdPGroupMappingResponse
+	(*DeleteIdPGroupMappingRequest)(nil),              // 881: relay.server.v1.DeleteIdPGroupMappingRequest
+	(*DeleteIdPGroupMappingResponse)(nil),             // 882: relay.server.v1.DeleteIdPGroupMappingResponse
+	(*AdminOrgDomain)(nil),                            // 883: relay.server.v1.AdminOrgDomain
+	(*AdminListOrgDomainsRequest)(nil),                // 884: relay.server.v1.AdminListOrgDomainsRequest
+	(*AdminListOrgDomainsResponse)(nil),               // 885: relay.server.v1.AdminListOrgDomainsResponse
+	(*AdminRemoveOrgDomainRequest)(nil),               // 886: relay.server.v1.AdminRemoveOrgDomainRequest
+	(*AdminRemoveOrgDomainResponse)(nil),              // 887: relay.server.v1.AdminRemoveOrgDomainResponse
+	(*PostgreSQLExtensionInfo)(nil),                   // 888: relay.server.v1.PostgreSQLExtensionInfo
+	(*ListPostgreSQLExtensionsRequest)(nil),           // 889: relay.server.v1.ListPostgreSQLExtensionsRequest
+	(*ListPostgreSQLExtensionsResponse)(nil),          // 890: relay.server.v1.ListPostgreSQLExtensionsResponse
+	(*FeatureFlag)(nil),                               // 891: relay.server.v1.FeatureFlag
+	(*AdminListFeatureFlagsRequest)(nil),              // 892: relay.server.v1.AdminListFeatureFlagsRequest
+	(*AdminListFeatureFlagsResponse)(nil),             // 893: relay.server.v1.AdminListFeatureFlagsResponse
+	(*AdminGetFeatureFlagRequest)(nil),                // 894: relay.server.v1.AdminGetFeatureFlagRequest
+	(*AdminGetFeatureFlagResponse)(nil),               // 895: relay.server.v1.AdminGetFeatureFlagResponse
+	(*AdminCreateFeatureFlagRequest)(nil),             // 896: relay.server.v1.AdminCreateFeatureFlagRequest
+	(*AdminCreateFeatureFlagResponse)(nil),            // 897: relay.server.v1.AdminCreateFeatureFlagResponse
+	(*AdminUpdateFeatureFlagRequest)(nil),             // 898: relay.server.v1.AdminUpdateFeatureFlagRequest
+	(*AdminUpdateFeatureFlagResponse)(nil),            // 899: relay.server.v1.AdminUpdateFeatureFlagResponse
+	(*AdminArchiveFeatureFlagRequest)(nil),            // 900: relay.server.v1.AdminArchiveFeatureFlagRequest
+	(*AdminArchiveFeatureFlagResponse)(nil),           // 901: relay.server.v1.AdminArchiveFeatureFlagResponse
+	(*AdminSetOrgFeatureOverrideRequest)(nil),         // 902: relay.server.v1.AdminSetOrgFeatureOverrideRequest
+	(*AdminSetOrgFeatureOverrideResponse)(nil),        // 903: relay.server.v1.AdminSetOrgFeatureOverrideResponse
+	(*AdminClearOrgFeatureOverrideRequest)(nil),       // 904: relay.server.v1.AdminClearOrgFeatureOverrideRequest
+	(*AdminClearOrgFeatureOverrideResponse)(nil),      // 905: relay.server.v1.AdminClearOrgFeatureOverrideResponse
+	(*FeatureFlagOrganization)(nil),                   // 906: relay.server.v1.FeatureFlagOrganization
+	(*AdminListFeatureFlagOrganizationsRequest)(nil),  // 907: relay.server.v1.AdminListFeatureFlagOrganizationsRequest
+	(*AdminListFeatureFlagOrganizationsResponse)(nil), // 908: relay.server.v1.AdminListFeatureFlagOrganizationsResponse
+	(*AdminPreviewFeatureFlagRolloutRequest)(nil),     // 909: relay.server.v1.AdminPreviewFeatureFlagRolloutRequest
+	(*AdminPreviewFeatureFlagRolloutResponse)(nil),    // 910: relay.server.v1.AdminPreviewFeatureFlagRolloutResponse
+	(*GetLicenseStatusRequest)(nil),                   // 911: relay.server.v1.GetLicenseStatusRequest
+	(*GetLicenseStatusResponse)(nil),                  // 912: relay.server.v1.GetLicenseStatusResponse
+	(*ExportLicenseUsageReportRequest)(nil),           // 913: relay.server.v1.ExportLicenseUsageReportRequest
+	(*ExportLicenseUsageReportResponse)(nil),          // 914: relay.server.v1.ExportLicenseUsageReportResponse
+	(*RunbookSource)(nil),                             // 915: relay.server.v1.RunbookSource
+	(*GetRunbookSourceRequest)(nil),                   // 916: relay.server.v1.GetRunbookSourceRequest
+	(*GetRunbookSourceResponse)(nil),                  // 917: relay.server.v1.GetRunbookSourceResponse
+	(*UpsertRunbookSourceRequest)(nil),                // 918: relay.server.v1.UpsertRunbookSourceRequest
+	(*UpsertRunbookSourceResponse)(nil),               // 919: relay.server.v1.UpsertRunbookSourceResponse
+	(*DeleteRunbookSourceRequest)(nil),                // 920: relay.server.v1.DeleteRunbookSourceRequest
+	(*DeleteRunbookSourceResponse)(nil),               // 921: relay.server.v1.DeleteRunbookSourceResponse
+	(*SyncRunbooksRequest)(nil),                       // 922: relay.server.v1.SyncRunbooksRequest
+	(*RotateRunbookWebhookSecretRequest)(nil),         // 923: relay.server.v1.RotateRunbookWebhookSecretRequest
+	(*RotateRunbookWebhookSecretResponse)(nil),        // 924: relay.server.v1.RotateRunbookWebhookSecretResponse
+	(*FetchRunbookHostKeyRequest)(nil),                // 925: relay.server.v1.FetchRunbookHostKeyRequest
+	(*FetchRunbookHostKeyResponse)(nil),               // 926: relay.server.v1.FetchRunbookHostKeyResponse
+	(*RunbookSyncError)(nil),                          // 927: relay.server.v1.RunbookSyncError
+	(*SyncRunbooksResponse)(nil),                      // 928: relay.server.v1.SyncRunbooksResponse
+	(*RunbookParam)(nil),                              // 929: relay.server.v1.RunbookParam
+	(*Runbook)(nil),                                   // 930: relay.server.v1.Runbook
+	(*ListRunbooksRequest)(nil),                       // 931: relay.server.v1.ListRunbooksRequest
+	(*ListRunbooksResponse)(nil),                      // 932: relay.server.v1.ListRunbooksResponse
+	(*GetRunbookRequest)(nil),                         // 933: relay.server.v1.GetRunbookRequest
+	(*GetRunbookResponse)(nil),                        // 934: relay.server.v1.GetRunbookResponse
+	(*RunRunbookRequest)(nil),                         // 935: relay.server.v1.RunRunbookRequest
+	(*RunRunbookResponse)(nil),                        // 936: relay.server.v1.RunRunbookResponse
+	(*RunbookValue)(nil),                              // 937: relay.server.v1.RunbookValue
+	(*RunbookRow)(nil),                                // 938: relay.server.v1.RunbookRow
+	(*RunbookExecution)(nil),                          // 939: relay.server.v1.RunbookExecution
+	(*GetRunbookExecutionRequest)(nil),                // 940: relay.server.v1.GetRunbookExecutionRequest
+	(*GetRunbookExecutionResponse)(nil),               // 941: relay.server.v1.GetRunbookExecutionResponse
+	(*ListRunbookExecutionsRequest)(nil),              // 942: relay.server.v1.ListRunbookExecutionsRequest
+	(*ListRunbookExecutionsResponse)(nil),             // 943: relay.server.v1.ListRunbookExecutionsResponse
+	(*ClaimRunbookExecutionsRequest)(nil),             // 944: relay.server.v1.ClaimRunbookExecutionsRequest
+	(*RunbookJobParam)(nil),                           // 945: relay.server.v1.RunbookJobParam
+	(*RunbookJob)(nil),                                // 946: relay.server.v1.RunbookJob
+	(*ClaimRunbookExecutionsResponse)(nil),            // 947: relay.server.v1.ClaimRunbookExecutionsResponse
+	(*ReportRunbookExecutionRequest)(nil),             // 948: relay.server.v1.ReportRunbookExecutionRequest
+	(*ReportRunbookExecutionResponse)(nil),            // 949: relay.server.v1.ReportRunbookExecutionResponse
+	(*QueryTemplateParam)(nil),                        // 950: relay.server.v1.QueryTemplateParam
+	(*QueryTemplateSpec)(nil),                         // 951: relay.server.v1.QueryTemplateSpec
+	(*QueryTemplateVersion)(nil),                      // 952: relay.server.v1.QueryTemplateVersion
+	(*QueryTemplate)(nil),                             // 953: relay.server.v1.QueryTemplate
+	(*CreateQueryTemplateRequest)(nil),                // 954: relay.server.v1.CreateQueryTemplateRequest
+	(*NotifiedApprovalIntegration)(nil),               // 955: relay.server.v1.NotifiedApprovalIntegration
+	(*CreateQueryTemplateResponse)(nil),               // 956: relay.server.v1.CreateQueryTemplateResponse
+	(*UpdateQueryTemplateRequest)(nil),                // 957: relay.server.v1.UpdateQueryTemplateRequest
+	(*UpdateQueryTemplateResponse)(nil),               // 958: relay.server.v1.UpdateQueryTemplateResponse
+	(*GetQueryTemplateRequest)(nil),                   // 959: relay.server.v1.GetQueryTemplateRequest
+	(*GetQueryTemplateResponse)(nil),                  // 960: relay.server.v1.GetQueryTemplateResponse
+	(*ListQueryTemplatesRequest)(nil),                 // 961: relay.server.v1.ListQueryTemplatesRequest
+	(*ListQueryTemplatesResponse)(nil),                // 962: relay.server.v1.ListQueryTemplatesResponse
+	(*ListQueryTemplateVersionsRequest)(nil),          // 963: relay.server.v1.ListQueryTemplateVersionsRequest
+	(*ListQueryTemplateVersionsResponse)(nil),         // 964: relay.server.v1.ListQueryTemplateVersionsResponse
+	(*ApproveQueryTemplateVersionRequest)(nil),        // 965: relay.server.v1.ApproveQueryTemplateVersionRequest
+	(*ApproveQueryTemplateVersionResponse)(nil),       // 966: relay.server.v1.ApproveQueryTemplateVersionResponse
+	(*WithdrawQueryTemplateVersionRequest)(nil),       // 967: relay.server.v1.WithdrawQueryTemplateVersionRequest
+	(*WithdrawQueryTemplateVersionResponse)(nil),      // 968: relay.server.v1.WithdrawQueryTemplateVersionResponse
+	(*RevokeQueryTemplateRequest)(nil),                // 969: relay.server.v1.RevokeQueryTemplateRequest
+	(*RevokeQueryTemplateResponse)(nil),               // 970: relay.server.v1.RevokeQueryTemplateResponse
+	(*RunQueryTemplateRequest)(nil),                   // 971: relay.server.v1.RunQueryTemplateRequest
+	(*RunQueryTemplateResponse)(nil),                  // 972: relay.server.v1.RunQueryTemplateResponse
+	(*MaskingClassificationReport)(nil),               // 973: relay.server.v1.MaskingClassificationReport
+	(*ReportMaskingClassificationsRequest)(nil),       // 974: relay.server.v1.ReportMaskingClassificationsRequest
+	(*ReportMaskingClassificationsResponse)(nil),      // 975: relay.server.v1.ReportMaskingClassificationsResponse
+	(*MaskingClassification)(nil),                     // 976: relay.server.v1.MaskingClassification
+	(*ListMaskingClassificationsRequest)(nil),         // 977: relay.server.v1.ListMaskingClassificationsRequest
+	(*ListMaskingClassificationsResponse)(nil),        // 978: relay.server.v1.ListMaskingClassificationsResponse
+	(*ResolveMaskingClassificationRequest)(nil),       // 979: relay.server.v1.ResolveMaskingClassificationRequest
+	(*ResolveMaskingClassificationResponse)(nil),      // 980: relay.server.v1.ResolveMaskingClassificationResponse
+	(*AccessGrantRequest)(nil),                        // 981: relay.server.v1.AccessGrantRequest
+	(*RequestAccessGrantRequest)(nil),                 // 982: relay.server.v1.RequestAccessGrantRequest
+	(*RequestAccessGrantResponse)(nil),                // 983: relay.server.v1.RequestAccessGrantResponse
+	(*ListAccessGrantRequestsRequest)(nil),            // 984: relay.server.v1.ListAccessGrantRequestsRequest
+	(*ListAccessGrantRequestsResponse)(nil),           // 985: relay.server.v1.ListAccessGrantRequestsResponse
+	(*GetAccessGrantRequestRequest)(nil),              // 986: relay.server.v1.GetAccessGrantRequestRequest
+	(*GetAccessGrantRequestResponse)(nil),             // 987: relay.server.v1.GetAccessGrantRequestResponse
+	(*ApproveAccessGrantRequestRequest)(nil),          // 988: relay.server.v1.ApproveAccessGrantRequestRequest
+	(*ApproveAccessGrantRequestResponse)(nil),         // 989: relay.server.v1.ApproveAccessGrantRequestResponse
+	(*DenyAccessGrantRequestRequest)(nil),             // 990: relay.server.v1.DenyAccessGrantRequestRequest
+	(*DenyAccessGrantRequestResponse)(nil),            // 991: relay.server.v1.DenyAccessGrantRequestResponse
+	(*CancelAccessGrantRequestRequest)(nil),           // 992: relay.server.v1.CancelAccessGrantRequestRequest
+	(*CancelAccessGrantRequestResponse)(nil),          // 993: relay.server.v1.CancelAccessGrantRequestResponse
+	(*RevokeAccessGrantRequestRequest)(nil),           // 994: relay.server.v1.RevokeAccessGrantRequestRequest
+	(*RevokeAccessGrantRequestResponse)(nil),          // 995: relay.server.v1.RevokeAccessGrantRequestResponse
+	(*RequestableConnection)(nil),                     // 996: relay.server.v1.RequestableConnection
+	(*ListRequestableConnectionsRequest)(nil),         // 997: relay.server.v1.ListRequestableConnectionsRequest
+	(*ListRequestableConnectionsResponse)(nil),        // 998: relay.server.v1.ListRequestableConnectionsResponse
+	(*AccessRequestSettings)(nil),                     // 999: relay.server.v1.AccessRequestSettings
+	(*GetAccessRequestSettingsRequest)(nil),           // 1000: relay.server.v1.GetAccessRequestSettingsRequest
+	(*GetAccessRequestSettingsResponse)(nil),          // 1001: relay.server.v1.GetAccessRequestSettingsResponse
+	(*UpdateAccessRequestSettingsRequest)(nil),        // 1002: relay.server.v1.UpdateAccessRequestSettingsRequest
+	(*UpdateAccessRequestSettingsResponse)(nil),       // 1003: relay.server.v1.UpdateAccessRequestSettingsResponse
+	(*CreateMCPGrantRequest)(nil),                     // 1004: relay.server.v1.CreateMCPGrantRequest
+	(*CreateMCPGrantResponse)(nil),                    // 1005: relay.server.v1.CreateMCPGrantResponse
+	(*RotateMCPGrantRequest)(nil),                     // 1006: relay.server.v1.RotateMCPGrantRequest
+	(*RotateMCPGrantResponse)(nil),                    // 1007: relay.server.v1.RotateMCPGrantResponse
+	(*ResolveMCPGrantRequest)(nil),                    // 1008: relay.server.v1.ResolveMCPGrantRequest
+	(*ResolveMCPGrantResponse)(nil),                   // 1009: relay.server.v1.ResolveMCPGrantResponse
+	(*RevokeMCPGrantRequest)(nil),                     // 1010: relay.server.v1.RevokeMCPGrantRequest
+	(*RevokeMCPGrantResponse)(nil),                    // 1011: relay.server.v1.RevokeMCPGrantResponse
+	(*BillingPromo)(nil),                              // 1012: relay.server.v1.BillingPromo
+	(*RedeemPromoCodeRequest)(nil),                    // 1013: relay.server.v1.RedeemPromoCodeRequest
+	(*RedeemPromoCodeResponse)(nil),                   // 1014: relay.server.v1.RedeemPromoCodeResponse
+	(*AdminPromoCampaign)(nil),                        // 1015: relay.server.v1.AdminPromoCampaign
+	(*AdminPromoRedemption)(nil),                      // 1016: relay.server.v1.AdminPromoRedemption
+	(*AdminCreatePromoCampaignRequest)(nil),           // 1017: relay.server.v1.AdminCreatePromoCampaignRequest
+	(*AdminCreatePromoCampaignResponse)(nil),          // 1018: relay.server.v1.AdminCreatePromoCampaignResponse
+	(*AdminListPromoCampaignsRequest)(nil),            // 1019: relay.server.v1.AdminListPromoCampaignsRequest
+	(*AdminListPromoCampaignsResponse)(nil),           // 1020: relay.server.v1.AdminListPromoCampaignsResponse
+	(*AdminSetPromoCampaignActiveRequest)(nil),        // 1021: relay.server.v1.AdminSetPromoCampaignActiveRequest
+	(*AdminSetPromoCampaignActiveResponse)(nil),       // 1022: relay.server.v1.AdminSetPromoCampaignActiveResponse
+	(*AdminListPromoRedemptionsRequest)(nil),          // 1023: relay.server.v1.AdminListPromoRedemptionsRequest
+	(*AdminListPromoRedemptionsResponse)(nil),         // 1024: relay.server.v1.AdminListPromoRedemptionsResponse
+	(*AdminRevokePromoRedemptionRequest)(nil),         // 1025: relay.server.v1.AdminRevokePromoRedemptionRequest
+	(*AdminRevokePromoRedemptionResponse)(nil),        // 1026: relay.server.v1.AdminRevokePromoRedemptionResponse
+	(*GetAccessUsageRequest)(nil),                     // 1027: relay.server.v1.GetAccessUsageRequest
+	(*AccessUsageCounts)(nil),                         // 1028: relay.server.v1.AccessUsageCounts
+	(*AccessUsageGroup)(nil),                          // 1029: relay.server.v1.AccessUsageGroup
+	(*AccessUsageBucket)(nil),                         // 1030: relay.server.v1.AccessUsageBucket
+	(*GetAccessUsageResponse)(nil),                    // 1031: relay.server.v1.GetAccessUsageResponse
+	(*AdminUpdatePromoCampaignRequest)(nil),           // 1032: relay.server.v1.AdminUpdatePromoCampaignRequest
+	(*AdminUpdatePromoCampaignResponse)(nil),          // 1033: relay.server.v1.AdminUpdatePromoCampaignResponse
+	nil,                                               // 1034: relay.server.v1.DatabaseSpec.ParamsEntry
+	nil,                                               // 1035: relay.server.v1.ValkeyConfig.ParametersEntry
+	nil,                                               // 1036: relay.server.v1.PostgreSQLConfig.ParametersEntry
+	nil,                                               // 1037: relay.server.v1.Distribution.CloudsEntry
+	nil,                                               // 1038: relay.server.v1.CloudRegions.RegionsEntry
+	nil,                                               // 1039: relay.server.v1.WhoAmIResponse.FlagsEntry
+	nil,                                               // 1040: relay.server.v1.SetUserFlagsRequest.FlagsEntry
+	nil,                                               // 1041: relay.server.v1.SetUserFlagsResponse.FlagsEntry
+	nil,                                               // 1042: relay.server.v1.AdminGetPlatformOverviewResponse.ClustersByPhaseEntry
+	nil,                                               // 1043: relay.server.v1.AdminListClustersResponse.ByPhaseEntry
+	nil,                                               // 1044: relay.server.v1.RiskConfig.ActionsEntry
+	nil,                                               // 1045: relay.server.v1.ReportTunnelSessionsResponse.ConnectionPolicyRevisionsEntry
+	nil,                                               // 1046: relay.server.v1.ReportTunnelSessionsResponse.RevokedSessionReasonsEntry
+	nil,                                               // 1047: relay.server.v1.DatabaseEvent.MetadataEntry
+	nil,                                               // 1048: relay.server.v1.RecordDatabaseEventRequest.MetadataEntry
+	nil,                                               // 1049: relay.server.v1.EmitActivityRequest.MetadataEntry
+	nil,                                               // 1050: relay.server.v1.RunRunbookRequest.ParamsEntry
+	nil,                                               // 1051: relay.server.v1.RunbookExecution.ParamsEntry
+	nil,                                               // 1052: relay.server.v1.RunQueryTemplateRequest.ParamsEntry
+	(*durationpb.Duration)(nil),                       // 1053: google.protobuf.Duration
+	(*timestamppb.Timestamp)(nil),                     // 1054: google.protobuf.Timestamp
+	(*fieldmaskpb.FieldMask)(nil),                     // 1055: google.protobuf.FieldMask
 }
 var file_relay_server_v1_server_proto_depIdxs = []int32{
 	8,    // 0: relay.server.v1.NodeSpec.resources:type_name -> relay.server.v1.ResourceRequirements
 	11,   // 1: relay.server.v1.NodeSpec.autoscaling:type_name -> relay.server.v1.ComputeAutoscaling
 	12,   // 2: relay.server.v1.ComputeAutoscaling.rules:type_name -> relay.server.v1.ComputeRule
-	1051, // 3: relay.server.v1.ComputeAutoscaling.scale_up_window:type_name -> google.protobuf.Duration
-	1051, // 4: relay.server.v1.ComputeAutoscaling.scale_down_window:type_name -> google.protobuf.Duration
+	1053, // 3: relay.server.v1.ComputeAutoscaling.scale_up_window:type_name -> google.protobuf.Duration
+	1053, // 4: relay.server.v1.ComputeAutoscaling.scale_down_window:type_name -> google.protobuf.Duration
 	10,   // 5: relay.server.v1.DatabaseSpec.nodes:type_name -> relay.server.v1.NodeSpec
-	1032, // 6: relay.server.v1.DatabaseSpec.params:type_name -> relay.server.v1.DatabaseSpec.ParamsEntry
+	1034, // 6: relay.server.v1.DatabaseSpec.params:type_name -> relay.server.v1.DatabaseSpec.ParamsEntry
 	25,   // 7: relay.server.v1.DatabaseSpec.replication:type_name -> relay.server.v1.Replication
 	20,   // 8: relay.server.v1.DatabaseSpec.distribution:type_name -> relay.server.v1.Distribution
 	23,   // 9: relay.server.v1.DatabaseSpec.dcs:type_name -> relay.server.v1.DCS
@@ -74804,16 +74891,16 @@ var file_relay_server_v1_server_proto_depIdxs = []int32{
 	16,   // 11: relay.server.v1.DatabaseSpec.valkey:type_name -> relay.server.v1.ValkeyConfig
 	15,   // 12: relay.server.v1.DatabaseSpec.storage:type_name -> relay.server.v1.ClusterStorage
 	9,    // 13: relay.server.v1.ClusterStorage.autoscale:type_name -> relay.server.v1.StorageAutoscale
-	1033, // 14: relay.server.v1.ValkeyConfig.parameters:type_name -> relay.server.v1.ValkeyConfig.ParametersEntry
-	1034, // 15: relay.server.v1.PostgreSQLConfig.parameters:type_name -> relay.server.v1.PostgreSQLConfig.ParametersEntry
+	1035, // 14: relay.server.v1.ValkeyConfig.parameters:type_name -> relay.server.v1.ValkeyConfig.ParametersEntry
+	1036, // 15: relay.server.v1.PostgreSQLConfig.parameters:type_name -> relay.server.v1.PostgreSQLConfig.ParametersEntry
 	18,   // 16: relay.server.v1.PostgreSQLConfig.observability:type_name -> relay.server.v1.ObservabilityPreset
 	19,   // 17: relay.server.v1.ObservabilityPreset.auto_explain:type_name -> relay.server.v1.AutoExplainConfig
-	1035, // 18: relay.server.v1.Distribution.clouds:type_name -> relay.server.v1.Distribution.CloudsEntry
-	1036, // 19: relay.server.v1.CloudRegions.regions:type_name -> relay.server.v1.CloudRegions.RegionsEntry
+	1037, // 18: relay.server.v1.Distribution.clouds:type_name -> relay.server.v1.Distribution.CloudsEntry
+	1038, // 19: relay.server.v1.CloudRegions.regions:type_name -> relay.server.v1.CloudRegions.RegionsEntry
 	24,   // 20: relay.server.v1.DCS.etcd:type_name -> relay.server.v1.EtcdDCS
 	13,   // 21: relay.server.v1.DatabaseStatus.endpoint:type_name -> relay.server.v1.Endpoint
-	1052, // 22: relay.server.v1.DatabaseStatus.created_at:type_name -> google.protobuf.Timestamp
-	1052, // 23: relay.server.v1.DatabaseStatus.updated_at:type_name -> google.protobuf.Timestamp
+	1054, // 22: relay.server.v1.DatabaseStatus.created_at:type_name -> google.protobuf.Timestamp
+	1054, // 23: relay.server.v1.DatabaseStatus.updated_at:type_name -> google.protobuf.Timestamp
 	99,   // 24: relay.server.v1.DatabaseStatus.active_ops:type_name -> relay.server.v1.ActiveOp
 	33,   // 25: relay.server.v1.DatabaseStatus.public_endpoints:type_name -> relay.server.v1.PublicEndpoint
 	33,   // 26: relay.server.v1.DatabaseStatus.private_endpoints:type_name -> relay.server.v1.PublicEndpoint
@@ -74822,29 +74909,29 @@ var file_relay_server_v1_server_proto_depIdxs = []int32{
 	30,   // 29: relay.server.v1.DatabaseStatus.backup_storage:type_name -> relay.server.v1.BackupStorage
 	28,   // 30: relay.server.v1.DatabaseStatus.compute:type_name -> relay.server.v1.NodeGroupCompute
 	27,   // 31: relay.server.v1.DatabaseStatus.regions:type_name -> relay.server.v1.RegionStatus
-	1052, // 32: relay.server.v1.NodeGroupCompute.last_scaled_at:type_name -> google.protobuf.Timestamp
+	1054, // 32: relay.server.v1.NodeGroupCompute.last_scaled_at:type_name -> google.protobuf.Timestamp
 	29,   // 33: relay.server.v1.NodeGroupCompute.rules:type_name -> relay.server.v1.ComputeRuleState
-	1052, // 34: relay.server.v1.ComputeRuleState.above_since:type_name -> google.protobuf.Timestamp
-	1052, // 35: relay.server.v1.ComputeRuleState.below_since:type_name -> google.protobuf.Timestamp
-	1052, // 36: relay.server.v1.BackupStorage.archive_measured_at:type_name -> google.protobuf.Timestamp
-	1052, // 37: relay.server.v1.BackupStorage.snapshot_measured_at:type_name -> google.protobuf.Timestamp
-	1052, // 38: relay.server.v1.NodeGroupStorage.last_expanded_at:type_name -> google.protobuf.Timestamp
-	1052, // 39: relay.server.v1.VolumeUsage.observed_at:type_name -> google.protobuf.Timestamp
+	1054, // 34: relay.server.v1.ComputeRuleState.above_since:type_name -> google.protobuf.Timestamp
+	1054, // 35: relay.server.v1.ComputeRuleState.below_since:type_name -> google.protobuf.Timestamp
+	1054, // 36: relay.server.v1.BackupStorage.archive_measured_at:type_name -> google.protobuf.Timestamp
+	1054, // 37: relay.server.v1.BackupStorage.snapshot_measured_at:type_name -> google.protobuf.Timestamp
+	1054, // 38: relay.server.v1.NodeGroupStorage.last_expanded_at:type_name -> google.protobuf.Timestamp
+	1054, // 39: relay.server.v1.VolumeUsage.observed_at:type_name -> google.protobuf.Timestamp
 	36,   // 40: relay.server.v1.DatabaseConnectionEndpoint.legacy_uris:type_name -> relay.server.v1.LegacyConnectionURI
 	37,   // 41: relay.server.v1.DatabaseConnectionEndpoint.driver_snippets:type_name -> relay.server.v1.DriverConnectionSnippet
 	35,   // 42: relay.server.v1.GetDatabaseConnectionResponse.endpoints:type_name -> relay.server.v1.DatabaseConnectionEndpoint
 	35,   // 43: relay.server.v1.GetDatabaseConnectionResponse.private_endpoints:type_name -> relay.server.v1.DatabaseConnectionEndpoint
-	1052, // 44: relay.server.v1.IPAllowlistEntry.expires_at:type_name -> google.protobuf.Timestamp
-	1052, // 45: relay.server.v1.IPAllowlistEntry.created_at:type_name -> google.protobuf.Timestamp
+	1054, // 44: relay.server.v1.IPAllowlistEntry.expires_at:type_name -> google.protobuf.Timestamp
+	1054, // 45: relay.server.v1.IPAllowlistEntry.created_at:type_name -> google.protobuf.Timestamp
 	39,   // 46: relay.server.v1.ListIPAllowlistResponse.entries:type_name -> relay.server.v1.IPAllowlistEntry
 	39,   // 47: relay.server.v1.AddIPAllowlistEntryResponse.entry:type_name -> relay.server.v1.IPAllowlistEntry
 	39,   // 48: relay.server.v1.UpdateIPAllowlistEntryResponse.entry:type_name -> relay.server.v1.IPAllowlistEntry
 	48,   // 49: relay.server.v1.ListPrivateEndpointRegionsResponse.regions:type_name -> relay.server.v1.PrivateEndpointRegion
 	52,   // 50: relay.server.v1.PrivateEndpointService.endpoints:type_name -> relay.server.v1.PrivateEndpoint
-	1052, // 51: relay.server.v1.PrivateEndpointService.created_at:type_name -> google.protobuf.Timestamp
-	1052, // 52: relay.server.v1.PrivateEndpointService.updated_at:type_name -> google.protobuf.Timestamp
-	1052, // 53: relay.server.v1.PrivateEndpoint.created_at:type_name -> google.protobuf.Timestamp
-	1052, // 54: relay.server.v1.PrivateEndpoint.updated_at:type_name -> google.protobuf.Timestamp
+	1054, // 51: relay.server.v1.PrivateEndpointService.created_at:type_name -> google.protobuf.Timestamp
+	1054, // 52: relay.server.v1.PrivateEndpointService.updated_at:type_name -> google.protobuf.Timestamp
+	1054, // 53: relay.server.v1.PrivateEndpoint.created_at:type_name -> google.protobuf.Timestamp
+	1054, // 54: relay.server.v1.PrivateEndpoint.updated_at:type_name -> google.protobuf.Timestamp
 	53,   // 55: relay.server.v1.PrivateEndpoint.gcp_endpoints:type_name -> relay.server.v1.GCPPrivateEndpoint
 	51,   // 56: relay.server.v1.CreatePrivateEndpointServiceResponse.service:type_name -> relay.server.v1.PrivateEndpointService
 	51,   // 57: relay.server.v1.ListPrivateEndpointServicesResponse.services:type_name -> relay.server.v1.PrivateEndpointService
@@ -74854,14 +74941,14 @@ var file_relay_server_v1_server_proto_depIdxs = []int32{
 	52,   // 61: relay.server.v1.GetPrivateEndpointResponse.endpoint:type_name -> relay.server.v1.PrivateEndpoint
 	1,    // 62: relay.server.v1.MigrationSourceConnection.ssl_mode:type_name -> relay.server.v1.MigrationSslMode
 	1,    // 63: relay.server.v1.MigrationSource.ssl_mode:type_name -> relay.server.v1.MigrationSslMode
-	1052, // 64: relay.server.v1.MigrationCondition.last_transition_time:type_name -> google.protobuf.Timestamp
+	1054, // 64: relay.server.v1.MigrationCondition.last_transition_time:type_name -> google.protobuf.Timestamp
 	2,    // 65: relay.server.v1.MigrationSourceCheckResult.severity:type_name -> relay.server.v1.MigrationCheckSeverity
 	3,    // 66: relay.server.v1.MigrationSourceCheckResult.mode:type_name -> relay.server.v1.MigrationMode
 	4,    // 67: relay.server.v1.MigrationSourceCheckResult.acknowledgement:type_name -> relay.server.v1.MigrationAcknowledgement
 	0,    // 68: relay.server.v1.MigrationSourceCheckStatus.phase:type_name -> relay.server.v1.MigrationPhase
-	1052, // 69: relay.server.v1.MigrationSourceCheckStatus.started_at:type_name -> google.protobuf.Timestamp
-	1052, // 70: relay.server.v1.MigrationSourceCheckStatus.completed_at:type_name -> google.protobuf.Timestamp
-	1052, // 71: relay.server.v1.MigrationSourceCheckStatus.expires_at:type_name -> google.protobuf.Timestamp
+	1054, // 69: relay.server.v1.MigrationSourceCheckStatus.started_at:type_name -> google.protobuf.Timestamp
+	1054, // 70: relay.server.v1.MigrationSourceCheckStatus.completed_at:type_name -> google.protobuf.Timestamp
+	1054, // 71: relay.server.v1.MigrationSourceCheckStatus.expires_at:type_name -> google.protobuf.Timestamp
 	71,   // 72: relay.server.v1.MigrationSourceCheckStatus.results:type_name -> relay.server.v1.MigrationSourceCheckResult
 	3,    // 73: relay.server.v1.MigrationSourceCheckStatus.modes:type_name -> relay.server.v1.MigrationMode
 	72,   // 74: relay.server.v1.MigrationSourceCheckStatus.facts:type_name -> relay.server.v1.MigrationSourceCheckFacts
@@ -74871,23 +74958,23 @@ var file_relay_server_v1_server_proto_depIdxs = []int32{
 	69,   // 78: relay.server.v1.MigrationSpec.source:type_name -> relay.server.v1.MigrationSource
 	4,    // 79: relay.server.v1.MigrationSpec.acknowledgements:type_name -> relay.server.v1.MigrationAcknowledgement
 	3,    // 80: relay.server.v1.MigrationSpec.mode:type_name -> relay.server.v1.MigrationMode
-	1052, // 81: relay.server.v1.MigrationTransition.started_at:type_name -> google.protobuf.Timestamp
-	1052, // 82: relay.server.v1.MigrationCutover.started_at:type_name -> google.protobuf.Timestamp
-	1052, // 83: relay.server.v1.MigrationCutover.completed_at:type_name -> google.protobuf.Timestamp
-	1052, // 84: relay.server.v1.MigrationCutover.fenced_at:type_name -> google.protobuf.Timestamp
+	1054, // 81: relay.server.v1.MigrationTransition.started_at:type_name -> google.protobuf.Timestamp
+	1054, // 82: relay.server.v1.MigrationCutover.started_at:type_name -> google.protobuf.Timestamp
+	1054, // 83: relay.server.v1.MigrationCutover.completed_at:type_name -> google.protobuf.Timestamp
+	1054, // 84: relay.server.v1.MigrationCutover.fenced_at:type_name -> google.protobuf.Timestamp
 	78,   // 85: relay.server.v1.MigrationLeaks.tables:type_name -> relay.server.v1.MigrationLeakTable
-	1052, // 86: relay.server.v1.MigrationLeaks.scanned_at:type_name -> google.protobuf.Timestamp
-	1051, // 87: relay.server.v1.MigrationOffline.estimated_downtime:type_name -> google.protobuf.Duration
-	1052, // 88: relay.server.v1.MigrationOffline.fenced_at:type_name -> google.protobuf.Timestamp
-	1051, // 89: relay.server.v1.MigrationOffline.downtime:type_name -> google.protobuf.Duration
+	1054, // 86: relay.server.v1.MigrationLeaks.scanned_at:type_name -> google.protobuf.Timestamp
+	1053, // 87: relay.server.v1.MigrationOffline.estimated_downtime:type_name -> google.protobuf.Duration
+	1054, // 88: relay.server.v1.MigrationOffline.fenced_at:type_name -> google.protobuf.Timestamp
+	1053, // 89: relay.server.v1.MigrationOffline.downtime:type_name -> google.protobuf.Duration
 	0,    // 90: relay.server.v1.MigrationStatus.phase:type_name -> relay.server.v1.MigrationPhase
 	76,   // 91: relay.server.v1.MigrationStatus.transition:type_name -> relay.server.v1.MigrationTransition
 	70,   // 92: relay.server.v1.MigrationStatus.conditions:type_name -> relay.server.v1.MigrationCondition
-	1052, // 93: relay.server.v1.MigrationStatus.cutover_requested_at:type_name -> google.protobuf.Timestamp
-	1052, // 94: relay.server.v1.MigrationStatus.abort_requested_at:type_name -> google.protobuf.Timestamp
-	1052, // 95: relay.server.v1.MigrationStatus.complete_requested_at:type_name -> google.protobuf.Timestamp
-	1052, // 96: relay.server.v1.MigrationStatus.streaming_since:type_name -> google.protobuf.Timestamp
-	1052, // 97: relay.server.v1.MigrationStatus.completed_at:type_name -> google.protobuf.Timestamp
+	1054, // 93: relay.server.v1.MigrationStatus.cutover_requested_at:type_name -> google.protobuf.Timestamp
+	1054, // 94: relay.server.v1.MigrationStatus.abort_requested_at:type_name -> google.protobuf.Timestamp
+	1054, // 95: relay.server.v1.MigrationStatus.complete_requested_at:type_name -> google.protobuf.Timestamp
+	1054, // 96: relay.server.v1.MigrationStatus.streaming_since:type_name -> google.protobuf.Timestamp
+	1054, // 97: relay.server.v1.MigrationStatus.completed_at:type_name -> google.protobuf.Timestamp
 	77,   // 98: relay.server.v1.MigrationStatus.cutover:type_name -> relay.server.v1.MigrationCutover
 	79,   // 99: relay.server.v1.MigrationStatus.leaks:type_name -> relay.server.v1.MigrationLeaks
 	80,   // 100: relay.server.v1.MigrationStatus.offline:type_name -> relay.server.v1.MigrationOffline
@@ -74906,7 +74993,7 @@ var file_relay_server_v1_server_proto_depIdxs = []int32{
 	82,   // 113: relay.server.v1.RequestMigrationCutoverResponse.migration:type_name -> relay.server.v1.Migration
 	82,   // 114: relay.server.v1.AbortMigrationResponse.migration:type_name -> relay.server.v1.Migration
 	82,   // 115: relay.server.v1.CompleteMigrationResponse.migration:type_name -> relay.server.v1.Migration
-	1052, // 116: relay.server.v1.ActiveOp.started_at:type_name -> google.protobuf.Timestamp
+	1054, // 116: relay.server.v1.ActiveOp.started_at:type_name -> google.protobuf.Timestamp
 	14,   // 117: relay.server.v1.Database.spec:type_name -> relay.server.v1.DatabaseSpec
 	26,   // 118: relay.server.v1.Database.status:type_name -> relay.server.v1.DatabaseStatus
 	101,  // 119: relay.server.v1.Database.default_connections:type_name -> relay.server.v1.DefaultConnectionsIntent
@@ -74914,60 +75001,60 @@ var file_relay_server_v1_server_proto_depIdxs = []int32{
 	14,   // 121: relay.server.v1.CreateDatabaseRequest.spec:type_name -> relay.server.v1.DatabaseSpec
 	101,  // 122: relay.server.v1.CreateDatabaseRequest.default_connections:type_name -> relay.server.v1.DefaultConnectionsIntent
 	100,  // 123: relay.server.v1.CreateDatabaseResponse.database:type_name -> relay.server.v1.Database
-	1052, // 124: relay.server.v1.RestoreDatabaseRequest.target_time:type_name -> google.protobuf.Timestamp
+	1054, // 124: relay.server.v1.RestoreDatabaseRequest.target_time:type_name -> google.protobuf.Timestamp
 	100,  // 125: relay.server.v1.RestoreDatabaseResponse.database:type_name -> relay.server.v1.Database
 	100,  // 126: relay.server.v1.GetDatabaseResponse.database:type_name -> relay.server.v1.Database
 	14,   // 127: relay.server.v1.UpdateDatabaseRequest.spec:type_name -> relay.server.v1.DatabaseSpec
-	1053, // 128: relay.server.v1.UpdateDatabaseRequest.update_mask:type_name -> google.protobuf.FieldMask
+	1055, // 128: relay.server.v1.UpdateDatabaseRequest.update_mask:type_name -> google.protobuf.FieldMask
 	100,  // 129: relay.server.v1.UpdateDatabaseResponse.database:type_name -> relay.server.v1.Database
 	113,  // 130: relay.server.v1.ListPostgreSQLParametersResponse.parameters:type_name -> relay.server.v1.PostgreSQLParameterInfo
 	116,  // 131: relay.server.v1.ListValkeyParametersResponse.parameters:type_name -> relay.server.v1.ValkeyParameterInfo
 	113,  // 132: relay.server.v1.ListDocumentDBParametersResponse.parameters:type_name -> relay.server.v1.PostgreSQLParameterInfo
 	122,  // 133: relay.server.v1.ListAutoscaleMetricsResponse.metrics:type_name -> relay.server.v1.AutoscaleMetric
-	1052, // 134: relay.server.v1.ComputeScaleEvent.started_at:type_name -> google.protobuf.Timestamp
+	1054, // 134: relay.server.v1.ComputeScaleEvent.started_at:type_name -> google.protobuf.Timestamp
 	125,  // 135: relay.server.v1.ListScaleEventsResponse.events:type_name -> relay.server.v1.ComputeScaleEvent
-	1052, // 136: relay.server.v1.PendingOperation.created_at:type_name -> google.protobuf.Timestamp
-	1052, // 137: relay.server.v1.PendingOperation.updated_at:type_name -> google.protobuf.Timestamp
+	1054, // 136: relay.server.v1.PendingOperation.created_at:type_name -> google.protobuf.Timestamp
+	1054, // 137: relay.server.v1.PendingOperation.updated_at:type_name -> google.protobuf.Timestamp
 	129,  // 138: relay.server.v1.ListPendingOperationsResponse.operations:type_name -> relay.server.v1.PendingOperation
 	101,  // 139: relay.server.v1.SetDefaultConnectionsRequest.default_connections:type_name -> relay.server.v1.DefaultConnectionsIntent
 	100,  // 140: relay.server.v1.SetDefaultConnectionsResponse.database:type_name -> relay.server.v1.Database
 	100,  // 141: relay.server.v1.SetDeletionProtectionResponse.database:type_name -> relay.server.v1.Database
 	144,  // 142: relay.server.v1.TopologyOperation.plan:type_name -> relay.server.v1.TopologyPrimitive
-	1052, // 143: relay.server.v1.TopologyOperation.step_started_at:type_name -> google.protobuf.Timestamp
-	1052, // 144: relay.server.v1.TopologyOperation.abort_requested_at:type_name -> google.protobuf.Timestamp
-	1052, // 145: relay.server.v1.TopologyOperation.created_at:type_name -> google.protobuf.Timestamp
-	1052, // 146: relay.server.v1.TopologyOperation.updated_at:type_name -> google.protobuf.Timestamp
-	1052, // 147: relay.server.v1.TopologyOperation.finished_at:type_name -> google.protobuf.Timestamp
+	1054, // 143: relay.server.v1.TopologyOperation.step_started_at:type_name -> google.protobuf.Timestamp
+	1054, // 144: relay.server.v1.TopologyOperation.abort_requested_at:type_name -> google.protobuf.Timestamp
+	1054, // 145: relay.server.v1.TopologyOperation.created_at:type_name -> google.protobuf.Timestamp
+	1054, // 146: relay.server.v1.TopologyOperation.updated_at:type_name -> google.protobuf.Timestamp
+	1054, // 147: relay.server.v1.TopologyOperation.finished_at:type_name -> google.protobuf.Timestamp
 	145,  // 148: relay.server.v1.GetTopologyOperationResponse.operation:type_name -> relay.server.v1.TopologyOperation
 	145,  // 149: relay.server.v1.AbortTopologyOperationResponse.operation:type_name -> relay.server.v1.TopologyOperation
 	145,  // 150: relay.server.v1.ResumeTopologyOperationResponse.operation:type_name -> relay.server.v1.TopologyOperation
 	26,   // 151: relay.server.v1.GetDatabaseStatusResponse.status:type_name -> relay.server.v1.DatabaseStatus
 	102,  // 152: relay.server.v1.ListDatabaseNodesResponse.nodes:type_name -> relay.server.v1.DatabaseNode
 	157,  // 153: relay.server.v1.GetDatabaseLogsResponse.node_logs:type_name -> relay.server.v1.NodeLogs
-	1052, // 154: relay.server.v1.SearchDatabaseLogsRequest.start_time:type_name -> google.protobuf.Timestamp
-	1052, // 155: relay.server.v1.SearchDatabaseLogsRequest.end_time:type_name -> google.protobuf.Timestamp
-	1052, // 156: relay.server.v1.LogEntry.time:type_name -> google.protobuf.Timestamp
+	1054, // 154: relay.server.v1.SearchDatabaseLogsRequest.start_time:type_name -> google.protobuf.Timestamp
+	1054, // 155: relay.server.v1.SearchDatabaseLogsRequest.end_time:type_name -> google.protobuf.Timestamp
+	1054, // 156: relay.server.v1.LogEntry.time:type_name -> google.protobuf.Timestamp
 	160,  // 157: relay.server.v1.SearchDatabaseLogsResponse.entries:type_name -> relay.server.v1.LogEntry
-	1052, // 158: relay.server.v1.SearchDatabaseLogsResponse.effective_start_time:type_name -> google.protobuf.Timestamp
+	1054, // 158: relay.server.v1.SearchDatabaseLogsResponse.effective_start_time:type_name -> google.protobuf.Timestamp
 	162,  // 159: relay.server.v1.BackupScheduleSpec.retention:type_name -> relay.server.v1.RetentionPolicy
 	163,  // 160: relay.server.v1.BackupScheduleSpec.snapshot_time:type_name -> relay.server.v1.SnapshotTime
 	164,  // 161: relay.server.v1.BackupScheduleSpec.policy_tiers:type_name -> relay.server.v1.PolicyTier
-	1052, // 162: relay.server.v1.BackupScheduleStatus.last_backup_time:type_name -> google.protobuf.Timestamp
-	1052, // 163: relay.server.v1.BackupScheduleStatus.next_backup_time:type_name -> google.protobuf.Timestamp
-	1052, // 164: relay.server.v1.BackupScheduleStatus.created_at:type_name -> google.protobuf.Timestamp
-	1052, // 165: relay.server.v1.BackupScheduleStatus.updated_at:type_name -> google.protobuf.Timestamp
-	1052, // 166: relay.server.v1.BackupScheduleStatus.earliest_restore_time:type_name -> google.protobuf.Timestamp
+	1054, // 162: relay.server.v1.BackupScheduleStatus.last_backup_time:type_name -> google.protobuf.Timestamp
+	1054, // 163: relay.server.v1.BackupScheduleStatus.next_backup_time:type_name -> google.protobuf.Timestamp
+	1054, // 164: relay.server.v1.BackupScheduleStatus.created_at:type_name -> google.protobuf.Timestamp
+	1054, // 165: relay.server.v1.BackupScheduleStatus.updated_at:type_name -> google.protobuf.Timestamp
+	1054, // 166: relay.server.v1.BackupScheduleStatus.earliest_restore_time:type_name -> google.protobuf.Timestamp
 	165,  // 167: relay.server.v1.BackupSchedule.spec:type_name -> relay.server.v1.BackupScheduleSpec
 	166,  // 168: relay.server.v1.BackupSchedule.status:type_name -> relay.server.v1.BackupScheduleStatus
-	1052, // 169: relay.server.v1.BackupStatus.start_time:type_name -> google.protobuf.Timestamp
-	1052, // 170: relay.server.v1.BackupStatus.completion_time:type_name -> google.protobuf.Timestamp
-	1052, // 171: relay.server.v1.BackupStatus.created_at:type_name -> google.protobuf.Timestamp
-	1052, // 172: relay.server.v1.BackupStatus.updated_at:type_name -> google.protobuf.Timestamp
-	1052, // 173: relay.server.v1.BackupStatus.size_measured_at:type_name -> google.protobuf.Timestamp
+	1054, // 169: relay.server.v1.BackupStatus.start_time:type_name -> google.protobuf.Timestamp
+	1054, // 170: relay.server.v1.BackupStatus.completion_time:type_name -> google.protobuf.Timestamp
+	1054, // 171: relay.server.v1.BackupStatus.created_at:type_name -> google.protobuf.Timestamp
+	1054, // 172: relay.server.v1.BackupStatus.updated_at:type_name -> google.protobuf.Timestamp
+	1054, // 173: relay.server.v1.BackupStatus.size_measured_at:type_name -> google.protobuf.Timestamp
 	168,  // 174: relay.server.v1.Backup.spec:type_name -> relay.server.v1.BackupSpec
 	169,  // 175: relay.server.v1.Backup.status:type_name -> relay.server.v1.BackupStatus
-	1052, // 176: relay.server.v1.Backup.cluster_deleted_at:type_name -> google.protobuf.Timestamp
-	1052, // 177: relay.server.v1.Backup.earliest_restore_time:type_name -> google.protobuf.Timestamp
+	1054, // 176: relay.server.v1.Backup.cluster_deleted_at:type_name -> google.protobuf.Timestamp
+	1054, // 177: relay.server.v1.Backup.earliest_restore_time:type_name -> google.protobuf.Timestamp
 	167,  // 178: relay.server.v1.ListBackupSchedulesResponse.backup_schedules:type_name -> relay.server.v1.BackupSchedule
 	170,  // 179: relay.server.v1.ListBackupsResponse.backups:type_name -> relay.server.v1.Backup
 	167,  // 180: relay.server.v1.GetBackupScheduleResponse.backup_schedule:type_name -> relay.server.v1.BackupSchedule
@@ -74976,19 +75063,19 @@ var file_relay_server_v1_server_proto_depIdxs = []int32{
 	167,  // 183: relay.server.v1.ResetBackupScheduleResponse.backup_schedule:type_name -> relay.server.v1.BackupSchedule
 	170,  // 184: relay.server.v1.CreateBackupResponse.backup:type_name -> relay.server.v1.Backup
 	185,  // 185: relay.server.v1.DatabaseUser.roles:type_name -> relay.server.v1.DatabaseUserRole
-	1052, // 186: relay.server.v1.DatabaseUser.expires_at:type_name -> google.protobuf.Timestamp
-	1052, // 187: relay.server.v1.DatabaseUser.created_at:type_name -> google.protobuf.Timestamp
+	1054, // 186: relay.server.v1.DatabaseUser.expires_at:type_name -> google.protobuf.Timestamp
+	1054, // 187: relay.server.v1.DatabaseUser.created_at:type_name -> google.protobuf.Timestamp
 	186,  // 188: relay.server.v1.ListDatabaseUsersResponse.users:type_name -> relay.server.v1.DatabaseUser
 	186,  // 189: relay.server.v1.GetDatabaseUserResponse.user:type_name -> relay.server.v1.DatabaseUser
 	185,  // 190: relay.server.v1.CreateDatabaseUserRequest.roles:type_name -> relay.server.v1.DatabaseUserRole
-	1052, // 191: relay.server.v1.CreateDatabaseUserRequest.expires_at:type_name -> google.protobuf.Timestamp
+	1054, // 191: relay.server.v1.CreateDatabaseUserRequest.expires_at:type_name -> google.protobuf.Timestamp
 	186,  // 192: relay.server.v1.CreateDatabaseUserResponse.user:type_name -> relay.server.v1.DatabaseUser
 	185,  // 193: relay.server.v1.UpdateDatabaseUserRequest.roles:type_name -> relay.server.v1.DatabaseUserRole
-	1052, // 194: relay.server.v1.UpdateDatabaseUserRequest.expires_at:type_name -> google.protobuf.Timestamp
-	1053, // 195: relay.server.v1.UpdateDatabaseUserRequest.update_mask:type_name -> google.protobuf.FieldMask
+	1054, // 194: relay.server.v1.UpdateDatabaseUserRequest.expires_at:type_name -> google.protobuf.Timestamp
+	1055, // 195: relay.server.v1.UpdateDatabaseUserRequest.update_mask:type_name -> google.protobuf.FieldMask
 	186,  // 196: relay.server.v1.UpdateDatabaseUserResponse.user:type_name -> relay.server.v1.DatabaseUser
 	197,  // 197: relay.server.v1.LogicalDatabaseExtensions.items:type_name -> relay.server.v1.LogicalDatabaseExtension
-	1052, // 198: relay.server.v1.LogicalDatabase.created_at:type_name -> google.protobuf.Timestamp
+	1054, // 198: relay.server.v1.LogicalDatabase.created_at:type_name -> google.protobuf.Timestamp
 	197,  // 199: relay.server.v1.LogicalDatabase.extensions:type_name -> relay.server.v1.LogicalDatabaseExtension
 	200,  // 200: relay.server.v1.ListLogicalDatabasesResponse.databases:type_name -> relay.server.v1.LogicalDatabase
 	197,  // 201: relay.server.v1.CreateLogicalDatabaseRequest.extensions:type_name -> relay.server.v1.LogicalDatabaseExtension
@@ -74998,105 +75085,105 @@ var file_relay_server_v1_server_proto_depIdxs = []int32{
 	200,  // 205: relay.server.v1.UpdateLogicalDatabaseResponse.database:type_name -> relay.server.v1.LogicalDatabase
 	209,  // 206: relay.server.v1.ListDatabaseProvidersResponse.providers:type_name -> relay.server.v1.DatabaseProvider
 	216,  // 207: relay.server.v1.WhoAmIResponse.organization:type_name -> relay.server.v1.Organization
-	1052, // 208: relay.server.v1.WhoAmIResponse.token_expires_at:type_name -> google.protobuf.Timestamp
+	1054, // 208: relay.server.v1.WhoAmIResponse.token_expires_at:type_name -> google.protobuf.Timestamp
 	648,  // 209: relay.server.v1.WhoAmIResponse.organizations:type_name -> relay.server.v1.OrganizationMembership
-	663,  // 210: relay.server.v1.WhoAmIResponse.workspace:type_name -> relay.server.v1.Workspace
-	663,  // 211: relay.server.v1.WhoAmIResponse.workspaces:type_name -> relay.server.v1.Workspace
-	1037, // 212: relay.server.v1.WhoAmIResponse.flags:type_name -> relay.server.v1.WhoAmIResponse.FlagsEntry
-	1038, // 213: relay.server.v1.SetUserFlagsRequest.flags:type_name -> relay.server.v1.SetUserFlagsRequest.FlagsEntry
-	1039, // 214: relay.server.v1.SetUserFlagsResponse.flags:type_name -> relay.server.v1.SetUserFlagsResponse.FlagsEntry
-	1052, // 215: relay.server.v1.MaintenanceBanner.starts_at:type_name -> google.protobuf.Timestamp
-	1052, // 216: relay.server.v1.MaintenanceBanner.ends_at:type_name -> google.protobuf.Timestamp
+	665,  // 210: relay.server.v1.WhoAmIResponse.workspace:type_name -> relay.server.v1.Workspace
+	665,  // 211: relay.server.v1.WhoAmIResponse.workspaces:type_name -> relay.server.v1.Workspace
+	1039, // 212: relay.server.v1.WhoAmIResponse.flags:type_name -> relay.server.v1.WhoAmIResponse.FlagsEntry
+	1040, // 213: relay.server.v1.SetUserFlagsRequest.flags:type_name -> relay.server.v1.SetUserFlagsRequest.FlagsEntry
+	1041, // 214: relay.server.v1.SetUserFlagsResponse.flags:type_name -> relay.server.v1.SetUserFlagsResponse.FlagsEntry
+	1054, // 215: relay.server.v1.MaintenanceBanner.starts_at:type_name -> google.protobuf.Timestamp
+	1054, // 216: relay.server.v1.MaintenanceBanner.ends_at:type_name -> google.protobuf.Timestamp
 	217,  // 217: relay.server.v1.GetMaintenanceBannerResponse.banner:type_name -> relay.server.v1.MaintenanceBanner
 	216,  // 218: relay.server.v1.AdminOrganization.organization:type_name -> relay.server.v1.Organization
-	1052, // 219: relay.server.v1.AdminOrganization.created_at:type_name -> google.protobuf.Timestamp
-	1052, // 220: relay.server.v1.AdminOrganization.updated_at:type_name -> google.protobuf.Timestamp
-	1052, // 221: relay.server.v1.AdminOrganization.suspended_at:type_name -> google.protobuf.Timestamp
+	1054, // 219: relay.server.v1.AdminOrganization.created_at:type_name -> google.protobuf.Timestamp
+	1054, // 220: relay.server.v1.AdminOrganization.updated_at:type_name -> google.protobuf.Timestamp
+	1054, // 221: relay.server.v1.AdminOrganization.suspended_at:type_name -> google.protobuf.Timestamp
 	220,  // 222: relay.server.v1.AdminListOrganizationsResponse.organizations:type_name -> relay.server.v1.AdminOrganization
 	220,  // 223: relay.server.v1.AdminGetOrganizationResponse.organization:type_name -> relay.server.v1.AdminOrganization
-	1052, // 224: relay.server.v1.AdminCluster.created_at:type_name -> google.protobuf.Timestamp
-	1052, // 225: relay.server.v1.AdminAgent.last_heartbeat_at:type_name -> google.protobuf.Timestamp
-	1052, // 226: relay.server.v1.AdminAgent.created_at:type_name -> google.protobuf.Timestamp
+	1054, // 224: relay.server.v1.AdminCluster.created_at:type_name -> google.protobuf.Timestamp
+	1054, // 225: relay.server.v1.AdminAgent.last_heartbeat_at:type_name -> google.protobuf.Timestamp
+	1054, // 226: relay.server.v1.AdminAgent.created_at:type_name -> google.protobuf.Timestamp
 	225,  // 227: relay.server.v1.AdminGetOrganizationResourcesResponse.clusters:type_name -> relay.server.v1.AdminCluster
 	226,  // 228: relay.server.v1.AdminGetOrganizationResourcesResponse.connections:type_name -> relay.server.v1.AdminConnection
 	227,  // 229: relay.server.v1.AdminGetOrganizationResourcesResponse.agent_pools:type_name -> relay.server.v1.AdminAgentPool
 	228,  // 230: relay.server.v1.AdminGetOrganizationResourcesResponse.agents:type_name -> relay.server.v1.AdminAgent
 	229,  // 231: relay.server.v1.AdminGetOrganizationResourcesResponse.workspaces:type_name -> relay.server.v1.AdminWorkspace
-	1040, // 232: relay.server.v1.AdminGetPlatformOverviewResponse.clusters_by_phase:type_name -> relay.server.v1.AdminGetPlatformOverviewResponse.ClustersByPhaseEntry
-	1052, // 233: relay.server.v1.AdminGetPlatformOverviewResponse.generated_at:type_name -> google.protobuf.Timestamp
-	1052, // 234: relay.server.v1.AdminOrgActivation.created_at:type_name -> google.protobuf.Timestamp
-	1052, // 235: relay.server.v1.AdminOrgActivation.last_sign_in_at:type_name -> google.protobuf.Timestamp
-	1052, // 236: relay.server.v1.AdminOrgActivation.last_tunnel_at:type_name -> google.protobuf.Timestamp
+	1042, // 232: relay.server.v1.AdminGetPlatformOverviewResponse.clusters_by_phase:type_name -> relay.server.v1.AdminGetPlatformOverviewResponse.ClustersByPhaseEntry
+	1054, // 233: relay.server.v1.AdminGetPlatformOverviewResponse.generated_at:type_name -> google.protobuf.Timestamp
+	1054, // 234: relay.server.v1.AdminOrgActivation.created_at:type_name -> google.protobuf.Timestamp
+	1054, // 235: relay.server.v1.AdminOrgActivation.last_sign_in_at:type_name -> google.protobuf.Timestamp
+	1054, // 236: relay.server.v1.AdminOrgActivation.last_tunnel_at:type_name -> google.protobuf.Timestamp
 	234,  // 237: relay.server.v1.AdminListOrgActivationResponse.orgs:type_name -> relay.server.v1.AdminOrgActivation
-	1052, // 238: relay.server.v1.AdminListOrgActivationResponse.generated_at:type_name -> google.protobuf.Timestamp
-	1052, // 239: relay.server.v1.AdminActivityEntry.created_at:type_name -> google.protobuf.Timestamp
+	1054, // 238: relay.server.v1.AdminListOrgActivationResponse.generated_at:type_name -> google.protobuf.Timestamp
+	1054, // 239: relay.server.v1.AdminActivityEntry.created_at:type_name -> google.protobuf.Timestamp
 	238,  // 240: relay.server.v1.AdminGetOrganizationActivityResponse.entries:type_name -> relay.server.v1.AdminActivityEntry
-	1052, // 241: relay.server.v1.AdminOrgAPIKey.created_at:type_name -> google.protobuf.Timestamp
-	1052, // 242: relay.server.v1.AdminOrgAPIKey.expires_at:type_name -> google.protobuf.Timestamp
-	1052, // 243: relay.server.v1.AdminOrgAPIKey.last_used_at:type_name -> google.protobuf.Timestamp
-	1052, // 244: relay.server.v1.AdminOrgCloudIntegration.created_at:type_name -> google.protobuf.Timestamp
+	1054, // 241: relay.server.v1.AdminOrgAPIKey.created_at:type_name -> google.protobuf.Timestamp
+	1054, // 242: relay.server.v1.AdminOrgAPIKey.expires_at:type_name -> google.protobuf.Timestamp
+	1054, // 243: relay.server.v1.AdminOrgAPIKey.last_used_at:type_name -> google.protobuf.Timestamp
+	1054, // 244: relay.server.v1.AdminOrgCloudIntegration.created_at:type_name -> google.protobuf.Timestamp
 	241,  // 245: relay.server.v1.AdminGetOrganizationSecurityResponse.api_keys:type_name -> relay.server.v1.AdminOrgAPIKey
 	242,  // 246: relay.server.v1.AdminGetOrganizationSecurityResponse.sso:type_name -> relay.server.v1.AdminOrgSSO
 	244,  // 247: relay.server.v1.AdminGetOrganizationSecurityResponse.cloud_integrations:type_name -> relay.server.v1.AdminOrgCloudIntegration
 	243,  // 248: relay.server.v1.AdminGetOrganizationSecurityResponse.sso_connections:type_name -> relay.server.v1.AdminOrgSSOConnection
-	1052, // 249: relay.server.v1.AdminUserMembership.created_at:type_name -> google.protobuf.Timestamp
-	1052, // 250: relay.server.v1.AdminUserMembership.last_seen_at:type_name -> google.protobuf.Timestamp
-	1052, // 251: relay.server.v1.AdminUserSummary.last_seen_at:type_name -> google.protobuf.Timestamp
+	1054, // 249: relay.server.v1.AdminUserMembership.created_at:type_name -> google.protobuf.Timestamp
+	1054, // 250: relay.server.v1.AdminUserMembership.last_seen_at:type_name -> google.protobuf.Timestamp
+	1054, // 251: relay.server.v1.AdminUserSummary.last_seen_at:type_name -> google.protobuf.Timestamp
 	246,  // 252: relay.server.v1.AdminUserSummary.memberships:type_name -> relay.server.v1.AdminUserMembership
 	247,  // 253: relay.server.v1.AdminSearchUsersResponse.users:type_name -> relay.server.v1.AdminUserSummary
-	1052, // 254: relay.server.v1.AdminUserSession.created_at:type_name -> google.protobuf.Timestamp
-	1052, // 255: relay.server.v1.AdminUserSession.expires_at:type_name -> google.protobuf.Timestamp
-	1052, // 256: relay.server.v1.AdminUserSession.last_used_at:type_name -> google.protobuf.Timestamp
-	1052, // 257: relay.server.v1.AdminUserInvitation.expires_at:type_name -> google.protobuf.Timestamp
-	1052, // 258: relay.server.v1.AdminUserInvitation.created_at:type_name -> google.protobuf.Timestamp
+	1054, // 254: relay.server.v1.AdminUserSession.created_at:type_name -> google.protobuf.Timestamp
+	1054, // 255: relay.server.v1.AdminUserSession.expires_at:type_name -> google.protobuf.Timestamp
+	1054, // 256: relay.server.v1.AdminUserSession.last_used_at:type_name -> google.protobuf.Timestamp
+	1054, // 257: relay.server.v1.AdminUserInvitation.expires_at:type_name -> google.protobuf.Timestamp
+	1054, // 258: relay.server.v1.AdminUserInvitation.created_at:type_name -> google.protobuf.Timestamp
 	247,  // 259: relay.server.v1.AdminGetUserResponse.user:type_name -> relay.server.v1.AdminUserSummary
 	251,  // 260: relay.server.v1.AdminGetUserResponse.sessions:type_name -> relay.server.v1.AdminUserSession
 	252,  // 261: relay.server.v1.AdminGetUserResponse.pending_invitations:type_name -> relay.server.v1.AdminUserInvitation
 	220,  // 262: relay.server.v1.AdminSuspendOrganizationResponse.organization:type_name -> relay.server.v1.AdminOrganization
 	220,  // 263: relay.server.v1.AdminUnsuspendOrganizationResponse.organization:type_name -> relay.server.v1.AdminOrganization
-	1052, // 264: relay.server.v1.BillingProcessPause.until:type_name -> google.protobuf.Timestamp
-	1052, // 265: relay.server.v1.BillingProcessPause.created_at:type_name -> google.protobuf.Timestamp
-	1052, // 266: relay.server.v1.AdminBillingProcess.since:type_name -> google.protobuf.Timestamp
-	1052, // 267: relay.server.v1.AdminBillingProcess.next_deadline:type_name -> google.protobuf.Timestamp
+	1054, // 264: relay.server.v1.BillingProcessPause.until:type_name -> google.protobuf.Timestamp
+	1054, // 265: relay.server.v1.BillingProcessPause.created_at:type_name -> google.protobuf.Timestamp
+	1054, // 266: relay.server.v1.AdminBillingProcess.since:type_name -> google.protobuf.Timestamp
+	1054, // 267: relay.server.v1.AdminBillingProcess.next_deadline:type_name -> google.protobuf.Timestamp
 	264,  // 268: relay.server.v1.AdminBillingProcess.pause:type_name -> relay.server.v1.BillingProcessPause
-	1052, // 269: relay.server.v1.AdminBillingProcess.org_suspended_at:type_name -> google.protobuf.Timestamp
+	1054, // 269: relay.server.v1.AdminBillingProcess.org_suspended_at:type_name -> google.protobuf.Timestamp
 	265,  // 270: relay.server.v1.AdminListBillingAttentionResponse.processes:type_name -> relay.server.v1.AdminBillingProcess
-	1052, // 271: relay.server.v1.AdminPauseBillingProcessRequest.until:type_name -> google.protobuf.Timestamp
+	1054, // 271: relay.server.v1.AdminPauseBillingProcessRequest.until:type_name -> google.protobuf.Timestamp
 	265,  // 272: relay.server.v1.AdminPauseBillingProcessResponse.billing_process:type_name -> relay.server.v1.AdminBillingProcess
 	265,  // 273: relay.server.v1.AdminResumeBillingProcessResponse.billing_process:type_name -> relay.server.v1.AdminBillingProcess
 	265,  // 274: relay.server.v1.AdminExtendBillingDeadlineResponse.billing_process:type_name -> relay.server.v1.AdminBillingProcess
 	275,  // 275: relay.server.v1.AdminRunBillingSweepResponse.dunning:type_name -> relay.server.v1.BillingSweepResult
 	275,  // 276: relay.server.v1.AdminRunBillingSweepResponse.overage:type_name -> relay.server.v1.BillingSweepResult
 	225,  // 277: relay.server.v1.AdminListClustersResponse.clusters:type_name -> relay.server.v1.AdminCluster
-	1041, // 278: relay.server.v1.AdminListClustersResponse.by_phase:type_name -> relay.server.v1.AdminListClustersResponse.ByPhaseEntry
-	1052, // 279: relay.server.v1.AdminPendingOperation.created_at:type_name -> google.protobuf.Timestamp
-	1052, // 280: relay.server.v1.AdminPendingOperation.updated_at:type_name -> google.protobuf.Timestamp
+	1043, // 278: relay.server.v1.AdminListClustersResponse.by_phase:type_name -> relay.server.v1.AdminListClustersResponse.ByPhaseEntry
+	1054, // 279: relay.server.v1.AdminPendingOperation.created_at:type_name -> google.protobuf.Timestamp
+	1054, // 280: relay.server.v1.AdminPendingOperation.updated_at:type_name -> google.protobuf.Timestamp
 	279,  // 281: relay.server.v1.AdminListPendingOperationsResponse.operations:type_name -> relay.server.v1.AdminPendingOperation
 	228,  // 282: relay.server.v1.AdminListAgentsResponse.agents:type_name -> relay.server.v1.AdminAgent
-	1052, // 283: relay.server.v1.AdminTunnelSession.started_at:type_name -> google.protobuf.Timestamp
-	1052, // 284: relay.server.v1.AdminTunnelSession.last_seen_at:type_name -> google.protobuf.Timestamp
-	1052, // 285: relay.server.v1.AdminTunnelSession.ended_at:type_name -> google.protobuf.Timestamp
+	1054, // 283: relay.server.v1.AdminTunnelSession.started_at:type_name -> google.protobuf.Timestamp
+	1054, // 284: relay.server.v1.AdminTunnelSession.last_seen_at:type_name -> google.protobuf.Timestamp
+	1054, // 285: relay.server.v1.AdminTunnelSession.ended_at:type_name -> google.protobuf.Timestamp
 	284,  // 286: relay.server.v1.AdminListTunnelSessionsResponse.sessions:type_name -> relay.server.v1.AdminTunnelSession
 	298,  // 287: relay.server.v1.AdminCreatePriceVersionRequest.tiers:type_name -> relay.server.v1.AdminPriceVersionTier
-	717,  // 288: relay.server.v1.AdminCreatePriceVersionRequest.continuous_backup_tiers:type_name -> relay.server.v1.BillingBackupPriceTier
-	1052, // 289: relay.server.v1.AdminPriceBook.effective_from:type_name -> google.protobuf.Timestamp
-	712,  // 290: relay.server.v1.AdminPriceBook.tiers:type_name -> relay.server.v1.BillingMachineTier
-	1052, // 291: relay.server.v1.AdminPriceBook.period_start:type_name -> google.protobuf.Timestamp
-	717,  // 292: relay.server.v1.AdminPriceBook.continuous_backup_tiers:type_name -> relay.server.v1.BillingBackupPriceTier
+	719,  // 288: relay.server.v1.AdminCreatePriceVersionRequest.continuous_backup_tiers:type_name -> relay.server.v1.BillingBackupPriceTier
+	1054, // 289: relay.server.v1.AdminPriceBook.effective_from:type_name -> google.protobuf.Timestamp
+	714,  // 290: relay.server.v1.AdminPriceBook.tiers:type_name -> relay.server.v1.BillingMachineTier
+	1054, // 291: relay.server.v1.AdminPriceBook.period_start:type_name -> google.protobuf.Timestamp
+	719,  // 292: relay.server.v1.AdminPriceBook.continuous_backup_tiers:type_name -> relay.server.v1.BillingBackupPriceTier
 	304,  // 293: relay.server.v1.AdminGetEffectivePriceBookResponse.current:type_name -> relay.server.v1.AdminPriceBook
 	304,  // 294: relay.server.v1.AdminGetEffectivePriceBookResponse.next:type_name -> relay.server.v1.AdminPriceBook
-	1052, // 295: relay.server.v1.AdminPriceVersion.effective_from:type_name -> google.protobuf.Timestamp
-	1052, // 296: relay.server.v1.AdminPriceVersion.created_at:type_name -> google.protobuf.Timestamp
+	1054, // 295: relay.server.v1.AdminPriceVersion.effective_from:type_name -> google.protobuf.Timestamp
+	1054, // 296: relay.server.v1.AdminPriceVersion.created_at:type_name -> google.protobuf.Timestamp
 	307,  // 297: relay.server.v1.AdminListPriceVersionsResponse.versions:type_name -> relay.server.v1.AdminPriceVersion
 	318,  // 298: relay.server.v1.AdminListOrganizationGrantsResponse.grants:type_name -> relay.server.v1.AdminOrganizationGrant
-	1052, // 299: relay.server.v1.AdminContractSigner.sent_at:type_name -> google.protobuf.Timestamp
-	1052, // 300: relay.server.v1.AdminContractSigner.opened_at:type_name -> google.protobuf.Timestamp
-	1052, // 301: relay.server.v1.AdminContractSigner.completed_at:type_name -> google.protobuf.Timestamp
+	1054, // 299: relay.server.v1.AdminContractSigner.sent_at:type_name -> google.protobuf.Timestamp
+	1054, // 300: relay.server.v1.AdminContractSigner.opened_at:type_name -> google.protobuf.Timestamp
+	1054, // 301: relay.server.v1.AdminContractSigner.completed_at:type_name -> google.protobuf.Timestamp
 	321,  // 302: relay.server.v1.AdminOrganizationContract.signers:type_name -> relay.server.v1.AdminContractSigner
 	322,  // 303: relay.server.v1.AdminOrganizationContract.metadata:type_name -> relay.server.v1.AdminContractMetadata
-	1052, // 304: relay.server.v1.AdminOrganizationContract.created_at:type_name -> google.protobuf.Timestamp
-	1052, // 305: relay.server.v1.AdminOrganizationContract.updated_at:type_name -> google.protobuf.Timestamp
-	1052, // 306: relay.server.v1.AdminOrganizationContract.completed_at:type_name -> google.protobuf.Timestamp
+	1054, // 304: relay.server.v1.AdminOrganizationContract.created_at:type_name -> google.protobuf.Timestamp
+	1054, // 305: relay.server.v1.AdminOrganizationContract.updated_at:type_name -> google.protobuf.Timestamp
+	1054, // 306: relay.server.v1.AdminOrganizationContract.completed_at:type_name -> google.protobuf.Timestamp
 	323,  // 307: relay.server.v1.AdminListOrganizationContractsResponse.contracts:type_name -> relay.server.v1.AdminOrganizationContract
 	323,  // 308: relay.server.v1.AdminGetOrganizationContractResponse.contract:type_name -> relay.server.v1.AdminOrganizationContract
 	324,  // 309: relay.server.v1.AdminGetOrganizationContractResponse.documents:type_name -> relay.server.v1.AdminContractDocument
@@ -75108,44 +75195,44 @@ var file_relay_server_v1_server_proto_depIdxs = []int32{
 	334,  // 315: relay.server.v1.AdminListContractTemplatesResponse.templates:type_name -> relay.server.v1.AdminContractTemplate
 	338,  // 316: relay.server.v1.AdminGetOrganizationCostResponse.breakdown:type_name -> relay.server.v1.AdminCostBreakdown
 	339,  // 317: relay.server.v1.AdminGetOrganizationCostResponse.billed:type_name -> relay.server.v1.AdminBilledFigures
-	1052, // 318: relay.server.v1.AdminBilledFigures.cycle_start:type_name -> google.protobuf.Timestamp
-	1052, // 319: relay.server.v1.AdminBilledFigures.cycle_end:type_name -> google.protobuf.Timestamp
-	714,  // 320: relay.server.v1.AdminBilledFigures.compute:type_name -> relay.server.v1.BillingCycleUsageLine
-	1052, // 321: relay.server.v1.AdminAuditEntry.created_at:type_name -> google.protobuf.Timestamp
+	1054, // 318: relay.server.v1.AdminBilledFigures.cycle_start:type_name -> google.protobuf.Timestamp
+	1054, // 319: relay.server.v1.AdminBilledFigures.cycle_end:type_name -> google.protobuf.Timestamp
+	716,  // 320: relay.server.v1.AdminBilledFigures.compute:type_name -> relay.server.v1.BillingCycleUsageLine
+	1054, // 321: relay.server.v1.AdminAuditEntry.created_at:type_name -> google.protobuf.Timestamp
 	340,  // 322: relay.server.v1.AdminListAuditLogResponse.entries:type_name -> relay.server.v1.AdminAuditEntry
 	346,  // 323: relay.server.v1.CloudCreditBalance.credits:type_name -> relay.server.v1.CloudCredit
-	1052, // 324: relay.server.v1.CloudCreditBalance.fetched_at:type_name -> google.protobuf.Timestamp
+	1054, // 324: relay.server.v1.CloudCreditBalance.fetched_at:type_name -> google.protobuf.Timestamp
 	344,  // 325: relay.server.v1.AdminGetCloudCostsResponse.series:type_name -> relay.server.v1.CloudCostPoint
 	345,  // 326: relay.server.v1.AdminGetCloudCostsResponse.by_service:type_name -> relay.server.v1.CloudCostBucket
 	345,  // 327: relay.server.v1.AdminGetCloudCostsResponse.by_account:type_name -> relay.server.v1.CloudCostBucket
-	1052, // 328: relay.server.v1.AdminGetCloudCostsResponse.fetched_at:type_name -> google.protobuf.Timestamp
+	1054, // 328: relay.server.v1.AdminGetCloudCostsResponse.fetched_at:type_name -> google.protobuf.Timestamp
 	347,  // 329: relay.server.v1.AdminGetCloudCostsResponse.credit_balance:type_name -> relay.server.v1.CloudCreditBalance
-	1052, // 330: relay.server.v1.PlatformExpense.created_at:type_name -> google.protobuf.Timestamp
-	1052, // 331: relay.server.v1.PlatformExpense.updated_at:type_name -> google.protobuf.Timestamp
+	1054, // 330: relay.server.v1.PlatformExpense.created_at:type_name -> google.protobuf.Timestamp
+	1054, // 331: relay.server.v1.PlatformExpense.updated_at:type_name -> google.protobuf.Timestamp
 	349,  // 332: relay.server.v1.AdminListPlatformExpensesResponse.expenses:type_name -> relay.server.v1.PlatformExpense
 	350,  // 333: relay.server.v1.AdminCreatePlatformExpenseRequest.expense:type_name -> relay.server.v1.PlatformExpenseInput
 	349,  // 334: relay.server.v1.AdminCreatePlatformExpenseResponse.expense:type_name -> relay.server.v1.PlatformExpense
 	350,  // 335: relay.server.v1.AdminUpdatePlatformExpenseRequest.expense:type_name -> relay.server.v1.PlatformExpenseInput
 	349,  // 336: relay.server.v1.AdminUpdatePlatformExpenseResponse.expense:type_name -> relay.server.v1.PlatformExpense
 	349,  // 337: relay.server.v1.AdminDeletePlatformExpenseResponse.expense:type_name -> relay.server.v1.PlatformExpense
-	1052, // 338: relay.server.v1.AdminRevenueOrg.current_period_end:type_name -> google.protobuf.Timestamp
+	1054, // 338: relay.server.v1.AdminRevenueOrg.current_period_end:type_name -> google.protobuf.Timestamp
 	338,  // 339: relay.server.v1.AdminRevenueOrg.cost_breakdown:type_name -> relay.server.v1.AdminCostBreakdown
 	339,  // 340: relay.server.v1.AdminRevenueOrg.billed:type_name -> relay.server.v1.AdminBilledFigures
-	1052, // 341: relay.server.v1.AdminGetRevenueOverviewResponse.generated_at:type_name -> google.protobuf.Timestamp
+	1054, // 341: relay.server.v1.AdminGetRevenueOverviewResponse.generated_at:type_name -> google.protobuf.Timestamp
 	360,  // 342: relay.server.v1.AdminGetRevenueOverviewResponse.orgs:type_name -> relay.server.v1.AdminRevenueOrg
 	361,  // 343: relay.server.v1.AdminGetRevenueOverviewResponse.currencies:type_name -> relay.server.v1.AdminRevenueCurrency
 	363,  // 344: relay.server.v1.AdminGetRevenueOverviewResponse.margins:type_name -> relay.server.v1.AdminPlatformMargins
 	217,  // 345: relay.server.v1.AdminMaintenanceBanner.banner:type_name -> relay.server.v1.MaintenanceBanner
-	1052, // 346: relay.server.v1.AdminMaintenanceBanner.created_at:type_name -> google.protobuf.Timestamp
-	1052, // 347: relay.server.v1.AdminMaintenanceBanner.cleared_at:type_name -> google.protobuf.Timestamp
+	1054, // 346: relay.server.v1.AdminMaintenanceBanner.created_at:type_name -> google.protobuf.Timestamp
+	1054, // 347: relay.server.v1.AdminMaintenanceBanner.cleared_at:type_name -> google.protobuf.Timestamp
 	364,  // 348: relay.server.v1.AdminGetMaintenanceBannerResponse.current:type_name -> relay.server.v1.AdminMaintenanceBanner
 	364,  // 349: relay.server.v1.AdminGetMaintenanceBannerResponse.recent:type_name -> relay.server.v1.AdminMaintenanceBanner
-	1052, // 350: relay.server.v1.AdminSetMaintenanceBannerRequest.starts_at:type_name -> google.protobuf.Timestamp
-	1052, // 351: relay.server.v1.AdminSetMaintenanceBannerRequest.ends_at:type_name -> google.protobuf.Timestamp
+	1054, // 350: relay.server.v1.AdminSetMaintenanceBannerRequest.starts_at:type_name -> google.protobuf.Timestamp
+	1054, // 351: relay.server.v1.AdminSetMaintenanceBannerRequest.ends_at:type_name -> google.protobuf.Timestamp
 	364,  // 352: relay.server.v1.AdminSetMaintenanceBannerResponse.banner:type_name -> relay.server.v1.AdminMaintenanceBanner
 	364,  // 353: relay.server.v1.AdminClearMaintenanceBannerResponse.banner:type_name -> relay.server.v1.AdminMaintenanceBanner
-	1052, // 354: relay.server.v1.AdminFreeCreationPause.paused_at:type_name -> google.protobuf.Timestamp
-	1052, // 355: relay.server.v1.AdminFreeCreationPause.resumed_at:type_name -> google.protobuf.Timestamp
+	1054, // 354: relay.server.v1.AdminFreeCreationPause.paused_at:type_name -> google.protobuf.Timestamp
+	1054, // 355: relay.server.v1.AdminFreeCreationPause.resumed_at:type_name -> google.protobuf.Timestamp
 	371,  // 356: relay.server.v1.AdminGetFreeCreationPauseResponse.current:type_name -> relay.server.v1.AdminFreeCreationPause
 	371,  // 357: relay.server.v1.AdminGetFreeCreationPauseResponse.recent:type_name -> relay.server.v1.AdminFreeCreationPause
 	371,  // 358: relay.server.v1.AdminPauseFreeCreationResponse.pause:type_name -> relay.server.v1.AdminFreeCreationPause
@@ -75154,14 +75241,14 @@ var file_relay_server_v1_server_proto_depIdxs = []int32{
 	381,  // 361: relay.server.v1.ConnectionConfig.policy_rules:type_name -> relay.server.v1.PolicyRule
 	380,  // 362: relay.server.v1.ConnectionConfig.risk:type_name -> relay.server.v1.RiskConfig
 	379,  // 363: relay.server.v1.ConnectionConfig.masking_detectors:type_name -> relay.server.v1.MaskingDetector
-	1042, // 364: relay.server.v1.RiskConfig.actions:type_name -> relay.server.v1.RiskConfig.ActionsEntry
+	1044, // 364: relay.server.v1.RiskConfig.actions:type_name -> relay.server.v1.RiskConfig.ActionsEntry
 	378,  // 365: relay.server.v1.Connection.config:type_name -> relay.server.v1.ConnectionConfig
 	382,  // 366: relay.server.v1.Connection.tls:type_name -> relay.server.v1.TLSConfig
 	383,  // 367: relay.server.v1.Connection.host_tls:type_name -> relay.server.v1.HostTLSConfig
 	385,  // 368: relay.server.v1.Connection.pools:type_name -> relay.server.v1.ConnectionPoolRef
 	386,  // 369: relay.server.v1.Connection.pool_health:type_name -> relay.server.v1.ConnectionPoolHealth
 	5,    // 370: relay.server.v1.Connection.access_level:type_name -> relay.server.v1.ConnectionAccessLevel
-	1052, // 371: relay.server.v1.ConnectionPoolHealth.checked_at:type_name -> google.protobuf.Timestamp
+	1054, // 371: relay.server.v1.ConnectionPoolHealth.checked_at:type_name -> google.protobuf.Timestamp
 	384,  // 372: relay.server.v1.ListConnectionsResponse.connections:type_name -> relay.server.v1.Connection
 	384,  // 373: relay.server.v1.ListManagedDatabaseConnectionsResponse.connections:type_name -> relay.server.v1.Connection
 	384,  // 374: relay.server.v1.GetConnectionsResponse.connections:type_name -> relay.server.v1.Connection
@@ -75175,20 +75262,20 @@ var file_relay_server_v1_server_proto_depIdxs = []int32{
 	384,  // 382: relay.server.v1.UpdateConnectionResponse.connection:type_name -> relay.server.v1.Connection
 	385,  // 383: relay.server.v1.SetConnectionPoolsRequest.pools:type_name -> relay.server.v1.ConnectionPoolRef
 	385,  // 384: relay.server.v1.SetConnectionPoolsResponse.pools:type_name -> relay.server.v1.ConnectionPoolRef
-	1052, // 385: relay.server.v1.IssueTunnelTokenResponse.expires_at:type_name -> google.protobuf.Timestamp
+	1054, // 385: relay.server.v1.IssueTunnelTokenResponse.expires_at:type_name -> google.protobuf.Timestamp
 	384,  // 386: relay.server.v1.ResolveTunnelTokenResponse.connection:type_name -> relay.server.v1.Connection
 	388,  // 387: relay.server.v1.ResolveTunnelTokenResponse.session_identity:type_name -> relay.server.v1.SessionIdentity
-	1052, // 388: relay.server.v1.TunnelSessionReport.started_at:type_name -> google.protobuf.Timestamp
-	1052, // 389: relay.server.v1.TunnelSessionReport.ended_at:type_name -> google.protobuf.Timestamp
+	1054, // 388: relay.server.v1.TunnelSessionReport.started_at:type_name -> google.protobuf.Timestamp
+	1054, // 389: relay.server.v1.TunnelSessionReport.ended_at:type_name -> google.protobuf.Timestamp
 	407,  // 390: relay.server.v1.ReportTunnelSessionsRequest.sessions:type_name -> relay.server.v1.TunnelSessionReport
-	1051, // 391: relay.server.v1.ReportTunnelSessionsResponse.lease_ttl:type_name -> google.protobuf.Duration
-	1043, // 392: relay.server.v1.ReportTunnelSessionsResponse.connection_policy_revisions:type_name -> relay.server.v1.ReportTunnelSessionsResponse.ConnectionPolicyRevisionsEntry
-	1044, // 393: relay.server.v1.ReportTunnelSessionsResponse.revoked_session_reasons:type_name -> relay.server.v1.ReportTunnelSessionsResponse.RevokedSessionReasonsEntry
+	1053, // 391: relay.server.v1.ReportTunnelSessionsResponse.lease_ttl:type_name -> google.protobuf.Duration
+	1045, // 392: relay.server.v1.ReportTunnelSessionsResponse.connection_policy_revisions:type_name -> relay.server.v1.ReportTunnelSessionsResponse.ConnectionPolicyRevisionsEntry
+	1046, // 393: relay.server.v1.ReportTunnelSessionsResponse.revoked_session_reasons:type_name -> relay.server.v1.ReportTunnelSessionsResponse.RevokedSessionReasonsEntry
 	6,    // 394: relay.server.v1.SessionCloseReason.kind:type_name -> relay.server.v1.SessionCloseKind
-	1052, // 395: relay.server.v1.SessionCloseReason.expired_at:type_name -> google.protobuf.Timestamp
-	1052, // 396: relay.server.v1.TunnelSession.started_at:type_name -> google.protobuf.Timestamp
-	1052, // 397: relay.server.v1.TunnelSession.last_seen_at:type_name -> google.protobuf.Timestamp
-	1052, // 398: relay.server.v1.TunnelSession.ended_at:type_name -> google.protobuf.Timestamp
+	1054, // 395: relay.server.v1.SessionCloseReason.expired_at:type_name -> google.protobuf.Timestamp
+	1054, // 396: relay.server.v1.TunnelSession.started_at:type_name -> google.protobuf.Timestamp
+	1054, // 397: relay.server.v1.TunnelSession.last_seen_at:type_name -> google.protobuf.Timestamp
+	1054, // 398: relay.server.v1.TunnelSession.ended_at:type_name -> google.protobuf.Timestamp
 	411,  // 399: relay.server.v1.ListTunnelSessionsResponse.sessions:type_name -> relay.server.v1.TunnelSession
 	381,  // 400: relay.server.v1.Policy.rules:type_name -> relay.server.v1.PolicyRule
 	416,  // 401: relay.server.v1.Policy.approval:type_name -> relay.server.v1.PolicyApprovalSettings
@@ -75201,17 +75288,17 @@ var file_relay_server_v1_server_proto_depIdxs = []int32{
 	416,  // 408: relay.server.v1.UpdatePolicyRequest.approval:type_name -> relay.server.v1.PolicyApprovalSettings
 	415,  // 409: relay.server.v1.UpdatePolicyResponse.policy:type_name -> relay.server.v1.Policy
 	7,    // 410: relay.server.v1.QueryApproval.status:type_name -> relay.server.v1.QueryApprovalStatus
-	1052, // 411: relay.server.v1.QueryApproval.created_at:type_name -> google.protobuf.Timestamp
-	1052, // 412: relay.server.v1.QueryApproval.decided_at:type_name -> google.protobuf.Timestamp
-	1052, // 413: relay.server.v1.QueryApproval.expires_at:type_name -> google.protobuf.Timestamp
-	1052, // 414: relay.server.v1.QueryApproval.executed_at:type_name -> google.protobuf.Timestamp
+	1054, // 411: relay.server.v1.QueryApproval.created_at:type_name -> google.protobuf.Timestamp
+	1054, // 412: relay.server.v1.QueryApproval.decided_at:type_name -> google.protobuf.Timestamp
+	1054, // 413: relay.server.v1.QueryApproval.expires_at:type_name -> google.protobuf.Timestamp
+	1054, // 414: relay.server.v1.QueryApproval.executed_at:type_name -> google.protobuf.Timestamp
 	433,  // 415: relay.server.v1.QueryApproval.detached_result:type_name -> relay.server.v1.QueryApprovalDetachedResult
 	432,  // 416: relay.server.v1.QueryApproval.votes:type_name -> relay.server.v1.ApprovalVote
-	1052, // 417: relay.server.v1.ApprovalVote.created_at:type_name -> google.protobuf.Timestamp
-	1052, // 418: relay.server.v1.QueryApprovalDetachedResult.finished_at:type_name -> google.protobuf.Timestamp
+	1054, // 417: relay.server.v1.ApprovalVote.created_at:type_name -> google.protobuf.Timestamp
+	1054, // 418: relay.server.v1.QueryApprovalDetachedResult.finished_at:type_name -> google.protobuf.Timestamp
 	436,  // 419: relay.server.v1.RequestQueryApprovalRequest.replay_params:type_name -> relay.server.v1.DetachParam
 	7,    // 420: relay.server.v1.RequestQueryApprovalResponse.status:type_name -> relay.server.v1.QueryApprovalStatus
-	1052, // 421: relay.server.v1.RequestQueryApprovalResponse.expires_at:type_name -> google.protobuf.Timestamp
+	1054, // 421: relay.server.v1.RequestQueryApprovalResponse.expires_at:type_name -> google.protobuf.Timestamp
 	436,  // 422: relay.server.v1.DetachQueryApprovalRequest.params:type_name -> relay.server.v1.DetachParam
 	7,    // 423: relay.server.v1.DetachQueryApprovalResponse.status:type_name -> relay.server.v1.QueryApprovalStatus
 	431,  // 424: relay.server.v1.CancelQueryApprovalResponse.approval:type_name -> relay.server.v1.QueryApproval
@@ -75223,10 +75310,10 @@ var file_relay_server_v1_server_proto_depIdxs = []int32{
 	431,  // 430: relay.server.v1.DenyQueryApprovalResponse.approval:type_name -> relay.server.v1.QueryApproval
 	453,  // 431: relay.server.v1.ApprovalIntegration.webhook:type_name -> relay.server.v1.ApprovalWebhookConfig
 	454,  // 432: relay.server.v1.ApprovalIntegration.jira:type_name -> relay.server.v1.ApprovalJiraConfig
-	1052, // 433: relay.server.v1.ApprovalIntegration.created_at:type_name -> google.protobuf.Timestamp
-	1052, // 434: relay.server.v1.ApprovalIntegration.updated_at:type_name -> google.protobuf.Timestamp
+	1054, // 433: relay.server.v1.ApprovalIntegration.created_at:type_name -> google.protobuf.Timestamp
+	1054, // 434: relay.server.v1.ApprovalIntegration.updated_at:type_name -> google.protobuf.Timestamp
 	452,  // 435: relay.server.v1.ApprovalIntegration.slack:type_name -> relay.server.v1.ApprovalSlackConfig
-	1052, // 436: relay.server.v1.ApprovalIntegration.last_inbound_at:type_name -> google.protobuf.Timestamp
+	1054, // 436: relay.server.v1.ApprovalIntegration.last_inbound_at:type_name -> google.protobuf.Timestamp
 	451,  // 437: relay.server.v1.ListApprovalIntegrationsResponse.integrations:type_name -> relay.server.v1.ApprovalIntegration
 	453,  // 438: relay.server.v1.UpsertApprovalIntegrationRequest.webhook:type_name -> relay.server.v1.ApprovalWebhookConfig
 	454,  // 439: relay.server.v1.UpsertApprovalIntegrationRequest.jira:type_name -> relay.server.v1.ApprovalJiraConfig
@@ -75235,85 +75322,85 @@ var file_relay_server_v1_server_proto_depIdxs = []int32{
 	414,  // 442: relay.server.v1.ListConnectionGroupsResponse.groups:type_name -> relay.server.v1.ConnectionGroup
 	414,  // 443: relay.server.v1.CreateConnectionGroupResponse.group:type_name -> relay.server.v1.ConnectionGroup
 	414,  // 444: relay.server.v1.UpdateConnectionGroupResponse.group:type_name -> relay.server.v1.ConnectionGroup
-	1052, // 445: relay.server.v1.AccessGrant.created_at:type_name -> google.protobuf.Timestamp
-	1052, // 446: relay.server.v1.AccessGrant.expires_at:type_name -> google.protobuf.Timestamp
+	1054, // 445: relay.server.v1.AccessGrant.created_at:type_name -> google.protobuf.Timestamp
+	1054, // 446: relay.server.v1.AccessGrant.expires_at:type_name -> google.protobuf.Timestamp
 	473,  // 447: relay.server.v1.ListAccessGrantsResponse.grants:type_name -> relay.server.v1.AccessGrant
-	1052, // 448: relay.server.v1.CreateAccessGrantRequest.expires_at:type_name -> google.protobuf.Timestamp
+	1054, // 448: relay.server.v1.CreateAccessGrantRequest.expires_at:type_name -> google.protobuf.Timestamp
 	473,  // 449: relay.server.v1.CreateAccessGrantResponse.grant:type_name -> relay.server.v1.AccessGrant
 	480,  // 450: relay.server.v1.ListTeamsResponse.teams:type_name -> relay.server.v1.Team
 	480,  // 451: relay.server.v1.CreateTeamResponse.team:type_name -> relay.server.v1.Team
 	491,  // 452: relay.server.v1.ListMembersResponse.members:type_name -> relay.server.v1.OrgMember
 	491,  // 453: relay.server.v1.UpdateMemberResponse.member:type_name -> relay.server.v1.OrgMember
-	1052, // 454: relay.server.v1.Session.created_at:type_name -> google.protobuf.Timestamp
-	1052, // 455: relay.server.v1.Session.expires_at:type_name -> google.protobuf.Timestamp
-	1052, // 456: relay.server.v1.Session.last_used_at:type_name -> google.protobuf.Timestamp
+	1054, // 454: relay.server.v1.Session.created_at:type_name -> google.protobuf.Timestamp
+	1054, // 455: relay.server.v1.Session.expires_at:type_name -> google.protobuf.Timestamp
+	1054, // 456: relay.server.v1.Session.last_used_at:type_name -> google.protobuf.Timestamp
 	506,  // 457: relay.server.v1.ListSessionsResponse.sessions:type_name -> relay.server.v1.Session
-	1052, // 458: relay.server.v1.APIKey.created_at:type_name -> google.protobuf.Timestamp
-	1052, // 459: relay.server.v1.APIKey.expires_at:type_name -> google.protobuf.Timestamp
-	1052, // 460: relay.server.v1.APIKey.last_used_at:type_name -> google.protobuf.Timestamp
+	1054, // 458: relay.server.v1.APIKey.created_at:type_name -> google.protobuf.Timestamp
+	1054, // 459: relay.server.v1.APIKey.expires_at:type_name -> google.protobuf.Timestamp
+	1054, // 460: relay.server.v1.APIKey.last_used_at:type_name -> google.protobuf.Timestamp
 	511,  // 461: relay.server.v1.CreateAPIKeyResponse.key:type_name -> relay.server.v1.APIKey
 	511,  // 462: relay.server.v1.ListAPIKeysResponse.keys:type_name -> relay.server.v1.APIKey
 	511,  // 463: relay.server.v1.UpdateAPIKeyResponse.key:type_name -> relay.server.v1.APIKey
-	1052, // 464: relay.server.v1.ServiceAccount.created_at:type_name -> google.protobuf.Timestamp
-	1052, // 465: relay.server.v1.ServiceAccount.updated_at:type_name -> google.protobuf.Timestamp
+	1054, // 464: relay.server.v1.ServiceAccount.created_at:type_name -> google.protobuf.Timestamp
+	1054, // 465: relay.server.v1.ServiceAccount.updated_at:type_name -> google.protobuf.Timestamp
 	520,  // 466: relay.server.v1.ListServiceAccountsResponse.service_accounts:type_name -> relay.server.v1.ServiceAccount
 	520,  // 467: relay.server.v1.CreateServiceAccountResponse.service_account:type_name -> relay.server.v1.ServiceAccount
 	520,  // 468: relay.server.v1.UpdateServiceAccountResponse.service_account:type_name -> relay.server.v1.ServiceAccount
 	511,  // 469: relay.server.v1.MoveAPIKeyToServiceAccountResponse.key:type_name -> relay.server.v1.APIKey
-	1052, // 470: relay.server.v1.Invitation.created_at:type_name -> google.protobuf.Timestamp
-	1052, // 471: relay.server.v1.Invitation.expires_at:type_name -> google.protobuf.Timestamp
+	1054, // 470: relay.server.v1.Invitation.created_at:type_name -> google.protobuf.Timestamp
+	1054, // 471: relay.server.v1.Invitation.expires_at:type_name -> google.protobuf.Timestamp
 	531,  // 472: relay.server.v1.Invitation.workspace_roles:type_name -> relay.server.v1.WorkspaceRoleAssignment
 	531,  // 473: relay.server.v1.InviteMemberRequest.workspace_roles:type_name -> relay.server.v1.WorkspaceRoleAssignment
 	532,  // 474: relay.server.v1.InviteMemberResponse.invitation:type_name -> relay.server.v1.Invitation
 	532,  // 475: relay.server.v1.ListInvitationsResponse.invitations:type_name -> relay.server.v1.Invitation
-	1052, // 476: relay.server.v1.GetInvitationResponse.expires_at:type_name -> google.protobuf.Timestamp
+	1054, // 476: relay.server.v1.GetInvitationResponse.expires_at:type_name -> google.protobuf.Timestamp
 	531,  // 477: relay.server.v1.GetInvitationResponse.workspace_roles:type_name -> relay.server.v1.WorkspaceRoleAssignment
 	216,  // 478: relay.server.v1.AcceptInvitationResponse.organization:type_name -> relay.server.v1.Organization
-	1052, // 479: relay.server.v1.AgentInfo.created_at:type_name -> google.protobuf.Timestamp
-	1052, // 480: relay.server.v1.AgentInfo.last_heartbeat_at:type_name -> google.protobuf.Timestamp
+	1054, // 479: relay.server.v1.AgentInfo.created_at:type_name -> google.protobuf.Timestamp
+	1054, // 480: relay.server.v1.AgentInfo.last_heartbeat_at:type_name -> google.protobuf.Timestamp
 	543,  // 481: relay.server.v1.ListAgentsResponse.agents:type_name -> relay.server.v1.AgentInfo
-	1052, // 482: relay.server.v1.CreateEnrollmentTokenResponse.expires_at:type_name -> google.protobuf.Timestamp
-	1052, // 483: relay.server.v1.EnrollmentTokenInfo.created_at:type_name -> google.protobuf.Timestamp
-	1052, // 484: relay.server.v1.EnrollmentTokenInfo.expires_at:type_name -> google.protobuf.Timestamp
-	1052, // 485: relay.server.v1.EnrollmentTokenInfo.used_at:type_name -> google.protobuf.Timestamp
+	1054, // 482: relay.server.v1.CreateEnrollmentTokenResponse.expires_at:type_name -> google.protobuf.Timestamp
+	1054, // 483: relay.server.v1.EnrollmentTokenInfo.created_at:type_name -> google.protobuf.Timestamp
+	1054, // 484: relay.server.v1.EnrollmentTokenInfo.expires_at:type_name -> google.protobuf.Timestamp
+	1054, // 485: relay.server.v1.EnrollmentTokenInfo.used_at:type_name -> google.protobuf.Timestamp
 	550,  // 486: relay.server.v1.ListEnrollmentTokensResponse.tokens:type_name -> relay.server.v1.EnrollmentTokenInfo
 	557,  // 487: relay.server.v1.HeartbeatRequest.connection_statuses:type_name -> relay.server.v1.ConnectionHealthStatus
 	383,  // 488: relay.server.v1.HeartbeatConnection.host_tls:type_name -> relay.server.v1.HostTLSConfig
 	559,  // 489: relay.server.v1.HeartbeatResponse.connections:type_name -> relay.server.v1.HeartbeatConnection
-	1052, // 490: relay.server.v1.AuditEvent.occurred_at:type_name -> google.protobuf.Timestamp
+	1054, // 490: relay.server.v1.AuditEvent.occurred_at:type_name -> google.protobuf.Timestamp
 	563,  // 491: relay.server.v1.IngestAuditEventsRequest.events:type_name -> relay.server.v1.AuditEvent
-	1052, // 492: relay.server.v1.ListAuditLogsRequest.since:type_name -> google.protobuf.Timestamp
-	1052, // 493: relay.server.v1.ListAuditLogsRequest.until:type_name -> google.protobuf.Timestamp
+	1054, // 492: relay.server.v1.ListAuditLogsRequest.since:type_name -> google.protobuf.Timestamp
+	1054, // 493: relay.server.v1.ListAuditLogsRequest.until:type_name -> google.protobuf.Timestamp
 	563,  // 494: relay.server.v1.ListAuditLogsResponse.events:type_name -> relay.server.v1.AuditEvent
-	1052, // 495: relay.server.v1.AuditMetricsBucket.bucket:type_name -> google.protobuf.Timestamp
+	1054, // 495: relay.server.v1.AuditMetricsBucket.bucket:type_name -> google.protobuf.Timestamp
 	569,  // 496: relay.server.v1.GetAuditMetricsResponse.buckets:type_name -> relay.server.v1.AuditMetricsBucket
-	1052, // 497: relay.server.v1.GetDatabaseAnalyticsRequest.start:type_name -> google.protobuf.Timestamp
-	1052, // 498: relay.server.v1.GetDatabaseAnalyticsRequest.end:type_name -> google.protobuf.Timestamp
-	1052, // 499: relay.server.v1.DatabaseMetricPoint.ts:type_name -> google.protobuf.Timestamp
+	1054, // 497: relay.server.v1.GetDatabaseAnalyticsRequest.start:type_name -> google.protobuf.Timestamp
+	1054, // 498: relay.server.v1.GetDatabaseAnalyticsRequest.end:type_name -> google.protobuf.Timestamp
+	1054, // 499: relay.server.v1.DatabaseMetricPoint.ts:type_name -> google.protobuf.Timestamp
 	572,  // 500: relay.server.v1.DatabaseMetricSeries.points:type_name -> relay.server.v1.DatabaseMetricPoint
 	573,  // 501: relay.server.v1.GetDatabaseAnalyticsResponse.series:type_name -> relay.server.v1.DatabaseMetricSeries
-	1052, // 502: relay.server.v1.GetDatabaseAnalyticsResponse.window_start:type_name -> google.protobuf.Timestamp
-	1052, // 503: relay.server.v1.GetDatabaseTopSQLRequest.start:type_name -> google.protobuf.Timestamp
-	1052, // 504: relay.server.v1.GetDatabaseTopSQLRequest.end:type_name -> google.protobuf.Timestamp
-	1052, // 505: relay.server.v1.DatabaseSQLTimelinePoint.ts:type_name -> google.protobuf.Timestamp
+	1054, // 502: relay.server.v1.GetDatabaseAnalyticsResponse.window_start:type_name -> google.protobuf.Timestamp
+	1054, // 503: relay.server.v1.GetDatabaseTopSQLRequest.start:type_name -> google.protobuf.Timestamp
+	1054, // 504: relay.server.v1.GetDatabaseTopSQLRequest.end:type_name -> google.protobuf.Timestamp
+	1054, // 505: relay.server.v1.DatabaseSQLTimelinePoint.ts:type_name -> google.protobuf.Timestamp
 	576,  // 506: relay.server.v1.GetDatabaseTopSQLResponse.statements:type_name -> relay.server.v1.DatabaseSQLStatement
 	577,  // 507: relay.server.v1.GetDatabaseTopSQLResponse.timeline:type_name -> relay.server.v1.DatabaseSQLTimelinePoint
-	1052, // 508: relay.server.v1.GetDatabaseTopSQLResponse.window_start:type_name -> google.protobuf.Timestamp
-	1052, // 509: relay.server.v1.GetDatabaseLoadRequest.start:type_name -> google.protobuf.Timestamp
-	1052, // 510: relay.server.v1.GetDatabaseLoadRequest.end:type_name -> google.protobuf.Timestamp
-	1052, // 511: relay.server.v1.DatabaseLoadPoint.ts:type_name -> google.protobuf.Timestamp
+	1054, // 508: relay.server.v1.GetDatabaseTopSQLResponse.window_start:type_name -> google.protobuf.Timestamp
+	1054, // 509: relay.server.v1.GetDatabaseLoadRequest.start:type_name -> google.protobuf.Timestamp
+	1054, // 510: relay.server.v1.GetDatabaseLoadRequest.end:type_name -> google.protobuf.Timestamp
+	1054, // 511: relay.server.v1.DatabaseLoadPoint.ts:type_name -> google.protobuf.Timestamp
 	580,  // 512: relay.server.v1.DatabaseLoadSeries.points:type_name -> relay.server.v1.DatabaseLoadPoint
 	581,  // 513: relay.server.v1.GetDatabaseLoadResponse.series:type_name -> relay.server.v1.DatabaseLoadSeries
 	580,  // 514: relay.server.v1.GetDatabaseLoadResponse.total:type_name -> relay.server.v1.DatabaseLoadPoint
-	1052, // 515: relay.server.v1.GetDatabaseLoadResponse.window_start:type_name -> google.protobuf.Timestamp
+	1054, // 515: relay.server.v1.GetDatabaseLoadResponse.window_start:type_name -> google.protobuf.Timestamp
 	583,  // 516: relay.server.v1.ListDatabaseAlarmMetricsResponse.metrics:type_name -> relay.server.v1.DatabaseAlarmMetric
 	586,  // 517: relay.server.v1.DatabaseAlarm.spec:type_name -> relay.server.v1.DatabaseAlarmSpec
-	1052, // 518: relay.server.v1.DatabaseAlarm.state_since:type_name -> google.protobuf.Timestamp
-	1052, // 519: relay.server.v1.DatabaseAlarm.last_evaluated_at:type_name -> google.protobuf.Timestamp
-	1052, // 520: relay.server.v1.DatabaseAlarm.last_notified_at:type_name -> google.protobuf.Timestamp
-	1052, // 521: relay.server.v1.DatabaseAlarm.created_at:type_name -> google.protobuf.Timestamp
-	1052, // 522: relay.server.v1.DatabaseAlarm.updated_at:type_name -> google.protobuf.Timestamp
-	1052, // 523: relay.server.v1.DatabaseAlarmEvent.occurred_at:type_name -> google.protobuf.Timestamp
+	1054, // 518: relay.server.v1.DatabaseAlarm.state_since:type_name -> google.protobuf.Timestamp
+	1054, // 519: relay.server.v1.DatabaseAlarm.last_evaluated_at:type_name -> google.protobuf.Timestamp
+	1054, // 520: relay.server.v1.DatabaseAlarm.last_notified_at:type_name -> google.protobuf.Timestamp
+	1054, // 521: relay.server.v1.DatabaseAlarm.created_at:type_name -> google.protobuf.Timestamp
+	1054, // 522: relay.server.v1.DatabaseAlarm.updated_at:type_name -> google.protobuf.Timestamp
+	1054, // 523: relay.server.v1.DatabaseAlarmEvent.occurred_at:type_name -> google.protobuf.Timestamp
 	586,  // 524: relay.server.v1.CreateDatabaseAlarmRequest.spec:type_name -> relay.server.v1.DatabaseAlarmSpec
 	587,  // 525: relay.server.v1.CreateDatabaseAlarmResponse.alarm:type_name -> relay.server.v1.DatabaseAlarm
 	586,  // 526: relay.server.v1.UpdateDatabaseAlarmRequest.spec:type_name -> relay.server.v1.DatabaseAlarmSpec
@@ -75324,43 +75411,43 @@ var file_relay_server_v1_server_proto_depIdxs = []int32{
 	603,  // 531: relay.server.v1.ApplyRecommendedDatabaseAlarmsRequest.selections:type_name -> relay.server.v1.RecommendedAlarmSelection
 	605,  // 532: relay.server.v1.ApplyRecommendedDatabaseAlarmsResponse.results:type_name -> relay.server.v1.RecommendedAlarmResult
 	588,  // 533: relay.server.v1.ListDatabaseAlarmEventsResponse.events:type_name -> relay.server.v1.DatabaseAlarmEvent
-	1052, // 534: relay.server.v1.GetDatabaseLocksRequest.start:type_name -> google.protobuf.Timestamp
-	1052, // 535: relay.server.v1.GetDatabaseLocksRequest.end:type_name -> google.protobuf.Timestamp
-	1052, // 536: relay.server.v1.GetDatabaseLocksRequest.at:type_name -> google.protobuf.Timestamp
+	1054, // 534: relay.server.v1.GetDatabaseLocksRequest.start:type_name -> google.protobuf.Timestamp
+	1054, // 535: relay.server.v1.GetDatabaseLocksRequest.end:type_name -> google.protobuf.Timestamp
+	1054, // 536: relay.server.v1.GetDatabaseLocksRequest.at:type_name -> google.protobuf.Timestamp
 	611,  // 537: relay.server.v1.DatabaseLockEpisode.session:type_name -> relay.server.v1.DatabaseLockSession
-	1052, // 538: relay.server.v1.DatabaseLockEpisode.first_seen:type_name -> google.protobuf.Timestamp
-	1052, // 539: relay.server.v1.DatabaseLockEpisode.last_seen:type_name -> google.protobuf.Timestamp
-	1052, // 540: relay.server.v1.DatabaseLockTimelinePoint.ts:type_name -> google.protobuf.Timestamp
-	1052, // 541: relay.server.v1.GetDatabaseLocksResponse.snapshot_ts:type_name -> google.protobuf.Timestamp
+	1054, // 538: relay.server.v1.DatabaseLockEpisode.first_seen:type_name -> google.protobuf.Timestamp
+	1054, // 539: relay.server.v1.DatabaseLockEpisode.last_seen:type_name -> google.protobuf.Timestamp
+	1054, // 540: relay.server.v1.DatabaseLockTimelinePoint.ts:type_name -> google.protobuf.Timestamp
+	1054, // 541: relay.server.v1.GetDatabaseLocksResponse.snapshot_ts:type_name -> google.protobuf.Timestamp
 	611,  // 542: relay.server.v1.GetDatabaseLocksResponse.snapshot:type_name -> relay.server.v1.DatabaseLockSession
 	612,  // 543: relay.server.v1.GetDatabaseLocksResponse.history:type_name -> relay.server.v1.DatabaseLockEpisode
 	613,  // 544: relay.server.v1.GetDatabaseLocksResponse.timeline:type_name -> relay.server.v1.DatabaseLockTimelinePoint
-	1052, // 545: relay.server.v1.GetDatabaseLocksResponse.window_start:type_name -> google.protobuf.Timestamp
-	1052, // 546: relay.server.v1.DatabaseEvent.occurred_at:type_name -> google.protobuf.Timestamp
-	1045, // 547: relay.server.v1.DatabaseEvent.metadata:type_name -> relay.server.v1.DatabaseEvent.MetadataEntry
-	1052, // 548: relay.server.v1.RecordDatabaseEventRequest.occurred_at:type_name -> google.protobuf.Timestamp
-	1046, // 549: relay.server.v1.RecordDatabaseEventRequest.metadata:type_name -> relay.server.v1.RecordDatabaseEventRequest.MetadataEntry
-	1052, // 550: relay.server.v1.ListDatabaseEventsRequest.start:type_name -> google.protobuf.Timestamp
-	1052, // 551: relay.server.v1.ListDatabaseEventsRequest.end:type_name -> google.protobuf.Timestamp
+	1054, // 545: relay.server.v1.GetDatabaseLocksResponse.window_start:type_name -> google.protobuf.Timestamp
+	1054, // 546: relay.server.v1.DatabaseEvent.occurred_at:type_name -> google.protobuf.Timestamp
+	1047, // 547: relay.server.v1.DatabaseEvent.metadata:type_name -> relay.server.v1.DatabaseEvent.MetadataEntry
+	1054, // 548: relay.server.v1.RecordDatabaseEventRequest.occurred_at:type_name -> google.protobuf.Timestamp
+	1048, // 549: relay.server.v1.RecordDatabaseEventRequest.metadata:type_name -> relay.server.v1.RecordDatabaseEventRequest.MetadataEntry
+	1054, // 550: relay.server.v1.ListDatabaseEventsRequest.start:type_name -> google.protobuf.Timestamp
+	1054, // 551: relay.server.v1.ListDatabaseEventsRequest.end:type_name -> google.protobuf.Timestamp
 	615,  // 552: relay.server.v1.ListDatabaseEventsResponse.events:type_name -> relay.server.v1.DatabaseEvent
 	620,  // 553: relay.server.v1.DatabaseEventSubscription.spec:type_name -> relay.server.v1.DatabaseEventSubscriptionSpec
-	1052, // 554: relay.server.v1.DatabaseEventSubscription.created_at:type_name -> google.protobuf.Timestamp
-	1052, // 555: relay.server.v1.DatabaseEventSubscription.updated_at:type_name -> google.protobuf.Timestamp
+	1054, // 554: relay.server.v1.DatabaseEventSubscription.created_at:type_name -> google.protobuf.Timestamp
+	1054, // 555: relay.server.v1.DatabaseEventSubscription.updated_at:type_name -> google.protobuf.Timestamp
 	620,  // 556: relay.server.v1.CreateDatabaseEventSubscriptionRequest.spec:type_name -> relay.server.v1.DatabaseEventSubscriptionSpec
 	621,  // 557: relay.server.v1.CreateDatabaseEventSubscriptionResponse.subscription:type_name -> relay.server.v1.DatabaseEventSubscription
 	620,  // 558: relay.server.v1.UpdateDatabaseEventSubscriptionRequest.spec:type_name -> relay.server.v1.DatabaseEventSubscriptionSpec
 	621,  // 559: relay.server.v1.UpdateDatabaseEventSubscriptionResponse.subscription:type_name -> relay.server.v1.DatabaseEventSubscription
 	621,  // 560: relay.server.v1.ListDatabaseEventSubscriptionsResponse.subscriptions:type_name -> relay.server.v1.DatabaseEventSubscription
-	1052, // 561: relay.server.v1.AgentPoolInfo.created_at:type_name -> google.protobuf.Timestamp
-	1052, // 562: relay.server.v1.AgentPoolInfo.sleeping_since:type_name -> google.protobuf.Timestamp
-	1052, // 563: relay.server.v1.AgentPoolInfo.starting_since:type_name -> google.protobuf.Timestamp
+	1054, // 561: relay.server.v1.AgentPoolInfo.created_at:type_name -> google.protobuf.Timestamp
+	1054, // 562: relay.server.v1.AgentPoolInfo.sleeping_since:type_name -> google.protobuf.Timestamp
+	1054, // 563: relay.server.v1.AgentPoolInfo.starting_since:type_name -> google.protobuf.Timestamp
 	630,  // 564: relay.server.v1.ListAgentPoolsResponse.pools:type_name -> relay.server.v1.AgentPoolInfo
 	630,  // 565: relay.server.v1.CreateAgentPoolResponse.pool:type_name -> relay.server.v1.AgentPoolInfo
 	630,  // 566: relay.server.v1.UpdateAgentPoolResponse.pool:type_name -> relay.server.v1.AgentPoolInfo
 	630,  // 567: relay.server.v1.WakeAgentPoolResponse.pool:type_name -> relay.server.v1.AgentPoolInfo
-	1052, // 568: relay.server.v1.ActivityLogEntry.created_at:type_name -> google.protobuf.Timestamp
+	1054, // 568: relay.server.v1.ActivityLogEntry.created_at:type_name -> google.protobuf.Timestamp
 	641,  // 569: relay.server.v1.ListActivityLogsResponse.entries:type_name -> relay.server.v1.ActivityLogEntry
-	1047, // 570: relay.server.v1.EmitActivityRequest.metadata:type_name -> relay.server.v1.EmitActivityRequest.MetadataEntry
+	1049, // 570: relay.server.v1.EmitActivityRequest.metadata:type_name -> relay.server.v1.EmitActivityRequest.MetadataEntry
 	641,  // 571: relay.server.v1.ListOrgActivityLogsResponse.entries:type_name -> relay.server.v1.ActivityLogEntry
 	216,  // 572: relay.server.v1.OrganizationMembership.organization:type_name -> relay.server.v1.Organization
 	648,  // 573: relay.server.v1.ListUserOrganizationsResponse.memberships:type_name -> relay.server.v1.OrganizationMembership
@@ -75368,273 +75455,273 @@ var file_relay_server_v1_server_proto_depIdxs = []int32{
 	216,  // 575: relay.server.v1.CreateOrganizationResponse.organization:type_name -> relay.server.v1.Organization
 	216,  // 576: relay.server.v1.UpdateOrganizationResponse.organization:type_name -> relay.server.v1.Organization
 	216,  // 577: relay.server.v1.UpdateOrganizationSettingsResponse.organization:type_name -> relay.server.v1.Organization
-	663,  // 578: relay.server.v1.ListWorkspacesResponse.workspaces:type_name -> relay.server.v1.Workspace
-	663,  // 579: relay.server.v1.GetWorkspaceResponse.workspace:type_name -> relay.server.v1.Workspace
-	663,  // 580: relay.server.v1.CreateWorkspaceResponse.workspace:type_name -> relay.server.v1.Workspace
-	663,  // 581: relay.server.v1.UpdateWorkspaceResponse.workspace:type_name -> relay.server.v1.Workspace
-	676,  // 582: relay.server.v1.GetOrgOverviewResponse.workspaces:type_name -> relay.server.v1.WorkspaceOverview
+	665,  // 578: relay.server.v1.ListWorkspacesResponse.workspaces:type_name -> relay.server.v1.Workspace
+	665,  // 579: relay.server.v1.GetWorkspaceResponse.workspace:type_name -> relay.server.v1.Workspace
+	665,  // 580: relay.server.v1.CreateWorkspaceResponse.workspace:type_name -> relay.server.v1.Workspace
+	665,  // 581: relay.server.v1.UpdateWorkspaceResponse.workspace:type_name -> relay.server.v1.Workspace
+	678,  // 582: relay.server.v1.GetOrgOverviewResponse.workspaces:type_name -> relay.server.v1.WorkspaceOverview
 	569,  // 583: relay.server.v1.GetOrgOverviewResponse.audit_buckets:type_name -> relay.server.v1.AuditMetricsBucket
-	677,  // 584: relay.server.v1.GetOrgOverviewResponse.workspace_spend:type_name -> relay.server.v1.WorkspaceSpend
-	678,  // 585: relay.server.v1.ListWorkspaceMembersResponse.members:type_name -> relay.server.v1.WorkspaceMember
-	695,  // 586: relay.server.v1.ListWorkspaceMembersResponse.team_infos:type_name -> relay.server.v1.WorkspaceTeamInfo
-	695,  // 587: relay.server.v1.ListWorkspaceTeamsResponse.teams:type_name -> relay.server.v1.WorkspaceTeamInfo
-	696,  // 588: relay.server.v1.ListRolesResponse.roles:type_name -> relay.server.v1.RoleInfo
-	696,  // 589: relay.server.v1.CreateRoleResponse.role:type_name -> relay.server.v1.RoleInfo
-	696,  // 590: relay.server.v1.UpdateRoleResponse.role:type_name -> relay.server.v1.RoleInfo
-	705,  // 591: relay.server.v1.ListRoleBindingsResponse.bindings:type_name -> relay.server.v1.RoleBinding
-	705,  // 592: relay.server.v1.CreateRoleBindingResponse.binding:type_name -> relay.server.v1.RoleBinding
-	1052, // 593: relay.server.v1.GetBillingStateResponse.current_period_end:type_name -> google.protobuf.Timestamp
-	713,  // 594: relay.server.v1.GetBillingStateResponse.projection:type_name -> relay.server.v1.BillingProjectionLine
-	712,  // 595: relay.server.v1.GetBillingStateResponse.catalog:type_name -> relay.server.v1.BillingMachineTier
-	1052, // 596: relay.server.v1.GetBillingStateResponse.current_cycle_start:type_name -> google.protobuf.Timestamp
-	1052, // 597: relay.server.v1.GetBillingStateResponse.current_cycle_end:type_name -> google.protobuf.Timestamp
-	714,  // 598: relay.server.v1.GetBillingStateResponse.current_cycle_usage:type_name -> relay.server.v1.BillingCycleUsageLine
-	1052, // 599: relay.server.v1.GetBillingStateResponse.delinquent_since:type_name -> google.protobuf.Timestamp
-	1052, // 600: relay.server.v1.GetBillingStateResponse.restrict_at:type_name -> google.protobuf.Timestamp
-	1052, // 601: relay.server.v1.GetBillingStateResponse.suspend_at:type_name -> google.protobuf.Timestamp
-	1052, // 602: relay.server.v1.GetBillingStateResponse.scheduled_at:type_name -> google.protobuf.Timestamp
-	1052, // 603: relay.server.v1.GetBillingStateResponse.overage_suspend_at:type_name -> google.protobuf.Timestamp
+	679,  // 584: relay.server.v1.GetOrgOverviewResponse.workspace_spend:type_name -> relay.server.v1.WorkspaceSpend
+	680,  // 585: relay.server.v1.ListWorkspaceMembersResponse.members:type_name -> relay.server.v1.WorkspaceMember
+	697,  // 586: relay.server.v1.ListWorkspaceMembersResponse.team_infos:type_name -> relay.server.v1.WorkspaceTeamInfo
+	697,  // 587: relay.server.v1.ListWorkspaceTeamsResponse.teams:type_name -> relay.server.v1.WorkspaceTeamInfo
+	698,  // 588: relay.server.v1.ListRolesResponse.roles:type_name -> relay.server.v1.RoleInfo
+	698,  // 589: relay.server.v1.CreateRoleResponse.role:type_name -> relay.server.v1.RoleInfo
+	698,  // 590: relay.server.v1.UpdateRoleResponse.role:type_name -> relay.server.v1.RoleInfo
+	707,  // 591: relay.server.v1.ListRoleBindingsResponse.bindings:type_name -> relay.server.v1.RoleBinding
+	707,  // 592: relay.server.v1.CreateRoleBindingResponse.binding:type_name -> relay.server.v1.RoleBinding
+	1054, // 593: relay.server.v1.GetBillingStateResponse.current_period_end:type_name -> google.protobuf.Timestamp
+	715,  // 594: relay.server.v1.GetBillingStateResponse.projection:type_name -> relay.server.v1.BillingProjectionLine
+	714,  // 595: relay.server.v1.GetBillingStateResponse.catalog:type_name -> relay.server.v1.BillingMachineTier
+	1054, // 596: relay.server.v1.GetBillingStateResponse.current_cycle_start:type_name -> google.protobuf.Timestamp
+	1054, // 597: relay.server.v1.GetBillingStateResponse.current_cycle_end:type_name -> google.protobuf.Timestamp
+	716,  // 598: relay.server.v1.GetBillingStateResponse.current_cycle_usage:type_name -> relay.server.v1.BillingCycleUsageLine
+	1054, // 599: relay.server.v1.GetBillingStateResponse.delinquent_since:type_name -> google.protobuf.Timestamp
+	1054, // 600: relay.server.v1.GetBillingStateResponse.restrict_at:type_name -> google.protobuf.Timestamp
+	1054, // 601: relay.server.v1.GetBillingStateResponse.suspend_at:type_name -> google.protobuf.Timestamp
+	1054, // 602: relay.server.v1.GetBillingStateResponse.scheduled_at:type_name -> google.protobuf.Timestamp
+	1054, // 603: relay.server.v1.GetBillingStateResponse.overage_suspend_at:type_name -> google.protobuf.Timestamp
 	264,  // 604: relay.server.v1.GetBillingStateResponse.billing_pauses:type_name -> relay.server.v1.BillingProcessPause
-	719,  // 605: relay.server.v1.GetBillingStateResponse.plan_features:type_name -> relay.server.v1.BillingPlanFeatures
-	720,  // 606: relay.server.v1.GetBillingStateResponse.feature_requirements:type_name -> relay.server.v1.BillingFeatureRequirement
-	717,  // 607: relay.server.v1.GetBillingStateResponse.continuous_backup_tiers:type_name -> relay.server.v1.BillingBackupPriceTier
-	718,  // 608: relay.server.v1.GetBillingStateResponse.backup_lines:type_name -> relay.server.v1.BillingBackupLine
-	1010, // 609: relay.server.v1.GetBillingStateResponse.promo:type_name -> relay.server.v1.BillingPromo
-	1052, // 610: relay.server.v1.ChangePlanResponse.effective_at:type_name -> google.protobuf.Timestamp
-	1052, // 611: relay.server.v1.ExternalSecretSource.created_at:type_name -> google.protobuf.Timestamp
-	1052, // 612: relay.server.v1.ExternalSecretSource.updated_at:type_name -> google.protobuf.Timestamp
-	727,  // 613: relay.server.v1.ListExternalSecretSourcesResponse.sources:type_name -> relay.server.v1.ExternalSecretSource
-	727,  // 614: relay.server.v1.GetExternalSecretSourceResponse.source:type_name -> relay.server.v1.ExternalSecretSource
-	727,  // 615: relay.server.v1.UpsertExternalSecretSourceResponse.source:type_name -> relay.server.v1.ExternalSecretSource
-	1052, // 616: relay.server.v1.CloudIntegration.last_verified_at:type_name -> google.protobuf.Timestamp
-	1052, // 617: relay.server.v1.CloudIntegration.created_at:type_name -> google.protobuf.Timestamp
-	1052, // 618: relay.server.v1.CloudIntegration.updated_at:type_name -> google.protobuf.Timestamp
-	740,  // 619: relay.server.v1.ListCloudIntegrationsResponse.integrations:type_name -> relay.server.v1.CloudIntegration
-	740,  // 620: relay.server.v1.GetCloudIntegrationResponse.integration:type_name -> relay.server.v1.CloudIntegration
-	740,  // 621: relay.server.v1.CreateCloudIntegrationResponse.integration:type_name -> relay.server.v1.CloudIntegration
-	740,  // 622: relay.server.v1.UpdateCloudIntegrationResponse.integration:type_name -> relay.server.v1.CloudIntegration
-	740,  // 623: relay.server.v1.TestCloudIntegrationResponse.integration:type_name -> relay.server.v1.CloudIntegration
-	755,  // 624: relay.server.v1.LogStream.scope:type_name -> relay.server.v1.ClusterScope
-	1052, // 625: relay.server.v1.LogStream.last_shipped_at:type_name -> google.protobuf.Timestamp
-	756,  // 626: relay.server.v1.GetLogStreamResponse.stream:type_name -> relay.server.v1.LogStream
-	756,  // 627: relay.server.v1.UpsertLogStreamRequest.stream:type_name -> relay.server.v1.LogStream
-	756,  // 628: relay.server.v1.UpsertLogStreamResponse.stream:type_name -> relay.server.v1.LogStream
-	1052, // 629: relay.server.v1.LogDestinationHealth.last_success_at:type_name -> google.protobuf.Timestamp
-	1052, // 630: relay.server.v1.LogDestinationHealth.last_error_at:type_name -> google.protobuf.Timestamp
-	763,  // 631: relay.server.v1.LogDestination.config:type_name -> relay.server.v1.LogDestinationConfig
-	764,  // 632: relay.server.v1.LogDestination.health:type_name -> relay.server.v1.LogDestinationHealth
-	1052, // 633: relay.server.v1.LogDestination.created_at:type_name -> google.protobuf.Timestamp
-	1052, // 634: relay.server.v1.LogDestination.updated_at:type_name -> google.protobuf.Timestamp
-	765,  // 635: relay.server.v1.ListLogDestinationsResponse.destinations:type_name -> relay.server.v1.LogDestination
-	765,  // 636: relay.server.v1.CreateLogDestinationRequest.destination:type_name -> relay.server.v1.LogDestination
-	765,  // 637: relay.server.v1.CreateLogDestinationResponse.destination:type_name -> relay.server.v1.LogDestination
-	765,  // 638: relay.server.v1.UpdateLogDestinationRequest.destination:type_name -> relay.server.v1.LogDestination
-	765,  // 639: relay.server.v1.UpdateLogDestinationResponse.destination:type_name -> relay.server.v1.LogDestination
-	755,  // 640: relay.server.v1.BackupAutoExport.scope:type_name -> relay.server.v1.ClusterScope
-	1052, // 641: relay.server.v1.BackupAutoExport.last_exported_at:type_name -> google.protobuf.Timestamp
-	776,  // 642: relay.server.v1.GetBackupAutoExportResponse.auto_export:type_name -> relay.server.v1.BackupAutoExport
-	776,  // 643: relay.server.v1.UpsertBackupAutoExportRequest.auto_export:type_name -> relay.server.v1.BackupAutoExport
-	776,  // 644: relay.server.v1.UpsertBackupAutoExportResponse.auto_export:type_name -> relay.server.v1.BackupAutoExport
-	1052, // 645: relay.server.v1.SupportReport.created_at:type_name -> google.protobuf.Timestamp
-	1052, // 646: relay.server.v1.SupportReport.updated_at:type_name -> google.protobuf.Timestamp
-	787,  // 647: relay.server.v1.SupportReport.attachments:type_name -> relay.server.v1.SupportAttachment
-	1052, // 648: relay.server.v1.SupportReportComment.created_at:type_name -> google.protobuf.Timestamp
-	787,  // 649: relay.server.v1.SupportReportComment.attachments:type_name -> relay.server.v1.SupportAttachment
-	1052, // 650: relay.server.v1.SupportAttachment.created_at:type_name -> google.protobuf.Timestamp
-	788,  // 651: relay.server.v1.CreateSupportReportRequest.attachments:type_name -> relay.server.v1.SupportAttachmentUpload
-	785,  // 652: relay.server.v1.CreateSupportReportResponse.report:type_name -> relay.server.v1.SupportReport
-	785,  // 653: relay.server.v1.ListSupportReportsResponse.reports:type_name -> relay.server.v1.SupportReport
-	785,  // 654: relay.server.v1.GetSupportReportResponse.report:type_name -> relay.server.v1.SupportReport
-	786,  // 655: relay.server.v1.GetSupportReportResponse.comments:type_name -> relay.server.v1.SupportReportComment
-	788,  // 656: relay.server.v1.AddSupportReportCommentRequest.attachments:type_name -> relay.server.v1.SupportAttachmentUpload
-	786,  // 657: relay.server.v1.AddSupportReportCommentResponse.comment:type_name -> relay.server.v1.SupportReportComment
-	787,  // 658: relay.server.v1.GetSupportAttachmentResponse.attachment:type_name -> relay.server.v1.SupportAttachment
-	785,  // 659: relay.server.v1.UpdateSupportReportStatusResponse.report:type_name -> relay.server.v1.SupportReport
-	785,  // 660: relay.server.v1.AdminListSupportReportsResponse.reports:type_name -> relay.server.v1.SupportReport
-	785,  // 661: relay.server.v1.AdminGetSupportReportResponse.report:type_name -> relay.server.v1.SupportReport
-	786,  // 662: relay.server.v1.AdminGetSupportReportResponse.comments:type_name -> relay.server.v1.SupportReportComment
-	788,  // 663: relay.server.v1.AdminAddSupportReportCommentRequest.attachments:type_name -> relay.server.v1.SupportAttachmentUpload
-	786,  // 664: relay.server.v1.AdminAddSupportReportCommentResponse.comment:type_name -> relay.server.v1.SupportReportComment
-	787,  // 665: relay.server.v1.AdminGetSupportAttachmentResponse.attachment:type_name -> relay.server.v1.SupportAttachment
-	785,  // 666: relay.server.v1.AdminUpdateSupportReportStatusResponse.report:type_name -> relay.server.v1.SupportReport
-	811,  // 667: relay.server.v1.AdminListSupportComponentsResponse.components:type_name -> relay.server.v1.SupportComponent
-	812,  // 668: relay.server.v1.AdminListSupportComponentsResponse.internal_components:type_name -> relay.server.v1.SupportInternalComponent
-	785,  // 669: relay.server.v1.AdminFileSupportReportIssueResponse.report:type_name -> relay.server.v1.SupportReport
-	1052, // 670: relay.server.v1.OrgSSOConnection.created_at:type_name -> google.protobuf.Timestamp
-	1052, // 671: relay.server.v1.OrgSSOConnection.updated_at:type_name -> google.protobuf.Timestamp
-	829,  // 672: relay.server.v1.OrgSSOConnection.jit:type_name -> relay.server.v1.SSOJITSettings
-	824,  // 673: relay.server.v1.OrgSSOConnection.attribute_mapping:type_name -> relay.server.v1.SSOAttributeMapping
-	825,  // 674: relay.server.v1.OrgSSOConnection.client_secrets:type_name -> relay.server.v1.SSOClientSecret
-	819,  // 675: relay.server.v1.OrgSSOConnection.saml:type_name -> relay.server.v1.SSOSAMLSettings
-	818,  // 676: relay.server.v1.OrgSSOConnection.client_keys:type_name -> relay.server.v1.SSOClientKey
-	1052, // 677: relay.server.v1.SSOClientKey.created_at:type_name -> google.protobuf.Timestamp
-	1052, // 678: relay.server.v1.SSOClientKey.not_after:type_name -> google.protobuf.Timestamp
-	821,  // 679: relay.server.v1.SSOSAMLSettings.certs:type_name -> relay.server.v1.SSOSAMLCertificate
-	1052, // 680: relay.server.v1.SSOSAMLSettings.metadata_fetched_at:type_name -> google.protobuf.Timestamp
-	820,  // 681: relay.server.v1.SSOSAMLSettings.sp_keys:type_name -> relay.server.v1.SSOSAMLSPKey
-	1052, // 682: relay.server.v1.SSOSAMLSPKey.created_at:type_name -> google.protobuf.Timestamp
-	1052, // 683: relay.server.v1.SSOSAMLSPKey.not_after:type_name -> google.protobuf.Timestamp
-	1052, // 684: relay.server.v1.SSOSAMLCertificate.not_after:type_name -> google.protobuf.Timestamp
-	823,  // 685: relay.server.v1.SSOSAMLInput.manual:type_name -> relay.server.v1.SSOSAMLManualIdP
-	1052, // 686: relay.server.v1.SSOClientSecret.created_at:type_name -> google.protobuf.Timestamp
-	1052, // 687: relay.server.v1.SSOClientSecret.expires_at:type_name -> google.protobuf.Timestamp
-	824,  // 688: relay.server.v1.SSOProviderPreset.attribute_mapping:type_name -> relay.server.v1.SSOAttributeMapping
-	826,  // 689: relay.server.v1.ListSSOProviderPresetsResponse.presets:type_name -> relay.server.v1.SSOProviderPreset
-	830,  // 690: relay.server.v1.SSOJITSettings.default_workspaces:type_name -> relay.server.v1.SSOJITWorkspace
-	817,  // 691: relay.server.v1.GetOrgSSOConnectionResponse.connection:type_name -> relay.server.v1.OrgSSOConnection
-	829,  // 692: relay.server.v1.UpsertOrgSSOConnectionRequest.jit:type_name -> relay.server.v1.SSOJITSettings
-	824,  // 693: relay.server.v1.UpsertOrgSSOConnectionRequest.attribute_mapping:type_name -> relay.server.v1.SSOAttributeMapping
-	1052, // 694: relay.server.v1.UpsertOrgSSOConnectionRequest.client_secret_expires_at:type_name -> google.protobuf.Timestamp
-	1052, // 695: relay.server.v1.UpsertOrgSSOConnectionRequest.add_client_secret_expires_at:type_name -> google.protobuf.Timestamp
-	822,  // 696: relay.server.v1.UpsertOrgSSOConnectionRequest.saml:type_name -> relay.server.v1.SSOSAMLInput
-	817,  // 697: relay.server.v1.UpsertOrgSSOConnectionResponse.connection:type_name -> relay.server.v1.OrgSSOConnection
-	817,  // 698: relay.server.v1.ListOrgSSOConnectionsResponse.connections:type_name -> relay.server.v1.OrgSSOConnection
-	829,  // 699: relay.server.v1.CreateOrgSSOConnectionRequest.jit:type_name -> relay.server.v1.SSOJITSettings
-	824,  // 700: relay.server.v1.CreateOrgSSOConnectionRequest.attribute_mapping:type_name -> relay.server.v1.SSOAttributeMapping
-	1052, // 701: relay.server.v1.CreateOrgSSOConnectionRequest.client_secret_expires_at:type_name -> google.protobuf.Timestamp
-	822,  // 702: relay.server.v1.CreateOrgSSOConnectionRequest.saml:type_name -> relay.server.v1.SSOSAMLInput
-	817,  // 703: relay.server.v1.CreateOrgSSOConnectionResponse.connection:type_name -> relay.server.v1.OrgSSOConnection
-	856,  // 704: relay.server.v1.AssignOrgDomainSSOConnectionResponse.domain:type_name -> relay.server.v1.OrgDomain
-	846,  // 705: relay.server.v1.OrgSignInPolicy.api_key_policy:type_name -> relay.server.v1.APIKeyPolicy
-	845,  // 706: relay.server.v1.GetOrgSignInPolicyResponse.policy:type_name -> relay.server.v1.OrgSignInPolicy
-	848,  // 707: relay.server.v1.GetOrgSignInPolicyResponse.break_glass_users:type_name -> relay.server.v1.OrgBreakGlassUser
-	1052, // 708: relay.server.v1.GetOrgSignInPolicyResponse.updated_at:type_name -> google.protobuf.Timestamp
-	847,  // 709: relay.server.v1.GetOrgSignInPolicyResponse.noncompliant_api_keys:type_name -> relay.server.v1.APIKeyPolicyViolation
-	845,  // 710: relay.server.v1.PreviewOrgSignInPolicyRequest.policy:type_name -> relay.server.v1.OrgSignInPolicy
-	851,  // 711: relay.server.v1.PreviewOrgSignInPolicyResponse.members:type_name -> relay.server.v1.OrgSignInPolicyAffectedMember
-	847,  // 712: relay.server.v1.PreviewOrgSignInPolicyResponse.noncompliant_api_keys:type_name -> relay.server.v1.APIKeyPolicyViolation
-	845,  // 713: relay.server.v1.UpdateOrgSignInPolicyRequest.policy:type_name -> relay.server.v1.OrgSignInPolicy
-	845,  // 714: relay.server.v1.UpdateOrgSignInPolicyResponse.policy:type_name -> relay.server.v1.OrgSignInPolicy
-	848,  // 715: relay.server.v1.UpdateOrgSignInPolicyResponse.break_glass_users:type_name -> relay.server.v1.OrgBreakGlassUser
-	1052, // 716: relay.server.v1.UpdateOrgSignInPolicyResponse.updated_at:type_name -> google.protobuf.Timestamp
-	1052, // 717: relay.server.v1.OrgDomain.verified_at:type_name -> google.protobuf.Timestamp
-	1052, // 718: relay.server.v1.OrgDomain.last_checked_at:type_name -> google.protobuf.Timestamp
-	1052, // 719: relay.server.v1.OrgDomain.created_at:type_name -> google.protobuf.Timestamp
-	856,  // 720: relay.server.v1.ListOrgDomainsResponse.domains:type_name -> relay.server.v1.OrgDomain
-	856,  // 721: relay.server.v1.AddOrgDomainResponse.domain:type_name -> relay.server.v1.OrgDomain
-	856,  // 722: relay.server.v1.VerifyOrgDomainResponse.domain:type_name -> relay.server.v1.OrgDomain
-	1052, // 723: relay.server.v1.SCIMToken.created_at:type_name -> google.protobuf.Timestamp
-	1052, // 724: relay.server.v1.SCIMToken.expires_at:type_name -> google.protobuf.Timestamp
-	1052, // 725: relay.server.v1.SCIMToken.last_used_at:type_name -> google.protobuf.Timestamp
-	865,  // 726: relay.server.v1.CreateSCIMTokenResponse.token:type_name -> relay.server.v1.SCIMToken
-	865,  // 727: relay.server.v1.ListSCIMTokensResponse.tokens:type_name -> relay.server.v1.SCIMToken
-	865,  // 728: relay.server.v1.RotateSCIMTokenResponse.token:type_name -> relay.server.v1.SCIMToken
-	874,  // 729: relay.server.v1.ListIdPGroupMappingsResponse.mappings:type_name -> relay.server.v1.IdPGroupMapping
-	874,  // 730: relay.server.v1.UpsertIdPGroupMappingResponse.mapping:type_name -> relay.server.v1.IdPGroupMapping
-	856,  // 731: relay.server.v1.AdminOrgDomain.domain:type_name -> relay.server.v1.OrgDomain
-	881,  // 732: relay.server.v1.AdminListOrgDomainsResponse.domains:type_name -> relay.server.v1.AdminOrgDomain
-	886,  // 733: relay.server.v1.ListPostgreSQLExtensionsResponse.extensions:type_name -> relay.server.v1.PostgreSQLExtensionInfo
-	1052, // 734: relay.server.v1.FeatureFlag.updated_at:type_name -> google.protobuf.Timestamp
-	1052, // 735: relay.server.v1.FeatureFlag.created_at:type_name -> google.protobuf.Timestamp
-	889,  // 736: relay.server.v1.AdminListFeatureFlagsResponse.flags:type_name -> relay.server.v1.FeatureFlag
-	889,  // 737: relay.server.v1.AdminGetFeatureFlagResponse.flag:type_name -> relay.server.v1.FeatureFlag
-	889,  // 738: relay.server.v1.AdminCreateFeatureFlagResponse.flag:type_name -> relay.server.v1.FeatureFlag
-	889,  // 739: relay.server.v1.AdminUpdateFeatureFlagResponse.flag:type_name -> relay.server.v1.FeatureFlag
-	889,  // 740: relay.server.v1.AdminArchiveFeatureFlagResponse.flag:type_name -> relay.server.v1.FeatureFlag
-	904,  // 741: relay.server.v1.AdminListFeatureFlagOrganizationsResponse.organizations:type_name -> relay.server.v1.FeatureFlagOrganization
-	1052, // 742: relay.server.v1.GetLicenseStatusResponse.expires_at:type_name -> google.protobuf.Timestamp
-	1052, // 743: relay.server.v1.GetLicenseStatusResponse.grace_ends_at:type_name -> google.protobuf.Timestamp
-	1052, // 744: relay.server.v1.GetLicenseStatusResponse.support_until:type_name -> google.protobuf.Timestamp
-	1052, // 745: relay.server.v1.ExportLicenseUsageReportRequest.start:type_name -> google.protobuf.Timestamp
-	1052, // 746: relay.server.v1.ExportLicenseUsageReportRequest.end:type_name -> google.protobuf.Timestamp
-	1052, // 747: relay.server.v1.RunbookSource.last_synced_at:type_name -> google.protobuf.Timestamp
-	1052, // 748: relay.server.v1.RunbookSource.created_at:type_name -> google.protobuf.Timestamp
-	1052, // 749: relay.server.v1.RunbookSource.updated_at:type_name -> google.protobuf.Timestamp
-	1052, // 750: relay.server.v1.RunbookSource.last_webhook_at:type_name -> google.protobuf.Timestamp
-	913,  // 751: relay.server.v1.GetRunbookSourceResponse.source:type_name -> relay.server.v1.RunbookSource
-	913,  // 752: relay.server.v1.UpsertRunbookSourceResponse.source:type_name -> relay.server.v1.RunbookSource
-	913,  // 753: relay.server.v1.RotateRunbookWebhookSecretResponse.source:type_name -> relay.server.v1.RunbookSource
-	925,  // 754: relay.server.v1.SyncRunbooksResponse.errors:type_name -> relay.server.v1.RunbookSyncError
-	927,  // 755: relay.server.v1.Runbook.params:type_name -> relay.server.v1.RunbookParam
-	1052, // 756: relay.server.v1.Runbook.updated_at:type_name -> google.protobuf.Timestamp
-	928,  // 757: relay.server.v1.ListRunbooksResponse.runbooks:type_name -> relay.server.v1.Runbook
-	928,  // 758: relay.server.v1.GetRunbookResponse.runbook:type_name -> relay.server.v1.Runbook
-	1048, // 759: relay.server.v1.RunRunbookRequest.params:type_name -> relay.server.v1.RunRunbookRequest.ParamsEntry
-	935,  // 760: relay.server.v1.RunbookRow.values:type_name -> relay.server.v1.RunbookValue
-	1049, // 761: relay.server.v1.RunbookExecution.params:type_name -> relay.server.v1.RunbookExecution.ParamsEntry
-	936,  // 762: relay.server.v1.RunbookExecution.rows:type_name -> relay.server.v1.RunbookRow
-	1052, // 763: relay.server.v1.RunbookExecution.created_at:type_name -> google.protobuf.Timestamp
-	1052, // 764: relay.server.v1.RunbookExecution.started_at:type_name -> google.protobuf.Timestamp
-	1052, // 765: relay.server.v1.RunbookExecution.finished_at:type_name -> google.protobuf.Timestamp
-	937,  // 766: relay.server.v1.GetRunbookExecutionResponse.execution:type_name -> relay.server.v1.RunbookExecution
-	937,  // 767: relay.server.v1.ListRunbookExecutionsResponse.executions:type_name -> relay.server.v1.RunbookExecution
+	721,  // 605: relay.server.v1.GetBillingStateResponse.plan_features:type_name -> relay.server.v1.BillingPlanFeatures
+	722,  // 606: relay.server.v1.GetBillingStateResponse.feature_requirements:type_name -> relay.server.v1.BillingFeatureRequirement
+	719,  // 607: relay.server.v1.GetBillingStateResponse.continuous_backup_tiers:type_name -> relay.server.v1.BillingBackupPriceTier
+	720,  // 608: relay.server.v1.GetBillingStateResponse.backup_lines:type_name -> relay.server.v1.BillingBackupLine
+	1012, // 609: relay.server.v1.GetBillingStateResponse.promo:type_name -> relay.server.v1.BillingPromo
+	1054, // 610: relay.server.v1.ChangePlanResponse.effective_at:type_name -> google.protobuf.Timestamp
+	1054, // 611: relay.server.v1.ExternalSecretSource.created_at:type_name -> google.protobuf.Timestamp
+	1054, // 612: relay.server.v1.ExternalSecretSource.updated_at:type_name -> google.protobuf.Timestamp
+	729,  // 613: relay.server.v1.ListExternalSecretSourcesResponse.sources:type_name -> relay.server.v1.ExternalSecretSource
+	729,  // 614: relay.server.v1.GetExternalSecretSourceResponse.source:type_name -> relay.server.v1.ExternalSecretSource
+	729,  // 615: relay.server.v1.UpsertExternalSecretSourceResponse.source:type_name -> relay.server.v1.ExternalSecretSource
+	1054, // 616: relay.server.v1.CloudIntegration.last_verified_at:type_name -> google.protobuf.Timestamp
+	1054, // 617: relay.server.v1.CloudIntegration.created_at:type_name -> google.protobuf.Timestamp
+	1054, // 618: relay.server.v1.CloudIntegration.updated_at:type_name -> google.protobuf.Timestamp
+	742,  // 619: relay.server.v1.ListCloudIntegrationsResponse.integrations:type_name -> relay.server.v1.CloudIntegration
+	742,  // 620: relay.server.v1.GetCloudIntegrationResponse.integration:type_name -> relay.server.v1.CloudIntegration
+	742,  // 621: relay.server.v1.CreateCloudIntegrationResponse.integration:type_name -> relay.server.v1.CloudIntegration
+	742,  // 622: relay.server.v1.UpdateCloudIntegrationResponse.integration:type_name -> relay.server.v1.CloudIntegration
+	742,  // 623: relay.server.v1.TestCloudIntegrationResponse.integration:type_name -> relay.server.v1.CloudIntegration
+	757,  // 624: relay.server.v1.LogStream.scope:type_name -> relay.server.v1.ClusterScope
+	1054, // 625: relay.server.v1.LogStream.last_shipped_at:type_name -> google.protobuf.Timestamp
+	758,  // 626: relay.server.v1.GetLogStreamResponse.stream:type_name -> relay.server.v1.LogStream
+	758,  // 627: relay.server.v1.UpsertLogStreamRequest.stream:type_name -> relay.server.v1.LogStream
+	758,  // 628: relay.server.v1.UpsertLogStreamResponse.stream:type_name -> relay.server.v1.LogStream
+	1054, // 629: relay.server.v1.LogDestinationHealth.last_success_at:type_name -> google.protobuf.Timestamp
+	1054, // 630: relay.server.v1.LogDestinationHealth.last_error_at:type_name -> google.protobuf.Timestamp
+	765,  // 631: relay.server.v1.LogDestination.config:type_name -> relay.server.v1.LogDestinationConfig
+	766,  // 632: relay.server.v1.LogDestination.health:type_name -> relay.server.v1.LogDestinationHealth
+	1054, // 633: relay.server.v1.LogDestination.created_at:type_name -> google.protobuf.Timestamp
+	1054, // 634: relay.server.v1.LogDestination.updated_at:type_name -> google.protobuf.Timestamp
+	767,  // 635: relay.server.v1.ListLogDestinationsResponse.destinations:type_name -> relay.server.v1.LogDestination
+	767,  // 636: relay.server.v1.CreateLogDestinationRequest.destination:type_name -> relay.server.v1.LogDestination
+	767,  // 637: relay.server.v1.CreateLogDestinationResponse.destination:type_name -> relay.server.v1.LogDestination
+	767,  // 638: relay.server.v1.UpdateLogDestinationRequest.destination:type_name -> relay.server.v1.LogDestination
+	767,  // 639: relay.server.v1.UpdateLogDestinationResponse.destination:type_name -> relay.server.v1.LogDestination
+	757,  // 640: relay.server.v1.BackupAutoExport.scope:type_name -> relay.server.v1.ClusterScope
+	1054, // 641: relay.server.v1.BackupAutoExport.last_exported_at:type_name -> google.protobuf.Timestamp
+	778,  // 642: relay.server.v1.GetBackupAutoExportResponse.auto_export:type_name -> relay.server.v1.BackupAutoExport
+	778,  // 643: relay.server.v1.UpsertBackupAutoExportRequest.auto_export:type_name -> relay.server.v1.BackupAutoExport
+	778,  // 644: relay.server.v1.UpsertBackupAutoExportResponse.auto_export:type_name -> relay.server.v1.BackupAutoExport
+	1054, // 645: relay.server.v1.SupportReport.created_at:type_name -> google.protobuf.Timestamp
+	1054, // 646: relay.server.v1.SupportReport.updated_at:type_name -> google.protobuf.Timestamp
+	789,  // 647: relay.server.v1.SupportReport.attachments:type_name -> relay.server.v1.SupportAttachment
+	1054, // 648: relay.server.v1.SupportReportComment.created_at:type_name -> google.protobuf.Timestamp
+	789,  // 649: relay.server.v1.SupportReportComment.attachments:type_name -> relay.server.v1.SupportAttachment
+	1054, // 650: relay.server.v1.SupportAttachment.created_at:type_name -> google.protobuf.Timestamp
+	790,  // 651: relay.server.v1.CreateSupportReportRequest.attachments:type_name -> relay.server.v1.SupportAttachmentUpload
+	787,  // 652: relay.server.v1.CreateSupportReportResponse.report:type_name -> relay.server.v1.SupportReport
+	787,  // 653: relay.server.v1.ListSupportReportsResponse.reports:type_name -> relay.server.v1.SupportReport
+	787,  // 654: relay.server.v1.GetSupportReportResponse.report:type_name -> relay.server.v1.SupportReport
+	788,  // 655: relay.server.v1.GetSupportReportResponse.comments:type_name -> relay.server.v1.SupportReportComment
+	790,  // 656: relay.server.v1.AddSupportReportCommentRequest.attachments:type_name -> relay.server.v1.SupportAttachmentUpload
+	788,  // 657: relay.server.v1.AddSupportReportCommentResponse.comment:type_name -> relay.server.v1.SupportReportComment
+	789,  // 658: relay.server.v1.GetSupportAttachmentResponse.attachment:type_name -> relay.server.v1.SupportAttachment
+	787,  // 659: relay.server.v1.UpdateSupportReportStatusResponse.report:type_name -> relay.server.v1.SupportReport
+	787,  // 660: relay.server.v1.AdminListSupportReportsResponse.reports:type_name -> relay.server.v1.SupportReport
+	787,  // 661: relay.server.v1.AdminGetSupportReportResponse.report:type_name -> relay.server.v1.SupportReport
+	788,  // 662: relay.server.v1.AdminGetSupportReportResponse.comments:type_name -> relay.server.v1.SupportReportComment
+	790,  // 663: relay.server.v1.AdminAddSupportReportCommentRequest.attachments:type_name -> relay.server.v1.SupportAttachmentUpload
+	788,  // 664: relay.server.v1.AdminAddSupportReportCommentResponse.comment:type_name -> relay.server.v1.SupportReportComment
+	789,  // 665: relay.server.v1.AdminGetSupportAttachmentResponse.attachment:type_name -> relay.server.v1.SupportAttachment
+	787,  // 666: relay.server.v1.AdminUpdateSupportReportStatusResponse.report:type_name -> relay.server.v1.SupportReport
+	813,  // 667: relay.server.v1.AdminListSupportComponentsResponse.components:type_name -> relay.server.v1.SupportComponent
+	814,  // 668: relay.server.v1.AdminListSupportComponentsResponse.internal_components:type_name -> relay.server.v1.SupportInternalComponent
+	787,  // 669: relay.server.v1.AdminFileSupportReportIssueResponse.report:type_name -> relay.server.v1.SupportReport
+	1054, // 670: relay.server.v1.OrgSSOConnection.created_at:type_name -> google.protobuf.Timestamp
+	1054, // 671: relay.server.v1.OrgSSOConnection.updated_at:type_name -> google.protobuf.Timestamp
+	831,  // 672: relay.server.v1.OrgSSOConnection.jit:type_name -> relay.server.v1.SSOJITSettings
+	826,  // 673: relay.server.v1.OrgSSOConnection.attribute_mapping:type_name -> relay.server.v1.SSOAttributeMapping
+	827,  // 674: relay.server.v1.OrgSSOConnection.client_secrets:type_name -> relay.server.v1.SSOClientSecret
+	821,  // 675: relay.server.v1.OrgSSOConnection.saml:type_name -> relay.server.v1.SSOSAMLSettings
+	820,  // 676: relay.server.v1.OrgSSOConnection.client_keys:type_name -> relay.server.v1.SSOClientKey
+	1054, // 677: relay.server.v1.SSOClientKey.created_at:type_name -> google.protobuf.Timestamp
+	1054, // 678: relay.server.v1.SSOClientKey.not_after:type_name -> google.protobuf.Timestamp
+	823,  // 679: relay.server.v1.SSOSAMLSettings.certs:type_name -> relay.server.v1.SSOSAMLCertificate
+	1054, // 680: relay.server.v1.SSOSAMLSettings.metadata_fetched_at:type_name -> google.protobuf.Timestamp
+	822,  // 681: relay.server.v1.SSOSAMLSettings.sp_keys:type_name -> relay.server.v1.SSOSAMLSPKey
+	1054, // 682: relay.server.v1.SSOSAMLSPKey.created_at:type_name -> google.protobuf.Timestamp
+	1054, // 683: relay.server.v1.SSOSAMLSPKey.not_after:type_name -> google.protobuf.Timestamp
+	1054, // 684: relay.server.v1.SSOSAMLCertificate.not_after:type_name -> google.protobuf.Timestamp
+	825,  // 685: relay.server.v1.SSOSAMLInput.manual:type_name -> relay.server.v1.SSOSAMLManualIdP
+	1054, // 686: relay.server.v1.SSOClientSecret.created_at:type_name -> google.protobuf.Timestamp
+	1054, // 687: relay.server.v1.SSOClientSecret.expires_at:type_name -> google.protobuf.Timestamp
+	826,  // 688: relay.server.v1.SSOProviderPreset.attribute_mapping:type_name -> relay.server.v1.SSOAttributeMapping
+	828,  // 689: relay.server.v1.ListSSOProviderPresetsResponse.presets:type_name -> relay.server.v1.SSOProviderPreset
+	832,  // 690: relay.server.v1.SSOJITSettings.default_workspaces:type_name -> relay.server.v1.SSOJITWorkspace
+	819,  // 691: relay.server.v1.GetOrgSSOConnectionResponse.connection:type_name -> relay.server.v1.OrgSSOConnection
+	831,  // 692: relay.server.v1.UpsertOrgSSOConnectionRequest.jit:type_name -> relay.server.v1.SSOJITSettings
+	826,  // 693: relay.server.v1.UpsertOrgSSOConnectionRequest.attribute_mapping:type_name -> relay.server.v1.SSOAttributeMapping
+	1054, // 694: relay.server.v1.UpsertOrgSSOConnectionRequest.client_secret_expires_at:type_name -> google.protobuf.Timestamp
+	1054, // 695: relay.server.v1.UpsertOrgSSOConnectionRequest.add_client_secret_expires_at:type_name -> google.protobuf.Timestamp
+	824,  // 696: relay.server.v1.UpsertOrgSSOConnectionRequest.saml:type_name -> relay.server.v1.SSOSAMLInput
+	819,  // 697: relay.server.v1.UpsertOrgSSOConnectionResponse.connection:type_name -> relay.server.v1.OrgSSOConnection
+	819,  // 698: relay.server.v1.ListOrgSSOConnectionsResponse.connections:type_name -> relay.server.v1.OrgSSOConnection
+	831,  // 699: relay.server.v1.CreateOrgSSOConnectionRequest.jit:type_name -> relay.server.v1.SSOJITSettings
+	826,  // 700: relay.server.v1.CreateOrgSSOConnectionRequest.attribute_mapping:type_name -> relay.server.v1.SSOAttributeMapping
+	1054, // 701: relay.server.v1.CreateOrgSSOConnectionRequest.client_secret_expires_at:type_name -> google.protobuf.Timestamp
+	824,  // 702: relay.server.v1.CreateOrgSSOConnectionRequest.saml:type_name -> relay.server.v1.SSOSAMLInput
+	819,  // 703: relay.server.v1.CreateOrgSSOConnectionResponse.connection:type_name -> relay.server.v1.OrgSSOConnection
+	858,  // 704: relay.server.v1.AssignOrgDomainSSOConnectionResponse.domain:type_name -> relay.server.v1.OrgDomain
+	848,  // 705: relay.server.v1.OrgSignInPolicy.api_key_policy:type_name -> relay.server.v1.APIKeyPolicy
+	847,  // 706: relay.server.v1.GetOrgSignInPolicyResponse.policy:type_name -> relay.server.v1.OrgSignInPolicy
+	850,  // 707: relay.server.v1.GetOrgSignInPolicyResponse.break_glass_users:type_name -> relay.server.v1.OrgBreakGlassUser
+	1054, // 708: relay.server.v1.GetOrgSignInPolicyResponse.updated_at:type_name -> google.protobuf.Timestamp
+	849,  // 709: relay.server.v1.GetOrgSignInPolicyResponse.noncompliant_api_keys:type_name -> relay.server.v1.APIKeyPolicyViolation
+	847,  // 710: relay.server.v1.PreviewOrgSignInPolicyRequest.policy:type_name -> relay.server.v1.OrgSignInPolicy
+	853,  // 711: relay.server.v1.PreviewOrgSignInPolicyResponse.members:type_name -> relay.server.v1.OrgSignInPolicyAffectedMember
+	849,  // 712: relay.server.v1.PreviewOrgSignInPolicyResponse.noncompliant_api_keys:type_name -> relay.server.v1.APIKeyPolicyViolation
+	847,  // 713: relay.server.v1.UpdateOrgSignInPolicyRequest.policy:type_name -> relay.server.v1.OrgSignInPolicy
+	847,  // 714: relay.server.v1.UpdateOrgSignInPolicyResponse.policy:type_name -> relay.server.v1.OrgSignInPolicy
+	850,  // 715: relay.server.v1.UpdateOrgSignInPolicyResponse.break_glass_users:type_name -> relay.server.v1.OrgBreakGlassUser
+	1054, // 716: relay.server.v1.UpdateOrgSignInPolicyResponse.updated_at:type_name -> google.protobuf.Timestamp
+	1054, // 717: relay.server.v1.OrgDomain.verified_at:type_name -> google.protobuf.Timestamp
+	1054, // 718: relay.server.v1.OrgDomain.last_checked_at:type_name -> google.protobuf.Timestamp
+	1054, // 719: relay.server.v1.OrgDomain.created_at:type_name -> google.protobuf.Timestamp
+	858,  // 720: relay.server.v1.ListOrgDomainsResponse.domains:type_name -> relay.server.v1.OrgDomain
+	858,  // 721: relay.server.v1.AddOrgDomainResponse.domain:type_name -> relay.server.v1.OrgDomain
+	858,  // 722: relay.server.v1.VerifyOrgDomainResponse.domain:type_name -> relay.server.v1.OrgDomain
+	1054, // 723: relay.server.v1.SCIMToken.created_at:type_name -> google.protobuf.Timestamp
+	1054, // 724: relay.server.v1.SCIMToken.expires_at:type_name -> google.protobuf.Timestamp
+	1054, // 725: relay.server.v1.SCIMToken.last_used_at:type_name -> google.protobuf.Timestamp
+	867,  // 726: relay.server.v1.CreateSCIMTokenResponse.token:type_name -> relay.server.v1.SCIMToken
+	867,  // 727: relay.server.v1.ListSCIMTokensResponse.tokens:type_name -> relay.server.v1.SCIMToken
+	867,  // 728: relay.server.v1.RotateSCIMTokenResponse.token:type_name -> relay.server.v1.SCIMToken
+	876,  // 729: relay.server.v1.ListIdPGroupMappingsResponse.mappings:type_name -> relay.server.v1.IdPGroupMapping
+	876,  // 730: relay.server.v1.UpsertIdPGroupMappingResponse.mapping:type_name -> relay.server.v1.IdPGroupMapping
+	858,  // 731: relay.server.v1.AdminOrgDomain.domain:type_name -> relay.server.v1.OrgDomain
+	883,  // 732: relay.server.v1.AdminListOrgDomainsResponse.domains:type_name -> relay.server.v1.AdminOrgDomain
+	888,  // 733: relay.server.v1.ListPostgreSQLExtensionsResponse.extensions:type_name -> relay.server.v1.PostgreSQLExtensionInfo
+	1054, // 734: relay.server.v1.FeatureFlag.updated_at:type_name -> google.protobuf.Timestamp
+	1054, // 735: relay.server.v1.FeatureFlag.created_at:type_name -> google.protobuf.Timestamp
+	891,  // 736: relay.server.v1.AdminListFeatureFlagsResponse.flags:type_name -> relay.server.v1.FeatureFlag
+	891,  // 737: relay.server.v1.AdminGetFeatureFlagResponse.flag:type_name -> relay.server.v1.FeatureFlag
+	891,  // 738: relay.server.v1.AdminCreateFeatureFlagResponse.flag:type_name -> relay.server.v1.FeatureFlag
+	891,  // 739: relay.server.v1.AdminUpdateFeatureFlagResponse.flag:type_name -> relay.server.v1.FeatureFlag
+	891,  // 740: relay.server.v1.AdminArchiveFeatureFlagResponse.flag:type_name -> relay.server.v1.FeatureFlag
+	906,  // 741: relay.server.v1.AdminListFeatureFlagOrganizationsResponse.organizations:type_name -> relay.server.v1.FeatureFlagOrganization
+	1054, // 742: relay.server.v1.GetLicenseStatusResponse.expires_at:type_name -> google.protobuf.Timestamp
+	1054, // 743: relay.server.v1.GetLicenseStatusResponse.grace_ends_at:type_name -> google.protobuf.Timestamp
+	1054, // 744: relay.server.v1.GetLicenseStatusResponse.support_until:type_name -> google.protobuf.Timestamp
+	1054, // 745: relay.server.v1.ExportLicenseUsageReportRequest.start:type_name -> google.protobuf.Timestamp
+	1054, // 746: relay.server.v1.ExportLicenseUsageReportRequest.end:type_name -> google.protobuf.Timestamp
+	1054, // 747: relay.server.v1.RunbookSource.last_synced_at:type_name -> google.protobuf.Timestamp
+	1054, // 748: relay.server.v1.RunbookSource.created_at:type_name -> google.protobuf.Timestamp
+	1054, // 749: relay.server.v1.RunbookSource.updated_at:type_name -> google.protobuf.Timestamp
+	1054, // 750: relay.server.v1.RunbookSource.last_webhook_at:type_name -> google.protobuf.Timestamp
+	915,  // 751: relay.server.v1.GetRunbookSourceResponse.source:type_name -> relay.server.v1.RunbookSource
+	915,  // 752: relay.server.v1.UpsertRunbookSourceResponse.source:type_name -> relay.server.v1.RunbookSource
+	915,  // 753: relay.server.v1.RotateRunbookWebhookSecretResponse.source:type_name -> relay.server.v1.RunbookSource
+	927,  // 754: relay.server.v1.SyncRunbooksResponse.errors:type_name -> relay.server.v1.RunbookSyncError
+	929,  // 755: relay.server.v1.Runbook.params:type_name -> relay.server.v1.RunbookParam
+	1054, // 756: relay.server.v1.Runbook.updated_at:type_name -> google.protobuf.Timestamp
+	930,  // 757: relay.server.v1.ListRunbooksResponse.runbooks:type_name -> relay.server.v1.Runbook
+	930,  // 758: relay.server.v1.GetRunbookResponse.runbook:type_name -> relay.server.v1.Runbook
+	1050, // 759: relay.server.v1.RunRunbookRequest.params:type_name -> relay.server.v1.RunRunbookRequest.ParamsEntry
+	937,  // 760: relay.server.v1.RunbookRow.values:type_name -> relay.server.v1.RunbookValue
+	1051, // 761: relay.server.v1.RunbookExecution.params:type_name -> relay.server.v1.RunbookExecution.ParamsEntry
+	938,  // 762: relay.server.v1.RunbookExecution.rows:type_name -> relay.server.v1.RunbookRow
+	1054, // 763: relay.server.v1.RunbookExecution.created_at:type_name -> google.protobuf.Timestamp
+	1054, // 764: relay.server.v1.RunbookExecution.started_at:type_name -> google.protobuf.Timestamp
+	1054, // 765: relay.server.v1.RunbookExecution.finished_at:type_name -> google.protobuf.Timestamp
+	939,  // 766: relay.server.v1.GetRunbookExecutionResponse.execution:type_name -> relay.server.v1.RunbookExecution
+	939,  // 767: relay.server.v1.ListRunbookExecutionsResponse.executions:type_name -> relay.server.v1.RunbookExecution
 	384,  // 768: relay.server.v1.RunbookJob.connection:type_name -> relay.server.v1.Connection
-	943,  // 769: relay.server.v1.RunbookJob.params:type_name -> relay.server.v1.RunbookJobParam
+	945,  // 769: relay.server.v1.RunbookJob.params:type_name -> relay.server.v1.RunbookJobParam
 	388,  // 770: relay.server.v1.RunbookJob.session_identity:type_name -> relay.server.v1.SessionIdentity
-	944,  // 771: relay.server.v1.ClaimRunbookExecutionsResponse.jobs:type_name -> relay.server.v1.RunbookJob
-	936,  // 772: relay.server.v1.ReportRunbookExecutionRequest.rows:type_name -> relay.server.v1.RunbookRow
-	948,  // 773: relay.server.v1.QueryTemplateSpec.params:type_name -> relay.server.v1.QueryTemplateParam
-	1052, // 774: relay.server.v1.QueryTemplateSpec.expires_at:type_name -> google.protobuf.Timestamp
-	949,  // 775: relay.server.v1.QueryTemplateVersion.spec:type_name -> relay.server.v1.QueryTemplateSpec
-	1052, // 776: relay.server.v1.QueryTemplateVersion.created_at:type_name -> google.protobuf.Timestamp
-	1052, // 777: relay.server.v1.QueryTemplateVersion.approved_at:type_name -> google.protobuf.Timestamp
-	1052, // 778: relay.server.v1.QueryTemplateVersion.ended_at:type_name -> google.protobuf.Timestamp
-	1052, // 779: relay.server.v1.QueryTemplate.created_at:type_name -> google.protobuf.Timestamp
-	1052, // 780: relay.server.v1.QueryTemplate.updated_at:type_name -> google.protobuf.Timestamp
-	950,  // 781: relay.server.v1.QueryTemplate.current_version:type_name -> relay.server.v1.QueryTemplateVersion
-	950,  // 782: relay.server.v1.QueryTemplate.latest_version:type_name -> relay.server.v1.QueryTemplateVersion
-	949,  // 783: relay.server.v1.CreateQueryTemplateRequest.spec:type_name -> relay.server.v1.QueryTemplateSpec
-	951,  // 784: relay.server.v1.CreateQueryTemplateResponse.template:type_name -> relay.server.v1.QueryTemplate
-	953,  // 785: relay.server.v1.CreateQueryTemplateResponse.notified_integrations:type_name -> relay.server.v1.NotifiedApprovalIntegration
-	949,  // 786: relay.server.v1.UpdateQueryTemplateRequest.spec:type_name -> relay.server.v1.QueryTemplateSpec
-	950,  // 787: relay.server.v1.UpdateQueryTemplateResponse.version:type_name -> relay.server.v1.QueryTemplateVersion
-	953,  // 788: relay.server.v1.UpdateQueryTemplateResponse.notified_integrations:type_name -> relay.server.v1.NotifiedApprovalIntegration
-	951,  // 789: relay.server.v1.GetQueryTemplateResponse.template:type_name -> relay.server.v1.QueryTemplate
-	951,  // 790: relay.server.v1.ListQueryTemplatesResponse.templates:type_name -> relay.server.v1.QueryTemplate
-	950,  // 791: relay.server.v1.ListQueryTemplateVersionsResponse.versions:type_name -> relay.server.v1.QueryTemplateVersion
-	950,  // 792: relay.server.v1.ApproveQueryTemplateVersionResponse.version:type_name -> relay.server.v1.QueryTemplateVersion
-	950,  // 793: relay.server.v1.WithdrawQueryTemplateVersionResponse.version:type_name -> relay.server.v1.QueryTemplateVersion
-	951,  // 794: relay.server.v1.RevokeQueryTemplateResponse.template:type_name -> relay.server.v1.QueryTemplate
-	1050, // 795: relay.server.v1.RunQueryTemplateRequest.params:type_name -> relay.server.v1.RunQueryTemplateRequest.ParamsEntry
-	1052, // 796: relay.server.v1.MaskingClassificationReport.seen_at:type_name -> google.protobuf.Timestamp
-	971,  // 797: relay.server.v1.ReportMaskingClassificationsRequest.classifications:type_name -> relay.server.v1.MaskingClassificationReport
-	1052, // 798: relay.server.v1.MaskingClassification.first_seen_at:type_name -> google.protobuf.Timestamp
-	1052, // 799: relay.server.v1.MaskingClassification.last_seen_at:type_name -> google.protobuf.Timestamp
-	974,  // 800: relay.server.v1.ListMaskingClassificationsResponse.classifications:type_name -> relay.server.v1.MaskingClassification
-	974,  // 801: relay.server.v1.ResolveMaskingClassificationResponse.classification:type_name -> relay.server.v1.MaskingClassification
+	946,  // 771: relay.server.v1.ClaimRunbookExecutionsResponse.jobs:type_name -> relay.server.v1.RunbookJob
+	938,  // 772: relay.server.v1.ReportRunbookExecutionRequest.rows:type_name -> relay.server.v1.RunbookRow
+	950,  // 773: relay.server.v1.QueryTemplateSpec.params:type_name -> relay.server.v1.QueryTemplateParam
+	1054, // 774: relay.server.v1.QueryTemplateSpec.expires_at:type_name -> google.protobuf.Timestamp
+	951,  // 775: relay.server.v1.QueryTemplateVersion.spec:type_name -> relay.server.v1.QueryTemplateSpec
+	1054, // 776: relay.server.v1.QueryTemplateVersion.created_at:type_name -> google.protobuf.Timestamp
+	1054, // 777: relay.server.v1.QueryTemplateVersion.approved_at:type_name -> google.protobuf.Timestamp
+	1054, // 778: relay.server.v1.QueryTemplateVersion.ended_at:type_name -> google.protobuf.Timestamp
+	1054, // 779: relay.server.v1.QueryTemplate.created_at:type_name -> google.protobuf.Timestamp
+	1054, // 780: relay.server.v1.QueryTemplate.updated_at:type_name -> google.protobuf.Timestamp
+	952,  // 781: relay.server.v1.QueryTemplate.current_version:type_name -> relay.server.v1.QueryTemplateVersion
+	952,  // 782: relay.server.v1.QueryTemplate.latest_version:type_name -> relay.server.v1.QueryTemplateVersion
+	951,  // 783: relay.server.v1.CreateQueryTemplateRequest.spec:type_name -> relay.server.v1.QueryTemplateSpec
+	953,  // 784: relay.server.v1.CreateQueryTemplateResponse.template:type_name -> relay.server.v1.QueryTemplate
+	955,  // 785: relay.server.v1.CreateQueryTemplateResponse.notified_integrations:type_name -> relay.server.v1.NotifiedApprovalIntegration
+	951,  // 786: relay.server.v1.UpdateQueryTemplateRequest.spec:type_name -> relay.server.v1.QueryTemplateSpec
+	952,  // 787: relay.server.v1.UpdateQueryTemplateResponse.version:type_name -> relay.server.v1.QueryTemplateVersion
+	955,  // 788: relay.server.v1.UpdateQueryTemplateResponse.notified_integrations:type_name -> relay.server.v1.NotifiedApprovalIntegration
+	953,  // 789: relay.server.v1.GetQueryTemplateResponse.template:type_name -> relay.server.v1.QueryTemplate
+	953,  // 790: relay.server.v1.ListQueryTemplatesResponse.templates:type_name -> relay.server.v1.QueryTemplate
+	952,  // 791: relay.server.v1.ListQueryTemplateVersionsResponse.versions:type_name -> relay.server.v1.QueryTemplateVersion
+	952,  // 792: relay.server.v1.ApproveQueryTemplateVersionResponse.version:type_name -> relay.server.v1.QueryTemplateVersion
+	952,  // 793: relay.server.v1.WithdrawQueryTemplateVersionResponse.version:type_name -> relay.server.v1.QueryTemplateVersion
+	953,  // 794: relay.server.v1.RevokeQueryTemplateResponse.template:type_name -> relay.server.v1.QueryTemplate
+	1052, // 795: relay.server.v1.RunQueryTemplateRequest.params:type_name -> relay.server.v1.RunQueryTemplateRequest.ParamsEntry
+	1054, // 796: relay.server.v1.MaskingClassificationReport.seen_at:type_name -> google.protobuf.Timestamp
+	973,  // 797: relay.server.v1.ReportMaskingClassificationsRequest.classifications:type_name -> relay.server.v1.MaskingClassificationReport
+	1054, // 798: relay.server.v1.MaskingClassification.first_seen_at:type_name -> google.protobuf.Timestamp
+	1054, // 799: relay.server.v1.MaskingClassification.last_seen_at:type_name -> google.protobuf.Timestamp
+	976,  // 800: relay.server.v1.ListMaskingClassificationsResponse.classifications:type_name -> relay.server.v1.MaskingClassification
+	976,  // 801: relay.server.v1.ResolveMaskingClassificationResponse.classification:type_name -> relay.server.v1.MaskingClassification
 	384,  // 802: relay.server.v1.ResolveMaskingClassificationResponse.connection:type_name -> relay.server.v1.Connection
 	7,    // 803: relay.server.v1.AccessGrantRequest.status:type_name -> relay.server.v1.QueryApprovalStatus
-	1052, // 804: relay.server.v1.AccessGrantRequest.decided_at:type_name -> google.protobuf.Timestamp
-	1052, // 805: relay.server.v1.AccessGrantRequest.created_at:type_name -> google.protobuf.Timestamp
-	1052, // 806: relay.server.v1.AccessGrantRequest.expires_at:type_name -> google.protobuf.Timestamp
-	1052, // 807: relay.server.v1.AccessGrantRequest.grant_expires_at:type_name -> google.protobuf.Timestamp
-	1052, // 808: relay.server.v1.AccessGrantRequest.revoked_at:type_name -> google.protobuf.Timestamp
-	979,  // 809: relay.server.v1.RequestAccessGrantResponse.request:type_name -> relay.server.v1.AccessGrantRequest
+	1054, // 804: relay.server.v1.AccessGrantRequest.decided_at:type_name -> google.protobuf.Timestamp
+	1054, // 805: relay.server.v1.AccessGrantRequest.created_at:type_name -> google.protobuf.Timestamp
+	1054, // 806: relay.server.v1.AccessGrantRequest.expires_at:type_name -> google.protobuf.Timestamp
+	1054, // 807: relay.server.v1.AccessGrantRequest.grant_expires_at:type_name -> google.protobuf.Timestamp
+	1054, // 808: relay.server.v1.AccessGrantRequest.revoked_at:type_name -> google.protobuf.Timestamp
+	981,  // 809: relay.server.v1.RequestAccessGrantResponse.request:type_name -> relay.server.v1.AccessGrantRequest
 	7,    // 810: relay.server.v1.ListAccessGrantRequestsRequest.status:type_name -> relay.server.v1.QueryApprovalStatus
-	979,  // 811: relay.server.v1.ListAccessGrantRequestsResponse.requests:type_name -> relay.server.v1.AccessGrantRequest
-	979,  // 812: relay.server.v1.GetAccessGrantRequestResponse.request:type_name -> relay.server.v1.AccessGrantRequest
-	979,  // 813: relay.server.v1.ApproveAccessGrantRequestResponse.request:type_name -> relay.server.v1.AccessGrantRequest
-	979,  // 814: relay.server.v1.DenyAccessGrantRequestResponse.request:type_name -> relay.server.v1.AccessGrantRequest
-	979,  // 815: relay.server.v1.CancelAccessGrantRequestResponse.request:type_name -> relay.server.v1.AccessGrantRequest
-	979,  // 816: relay.server.v1.RevokeAccessGrantRequestResponse.request:type_name -> relay.server.v1.AccessGrantRequest
-	994,  // 817: relay.server.v1.ListRequestableConnectionsResponse.connections:type_name -> relay.server.v1.RequestableConnection
-	997,  // 818: relay.server.v1.GetAccessRequestSettingsResponse.settings:type_name -> relay.server.v1.AccessRequestSettings
-	997,  // 819: relay.server.v1.UpdateAccessRequestSettingsRequest.settings:type_name -> relay.server.v1.AccessRequestSettings
-	997,  // 820: relay.server.v1.UpdateAccessRequestSettingsResponse.settings:type_name -> relay.server.v1.AccessRequestSettings
-	1052, // 821: relay.server.v1.CreateMCPGrantResponse.expires_at:type_name -> google.protobuf.Timestamp
-	1052, // 822: relay.server.v1.RotateMCPGrantResponse.expires_at:type_name -> google.protobuf.Timestamp
-	1052, // 823: relay.server.v1.ResolveMCPGrantResponse.expires_at:type_name -> google.protobuf.Timestamp
-	1052, // 824: relay.server.v1.BillingPromo.reserved_at:type_name -> google.protobuf.Timestamp
-	1052, // 825: relay.server.v1.BillingPromo.activated_at:type_name -> google.protobuf.Timestamp
-	1052, // 826: relay.server.v1.BillingPromo.expires_at:type_name -> google.protobuf.Timestamp
-	1052, // 827: relay.server.v1.BillingPromo.closed_at:type_name -> google.protobuf.Timestamp
-	1010, // 828: relay.server.v1.RedeemPromoCodeResponse.promo:type_name -> relay.server.v1.BillingPromo
-	1052, // 829: relay.server.v1.AdminPromoCampaign.redeem_by:type_name -> google.protobuf.Timestamp
-	1052, // 830: relay.server.v1.AdminPromoCampaign.created_at:type_name -> google.protobuf.Timestamp
-	1010, // 831: relay.server.v1.AdminPromoRedemption.promo:type_name -> relay.server.v1.BillingPromo
-	1013, // 832: relay.server.v1.AdminCreatePromoCampaignResponse.campaign:type_name -> relay.server.v1.AdminPromoCampaign
-	1013, // 833: relay.server.v1.AdminListPromoCampaignsResponse.campaigns:type_name -> relay.server.v1.AdminPromoCampaign
-	1014, // 834: relay.server.v1.AdminListPromoRedemptionsResponse.redemptions:type_name -> relay.server.v1.AdminPromoRedemption
-	1052, // 835: relay.server.v1.GetAccessUsageRequest.since:type_name -> google.protobuf.Timestamp
-	1052, // 836: relay.server.v1.GetAccessUsageRequest.until:type_name -> google.protobuf.Timestamp
-	1026, // 837: relay.server.v1.AccessUsageGroup.counts:type_name -> relay.server.v1.AccessUsageCounts
-	1052, // 838: relay.server.v1.AccessUsageBucket.bucket:type_name -> google.protobuf.Timestamp
-	1026, // 839: relay.server.v1.AccessUsageBucket.counts:type_name -> relay.server.v1.AccessUsageCounts
-	1026, // 840: relay.server.v1.GetAccessUsageResponse.totals:type_name -> relay.server.v1.AccessUsageCounts
-	1027, // 841: relay.server.v1.GetAccessUsageResponse.groups:type_name -> relay.server.v1.AccessUsageGroup
-	1028, // 842: relay.server.v1.GetAccessUsageResponse.buckets:type_name -> relay.server.v1.AccessUsageBucket
-	1052, // 843: relay.server.v1.GetAccessUsageResponse.since:type_name -> google.protobuf.Timestamp
-	1052, // 844: relay.server.v1.GetAccessUsageResponse.until:type_name -> google.protobuf.Timestamp
+	981,  // 811: relay.server.v1.ListAccessGrantRequestsResponse.requests:type_name -> relay.server.v1.AccessGrantRequest
+	981,  // 812: relay.server.v1.GetAccessGrantRequestResponse.request:type_name -> relay.server.v1.AccessGrantRequest
+	981,  // 813: relay.server.v1.ApproveAccessGrantRequestResponse.request:type_name -> relay.server.v1.AccessGrantRequest
+	981,  // 814: relay.server.v1.DenyAccessGrantRequestResponse.request:type_name -> relay.server.v1.AccessGrantRequest
+	981,  // 815: relay.server.v1.CancelAccessGrantRequestResponse.request:type_name -> relay.server.v1.AccessGrantRequest
+	981,  // 816: relay.server.v1.RevokeAccessGrantRequestResponse.request:type_name -> relay.server.v1.AccessGrantRequest
+	996,  // 817: relay.server.v1.ListRequestableConnectionsResponse.connections:type_name -> relay.server.v1.RequestableConnection
+	999,  // 818: relay.server.v1.GetAccessRequestSettingsResponse.settings:type_name -> relay.server.v1.AccessRequestSettings
+	999,  // 819: relay.server.v1.UpdateAccessRequestSettingsRequest.settings:type_name -> relay.server.v1.AccessRequestSettings
+	999,  // 820: relay.server.v1.UpdateAccessRequestSettingsResponse.settings:type_name -> relay.server.v1.AccessRequestSettings
+	1054, // 821: relay.server.v1.CreateMCPGrantResponse.expires_at:type_name -> google.protobuf.Timestamp
+	1054, // 822: relay.server.v1.RotateMCPGrantResponse.expires_at:type_name -> google.protobuf.Timestamp
+	1054, // 823: relay.server.v1.ResolveMCPGrantResponse.expires_at:type_name -> google.protobuf.Timestamp
+	1054, // 824: relay.server.v1.BillingPromo.reserved_at:type_name -> google.protobuf.Timestamp
+	1054, // 825: relay.server.v1.BillingPromo.activated_at:type_name -> google.protobuf.Timestamp
+	1054, // 826: relay.server.v1.BillingPromo.expires_at:type_name -> google.protobuf.Timestamp
+	1054, // 827: relay.server.v1.BillingPromo.closed_at:type_name -> google.protobuf.Timestamp
+	1012, // 828: relay.server.v1.RedeemPromoCodeResponse.promo:type_name -> relay.server.v1.BillingPromo
+	1054, // 829: relay.server.v1.AdminPromoCampaign.redeem_by:type_name -> google.protobuf.Timestamp
+	1054, // 830: relay.server.v1.AdminPromoCampaign.created_at:type_name -> google.protobuf.Timestamp
+	1012, // 831: relay.server.v1.AdminPromoRedemption.promo:type_name -> relay.server.v1.BillingPromo
+	1015, // 832: relay.server.v1.AdminCreatePromoCampaignResponse.campaign:type_name -> relay.server.v1.AdminPromoCampaign
+	1015, // 833: relay.server.v1.AdminListPromoCampaignsResponse.campaigns:type_name -> relay.server.v1.AdminPromoCampaign
+	1016, // 834: relay.server.v1.AdminListPromoRedemptionsResponse.redemptions:type_name -> relay.server.v1.AdminPromoRedemption
+	1054, // 835: relay.server.v1.GetAccessUsageRequest.since:type_name -> google.protobuf.Timestamp
+	1054, // 836: relay.server.v1.GetAccessUsageRequest.until:type_name -> google.protobuf.Timestamp
+	1028, // 837: relay.server.v1.AccessUsageGroup.counts:type_name -> relay.server.v1.AccessUsageCounts
+	1054, // 838: relay.server.v1.AccessUsageBucket.bucket:type_name -> google.protobuf.Timestamp
+	1028, // 839: relay.server.v1.AccessUsageBucket.counts:type_name -> relay.server.v1.AccessUsageCounts
+	1028, // 840: relay.server.v1.GetAccessUsageResponse.totals:type_name -> relay.server.v1.AccessUsageCounts
+	1029, // 841: relay.server.v1.GetAccessUsageResponse.groups:type_name -> relay.server.v1.AccessUsageGroup
+	1030, // 842: relay.server.v1.GetAccessUsageResponse.buckets:type_name -> relay.server.v1.AccessUsageBucket
+	1054, // 843: relay.server.v1.GetAccessUsageResponse.since:type_name -> google.protobuf.Timestamp
+	1054, // 844: relay.server.v1.GetAccessUsageResponse.until:type_name -> google.protobuf.Timestamp
 	21,   // 845: relay.server.v1.Distribution.CloudsEntry.value:type_name -> relay.server.v1.CloudRegions
 	22,   // 846: relay.server.v1.CloudRegions.RegionsEntry.value:type_name -> relay.server.v1.RegionPlacement
 	410,  // 847: relay.server.v1.ReportTunnelSessionsResponse.RevokedSessionReasonsEntry.value:type_name -> relay.server.v1.SessionCloseReason
@@ -75664,9 +75751,9 @@ var file_relay_server_v1_server_proto_depIdxs = []int32{
 	405,  // 871: relay.server.v1.ServerService.ResolveTunnelToken:input_type -> relay.server.v1.ResolveTunnelTokenRequest
 	408,  // 872: relay.server.v1.ServerService.ReportTunnelSessions:input_type -> relay.server.v1.ReportTunnelSessionsRequest
 	412,  // 873: relay.server.v1.ServerService.ListTunnelSessions:input_type -> relay.server.v1.ListTunnelSessionsRequest
-	972,  // 874: relay.server.v1.ServerService.ReportMaskingClassifications:input_type -> relay.server.v1.ReportMaskingClassificationsRequest
-	975,  // 875: relay.server.v1.ServerService.ListMaskingClassifications:input_type -> relay.server.v1.ListMaskingClassificationsRequest
-	977,  // 876: relay.server.v1.ServerService.ResolveMaskingClassification:input_type -> relay.server.v1.ResolveMaskingClassificationRequest
+	974,  // 874: relay.server.v1.ServerService.ReportMaskingClassifications:input_type -> relay.server.v1.ReportMaskingClassificationsRequest
+	977,  // 875: relay.server.v1.ServerService.ListMaskingClassifications:input_type -> relay.server.v1.ListMaskingClassificationsRequest
+	979,  // 876: relay.server.v1.ServerService.ResolveMaskingClassification:input_type -> relay.server.v1.ResolveMaskingClassificationRequest
 	461,  // 877: relay.server.v1.ServerService.ListConnectionGroups:input_type -> relay.server.v1.ListConnectionGroupsRequest
 	463,  // 878: relay.server.v1.ServerService.CreateConnectionGroup:input_type -> relay.server.v1.CreateConnectionGroupRequest
 	465,  // 879: relay.server.v1.ServerService.DeleteConnectionGroup:input_type -> relay.server.v1.DeleteConnectionGroupRequest
@@ -75694,16 +75781,16 @@ var file_relay_server_v1_server_proto_depIdxs = []int32{
 	474,  // 901: relay.server.v1.ServerService.ListAccessGrants:input_type -> relay.server.v1.ListAccessGrantsRequest
 	476,  // 902: relay.server.v1.ServerService.CreateAccessGrant:input_type -> relay.server.v1.CreateAccessGrantRequest
 	478,  // 903: relay.server.v1.ServerService.DeleteAccessGrant:input_type -> relay.server.v1.DeleteAccessGrantRequest
-	980,  // 904: relay.server.v1.ServerService.RequestAccessGrant:input_type -> relay.server.v1.RequestAccessGrantRequest
-	982,  // 905: relay.server.v1.ServerService.ListAccessGrantRequests:input_type -> relay.server.v1.ListAccessGrantRequestsRequest
-	984,  // 906: relay.server.v1.ServerService.GetAccessGrantRequest:input_type -> relay.server.v1.GetAccessGrantRequestRequest
-	986,  // 907: relay.server.v1.ServerService.ApproveAccessGrantRequest:input_type -> relay.server.v1.ApproveAccessGrantRequestRequest
-	988,  // 908: relay.server.v1.ServerService.DenyAccessGrantRequest:input_type -> relay.server.v1.DenyAccessGrantRequestRequest
-	990,  // 909: relay.server.v1.ServerService.CancelAccessGrantRequest:input_type -> relay.server.v1.CancelAccessGrantRequestRequest
-	992,  // 910: relay.server.v1.ServerService.RevokeAccessGrantRequest:input_type -> relay.server.v1.RevokeAccessGrantRequestRequest
-	995,  // 911: relay.server.v1.ServerService.ListRequestableConnections:input_type -> relay.server.v1.ListRequestableConnectionsRequest
-	998,  // 912: relay.server.v1.ServerService.GetAccessRequestSettings:input_type -> relay.server.v1.GetAccessRequestSettingsRequest
-	1000, // 913: relay.server.v1.ServerService.UpdateAccessRequestSettings:input_type -> relay.server.v1.UpdateAccessRequestSettingsRequest
+	982,  // 904: relay.server.v1.ServerService.RequestAccessGrant:input_type -> relay.server.v1.RequestAccessGrantRequest
+	984,  // 905: relay.server.v1.ServerService.ListAccessGrantRequests:input_type -> relay.server.v1.ListAccessGrantRequestsRequest
+	986,  // 906: relay.server.v1.ServerService.GetAccessGrantRequest:input_type -> relay.server.v1.GetAccessGrantRequestRequest
+	988,  // 907: relay.server.v1.ServerService.ApproveAccessGrantRequest:input_type -> relay.server.v1.ApproveAccessGrantRequestRequest
+	990,  // 908: relay.server.v1.ServerService.DenyAccessGrantRequest:input_type -> relay.server.v1.DenyAccessGrantRequestRequest
+	992,  // 909: relay.server.v1.ServerService.CancelAccessGrantRequest:input_type -> relay.server.v1.CancelAccessGrantRequestRequest
+	994,  // 910: relay.server.v1.ServerService.RevokeAccessGrantRequest:input_type -> relay.server.v1.RevokeAccessGrantRequestRequest
+	997,  // 911: relay.server.v1.ServerService.ListRequestableConnections:input_type -> relay.server.v1.ListRequestableConnectionsRequest
+	1000, // 912: relay.server.v1.ServerService.GetAccessRequestSettings:input_type -> relay.server.v1.GetAccessRequestSettingsRequest
+	1002, // 913: relay.server.v1.ServerService.UpdateAccessRequestSettings:input_type -> relay.server.v1.UpdateAccessRequestSettingsRequest
 	481,  // 914: relay.server.v1.ServerService.ListTeams:input_type -> relay.server.v1.ListTeamsRequest
 	483,  // 915: relay.server.v1.ServerService.CreateTeam:input_type -> relay.server.v1.CreateTeamRequest
 	485,  // 916: relay.server.v1.ServerService.DeleteTeam:input_type -> relay.server.v1.DeleteTeamRequest
@@ -75733,35 +75820,35 @@ var file_relay_server_v1_server_proto_depIdxs = []int32{
 	635,  // 940: relay.server.v1.ServerService.DeleteAgentPool:input_type -> relay.server.v1.DeleteAgentPoolRequest
 	637,  // 941: relay.server.v1.ServerService.UpdateAgentPool:input_type -> relay.server.v1.UpdateAgentPoolRequest
 	639,  // 942: relay.server.v1.ServerService.WakeAgentPool:input_type -> relay.server.v1.WakeAgentPoolRequest
-	736,  // 943: relay.server.v1.ServerService.ResolveConnectionCredential:input_type -> relay.server.v1.ResolveConnectionCredentialRequest
-	738,  // 944: relay.server.v1.ServerService.ResolveExternalSecretSource:input_type -> relay.server.v1.ResolveExternalSecretSourceRequest
-	728,  // 945: relay.server.v1.ServerService.ListExternalSecretSources:input_type -> relay.server.v1.ListExternalSecretSourcesRequest
-	730,  // 946: relay.server.v1.ServerService.GetExternalSecretSource:input_type -> relay.server.v1.GetExternalSecretSourceRequest
-	732,  // 947: relay.server.v1.ServerService.UpsertExternalSecretSource:input_type -> relay.server.v1.UpsertExternalSecretSourceRequest
-	734,  // 948: relay.server.v1.ServerService.DeleteExternalSecretSource:input_type -> relay.server.v1.DeleteExternalSecretSourceRequest
-	741,  // 949: relay.server.v1.ServerService.GetCloudIntegrationSetup:input_type -> relay.server.v1.GetCloudIntegrationSetupRequest
-	743,  // 950: relay.server.v1.ServerService.ListCloudIntegrations:input_type -> relay.server.v1.ListCloudIntegrationsRequest
-	745,  // 951: relay.server.v1.ServerService.GetCloudIntegration:input_type -> relay.server.v1.GetCloudIntegrationRequest
-	747,  // 952: relay.server.v1.ServerService.CreateCloudIntegration:input_type -> relay.server.v1.CreateCloudIntegrationRequest
-	749,  // 953: relay.server.v1.ServerService.UpdateCloudIntegration:input_type -> relay.server.v1.UpdateCloudIntegrationRequest
-	751,  // 954: relay.server.v1.ServerService.DeleteCloudIntegration:input_type -> relay.server.v1.DeleteCloudIntegrationRequest
-	753,  // 955: relay.server.v1.ServerService.TestCloudIntegration:input_type -> relay.server.v1.TestCloudIntegrationRequest
-	757,  // 956: relay.server.v1.ServerService.GetLogStream:input_type -> relay.server.v1.GetLogStreamRequest
-	759,  // 957: relay.server.v1.ServerService.UpsertLogStream:input_type -> relay.server.v1.UpsertLogStreamRequest
-	761,  // 958: relay.server.v1.ServerService.DeleteLogStream:input_type -> relay.server.v1.DeleteLogStreamRequest
-	777,  // 959: relay.server.v1.ServerService.GetBackupAutoExport:input_type -> relay.server.v1.GetBackupAutoExportRequest
-	779,  // 960: relay.server.v1.ServerService.UpsertBackupAutoExport:input_type -> relay.server.v1.UpsertBackupAutoExportRequest
-	781,  // 961: relay.server.v1.ServerService.DeleteBackupAutoExport:input_type -> relay.server.v1.DeleteBackupAutoExportRequest
-	783,  // 962: relay.server.v1.ServerService.ExportToCloud:input_type -> relay.server.v1.ExportToCloudRequest
-	766,  // 963: relay.server.v1.ServerService.ListLogDestinations:input_type -> relay.server.v1.ListLogDestinationsRequest
-	768,  // 964: relay.server.v1.ServerService.CreateLogDestination:input_type -> relay.server.v1.CreateLogDestinationRequest
-	770,  // 965: relay.server.v1.ServerService.UpdateLogDestination:input_type -> relay.server.v1.UpdateLogDestinationRequest
-	772,  // 966: relay.server.v1.ServerService.DeleteLogDestination:input_type -> relay.server.v1.DeleteLogDestinationRequest
-	774,  // 967: relay.server.v1.ServerService.TestLogDestination:input_type -> relay.server.v1.TestLogDestinationRequest
+	738,  // 943: relay.server.v1.ServerService.ResolveConnectionCredential:input_type -> relay.server.v1.ResolveConnectionCredentialRequest
+	740,  // 944: relay.server.v1.ServerService.ResolveExternalSecretSource:input_type -> relay.server.v1.ResolveExternalSecretSourceRequest
+	730,  // 945: relay.server.v1.ServerService.ListExternalSecretSources:input_type -> relay.server.v1.ListExternalSecretSourcesRequest
+	732,  // 946: relay.server.v1.ServerService.GetExternalSecretSource:input_type -> relay.server.v1.GetExternalSecretSourceRequest
+	734,  // 947: relay.server.v1.ServerService.UpsertExternalSecretSource:input_type -> relay.server.v1.UpsertExternalSecretSourceRequest
+	736,  // 948: relay.server.v1.ServerService.DeleteExternalSecretSource:input_type -> relay.server.v1.DeleteExternalSecretSourceRequest
+	743,  // 949: relay.server.v1.ServerService.GetCloudIntegrationSetup:input_type -> relay.server.v1.GetCloudIntegrationSetupRequest
+	745,  // 950: relay.server.v1.ServerService.ListCloudIntegrations:input_type -> relay.server.v1.ListCloudIntegrationsRequest
+	747,  // 951: relay.server.v1.ServerService.GetCloudIntegration:input_type -> relay.server.v1.GetCloudIntegrationRequest
+	749,  // 952: relay.server.v1.ServerService.CreateCloudIntegration:input_type -> relay.server.v1.CreateCloudIntegrationRequest
+	751,  // 953: relay.server.v1.ServerService.UpdateCloudIntegration:input_type -> relay.server.v1.UpdateCloudIntegrationRequest
+	753,  // 954: relay.server.v1.ServerService.DeleteCloudIntegration:input_type -> relay.server.v1.DeleteCloudIntegrationRequest
+	755,  // 955: relay.server.v1.ServerService.TestCloudIntegration:input_type -> relay.server.v1.TestCloudIntegrationRequest
+	759,  // 956: relay.server.v1.ServerService.GetLogStream:input_type -> relay.server.v1.GetLogStreamRequest
+	761,  // 957: relay.server.v1.ServerService.UpsertLogStream:input_type -> relay.server.v1.UpsertLogStreamRequest
+	763,  // 958: relay.server.v1.ServerService.DeleteLogStream:input_type -> relay.server.v1.DeleteLogStreamRequest
+	779,  // 959: relay.server.v1.ServerService.GetBackupAutoExport:input_type -> relay.server.v1.GetBackupAutoExportRequest
+	781,  // 960: relay.server.v1.ServerService.UpsertBackupAutoExport:input_type -> relay.server.v1.UpsertBackupAutoExportRequest
+	783,  // 961: relay.server.v1.ServerService.DeleteBackupAutoExport:input_type -> relay.server.v1.DeleteBackupAutoExportRequest
+	785,  // 962: relay.server.v1.ServerService.ExportToCloud:input_type -> relay.server.v1.ExportToCloudRequest
+	768,  // 963: relay.server.v1.ServerService.ListLogDestinations:input_type -> relay.server.v1.ListLogDestinationsRequest
+	770,  // 964: relay.server.v1.ServerService.CreateLogDestination:input_type -> relay.server.v1.CreateLogDestinationRequest
+	772,  // 965: relay.server.v1.ServerService.UpdateLogDestination:input_type -> relay.server.v1.UpdateLogDestinationRequest
+	774,  // 966: relay.server.v1.ServerService.DeleteLogDestination:input_type -> relay.server.v1.DeleteLogDestinationRequest
+	776,  // 967: relay.server.v1.ServerService.TestLogDestination:input_type -> relay.server.v1.TestLogDestinationRequest
 	564,  // 968: relay.server.v1.ServerService.IngestAuditEvents:input_type -> relay.server.v1.IngestAuditEventsRequest
 	566,  // 969: relay.server.v1.ServerService.ListAuditLogs:input_type -> relay.server.v1.ListAuditLogsRequest
 	568,  // 970: relay.server.v1.ServerService.GetAuditMetrics:input_type -> relay.server.v1.GetAuditMetricsRequest
-	1025, // 971: relay.server.v1.ServerService.GetAccessUsage:input_type -> relay.server.v1.GetAccessUsageRequest
+	1027, // 971: relay.server.v1.ServerService.GetAccessUsage:input_type -> relay.server.v1.GetAccessUsageRequest
 	642,  // 972: relay.server.v1.ServerService.ListActivityLogs:input_type -> relay.server.v1.ListActivityLogsRequest
 	646,  // 973: relay.server.v1.ServerService.ListOrgActivityLogs:input_type -> relay.server.v1.ListOrgActivityLogsRequest
 	644,  // 974: relay.server.v1.ServerService.EmitActivity:input_type -> relay.server.v1.EmitActivityRequest
@@ -75772,642 +75859,644 @@ var file_relay_server_v1_server_proto_depIdxs = []int32{
 	659,  // 979: relay.server.v1.ServerService.UpdateOrganizationSettings:input_type -> relay.server.v1.UpdateOrganizationSettingsRequest
 	661,  // 980: relay.server.v1.ServerService.DeleteOrganization:input_type -> relay.server.v1.DeleteOrganizationRequest
 	657,  // 981: relay.server.v1.ServerService.SwitchOrganization:input_type -> relay.server.v1.SwitchOrganizationRequest
-	674,  // 982: relay.server.v1.ServerService.GetOrgOverview:input_type -> relay.server.v1.GetOrgOverviewRequest
-	664,  // 983: relay.server.v1.ServerService.ListWorkspaces:input_type -> relay.server.v1.ListWorkspacesRequest
-	666,  // 984: relay.server.v1.ServerService.GetWorkspace:input_type -> relay.server.v1.GetWorkspaceRequest
-	668,  // 985: relay.server.v1.ServerService.CreateWorkspace:input_type -> relay.server.v1.CreateWorkspaceRequest
-	670,  // 986: relay.server.v1.ServerService.UpdateWorkspace:input_type -> relay.server.v1.UpdateWorkspaceRequest
-	672,  // 987: relay.server.v1.ServerService.DeleteWorkspace:input_type -> relay.server.v1.DeleteWorkspaceRequest
-	679,  // 988: relay.server.v1.ServerService.AddWorkspaceMember:input_type -> relay.server.v1.AddWorkspaceMemberRequest
-	681,  // 989: relay.server.v1.ServerService.RemoveWorkspaceMember:input_type -> relay.server.v1.RemoveWorkspaceMemberRequest
-	683,  // 990: relay.server.v1.ServerService.ListWorkspaceMembers:input_type -> relay.server.v1.ListWorkspaceMembersRequest
-	685,  // 991: relay.server.v1.ServerService.AddWorkspaceTeam:input_type -> relay.server.v1.AddWorkspaceTeamRequest
-	687,  // 992: relay.server.v1.ServerService.RemoveWorkspaceTeam:input_type -> relay.server.v1.RemoveWorkspaceTeamRequest
-	689,  // 993: relay.server.v1.ServerService.ListWorkspaceTeams:input_type -> relay.server.v1.ListWorkspaceTeamsRequest
-	691,  // 994: relay.server.v1.ServerService.SetWorkspaceMemberRole:input_type -> relay.server.v1.SetWorkspaceMemberRoleRequest
-	693,  // 995: relay.server.v1.ServerService.SetWorkspaceTeamRole:input_type -> relay.server.v1.SetWorkspaceTeamRoleRequest
-	697,  // 996: relay.server.v1.ServerService.ListRoles:input_type -> relay.server.v1.ListRolesRequest
-	699,  // 997: relay.server.v1.ServerService.CreateRole:input_type -> relay.server.v1.CreateRoleRequest
-	701,  // 998: relay.server.v1.ServerService.UpdateRole:input_type -> relay.server.v1.UpdateRoleRequest
-	703,  // 999: relay.server.v1.ServerService.DeleteRole:input_type -> relay.server.v1.DeleteRoleRequest
-	706,  // 1000: relay.server.v1.ServerService.ListRoleBindings:input_type -> relay.server.v1.ListRoleBindingsRequest
-	708,  // 1001: relay.server.v1.ServerService.CreateRoleBinding:input_type -> relay.server.v1.CreateRoleBindingRequest
-	710,  // 1002: relay.server.v1.ServerService.DeleteRoleBinding:input_type -> relay.server.v1.DeleteRoleBindingRequest
-	103,  // 1003: relay.server.v1.ServerService.ListDatabases:input_type -> relay.server.v1.ListDatabasesRequest
-	105,  // 1004: relay.server.v1.ServerService.CreateDatabase:input_type -> relay.server.v1.CreateDatabaseRequest
-	107,  // 1005: relay.server.v1.ServerService.RestoreDatabase:input_type -> relay.server.v1.RestoreDatabaseRequest
-	109,  // 1006: relay.server.v1.ServerService.GetDatabase:input_type -> relay.server.v1.GetDatabaseRequest
-	111,  // 1007: relay.server.v1.ServerService.UpdateDatabase:input_type -> relay.server.v1.UpdateDatabaseRequest
-	114,  // 1008: relay.server.v1.ServerService.ListPostgreSQLParameters:input_type -> relay.server.v1.ListPostgreSQLParametersRequest
-	117,  // 1009: relay.server.v1.ServerService.ListValkeyParameters:input_type -> relay.server.v1.ListValkeyParametersRequest
-	119,  // 1010: relay.server.v1.ServerService.ListDocumentDBParameters:input_type -> relay.server.v1.ListDocumentDBParametersRequest
-	121,  // 1011: relay.server.v1.ServerService.ListAutoscaleMetrics:input_type -> relay.server.v1.ListAutoscaleMetricsRequest
-	124,  // 1012: relay.server.v1.ServerService.ListScaleEvents:input_type -> relay.server.v1.ListScaleEventsRequest
-	127,  // 1013: relay.server.v1.ServerService.WatchDatabase:input_type -> relay.server.v1.WatchDatabaseRequest
-	130,  // 1014: relay.server.v1.ServerService.ListPendingOperations:input_type -> relay.server.v1.ListPendingOperationsRequest
-	132,  // 1015: relay.server.v1.ServerService.DeleteDatabase:input_type -> relay.server.v1.DeleteDatabaseRequest
-	134,  // 1016: relay.server.v1.ServerService.RetryDeleteDatabase:input_type -> relay.server.v1.RetryDeleteDatabaseRequest
-	136,  // 1017: relay.server.v1.ServerService.PauseDatabase:input_type -> relay.server.v1.PauseDatabaseRequest
-	138,  // 1018: relay.server.v1.ServerService.SetDefaultConnections:input_type -> relay.server.v1.SetDefaultConnectionsRequest
-	140,  // 1019: relay.server.v1.ServerService.SetDeletionProtection:input_type -> relay.server.v1.SetDeletionProtectionRequest
-	142,  // 1020: relay.server.v1.ServerService.ResumeDatabase:input_type -> relay.server.v1.ResumeDatabaseRequest
-	146,  // 1021: relay.server.v1.ServerService.GetTopologyOperation:input_type -> relay.server.v1.GetTopologyOperationRequest
-	148,  // 1022: relay.server.v1.ServerService.AbortTopologyOperation:input_type -> relay.server.v1.AbortTopologyOperationRequest
-	150,  // 1023: relay.server.v1.ServerService.ResumeTopologyOperation:input_type -> relay.server.v1.ResumeTopologyOperationRequest
-	152,  // 1024: relay.server.v1.ServerService.GetDatabaseStatus:input_type -> relay.server.v1.GetDatabaseStatusRequest
-	154,  // 1025: relay.server.v1.ServerService.ListDatabaseNodes:input_type -> relay.server.v1.ListDatabaseNodesRequest
-	156,  // 1026: relay.server.v1.ServerService.GetDatabaseLogs:input_type -> relay.server.v1.GetDatabaseLogsRequest
-	159,  // 1027: relay.server.v1.ServerService.SearchDatabaseLogs:input_type -> relay.server.v1.SearchDatabaseLogsRequest
-	571,  // 1028: relay.server.v1.ServerService.GetDatabaseAnalytics:input_type -> relay.server.v1.GetDatabaseAnalyticsRequest
-	575,  // 1029: relay.server.v1.ServerService.GetDatabaseTopSQL:input_type -> relay.server.v1.GetDatabaseTopSQLRequest
-	579,  // 1030: relay.server.v1.ServerService.GetDatabaseLoad:input_type -> relay.server.v1.GetDatabaseLoadRequest
-	616,  // 1031: relay.server.v1.ServerService.RecordDatabaseEvent:input_type -> relay.server.v1.RecordDatabaseEventRequest
-	618,  // 1032: relay.server.v1.ServerService.ListDatabaseEvents:input_type -> relay.server.v1.ListDatabaseEventsRequest
-	622,  // 1033: relay.server.v1.ServerService.CreateDatabaseEventSubscription:input_type -> relay.server.v1.CreateDatabaseEventSubscriptionRequest
-	624,  // 1034: relay.server.v1.ServerService.UpdateDatabaseEventSubscription:input_type -> relay.server.v1.UpdateDatabaseEventSubscriptionRequest
-	626,  // 1035: relay.server.v1.ServerService.DeleteDatabaseEventSubscription:input_type -> relay.server.v1.DeleteDatabaseEventSubscriptionRequest
-	628,  // 1036: relay.server.v1.ServerService.ListDatabaseEventSubscriptions:input_type -> relay.server.v1.ListDatabaseEventSubscriptionsRequest
-	584,  // 1037: relay.server.v1.ServerService.ListDatabaseAlarmMetrics:input_type -> relay.server.v1.ListDatabaseAlarmMetricsRequest
-	589,  // 1038: relay.server.v1.ServerService.CreateDatabaseAlarm:input_type -> relay.server.v1.CreateDatabaseAlarmRequest
-	591,  // 1039: relay.server.v1.ServerService.UpdateDatabaseAlarm:input_type -> relay.server.v1.UpdateDatabaseAlarmRequest
-	593,  // 1040: relay.server.v1.ServerService.DeleteDatabaseAlarm:input_type -> relay.server.v1.DeleteDatabaseAlarmRequest
-	595,  // 1041: relay.server.v1.ServerService.GetDatabaseAlarm:input_type -> relay.server.v1.GetDatabaseAlarmRequest
-	597,  // 1042: relay.server.v1.ServerService.ListDatabaseAlarms:input_type -> relay.server.v1.ListDatabaseAlarmsRequest
-	599,  // 1043: relay.server.v1.ServerService.ListDatabaseAlarmEvents:input_type -> relay.server.v1.ListDatabaseAlarmEventsRequest
-	601,  // 1044: relay.server.v1.ServerService.ListRecommendedDatabaseAlarms:input_type -> relay.server.v1.ListRecommendedDatabaseAlarmsRequest
-	604,  // 1045: relay.server.v1.ServerService.ApplyRecommendedDatabaseAlarms:input_type -> relay.server.v1.ApplyRecommendedDatabaseAlarmsRequest
-	607,  // 1046: relay.server.v1.ServerService.SetRecommendedAlarmsOnCreate:input_type -> relay.server.v1.SetRecommendedAlarmsOnCreateRequest
-	610,  // 1047: relay.server.v1.ServerService.GetDatabaseLocks:input_type -> relay.server.v1.GetDatabaseLocksRequest
-	34,   // 1048: relay.server.v1.ServerService.GetDatabaseConnection:input_type -> relay.server.v1.GetDatabaseConnectionRequest
-	40,   // 1049: relay.server.v1.ServerService.ListIPAllowlist:input_type -> relay.server.v1.ListIPAllowlistRequest
-	42,   // 1050: relay.server.v1.ServerService.AddIPAllowlistEntry:input_type -> relay.server.v1.AddIPAllowlistEntryRequest
-	44,   // 1051: relay.server.v1.ServerService.UpdateIPAllowlistEntry:input_type -> relay.server.v1.UpdateIPAllowlistEntryRequest
-	46,   // 1052: relay.server.v1.ServerService.RemoveIPAllowlistEntry:input_type -> relay.server.v1.RemoveIPAllowlistEntryRequest
-	49,   // 1053: relay.server.v1.ServerService.ListPrivateEndpointRegions:input_type -> relay.server.v1.ListPrivateEndpointRegionsRequest
-	54,   // 1054: relay.server.v1.ServerService.CreatePrivateEndpointService:input_type -> relay.server.v1.CreatePrivateEndpointServiceRequest
-	56,   // 1055: relay.server.v1.ServerService.ListPrivateEndpointServices:input_type -> relay.server.v1.ListPrivateEndpointServicesRequest
-	58,   // 1056: relay.server.v1.ServerService.GetPrivateEndpointService:input_type -> relay.server.v1.GetPrivateEndpointServiceRequest
-	60,   // 1057: relay.server.v1.ServerService.DeletePrivateEndpointService:input_type -> relay.server.v1.DeletePrivateEndpointServiceRequest
-	62,   // 1058: relay.server.v1.ServerService.CreatePrivateEndpoint:input_type -> relay.server.v1.CreatePrivateEndpointRequest
-	64,   // 1059: relay.server.v1.ServerService.GetPrivateEndpoint:input_type -> relay.server.v1.GetPrivateEndpointRequest
-	66,   // 1060: relay.server.v1.ServerService.DeletePrivateEndpoint:input_type -> relay.server.v1.DeletePrivateEndpointRequest
-	83,   // 1061: relay.server.v1.ServerService.CheckMigrationSource:input_type -> relay.server.v1.CheckMigrationSourceRequest
-	85,   // 1062: relay.server.v1.ServerService.GetMigrationSourceCheck:input_type -> relay.server.v1.GetMigrationSourceCheckRequest
-	87,   // 1063: relay.server.v1.ServerService.CreateMigration:input_type -> relay.server.v1.CreateMigrationRequest
-	89,   // 1064: relay.server.v1.ServerService.GetMigration:input_type -> relay.server.v1.GetMigrationRequest
-	91,   // 1065: relay.server.v1.ServerService.ListMigrations:input_type -> relay.server.v1.ListMigrationsRequest
-	93,   // 1066: relay.server.v1.ServerService.RequestMigrationCutover:input_type -> relay.server.v1.RequestMigrationCutoverRequest
-	95,   // 1067: relay.server.v1.ServerService.AbortMigration:input_type -> relay.server.v1.AbortMigrationRequest
-	97,   // 1068: relay.server.v1.ServerService.CompleteMigration:input_type -> relay.server.v1.CompleteMigrationRequest
-	171,  // 1069: relay.server.v1.ServerService.ListBackupSchedules:input_type -> relay.server.v1.ListBackupSchedulesRequest
-	173,  // 1070: relay.server.v1.ServerService.ListBackups:input_type -> relay.server.v1.ListBackupsRequest
-	175,  // 1071: relay.server.v1.ServerService.GetBackupSchedule:input_type -> relay.server.v1.GetBackupScheduleRequest
-	177,  // 1072: relay.server.v1.ServerService.UpsertBackupSchedule:input_type -> relay.server.v1.UpsertBackupScheduleRequest
-	179,  // 1073: relay.server.v1.ServerService.ResetBackupSchedule:input_type -> relay.server.v1.ResetBackupScheduleRequest
-	181,  // 1074: relay.server.v1.ServerService.CreateBackup:input_type -> relay.server.v1.CreateBackupRequest
-	183,  // 1075: relay.server.v1.ServerService.DeleteBackup:input_type -> relay.server.v1.DeleteBackupRequest
-	187,  // 1076: relay.server.v1.ServerService.ListDatabaseUsers:input_type -> relay.server.v1.ListDatabaseUsersRequest
-	189,  // 1077: relay.server.v1.ServerService.GetDatabaseUser:input_type -> relay.server.v1.GetDatabaseUserRequest
-	191,  // 1078: relay.server.v1.ServerService.CreateDatabaseUser:input_type -> relay.server.v1.CreateDatabaseUserRequest
-	193,  // 1079: relay.server.v1.ServerService.UpdateDatabaseUser:input_type -> relay.server.v1.UpdateDatabaseUserRequest
-	195,  // 1080: relay.server.v1.ServerService.DeleteDatabaseUser:input_type -> relay.server.v1.DeleteDatabaseUserRequest
-	201,  // 1081: relay.server.v1.ServerService.ListLogicalDatabases:input_type -> relay.server.v1.ListLogicalDatabasesRequest
-	203,  // 1082: relay.server.v1.ServerService.CreateLogicalDatabase:input_type -> relay.server.v1.CreateLogicalDatabaseRequest
-	205,  // 1083: relay.server.v1.ServerService.UpdateLogicalDatabase:input_type -> relay.server.v1.UpdateLogicalDatabaseRequest
-	207,  // 1084: relay.server.v1.ServerService.DeleteLogicalDatabase:input_type -> relay.server.v1.DeleteLogicalDatabaseRequest
-	210,  // 1085: relay.server.v1.ServerService.ListDatabaseProviders:input_type -> relay.server.v1.ListDatabaseProvidersRequest
-	715,  // 1086: relay.server.v1.ServerService.GetBillingState:input_type -> relay.server.v1.GetBillingStateRequest
-	721,  // 1087: relay.server.v1.ServerService.CreateCheckoutSession:input_type -> relay.server.v1.CreateCheckoutSessionRequest
-	725,  // 1088: relay.server.v1.ServerService.CreateBillingPortalSession:input_type -> relay.server.v1.CreateBillingPortalSessionRequest
-	723,  // 1089: relay.server.v1.ServerService.ChangePlan:input_type -> relay.server.v1.ChangePlanRequest
-	1011, // 1090: relay.server.v1.ServerService.RedeemPromoCode:input_type -> relay.server.v1.RedeemPromoCodeRequest
-	789,  // 1091: relay.server.v1.ServerService.CreateSupportReport:input_type -> relay.server.v1.CreateSupportReportRequest
-	791,  // 1092: relay.server.v1.ServerService.ListSupportReports:input_type -> relay.server.v1.ListSupportReportsRequest
-	793,  // 1093: relay.server.v1.ServerService.GetSupportReport:input_type -> relay.server.v1.GetSupportReportRequest
-	795,  // 1094: relay.server.v1.ServerService.AddSupportReportComment:input_type -> relay.server.v1.AddSupportReportCommentRequest
-	797,  // 1095: relay.server.v1.ServerService.GetSupportAttachment:input_type -> relay.server.v1.GetSupportAttachmentRequest
-	799,  // 1096: relay.server.v1.ServerService.UpdateSupportReportStatus:input_type -> relay.server.v1.UpdateSupportReportStatusRequest
-	831,  // 1097: relay.server.v1.ServerService.GetOrgSSOConnection:input_type -> relay.server.v1.GetOrgSSOConnectionRequest
-	833,  // 1098: relay.server.v1.ServerService.UpsertOrgSSOConnection:input_type -> relay.server.v1.UpsertOrgSSOConnectionRequest
-	835,  // 1099: relay.server.v1.ServerService.DeleteOrgSSOConnection:input_type -> relay.server.v1.DeleteOrgSSOConnectionRequest
-	837,  // 1100: relay.server.v1.ServerService.ListOrgSSOConnections:input_type -> relay.server.v1.ListOrgSSOConnectionsRequest
-	839,  // 1101: relay.server.v1.ServerService.CreateOrgSSOConnection:input_type -> relay.server.v1.CreateOrgSSOConnectionRequest
-	841,  // 1102: relay.server.v1.ServerService.AssignOrgDomainSSOConnection:input_type -> relay.server.v1.AssignOrgDomainSSOConnectionRequest
-	843,  // 1103: relay.server.v1.ServerService.TestOrgSSOConnection:input_type -> relay.server.v1.TestOrgSSOConnectionRequest
-	827,  // 1104: relay.server.v1.ServerService.ListSSOProviderPresets:input_type -> relay.server.v1.ListSSOProviderPresetsRequest
-	849,  // 1105: relay.server.v1.ServerService.GetOrgSignInPolicy:input_type -> relay.server.v1.GetOrgSignInPolicyRequest
-	852,  // 1106: relay.server.v1.ServerService.PreviewOrgSignInPolicy:input_type -> relay.server.v1.PreviewOrgSignInPolicyRequest
-	854,  // 1107: relay.server.v1.ServerService.UpdateOrgSignInPolicy:input_type -> relay.server.v1.UpdateOrgSignInPolicyRequest
-	857,  // 1108: relay.server.v1.ServerService.ListOrgDomains:input_type -> relay.server.v1.ListOrgDomainsRequest
-	859,  // 1109: relay.server.v1.ServerService.AddOrgDomain:input_type -> relay.server.v1.AddOrgDomainRequest
-	861,  // 1110: relay.server.v1.ServerService.VerifyOrgDomain:input_type -> relay.server.v1.VerifyOrgDomainRequest
-	863,  // 1111: relay.server.v1.ServerService.RemoveOrgDomain:input_type -> relay.server.v1.RemoveOrgDomainRequest
-	866,  // 1112: relay.server.v1.ServerService.CreateSCIMToken:input_type -> relay.server.v1.CreateSCIMTokenRequest
-	868,  // 1113: relay.server.v1.ServerService.ListSCIMTokens:input_type -> relay.server.v1.ListSCIMTokensRequest
-	870,  // 1114: relay.server.v1.ServerService.RotateSCIMToken:input_type -> relay.server.v1.RotateSCIMTokenRequest
-	872,  // 1115: relay.server.v1.ServerService.RevokeSCIMToken:input_type -> relay.server.v1.RevokeSCIMTokenRequest
-	875,  // 1116: relay.server.v1.ServerService.ListIdPGroupMappings:input_type -> relay.server.v1.ListIdPGroupMappingsRequest
-	877,  // 1117: relay.server.v1.ServerService.UpsertIdPGroupMapping:input_type -> relay.server.v1.UpsertIdPGroupMappingRequest
-	879,  // 1118: relay.server.v1.ServerService.DeleteIdPGroupMapping:input_type -> relay.server.v1.DeleteIdPGroupMappingRequest
-	887,  // 1119: relay.server.v1.ServerService.ListPostgreSQLExtensions:input_type -> relay.server.v1.ListPostgreSQLExtensionsRequest
-	909,  // 1120: relay.server.v1.ServerService.GetLicenseStatus:input_type -> relay.server.v1.GetLicenseStatusRequest
-	911,  // 1121: relay.server.v1.ServerService.ExportLicenseUsageReport:input_type -> relay.server.v1.ExportLicenseUsageReportRequest
-	914,  // 1122: relay.server.v1.ServerService.GetRunbookSource:input_type -> relay.server.v1.GetRunbookSourceRequest
-	916,  // 1123: relay.server.v1.ServerService.UpsertRunbookSource:input_type -> relay.server.v1.UpsertRunbookSourceRequest
-	918,  // 1124: relay.server.v1.ServerService.DeleteRunbookSource:input_type -> relay.server.v1.DeleteRunbookSourceRequest
-	920,  // 1125: relay.server.v1.ServerService.SyncRunbooks:input_type -> relay.server.v1.SyncRunbooksRequest
-	921,  // 1126: relay.server.v1.ServerService.RotateRunbookWebhookSecret:input_type -> relay.server.v1.RotateRunbookWebhookSecretRequest
-	923,  // 1127: relay.server.v1.ServerService.FetchRunbookHostKey:input_type -> relay.server.v1.FetchRunbookHostKeyRequest
-	929,  // 1128: relay.server.v1.ServerService.ListRunbooks:input_type -> relay.server.v1.ListRunbooksRequest
-	931,  // 1129: relay.server.v1.ServerService.GetRunbook:input_type -> relay.server.v1.GetRunbookRequest
-	933,  // 1130: relay.server.v1.ServerService.RunRunbook:input_type -> relay.server.v1.RunRunbookRequest
-	938,  // 1131: relay.server.v1.ServerService.GetRunbookExecution:input_type -> relay.server.v1.GetRunbookExecutionRequest
-	940,  // 1132: relay.server.v1.ServerService.ListRunbookExecutions:input_type -> relay.server.v1.ListRunbookExecutionsRequest
-	942,  // 1133: relay.server.v1.ServerService.ClaimRunbookExecutions:input_type -> relay.server.v1.ClaimRunbookExecutionsRequest
-	946,  // 1134: relay.server.v1.ServerService.ReportRunbookExecution:input_type -> relay.server.v1.ReportRunbookExecutionRequest
-	952,  // 1135: relay.server.v1.ServerService.CreateQueryTemplate:input_type -> relay.server.v1.CreateQueryTemplateRequest
-	955,  // 1136: relay.server.v1.ServerService.UpdateQueryTemplate:input_type -> relay.server.v1.UpdateQueryTemplateRequest
-	957,  // 1137: relay.server.v1.ServerService.GetQueryTemplate:input_type -> relay.server.v1.GetQueryTemplateRequest
-	959,  // 1138: relay.server.v1.ServerService.ListQueryTemplates:input_type -> relay.server.v1.ListQueryTemplatesRequest
-	961,  // 1139: relay.server.v1.ServerService.ListQueryTemplateVersions:input_type -> relay.server.v1.ListQueryTemplateVersionsRequest
-	963,  // 1140: relay.server.v1.ServerService.ApproveQueryTemplateVersion:input_type -> relay.server.v1.ApproveQueryTemplateVersionRequest
-	965,  // 1141: relay.server.v1.ServerService.WithdrawQueryTemplateVersion:input_type -> relay.server.v1.WithdrawQueryTemplateVersionRequest
-	967,  // 1142: relay.server.v1.ServerService.RevokeQueryTemplate:input_type -> relay.server.v1.RevokeQueryTemplateRequest
-	969,  // 1143: relay.server.v1.ServerService.RunQueryTemplate:input_type -> relay.server.v1.RunQueryTemplateRequest
-	221,  // 1144: relay.server.v1.AdminService.AdminListOrganizations:input_type -> relay.server.v1.AdminListOrganizationsRequest
-	223,  // 1145: relay.server.v1.AdminService.AdminGetOrganization:input_type -> relay.server.v1.AdminGetOrganizationRequest
-	230,  // 1146: relay.server.v1.AdminService.AdminGetOrganizationResources:input_type -> relay.server.v1.AdminGetOrganizationResourcesRequest
-	295,  // 1147: relay.server.v1.AdminService.AdminGetOrganizationBilling:input_type -> relay.server.v1.AdminGetOrganizationBillingRequest
-	296,  // 1148: relay.server.v1.AdminService.AdminSetOrganizationPlan:input_type -> relay.server.v1.AdminSetOrganizationPlanRequest
-	299,  // 1149: relay.server.v1.AdminService.AdminCreatePriceVersion:input_type -> relay.server.v1.AdminCreatePriceVersionRequest
-	301,  // 1150: relay.server.v1.AdminService.AdminPinOrganizationPriceVersion:input_type -> relay.server.v1.AdminPinOrganizationPriceVersionRequest
-	303,  // 1151: relay.server.v1.AdminService.AdminGetEffectivePriceBook:input_type -> relay.server.v1.AdminGetEffectivePriceBookRequest
-	306,  // 1152: relay.server.v1.AdminService.AdminListPriceVersions:input_type -> relay.server.v1.AdminListPriceVersionsRequest
-	309,  // 1153: relay.server.v1.AdminService.AdminGrantOrganizationComp:input_type -> relay.server.v1.AdminGrantOrganizationCompRequest
-	311,  // 1154: relay.server.v1.AdminService.AdminRevokeOrganizationComp:input_type -> relay.server.v1.AdminRevokeOrganizationCompRequest
-	313,  // 1155: relay.server.v1.AdminService.AdminGrantOrganizationCredit:input_type -> relay.server.v1.AdminGrantOrganizationCreditRequest
-	315,  // 1156: relay.server.v1.AdminService.AdminRevokeOrganizationCredit:input_type -> relay.server.v1.AdminRevokeOrganizationCreditRequest
-	317,  // 1157: relay.server.v1.AdminService.AdminListOrganizationGrants:input_type -> relay.server.v1.AdminListOrganizationGrantsRequest
-	325,  // 1158: relay.server.v1.AdminService.AdminListOrganizationContracts:input_type -> relay.server.v1.AdminListOrganizationContractsRequest
-	327,  // 1159: relay.server.v1.AdminService.AdminGetOrganizationContract:input_type -> relay.server.v1.AdminGetOrganizationContractRequest
-	329,  // 1160: relay.server.v1.AdminService.AdminCreateOrganizationContract:input_type -> relay.server.v1.AdminCreateOrganizationContractRequest
-	331,  // 1161: relay.server.v1.AdminService.AdminUpdateOrganizationContract:input_type -> relay.server.v1.AdminUpdateOrganizationContractRequest
-	333,  // 1162: relay.server.v1.AdminService.AdminListContractTemplates:input_type -> relay.server.v1.AdminListContractTemplatesRequest
-	1015, // 1163: relay.server.v1.AdminService.AdminCreatePromoCampaign:input_type -> relay.server.v1.AdminCreatePromoCampaignRequest
-	1017, // 1164: relay.server.v1.AdminService.AdminListPromoCampaigns:input_type -> relay.server.v1.AdminListPromoCampaignsRequest
-	1019, // 1165: relay.server.v1.AdminService.AdminSetPromoCampaignActive:input_type -> relay.server.v1.AdminSetPromoCampaignActiveRequest
-	1030, // 1166: relay.server.v1.AdminService.AdminUpdatePromoCampaign:input_type -> relay.server.v1.AdminUpdatePromoCampaignRequest
-	1021, // 1167: relay.server.v1.AdminService.AdminListPromoRedemptions:input_type -> relay.server.v1.AdminListPromoRedemptionsRequest
-	1023, // 1168: relay.server.v1.AdminService.AdminRevokePromoRedemption:input_type -> relay.server.v1.AdminRevokePromoRedemptionRequest
-	336,  // 1169: relay.server.v1.AdminService.AdminGetOrganizationCost:input_type -> relay.server.v1.AdminGetOrganizationCostRequest
-	341,  // 1170: relay.server.v1.AdminService.AdminListAuditLog:input_type -> relay.server.v1.AdminListAuditLogRequest
-	343,  // 1171: relay.server.v1.AdminService.AdminGetCloudCosts:input_type -> relay.server.v1.AdminGetCloudCostsRequest
-	351,  // 1172: relay.server.v1.AdminService.AdminListPlatformExpenses:input_type -> relay.server.v1.AdminListPlatformExpensesRequest
-	353,  // 1173: relay.server.v1.AdminService.AdminCreatePlatformExpense:input_type -> relay.server.v1.AdminCreatePlatformExpenseRequest
-	355,  // 1174: relay.server.v1.AdminService.AdminUpdatePlatformExpense:input_type -> relay.server.v1.AdminUpdatePlatformExpenseRequest
-	357,  // 1175: relay.server.v1.AdminService.AdminDeletePlatformExpense:input_type -> relay.server.v1.AdminDeletePlatformExpenseRequest
-	359,  // 1176: relay.server.v1.AdminService.AdminGetRevenueOverview:input_type -> relay.server.v1.AdminGetRevenueOverviewRequest
-	801,  // 1177: relay.server.v1.AdminService.AdminListSupportReports:input_type -> relay.server.v1.AdminListSupportReportsRequest
-	803,  // 1178: relay.server.v1.AdminService.AdminGetSupportReport:input_type -> relay.server.v1.AdminGetSupportReportRequest
-	805,  // 1179: relay.server.v1.AdminService.AdminAddSupportReportComment:input_type -> relay.server.v1.AdminAddSupportReportCommentRequest
-	807,  // 1180: relay.server.v1.AdminService.AdminGetSupportAttachment:input_type -> relay.server.v1.AdminGetSupportAttachmentRequest
-	809,  // 1181: relay.server.v1.AdminService.AdminUpdateSupportReportStatus:input_type -> relay.server.v1.AdminUpdateSupportReportStatusRequest
-	813,  // 1182: relay.server.v1.AdminService.AdminListSupportComponents:input_type -> relay.server.v1.AdminListSupportComponentsRequest
-	815,  // 1183: relay.server.v1.AdminService.AdminFileSupportReportIssue:input_type -> relay.server.v1.AdminFileSupportReportIssueRequest
-	289,  // 1184: relay.server.v1.AdminService.AdminListMembers:input_type -> relay.server.v1.AdminListMembersRequest
-	290,  // 1185: relay.server.v1.AdminService.AdminSetMemberRole:input_type -> relay.server.v1.AdminSetMemberRoleRequest
-	291,  // 1186: relay.server.v1.AdminService.AdminRemoveMember:input_type -> relay.server.v1.AdminRemoveMemberRequest
-	292,  // 1187: relay.server.v1.AdminService.AdminInviteMember:input_type -> relay.server.v1.AdminInviteMemberRequest
-	293,  // 1188: relay.server.v1.AdminService.AdminListInvitations:input_type -> relay.server.v1.AdminListInvitationsRequest
-	294,  // 1189: relay.server.v1.AdminService.AdminRevokeInvitation:input_type -> relay.server.v1.AdminRevokeInvitationRequest
-	277,  // 1190: relay.server.v1.AdminService.AdminListClusters:input_type -> relay.server.v1.AdminListClustersRequest
-	280,  // 1191: relay.server.v1.AdminService.AdminListPendingOperations:input_type -> relay.server.v1.AdminListPendingOperationsRequest
-	282,  // 1192: relay.server.v1.AdminService.AdminListAgents:input_type -> relay.server.v1.AdminListAgentsRequest
-	285,  // 1193: relay.server.v1.AdminService.AdminListTunnelSessions:input_type -> relay.server.v1.AdminListTunnelSessionsRequest
-	287,  // 1194: relay.server.v1.AdminService.AdminRetryDeleteDatabase:input_type -> relay.server.v1.AdminRetryDeleteDatabaseRequest
-	248,  // 1195: relay.server.v1.AdminService.AdminSearchUsers:input_type -> relay.server.v1.AdminSearchUsersRequest
-	250,  // 1196: relay.server.v1.AdminService.AdminGetUser:input_type -> relay.server.v1.AdminGetUserRequest
-	254,  // 1197: relay.server.v1.AdminService.AdminRevokeUserSessions:input_type -> relay.server.v1.AdminRevokeUserSessionsRequest
-	256,  // 1198: relay.server.v1.AdminService.AdminSuspendUser:input_type -> relay.server.v1.AdminSuspendUserRequest
-	258,  // 1199: relay.server.v1.AdminService.AdminUnsuspendUser:input_type -> relay.server.v1.AdminUnsuspendUserRequest
-	237,  // 1200: relay.server.v1.AdminService.AdminGetOrganizationActivity:input_type -> relay.server.v1.AdminGetOrganizationActivityRequest
-	240,  // 1201: relay.server.v1.AdminService.AdminGetOrganizationSecurity:input_type -> relay.server.v1.AdminGetOrganizationSecurityRequest
-	232,  // 1202: relay.server.v1.AdminService.AdminGetPlatformOverview:input_type -> relay.server.v1.AdminGetPlatformOverviewRequest
-	235,  // 1203: relay.server.v1.AdminService.AdminListOrgActivation:input_type -> relay.server.v1.AdminListOrgActivationRequest
-	260,  // 1204: relay.server.v1.AdminService.AdminSuspendOrganization:input_type -> relay.server.v1.AdminSuspendOrganizationRequest
-	262,  // 1205: relay.server.v1.AdminService.AdminUnsuspendOrganization:input_type -> relay.server.v1.AdminUnsuspendOrganizationRequest
-	365,  // 1206: relay.server.v1.AdminService.AdminGetMaintenanceBanner:input_type -> relay.server.v1.AdminGetMaintenanceBannerRequest
-	367,  // 1207: relay.server.v1.AdminService.AdminSetMaintenanceBanner:input_type -> relay.server.v1.AdminSetMaintenanceBannerRequest
-	369,  // 1208: relay.server.v1.AdminService.AdminClearMaintenanceBanner:input_type -> relay.server.v1.AdminClearMaintenanceBannerRequest
-	372,  // 1209: relay.server.v1.AdminService.AdminGetFreeCreationPause:input_type -> relay.server.v1.AdminGetFreeCreationPauseRequest
-	374,  // 1210: relay.server.v1.AdminService.AdminPauseFreeCreation:input_type -> relay.server.v1.AdminPauseFreeCreationRequest
-	376,  // 1211: relay.server.v1.AdminService.AdminResumeFreeCreation:input_type -> relay.server.v1.AdminResumeFreeCreationRequest
-	266,  // 1212: relay.server.v1.AdminService.AdminListBillingAttention:input_type -> relay.server.v1.AdminListBillingAttentionRequest
-	268,  // 1213: relay.server.v1.AdminService.AdminPauseBillingProcess:input_type -> relay.server.v1.AdminPauseBillingProcessRequest
-	270,  // 1214: relay.server.v1.AdminService.AdminResumeBillingProcess:input_type -> relay.server.v1.AdminResumeBillingProcessRequest
-	272,  // 1215: relay.server.v1.AdminService.AdminExtendBillingDeadline:input_type -> relay.server.v1.AdminExtendBillingDeadlineRequest
-	274,  // 1216: relay.server.v1.AdminService.AdminRunBillingSweep:input_type -> relay.server.v1.AdminRunBillingSweepRequest
-	890,  // 1217: relay.server.v1.AdminService.AdminListFeatureFlags:input_type -> relay.server.v1.AdminListFeatureFlagsRequest
-	892,  // 1218: relay.server.v1.AdminService.AdminGetFeatureFlag:input_type -> relay.server.v1.AdminGetFeatureFlagRequest
-	894,  // 1219: relay.server.v1.AdminService.AdminCreateFeatureFlag:input_type -> relay.server.v1.AdminCreateFeatureFlagRequest
-	896,  // 1220: relay.server.v1.AdminService.AdminUpdateFeatureFlag:input_type -> relay.server.v1.AdminUpdateFeatureFlagRequest
-	898,  // 1221: relay.server.v1.AdminService.AdminArchiveFeatureFlag:input_type -> relay.server.v1.AdminArchiveFeatureFlagRequest
-	900,  // 1222: relay.server.v1.AdminService.AdminSetOrgFeatureOverride:input_type -> relay.server.v1.AdminSetOrgFeatureOverrideRequest
-	902,  // 1223: relay.server.v1.AdminService.AdminClearOrgFeatureOverride:input_type -> relay.server.v1.AdminClearOrgFeatureOverrideRequest
-	905,  // 1224: relay.server.v1.AdminService.AdminListFeatureFlagOrganizations:input_type -> relay.server.v1.AdminListFeatureFlagOrganizationsRequest
-	907,  // 1225: relay.server.v1.AdminService.AdminPreviewFeatureFlagRollout:input_type -> relay.server.v1.AdminPreviewFeatureFlagRolloutRequest
-	882,  // 1226: relay.server.v1.AdminService.AdminListOrgDomains:input_type -> relay.server.v1.AdminListOrgDomainsRequest
-	884,  // 1227: relay.server.v1.AdminService.AdminRemoveOrgDomain:input_type -> relay.server.v1.AdminRemoveOrgDomainRequest
-	1002, // 1228: relay.server.v1.BackofficeMCPService.CreateMCPGrant:input_type -> relay.server.v1.CreateMCPGrantRequest
-	1004, // 1229: relay.server.v1.BackofficeMCPService.RotateMCPGrant:input_type -> relay.server.v1.RotateMCPGrantRequest
-	1006, // 1230: relay.server.v1.BackofficeMCPService.ResolveMCPGrant:input_type -> relay.server.v1.ResolveMCPGrantRequest
-	1008, // 1231: relay.server.v1.BackofficeMCPService.RevokeMCPGrant:input_type -> relay.server.v1.RevokeMCPGrantRequest
-	213,  // 1232: relay.server.v1.ServerService.WhoAmI:output_type -> relay.server.v1.WhoAmIResponse
-	215,  // 1233: relay.server.v1.ServerService.SetUserFlags:output_type -> relay.server.v1.SetUserFlagsResponse
-	505,  // 1234: relay.server.v1.ServerService.Logout:output_type -> relay.server.v1.LogoutResponse
-	508,  // 1235: relay.server.v1.ServerService.ListSessions:output_type -> relay.server.v1.ListSessionsResponse
-	510,  // 1236: relay.server.v1.ServerService.RevokeSession:output_type -> relay.server.v1.RevokeSessionResponse
-	219,  // 1237: relay.server.v1.ServerService.GetMaintenanceBanner:output_type -> relay.server.v1.GetMaintenanceBannerResponse
-	513,  // 1238: relay.server.v1.ServerService.CreateAPIKey:output_type -> relay.server.v1.CreateAPIKeyResponse
-	515,  // 1239: relay.server.v1.ServerService.ListAPIKeys:output_type -> relay.server.v1.ListAPIKeysResponse
-	517,  // 1240: relay.server.v1.ServerService.UpdateAPIKey:output_type -> relay.server.v1.UpdateAPIKeyResponse
-	519,  // 1241: relay.server.v1.ServerService.RevokeAPIKey:output_type -> relay.server.v1.RevokeAPIKeyResponse
-	522,  // 1242: relay.server.v1.ServerService.ListServiceAccounts:output_type -> relay.server.v1.ListServiceAccountsResponse
-	524,  // 1243: relay.server.v1.ServerService.CreateServiceAccount:output_type -> relay.server.v1.CreateServiceAccountResponse
-	526,  // 1244: relay.server.v1.ServerService.UpdateServiceAccount:output_type -> relay.server.v1.UpdateServiceAccountResponse
-	528,  // 1245: relay.server.v1.ServerService.DeleteServiceAccount:output_type -> relay.server.v1.DeleteServiceAccountResponse
-	530,  // 1246: relay.server.v1.ServerService.MoveAPIKeyToServiceAccount:output_type -> relay.server.v1.MoveAPIKeyToServiceAccountResponse
-	390,  // 1247: relay.server.v1.ServerService.ListConnections:output_type -> relay.server.v1.ListConnectionsResponse
-	392,  // 1248: relay.server.v1.ServerService.ListManagedDatabaseConnections:output_type -> relay.server.v1.ListManagedDatabaseConnectionsResponse
-	394,  // 1249: relay.server.v1.ServerService.GetConnections:output_type -> relay.server.v1.GetConnectionsResponse
-	396,  // 1250: relay.server.v1.ServerService.CreateConnection:output_type -> relay.server.v1.CreateConnectionResponse
-	398,  // 1251: relay.server.v1.ServerService.DeleteConnection:output_type -> relay.server.v1.DeleteConnectionResponse
-	400,  // 1252: relay.server.v1.ServerService.UpdateConnection:output_type -> relay.server.v1.UpdateConnectionResponse
-	402,  // 1253: relay.server.v1.ServerService.SetConnectionPools:output_type -> relay.server.v1.SetConnectionPoolsResponse
-	404,  // 1254: relay.server.v1.ServerService.IssueTunnelToken:output_type -> relay.server.v1.IssueTunnelTokenResponse
-	406,  // 1255: relay.server.v1.ServerService.ResolveTunnelToken:output_type -> relay.server.v1.ResolveTunnelTokenResponse
-	409,  // 1256: relay.server.v1.ServerService.ReportTunnelSessions:output_type -> relay.server.v1.ReportTunnelSessionsResponse
-	413,  // 1257: relay.server.v1.ServerService.ListTunnelSessions:output_type -> relay.server.v1.ListTunnelSessionsResponse
-	973,  // 1258: relay.server.v1.ServerService.ReportMaskingClassifications:output_type -> relay.server.v1.ReportMaskingClassificationsResponse
-	976,  // 1259: relay.server.v1.ServerService.ListMaskingClassifications:output_type -> relay.server.v1.ListMaskingClassificationsResponse
-	978,  // 1260: relay.server.v1.ServerService.ResolveMaskingClassification:output_type -> relay.server.v1.ResolveMaskingClassificationResponse
-	462,  // 1261: relay.server.v1.ServerService.ListConnectionGroups:output_type -> relay.server.v1.ListConnectionGroupsResponse
-	464,  // 1262: relay.server.v1.ServerService.CreateConnectionGroup:output_type -> relay.server.v1.CreateConnectionGroupResponse
-	466,  // 1263: relay.server.v1.ServerService.DeleteConnectionGroup:output_type -> relay.server.v1.DeleteConnectionGroupResponse
-	468,  // 1264: relay.server.v1.ServerService.UpdateConnectionGroup:output_type -> relay.server.v1.UpdateConnectionGroupResponse
-	470,  // 1265: relay.server.v1.ServerService.AddConnectionToGroup:output_type -> relay.server.v1.AddConnectionToGroupResponse
-	472,  // 1266: relay.server.v1.ServerService.RemoveConnectionFromGroup:output_type -> relay.server.v1.RemoveConnectionFromGroupResponse
-	418,  // 1267: relay.server.v1.ServerService.ListPolicies:output_type -> relay.server.v1.ListPoliciesResponse
-	420,  // 1268: relay.server.v1.ServerService.GetPolicy:output_type -> relay.server.v1.GetPolicyResponse
-	422,  // 1269: relay.server.v1.ServerService.CreatePolicy:output_type -> relay.server.v1.CreatePolicyResponse
-	424,  // 1270: relay.server.v1.ServerService.UpdatePolicy:output_type -> relay.server.v1.UpdatePolicyResponse
-	426,  // 1271: relay.server.v1.ServerService.DeletePolicy:output_type -> relay.server.v1.DeletePolicyResponse
-	428,  // 1272: relay.server.v1.ServerService.SetConnectionPolicies:output_type -> relay.server.v1.SetConnectionPoliciesResponse
-	430,  // 1273: relay.server.v1.ServerService.ListConnectionPolicies:output_type -> relay.server.v1.ListConnectionPoliciesResponse
-	435,  // 1274: relay.server.v1.ServerService.RequestQueryApproval:output_type -> relay.server.v1.RequestQueryApprovalResponse
-	442,  // 1275: relay.server.v1.ServerService.WaitQueryApproval:output_type -> relay.server.v1.WaitQueryApprovalResponse
-	444,  // 1276: relay.server.v1.ServerService.ListQueryApprovals:output_type -> relay.server.v1.ListQueryApprovalsResponse
-	446,  // 1277: relay.server.v1.ServerService.GetQueryApproval:output_type -> relay.server.v1.GetQueryApprovalResponse
-	448,  // 1278: relay.server.v1.ServerService.ApproveQueryApproval:output_type -> relay.server.v1.ApproveQueryApprovalResponse
-	450,  // 1279: relay.server.v1.ServerService.DenyQueryApproval:output_type -> relay.server.v1.DenyQueryApprovalResponse
-	438,  // 1280: relay.server.v1.ServerService.DetachQueryApproval:output_type -> relay.server.v1.DetachQueryApprovalResponse
-	440,  // 1281: relay.server.v1.ServerService.CancelQueryApproval:output_type -> relay.server.v1.CancelQueryApprovalResponse
-	456,  // 1282: relay.server.v1.ServerService.ListApprovalIntegrations:output_type -> relay.server.v1.ListApprovalIntegrationsResponse
-	458,  // 1283: relay.server.v1.ServerService.UpsertApprovalIntegration:output_type -> relay.server.v1.UpsertApprovalIntegrationResponse
-	460,  // 1284: relay.server.v1.ServerService.DeleteApprovalIntegration:output_type -> relay.server.v1.DeleteApprovalIntegrationResponse
-	475,  // 1285: relay.server.v1.ServerService.ListAccessGrants:output_type -> relay.server.v1.ListAccessGrantsResponse
-	477,  // 1286: relay.server.v1.ServerService.CreateAccessGrant:output_type -> relay.server.v1.CreateAccessGrantResponse
-	479,  // 1287: relay.server.v1.ServerService.DeleteAccessGrant:output_type -> relay.server.v1.DeleteAccessGrantResponse
-	981,  // 1288: relay.server.v1.ServerService.RequestAccessGrant:output_type -> relay.server.v1.RequestAccessGrantResponse
-	983,  // 1289: relay.server.v1.ServerService.ListAccessGrantRequests:output_type -> relay.server.v1.ListAccessGrantRequestsResponse
-	985,  // 1290: relay.server.v1.ServerService.GetAccessGrantRequest:output_type -> relay.server.v1.GetAccessGrantRequestResponse
-	987,  // 1291: relay.server.v1.ServerService.ApproveAccessGrantRequest:output_type -> relay.server.v1.ApproveAccessGrantRequestResponse
-	989,  // 1292: relay.server.v1.ServerService.DenyAccessGrantRequest:output_type -> relay.server.v1.DenyAccessGrantRequestResponse
-	991,  // 1293: relay.server.v1.ServerService.CancelAccessGrantRequest:output_type -> relay.server.v1.CancelAccessGrantRequestResponse
-	993,  // 1294: relay.server.v1.ServerService.RevokeAccessGrantRequest:output_type -> relay.server.v1.RevokeAccessGrantRequestResponse
-	996,  // 1295: relay.server.v1.ServerService.ListRequestableConnections:output_type -> relay.server.v1.ListRequestableConnectionsResponse
-	999,  // 1296: relay.server.v1.ServerService.GetAccessRequestSettings:output_type -> relay.server.v1.GetAccessRequestSettingsResponse
-	1001, // 1297: relay.server.v1.ServerService.UpdateAccessRequestSettings:output_type -> relay.server.v1.UpdateAccessRequestSettingsResponse
-	482,  // 1298: relay.server.v1.ServerService.ListTeams:output_type -> relay.server.v1.ListTeamsResponse
-	484,  // 1299: relay.server.v1.ServerService.CreateTeam:output_type -> relay.server.v1.CreateTeamResponse
-	486,  // 1300: relay.server.v1.ServerService.DeleteTeam:output_type -> relay.server.v1.DeleteTeamResponse
-	488,  // 1301: relay.server.v1.ServerService.AddTeamMember:output_type -> relay.server.v1.AddTeamMemberResponse
-	490,  // 1302: relay.server.v1.ServerService.RemoveTeamMember:output_type -> relay.server.v1.RemoveTeamMemberResponse
-	493,  // 1303: relay.server.v1.ServerService.ListMembers:output_type -> relay.server.v1.ListMembersResponse
-	495,  // 1304: relay.server.v1.ServerService.SetMemberRole:output_type -> relay.server.v1.SetMemberRoleResponse
-	497,  // 1305: relay.server.v1.ServerService.TransferOwnership:output_type -> relay.server.v1.TransferOwnershipResponse
-	499,  // 1306: relay.server.v1.ServerService.RemoveMember:output_type -> relay.server.v1.RemoveMemberResponse
-	501,  // 1307: relay.server.v1.ServerService.UpdateMember:output_type -> relay.server.v1.UpdateMemberResponse
-	503,  // 1308: relay.server.v1.ServerService.RevokeUserSessions:output_type -> relay.server.v1.RevokeUserSessionsResponse
-	534,  // 1309: relay.server.v1.ServerService.InviteMember:output_type -> relay.server.v1.InviteMemberResponse
-	536,  // 1310: relay.server.v1.ServerService.ListInvitations:output_type -> relay.server.v1.ListInvitationsResponse
-	538,  // 1311: relay.server.v1.ServerService.RevokeInvitation:output_type -> relay.server.v1.RevokeInvitationResponse
-	540,  // 1312: relay.server.v1.ServerService.GetInvitation:output_type -> relay.server.v1.GetInvitationResponse
-	542,  // 1313: relay.server.v1.ServerService.AcceptInvitation:output_type -> relay.server.v1.AcceptInvitationResponse
-	545,  // 1314: relay.server.v1.ServerService.ListAgents:output_type -> relay.server.v1.ListAgentsResponse
-	547,  // 1315: relay.server.v1.ServerService.DeleteAgent:output_type -> relay.server.v1.DeleteAgentResponse
-	549,  // 1316: relay.server.v1.ServerService.CreateEnrollmentToken:output_type -> relay.server.v1.CreateEnrollmentTokenResponse
-	552,  // 1317: relay.server.v1.ServerService.ListEnrollmentTokens:output_type -> relay.server.v1.ListEnrollmentTokensResponse
-	554,  // 1318: relay.server.v1.ServerService.DeleteEnrollmentToken:output_type -> relay.server.v1.DeleteEnrollmentTokenResponse
-	556,  // 1319: relay.server.v1.ServerService.EnrollAgent:output_type -> relay.server.v1.EnrollAgentResponse
-	560,  // 1320: relay.server.v1.ServerService.Heartbeat:output_type -> relay.server.v1.HeartbeatResponse
-	562,  // 1321: relay.server.v1.ServerService.Deregister:output_type -> relay.server.v1.DeregisterResponse
-	632,  // 1322: relay.server.v1.ServerService.ListAgentPools:output_type -> relay.server.v1.ListAgentPoolsResponse
-	634,  // 1323: relay.server.v1.ServerService.CreateAgentPool:output_type -> relay.server.v1.CreateAgentPoolResponse
-	636,  // 1324: relay.server.v1.ServerService.DeleteAgentPool:output_type -> relay.server.v1.DeleteAgentPoolResponse
-	638,  // 1325: relay.server.v1.ServerService.UpdateAgentPool:output_type -> relay.server.v1.UpdateAgentPoolResponse
-	640,  // 1326: relay.server.v1.ServerService.WakeAgentPool:output_type -> relay.server.v1.WakeAgentPoolResponse
-	737,  // 1327: relay.server.v1.ServerService.ResolveConnectionCredential:output_type -> relay.server.v1.ResolveConnectionCredentialResponse
-	739,  // 1328: relay.server.v1.ServerService.ResolveExternalSecretSource:output_type -> relay.server.v1.ResolveExternalSecretSourceResponse
-	729,  // 1329: relay.server.v1.ServerService.ListExternalSecretSources:output_type -> relay.server.v1.ListExternalSecretSourcesResponse
-	731,  // 1330: relay.server.v1.ServerService.GetExternalSecretSource:output_type -> relay.server.v1.GetExternalSecretSourceResponse
-	733,  // 1331: relay.server.v1.ServerService.UpsertExternalSecretSource:output_type -> relay.server.v1.UpsertExternalSecretSourceResponse
-	735,  // 1332: relay.server.v1.ServerService.DeleteExternalSecretSource:output_type -> relay.server.v1.DeleteExternalSecretSourceResponse
-	742,  // 1333: relay.server.v1.ServerService.GetCloudIntegrationSetup:output_type -> relay.server.v1.GetCloudIntegrationSetupResponse
-	744,  // 1334: relay.server.v1.ServerService.ListCloudIntegrations:output_type -> relay.server.v1.ListCloudIntegrationsResponse
-	746,  // 1335: relay.server.v1.ServerService.GetCloudIntegration:output_type -> relay.server.v1.GetCloudIntegrationResponse
-	748,  // 1336: relay.server.v1.ServerService.CreateCloudIntegration:output_type -> relay.server.v1.CreateCloudIntegrationResponse
-	750,  // 1337: relay.server.v1.ServerService.UpdateCloudIntegration:output_type -> relay.server.v1.UpdateCloudIntegrationResponse
-	752,  // 1338: relay.server.v1.ServerService.DeleteCloudIntegration:output_type -> relay.server.v1.DeleteCloudIntegrationResponse
-	754,  // 1339: relay.server.v1.ServerService.TestCloudIntegration:output_type -> relay.server.v1.TestCloudIntegrationResponse
-	758,  // 1340: relay.server.v1.ServerService.GetLogStream:output_type -> relay.server.v1.GetLogStreamResponse
-	760,  // 1341: relay.server.v1.ServerService.UpsertLogStream:output_type -> relay.server.v1.UpsertLogStreamResponse
-	762,  // 1342: relay.server.v1.ServerService.DeleteLogStream:output_type -> relay.server.v1.DeleteLogStreamResponse
-	778,  // 1343: relay.server.v1.ServerService.GetBackupAutoExport:output_type -> relay.server.v1.GetBackupAutoExportResponse
-	780,  // 1344: relay.server.v1.ServerService.UpsertBackupAutoExport:output_type -> relay.server.v1.UpsertBackupAutoExportResponse
-	782,  // 1345: relay.server.v1.ServerService.DeleteBackupAutoExport:output_type -> relay.server.v1.DeleteBackupAutoExportResponse
-	784,  // 1346: relay.server.v1.ServerService.ExportToCloud:output_type -> relay.server.v1.ExportToCloudResponse
-	767,  // 1347: relay.server.v1.ServerService.ListLogDestinations:output_type -> relay.server.v1.ListLogDestinationsResponse
-	769,  // 1348: relay.server.v1.ServerService.CreateLogDestination:output_type -> relay.server.v1.CreateLogDestinationResponse
-	771,  // 1349: relay.server.v1.ServerService.UpdateLogDestination:output_type -> relay.server.v1.UpdateLogDestinationResponse
-	773,  // 1350: relay.server.v1.ServerService.DeleteLogDestination:output_type -> relay.server.v1.DeleteLogDestinationResponse
-	775,  // 1351: relay.server.v1.ServerService.TestLogDestination:output_type -> relay.server.v1.TestLogDestinationResponse
-	565,  // 1352: relay.server.v1.ServerService.IngestAuditEvents:output_type -> relay.server.v1.IngestAuditEventsResponse
-	567,  // 1353: relay.server.v1.ServerService.ListAuditLogs:output_type -> relay.server.v1.ListAuditLogsResponse
-	570,  // 1354: relay.server.v1.ServerService.GetAuditMetrics:output_type -> relay.server.v1.GetAuditMetricsResponse
-	1029, // 1355: relay.server.v1.ServerService.GetAccessUsage:output_type -> relay.server.v1.GetAccessUsageResponse
-	643,  // 1356: relay.server.v1.ServerService.ListActivityLogs:output_type -> relay.server.v1.ListActivityLogsResponse
-	647,  // 1357: relay.server.v1.ServerService.ListOrgActivityLogs:output_type -> relay.server.v1.ListOrgActivityLogsResponse
-	645,  // 1358: relay.server.v1.ServerService.EmitActivity:output_type -> relay.server.v1.EmitActivityResponse
-	650,  // 1359: relay.server.v1.ServerService.ListUserOrganizations:output_type -> relay.server.v1.ListUserOrganizationsResponse
-	652,  // 1360: relay.server.v1.ServerService.GetOrganization:output_type -> relay.server.v1.GetOrganizationResponse
-	654,  // 1361: relay.server.v1.ServerService.CreateOrganization:output_type -> relay.server.v1.CreateOrganizationResponse
-	656,  // 1362: relay.server.v1.ServerService.UpdateOrganization:output_type -> relay.server.v1.UpdateOrganizationResponse
-	660,  // 1363: relay.server.v1.ServerService.UpdateOrganizationSettings:output_type -> relay.server.v1.UpdateOrganizationSettingsResponse
-	662,  // 1364: relay.server.v1.ServerService.DeleteOrganization:output_type -> relay.server.v1.DeleteOrganizationResponse
-	658,  // 1365: relay.server.v1.ServerService.SwitchOrganization:output_type -> relay.server.v1.SwitchOrganizationResponse
-	675,  // 1366: relay.server.v1.ServerService.GetOrgOverview:output_type -> relay.server.v1.GetOrgOverviewResponse
-	665,  // 1367: relay.server.v1.ServerService.ListWorkspaces:output_type -> relay.server.v1.ListWorkspacesResponse
-	667,  // 1368: relay.server.v1.ServerService.GetWorkspace:output_type -> relay.server.v1.GetWorkspaceResponse
-	669,  // 1369: relay.server.v1.ServerService.CreateWorkspace:output_type -> relay.server.v1.CreateWorkspaceResponse
-	671,  // 1370: relay.server.v1.ServerService.UpdateWorkspace:output_type -> relay.server.v1.UpdateWorkspaceResponse
-	673,  // 1371: relay.server.v1.ServerService.DeleteWorkspace:output_type -> relay.server.v1.DeleteWorkspaceResponse
-	680,  // 1372: relay.server.v1.ServerService.AddWorkspaceMember:output_type -> relay.server.v1.AddWorkspaceMemberResponse
-	682,  // 1373: relay.server.v1.ServerService.RemoveWorkspaceMember:output_type -> relay.server.v1.RemoveWorkspaceMemberResponse
-	684,  // 1374: relay.server.v1.ServerService.ListWorkspaceMembers:output_type -> relay.server.v1.ListWorkspaceMembersResponse
-	686,  // 1375: relay.server.v1.ServerService.AddWorkspaceTeam:output_type -> relay.server.v1.AddWorkspaceTeamResponse
-	688,  // 1376: relay.server.v1.ServerService.RemoveWorkspaceTeam:output_type -> relay.server.v1.RemoveWorkspaceTeamResponse
-	690,  // 1377: relay.server.v1.ServerService.ListWorkspaceTeams:output_type -> relay.server.v1.ListWorkspaceTeamsResponse
-	692,  // 1378: relay.server.v1.ServerService.SetWorkspaceMemberRole:output_type -> relay.server.v1.SetWorkspaceMemberRoleResponse
-	694,  // 1379: relay.server.v1.ServerService.SetWorkspaceTeamRole:output_type -> relay.server.v1.SetWorkspaceTeamRoleResponse
-	698,  // 1380: relay.server.v1.ServerService.ListRoles:output_type -> relay.server.v1.ListRolesResponse
-	700,  // 1381: relay.server.v1.ServerService.CreateRole:output_type -> relay.server.v1.CreateRoleResponse
-	702,  // 1382: relay.server.v1.ServerService.UpdateRole:output_type -> relay.server.v1.UpdateRoleResponse
-	704,  // 1383: relay.server.v1.ServerService.DeleteRole:output_type -> relay.server.v1.DeleteRoleResponse
-	707,  // 1384: relay.server.v1.ServerService.ListRoleBindings:output_type -> relay.server.v1.ListRoleBindingsResponse
-	709,  // 1385: relay.server.v1.ServerService.CreateRoleBinding:output_type -> relay.server.v1.CreateRoleBindingResponse
-	711,  // 1386: relay.server.v1.ServerService.DeleteRoleBinding:output_type -> relay.server.v1.DeleteRoleBindingResponse
-	104,  // 1387: relay.server.v1.ServerService.ListDatabases:output_type -> relay.server.v1.ListDatabasesResponse
-	106,  // 1388: relay.server.v1.ServerService.CreateDatabase:output_type -> relay.server.v1.CreateDatabaseResponse
-	108,  // 1389: relay.server.v1.ServerService.RestoreDatabase:output_type -> relay.server.v1.RestoreDatabaseResponse
-	110,  // 1390: relay.server.v1.ServerService.GetDatabase:output_type -> relay.server.v1.GetDatabaseResponse
-	112,  // 1391: relay.server.v1.ServerService.UpdateDatabase:output_type -> relay.server.v1.UpdateDatabaseResponse
-	115,  // 1392: relay.server.v1.ServerService.ListPostgreSQLParameters:output_type -> relay.server.v1.ListPostgreSQLParametersResponse
-	118,  // 1393: relay.server.v1.ServerService.ListValkeyParameters:output_type -> relay.server.v1.ListValkeyParametersResponse
-	120,  // 1394: relay.server.v1.ServerService.ListDocumentDBParameters:output_type -> relay.server.v1.ListDocumentDBParametersResponse
-	123,  // 1395: relay.server.v1.ServerService.ListAutoscaleMetrics:output_type -> relay.server.v1.ListAutoscaleMetricsResponse
-	126,  // 1396: relay.server.v1.ServerService.ListScaleEvents:output_type -> relay.server.v1.ListScaleEventsResponse
-	128,  // 1397: relay.server.v1.ServerService.WatchDatabase:output_type -> relay.server.v1.WatchDatabaseEvent
-	131,  // 1398: relay.server.v1.ServerService.ListPendingOperations:output_type -> relay.server.v1.ListPendingOperationsResponse
-	133,  // 1399: relay.server.v1.ServerService.DeleteDatabase:output_type -> relay.server.v1.DeleteDatabaseResponse
-	135,  // 1400: relay.server.v1.ServerService.RetryDeleteDatabase:output_type -> relay.server.v1.RetryDeleteDatabaseResponse
-	137,  // 1401: relay.server.v1.ServerService.PauseDatabase:output_type -> relay.server.v1.PauseDatabaseResponse
-	139,  // 1402: relay.server.v1.ServerService.SetDefaultConnections:output_type -> relay.server.v1.SetDefaultConnectionsResponse
-	141,  // 1403: relay.server.v1.ServerService.SetDeletionProtection:output_type -> relay.server.v1.SetDeletionProtectionResponse
-	143,  // 1404: relay.server.v1.ServerService.ResumeDatabase:output_type -> relay.server.v1.ResumeDatabaseResponse
-	147,  // 1405: relay.server.v1.ServerService.GetTopologyOperation:output_type -> relay.server.v1.GetTopologyOperationResponse
-	149,  // 1406: relay.server.v1.ServerService.AbortTopologyOperation:output_type -> relay.server.v1.AbortTopologyOperationResponse
-	151,  // 1407: relay.server.v1.ServerService.ResumeTopologyOperation:output_type -> relay.server.v1.ResumeTopologyOperationResponse
-	153,  // 1408: relay.server.v1.ServerService.GetDatabaseStatus:output_type -> relay.server.v1.GetDatabaseStatusResponse
-	155,  // 1409: relay.server.v1.ServerService.ListDatabaseNodes:output_type -> relay.server.v1.ListDatabaseNodesResponse
-	158,  // 1410: relay.server.v1.ServerService.GetDatabaseLogs:output_type -> relay.server.v1.GetDatabaseLogsResponse
-	161,  // 1411: relay.server.v1.ServerService.SearchDatabaseLogs:output_type -> relay.server.v1.SearchDatabaseLogsResponse
-	574,  // 1412: relay.server.v1.ServerService.GetDatabaseAnalytics:output_type -> relay.server.v1.GetDatabaseAnalyticsResponse
-	578,  // 1413: relay.server.v1.ServerService.GetDatabaseTopSQL:output_type -> relay.server.v1.GetDatabaseTopSQLResponse
-	582,  // 1414: relay.server.v1.ServerService.GetDatabaseLoad:output_type -> relay.server.v1.GetDatabaseLoadResponse
-	617,  // 1415: relay.server.v1.ServerService.RecordDatabaseEvent:output_type -> relay.server.v1.RecordDatabaseEventResponse
-	619,  // 1416: relay.server.v1.ServerService.ListDatabaseEvents:output_type -> relay.server.v1.ListDatabaseEventsResponse
-	623,  // 1417: relay.server.v1.ServerService.CreateDatabaseEventSubscription:output_type -> relay.server.v1.CreateDatabaseEventSubscriptionResponse
-	625,  // 1418: relay.server.v1.ServerService.UpdateDatabaseEventSubscription:output_type -> relay.server.v1.UpdateDatabaseEventSubscriptionResponse
-	627,  // 1419: relay.server.v1.ServerService.DeleteDatabaseEventSubscription:output_type -> relay.server.v1.DeleteDatabaseEventSubscriptionResponse
-	629,  // 1420: relay.server.v1.ServerService.ListDatabaseEventSubscriptions:output_type -> relay.server.v1.ListDatabaseEventSubscriptionsResponse
-	585,  // 1421: relay.server.v1.ServerService.ListDatabaseAlarmMetrics:output_type -> relay.server.v1.ListDatabaseAlarmMetricsResponse
-	590,  // 1422: relay.server.v1.ServerService.CreateDatabaseAlarm:output_type -> relay.server.v1.CreateDatabaseAlarmResponse
-	592,  // 1423: relay.server.v1.ServerService.UpdateDatabaseAlarm:output_type -> relay.server.v1.UpdateDatabaseAlarmResponse
-	594,  // 1424: relay.server.v1.ServerService.DeleteDatabaseAlarm:output_type -> relay.server.v1.DeleteDatabaseAlarmResponse
-	596,  // 1425: relay.server.v1.ServerService.GetDatabaseAlarm:output_type -> relay.server.v1.GetDatabaseAlarmResponse
-	598,  // 1426: relay.server.v1.ServerService.ListDatabaseAlarms:output_type -> relay.server.v1.ListDatabaseAlarmsResponse
-	609,  // 1427: relay.server.v1.ServerService.ListDatabaseAlarmEvents:output_type -> relay.server.v1.ListDatabaseAlarmEventsResponse
-	602,  // 1428: relay.server.v1.ServerService.ListRecommendedDatabaseAlarms:output_type -> relay.server.v1.ListRecommendedDatabaseAlarmsResponse
-	606,  // 1429: relay.server.v1.ServerService.ApplyRecommendedDatabaseAlarms:output_type -> relay.server.v1.ApplyRecommendedDatabaseAlarmsResponse
-	608,  // 1430: relay.server.v1.ServerService.SetRecommendedAlarmsOnCreate:output_type -> relay.server.v1.SetRecommendedAlarmsOnCreateResponse
-	614,  // 1431: relay.server.v1.ServerService.GetDatabaseLocks:output_type -> relay.server.v1.GetDatabaseLocksResponse
-	38,   // 1432: relay.server.v1.ServerService.GetDatabaseConnection:output_type -> relay.server.v1.GetDatabaseConnectionResponse
-	41,   // 1433: relay.server.v1.ServerService.ListIPAllowlist:output_type -> relay.server.v1.ListIPAllowlistResponse
-	43,   // 1434: relay.server.v1.ServerService.AddIPAllowlistEntry:output_type -> relay.server.v1.AddIPAllowlistEntryResponse
-	45,   // 1435: relay.server.v1.ServerService.UpdateIPAllowlistEntry:output_type -> relay.server.v1.UpdateIPAllowlistEntryResponse
-	47,   // 1436: relay.server.v1.ServerService.RemoveIPAllowlistEntry:output_type -> relay.server.v1.RemoveIPAllowlistEntryResponse
-	50,   // 1437: relay.server.v1.ServerService.ListPrivateEndpointRegions:output_type -> relay.server.v1.ListPrivateEndpointRegionsResponse
-	55,   // 1438: relay.server.v1.ServerService.CreatePrivateEndpointService:output_type -> relay.server.v1.CreatePrivateEndpointServiceResponse
-	57,   // 1439: relay.server.v1.ServerService.ListPrivateEndpointServices:output_type -> relay.server.v1.ListPrivateEndpointServicesResponse
-	59,   // 1440: relay.server.v1.ServerService.GetPrivateEndpointService:output_type -> relay.server.v1.GetPrivateEndpointServiceResponse
-	61,   // 1441: relay.server.v1.ServerService.DeletePrivateEndpointService:output_type -> relay.server.v1.DeletePrivateEndpointServiceResponse
-	63,   // 1442: relay.server.v1.ServerService.CreatePrivateEndpoint:output_type -> relay.server.v1.CreatePrivateEndpointResponse
-	65,   // 1443: relay.server.v1.ServerService.GetPrivateEndpoint:output_type -> relay.server.v1.GetPrivateEndpointResponse
-	67,   // 1444: relay.server.v1.ServerService.DeletePrivateEndpoint:output_type -> relay.server.v1.DeletePrivateEndpointResponse
-	84,   // 1445: relay.server.v1.ServerService.CheckMigrationSource:output_type -> relay.server.v1.CheckMigrationSourceResponse
-	86,   // 1446: relay.server.v1.ServerService.GetMigrationSourceCheck:output_type -> relay.server.v1.GetMigrationSourceCheckResponse
-	88,   // 1447: relay.server.v1.ServerService.CreateMigration:output_type -> relay.server.v1.CreateMigrationResponse
-	90,   // 1448: relay.server.v1.ServerService.GetMigration:output_type -> relay.server.v1.GetMigrationResponse
-	92,   // 1449: relay.server.v1.ServerService.ListMigrations:output_type -> relay.server.v1.ListMigrationsResponse
-	94,   // 1450: relay.server.v1.ServerService.RequestMigrationCutover:output_type -> relay.server.v1.RequestMigrationCutoverResponse
-	96,   // 1451: relay.server.v1.ServerService.AbortMigration:output_type -> relay.server.v1.AbortMigrationResponse
-	98,   // 1452: relay.server.v1.ServerService.CompleteMigration:output_type -> relay.server.v1.CompleteMigrationResponse
-	172,  // 1453: relay.server.v1.ServerService.ListBackupSchedules:output_type -> relay.server.v1.ListBackupSchedulesResponse
-	174,  // 1454: relay.server.v1.ServerService.ListBackups:output_type -> relay.server.v1.ListBackupsResponse
-	176,  // 1455: relay.server.v1.ServerService.GetBackupSchedule:output_type -> relay.server.v1.GetBackupScheduleResponse
-	178,  // 1456: relay.server.v1.ServerService.UpsertBackupSchedule:output_type -> relay.server.v1.UpsertBackupScheduleResponse
-	180,  // 1457: relay.server.v1.ServerService.ResetBackupSchedule:output_type -> relay.server.v1.ResetBackupScheduleResponse
-	182,  // 1458: relay.server.v1.ServerService.CreateBackup:output_type -> relay.server.v1.CreateBackupResponse
-	184,  // 1459: relay.server.v1.ServerService.DeleteBackup:output_type -> relay.server.v1.DeleteBackupResponse
-	188,  // 1460: relay.server.v1.ServerService.ListDatabaseUsers:output_type -> relay.server.v1.ListDatabaseUsersResponse
-	190,  // 1461: relay.server.v1.ServerService.GetDatabaseUser:output_type -> relay.server.v1.GetDatabaseUserResponse
-	192,  // 1462: relay.server.v1.ServerService.CreateDatabaseUser:output_type -> relay.server.v1.CreateDatabaseUserResponse
-	194,  // 1463: relay.server.v1.ServerService.UpdateDatabaseUser:output_type -> relay.server.v1.UpdateDatabaseUserResponse
-	196,  // 1464: relay.server.v1.ServerService.DeleteDatabaseUser:output_type -> relay.server.v1.DeleteDatabaseUserResponse
-	202,  // 1465: relay.server.v1.ServerService.ListLogicalDatabases:output_type -> relay.server.v1.ListLogicalDatabasesResponse
-	204,  // 1466: relay.server.v1.ServerService.CreateLogicalDatabase:output_type -> relay.server.v1.CreateLogicalDatabaseResponse
-	206,  // 1467: relay.server.v1.ServerService.UpdateLogicalDatabase:output_type -> relay.server.v1.UpdateLogicalDatabaseResponse
-	208,  // 1468: relay.server.v1.ServerService.DeleteLogicalDatabase:output_type -> relay.server.v1.DeleteLogicalDatabaseResponse
-	211,  // 1469: relay.server.v1.ServerService.ListDatabaseProviders:output_type -> relay.server.v1.ListDatabaseProvidersResponse
-	716,  // 1470: relay.server.v1.ServerService.GetBillingState:output_type -> relay.server.v1.GetBillingStateResponse
-	722,  // 1471: relay.server.v1.ServerService.CreateCheckoutSession:output_type -> relay.server.v1.CreateCheckoutSessionResponse
-	726,  // 1472: relay.server.v1.ServerService.CreateBillingPortalSession:output_type -> relay.server.v1.CreateBillingPortalSessionResponse
-	724,  // 1473: relay.server.v1.ServerService.ChangePlan:output_type -> relay.server.v1.ChangePlanResponse
-	1012, // 1474: relay.server.v1.ServerService.RedeemPromoCode:output_type -> relay.server.v1.RedeemPromoCodeResponse
-	790,  // 1475: relay.server.v1.ServerService.CreateSupportReport:output_type -> relay.server.v1.CreateSupportReportResponse
-	792,  // 1476: relay.server.v1.ServerService.ListSupportReports:output_type -> relay.server.v1.ListSupportReportsResponse
-	794,  // 1477: relay.server.v1.ServerService.GetSupportReport:output_type -> relay.server.v1.GetSupportReportResponse
-	796,  // 1478: relay.server.v1.ServerService.AddSupportReportComment:output_type -> relay.server.v1.AddSupportReportCommentResponse
-	798,  // 1479: relay.server.v1.ServerService.GetSupportAttachment:output_type -> relay.server.v1.GetSupportAttachmentResponse
-	800,  // 1480: relay.server.v1.ServerService.UpdateSupportReportStatus:output_type -> relay.server.v1.UpdateSupportReportStatusResponse
-	832,  // 1481: relay.server.v1.ServerService.GetOrgSSOConnection:output_type -> relay.server.v1.GetOrgSSOConnectionResponse
-	834,  // 1482: relay.server.v1.ServerService.UpsertOrgSSOConnection:output_type -> relay.server.v1.UpsertOrgSSOConnectionResponse
-	836,  // 1483: relay.server.v1.ServerService.DeleteOrgSSOConnection:output_type -> relay.server.v1.DeleteOrgSSOConnectionResponse
-	838,  // 1484: relay.server.v1.ServerService.ListOrgSSOConnections:output_type -> relay.server.v1.ListOrgSSOConnectionsResponse
-	840,  // 1485: relay.server.v1.ServerService.CreateOrgSSOConnection:output_type -> relay.server.v1.CreateOrgSSOConnectionResponse
-	842,  // 1486: relay.server.v1.ServerService.AssignOrgDomainSSOConnection:output_type -> relay.server.v1.AssignOrgDomainSSOConnectionResponse
-	844,  // 1487: relay.server.v1.ServerService.TestOrgSSOConnection:output_type -> relay.server.v1.TestOrgSSOConnectionResponse
-	828,  // 1488: relay.server.v1.ServerService.ListSSOProviderPresets:output_type -> relay.server.v1.ListSSOProviderPresetsResponse
-	850,  // 1489: relay.server.v1.ServerService.GetOrgSignInPolicy:output_type -> relay.server.v1.GetOrgSignInPolicyResponse
-	853,  // 1490: relay.server.v1.ServerService.PreviewOrgSignInPolicy:output_type -> relay.server.v1.PreviewOrgSignInPolicyResponse
-	855,  // 1491: relay.server.v1.ServerService.UpdateOrgSignInPolicy:output_type -> relay.server.v1.UpdateOrgSignInPolicyResponse
-	858,  // 1492: relay.server.v1.ServerService.ListOrgDomains:output_type -> relay.server.v1.ListOrgDomainsResponse
-	860,  // 1493: relay.server.v1.ServerService.AddOrgDomain:output_type -> relay.server.v1.AddOrgDomainResponse
-	862,  // 1494: relay.server.v1.ServerService.VerifyOrgDomain:output_type -> relay.server.v1.VerifyOrgDomainResponse
-	864,  // 1495: relay.server.v1.ServerService.RemoveOrgDomain:output_type -> relay.server.v1.RemoveOrgDomainResponse
-	867,  // 1496: relay.server.v1.ServerService.CreateSCIMToken:output_type -> relay.server.v1.CreateSCIMTokenResponse
-	869,  // 1497: relay.server.v1.ServerService.ListSCIMTokens:output_type -> relay.server.v1.ListSCIMTokensResponse
-	871,  // 1498: relay.server.v1.ServerService.RotateSCIMToken:output_type -> relay.server.v1.RotateSCIMTokenResponse
-	873,  // 1499: relay.server.v1.ServerService.RevokeSCIMToken:output_type -> relay.server.v1.RevokeSCIMTokenResponse
-	876,  // 1500: relay.server.v1.ServerService.ListIdPGroupMappings:output_type -> relay.server.v1.ListIdPGroupMappingsResponse
-	878,  // 1501: relay.server.v1.ServerService.UpsertIdPGroupMapping:output_type -> relay.server.v1.UpsertIdPGroupMappingResponse
-	880,  // 1502: relay.server.v1.ServerService.DeleteIdPGroupMapping:output_type -> relay.server.v1.DeleteIdPGroupMappingResponse
-	888,  // 1503: relay.server.v1.ServerService.ListPostgreSQLExtensions:output_type -> relay.server.v1.ListPostgreSQLExtensionsResponse
-	910,  // 1504: relay.server.v1.ServerService.GetLicenseStatus:output_type -> relay.server.v1.GetLicenseStatusResponse
-	912,  // 1505: relay.server.v1.ServerService.ExportLicenseUsageReport:output_type -> relay.server.v1.ExportLicenseUsageReportResponse
-	915,  // 1506: relay.server.v1.ServerService.GetRunbookSource:output_type -> relay.server.v1.GetRunbookSourceResponse
-	917,  // 1507: relay.server.v1.ServerService.UpsertRunbookSource:output_type -> relay.server.v1.UpsertRunbookSourceResponse
-	919,  // 1508: relay.server.v1.ServerService.DeleteRunbookSource:output_type -> relay.server.v1.DeleteRunbookSourceResponse
-	926,  // 1509: relay.server.v1.ServerService.SyncRunbooks:output_type -> relay.server.v1.SyncRunbooksResponse
-	922,  // 1510: relay.server.v1.ServerService.RotateRunbookWebhookSecret:output_type -> relay.server.v1.RotateRunbookWebhookSecretResponse
-	924,  // 1511: relay.server.v1.ServerService.FetchRunbookHostKey:output_type -> relay.server.v1.FetchRunbookHostKeyResponse
-	930,  // 1512: relay.server.v1.ServerService.ListRunbooks:output_type -> relay.server.v1.ListRunbooksResponse
-	932,  // 1513: relay.server.v1.ServerService.GetRunbook:output_type -> relay.server.v1.GetRunbookResponse
-	934,  // 1514: relay.server.v1.ServerService.RunRunbook:output_type -> relay.server.v1.RunRunbookResponse
-	939,  // 1515: relay.server.v1.ServerService.GetRunbookExecution:output_type -> relay.server.v1.GetRunbookExecutionResponse
-	941,  // 1516: relay.server.v1.ServerService.ListRunbookExecutions:output_type -> relay.server.v1.ListRunbookExecutionsResponse
-	945,  // 1517: relay.server.v1.ServerService.ClaimRunbookExecutions:output_type -> relay.server.v1.ClaimRunbookExecutionsResponse
-	947,  // 1518: relay.server.v1.ServerService.ReportRunbookExecution:output_type -> relay.server.v1.ReportRunbookExecutionResponse
-	954,  // 1519: relay.server.v1.ServerService.CreateQueryTemplate:output_type -> relay.server.v1.CreateQueryTemplateResponse
-	956,  // 1520: relay.server.v1.ServerService.UpdateQueryTemplate:output_type -> relay.server.v1.UpdateQueryTemplateResponse
-	958,  // 1521: relay.server.v1.ServerService.GetQueryTemplate:output_type -> relay.server.v1.GetQueryTemplateResponse
-	960,  // 1522: relay.server.v1.ServerService.ListQueryTemplates:output_type -> relay.server.v1.ListQueryTemplatesResponse
-	962,  // 1523: relay.server.v1.ServerService.ListQueryTemplateVersions:output_type -> relay.server.v1.ListQueryTemplateVersionsResponse
-	964,  // 1524: relay.server.v1.ServerService.ApproveQueryTemplateVersion:output_type -> relay.server.v1.ApproveQueryTemplateVersionResponse
-	966,  // 1525: relay.server.v1.ServerService.WithdrawQueryTemplateVersion:output_type -> relay.server.v1.WithdrawQueryTemplateVersionResponse
-	968,  // 1526: relay.server.v1.ServerService.RevokeQueryTemplate:output_type -> relay.server.v1.RevokeQueryTemplateResponse
-	970,  // 1527: relay.server.v1.ServerService.RunQueryTemplate:output_type -> relay.server.v1.RunQueryTemplateResponse
-	222,  // 1528: relay.server.v1.AdminService.AdminListOrganizations:output_type -> relay.server.v1.AdminListOrganizationsResponse
-	224,  // 1529: relay.server.v1.AdminService.AdminGetOrganization:output_type -> relay.server.v1.AdminGetOrganizationResponse
-	231,  // 1530: relay.server.v1.AdminService.AdminGetOrganizationResources:output_type -> relay.server.v1.AdminGetOrganizationResourcesResponse
-	716,  // 1531: relay.server.v1.AdminService.AdminGetOrganizationBilling:output_type -> relay.server.v1.GetBillingStateResponse
-	297,  // 1532: relay.server.v1.AdminService.AdminSetOrganizationPlan:output_type -> relay.server.v1.AdminSetOrganizationPlanResponse
-	300,  // 1533: relay.server.v1.AdminService.AdminCreatePriceVersion:output_type -> relay.server.v1.AdminCreatePriceVersionResponse
-	302,  // 1534: relay.server.v1.AdminService.AdminPinOrganizationPriceVersion:output_type -> relay.server.v1.AdminPinOrganizationPriceVersionResponse
-	305,  // 1535: relay.server.v1.AdminService.AdminGetEffectivePriceBook:output_type -> relay.server.v1.AdminGetEffectivePriceBookResponse
-	308,  // 1536: relay.server.v1.AdminService.AdminListPriceVersions:output_type -> relay.server.v1.AdminListPriceVersionsResponse
-	310,  // 1537: relay.server.v1.AdminService.AdminGrantOrganizationComp:output_type -> relay.server.v1.AdminGrantOrganizationCompResponse
-	312,  // 1538: relay.server.v1.AdminService.AdminRevokeOrganizationComp:output_type -> relay.server.v1.AdminRevokeOrganizationCompResponse
-	314,  // 1539: relay.server.v1.AdminService.AdminGrantOrganizationCredit:output_type -> relay.server.v1.AdminGrantOrganizationCreditResponse
-	316,  // 1540: relay.server.v1.AdminService.AdminRevokeOrganizationCredit:output_type -> relay.server.v1.AdminRevokeOrganizationCreditResponse
-	319,  // 1541: relay.server.v1.AdminService.AdminListOrganizationGrants:output_type -> relay.server.v1.AdminListOrganizationGrantsResponse
-	326,  // 1542: relay.server.v1.AdminService.AdminListOrganizationContracts:output_type -> relay.server.v1.AdminListOrganizationContractsResponse
-	328,  // 1543: relay.server.v1.AdminService.AdminGetOrganizationContract:output_type -> relay.server.v1.AdminGetOrganizationContractResponse
-	330,  // 1544: relay.server.v1.AdminService.AdminCreateOrganizationContract:output_type -> relay.server.v1.AdminCreateOrganizationContractResponse
-	332,  // 1545: relay.server.v1.AdminService.AdminUpdateOrganizationContract:output_type -> relay.server.v1.AdminUpdateOrganizationContractResponse
-	335,  // 1546: relay.server.v1.AdminService.AdminListContractTemplates:output_type -> relay.server.v1.AdminListContractTemplatesResponse
-	1016, // 1547: relay.server.v1.AdminService.AdminCreatePromoCampaign:output_type -> relay.server.v1.AdminCreatePromoCampaignResponse
-	1018, // 1548: relay.server.v1.AdminService.AdminListPromoCampaigns:output_type -> relay.server.v1.AdminListPromoCampaignsResponse
-	1020, // 1549: relay.server.v1.AdminService.AdminSetPromoCampaignActive:output_type -> relay.server.v1.AdminSetPromoCampaignActiveResponse
-	1031, // 1550: relay.server.v1.AdminService.AdminUpdatePromoCampaign:output_type -> relay.server.v1.AdminUpdatePromoCampaignResponse
-	1022, // 1551: relay.server.v1.AdminService.AdminListPromoRedemptions:output_type -> relay.server.v1.AdminListPromoRedemptionsResponse
-	1024, // 1552: relay.server.v1.AdminService.AdminRevokePromoRedemption:output_type -> relay.server.v1.AdminRevokePromoRedemptionResponse
-	337,  // 1553: relay.server.v1.AdminService.AdminGetOrganizationCost:output_type -> relay.server.v1.AdminGetOrganizationCostResponse
-	342,  // 1554: relay.server.v1.AdminService.AdminListAuditLog:output_type -> relay.server.v1.AdminListAuditLogResponse
-	348,  // 1555: relay.server.v1.AdminService.AdminGetCloudCosts:output_type -> relay.server.v1.AdminGetCloudCostsResponse
-	352,  // 1556: relay.server.v1.AdminService.AdminListPlatformExpenses:output_type -> relay.server.v1.AdminListPlatformExpensesResponse
-	354,  // 1557: relay.server.v1.AdminService.AdminCreatePlatformExpense:output_type -> relay.server.v1.AdminCreatePlatformExpenseResponse
-	356,  // 1558: relay.server.v1.AdminService.AdminUpdatePlatformExpense:output_type -> relay.server.v1.AdminUpdatePlatformExpenseResponse
-	358,  // 1559: relay.server.v1.AdminService.AdminDeletePlatformExpense:output_type -> relay.server.v1.AdminDeletePlatformExpenseResponse
-	362,  // 1560: relay.server.v1.AdminService.AdminGetRevenueOverview:output_type -> relay.server.v1.AdminGetRevenueOverviewResponse
-	802,  // 1561: relay.server.v1.AdminService.AdminListSupportReports:output_type -> relay.server.v1.AdminListSupportReportsResponse
-	804,  // 1562: relay.server.v1.AdminService.AdminGetSupportReport:output_type -> relay.server.v1.AdminGetSupportReportResponse
-	806,  // 1563: relay.server.v1.AdminService.AdminAddSupportReportComment:output_type -> relay.server.v1.AdminAddSupportReportCommentResponse
-	808,  // 1564: relay.server.v1.AdminService.AdminGetSupportAttachment:output_type -> relay.server.v1.AdminGetSupportAttachmentResponse
-	810,  // 1565: relay.server.v1.AdminService.AdminUpdateSupportReportStatus:output_type -> relay.server.v1.AdminUpdateSupportReportStatusResponse
-	814,  // 1566: relay.server.v1.AdminService.AdminListSupportComponents:output_type -> relay.server.v1.AdminListSupportComponentsResponse
-	816,  // 1567: relay.server.v1.AdminService.AdminFileSupportReportIssue:output_type -> relay.server.v1.AdminFileSupportReportIssueResponse
-	493,  // 1568: relay.server.v1.AdminService.AdminListMembers:output_type -> relay.server.v1.ListMembersResponse
-	495,  // 1569: relay.server.v1.AdminService.AdminSetMemberRole:output_type -> relay.server.v1.SetMemberRoleResponse
-	499,  // 1570: relay.server.v1.AdminService.AdminRemoveMember:output_type -> relay.server.v1.RemoveMemberResponse
-	534,  // 1571: relay.server.v1.AdminService.AdminInviteMember:output_type -> relay.server.v1.InviteMemberResponse
-	536,  // 1572: relay.server.v1.AdminService.AdminListInvitations:output_type -> relay.server.v1.ListInvitationsResponse
-	538,  // 1573: relay.server.v1.AdminService.AdminRevokeInvitation:output_type -> relay.server.v1.RevokeInvitationResponse
-	278,  // 1574: relay.server.v1.AdminService.AdminListClusters:output_type -> relay.server.v1.AdminListClustersResponse
-	281,  // 1575: relay.server.v1.AdminService.AdminListPendingOperations:output_type -> relay.server.v1.AdminListPendingOperationsResponse
-	283,  // 1576: relay.server.v1.AdminService.AdminListAgents:output_type -> relay.server.v1.AdminListAgentsResponse
-	286,  // 1577: relay.server.v1.AdminService.AdminListTunnelSessions:output_type -> relay.server.v1.AdminListTunnelSessionsResponse
-	288,  // 1578: relay.server.v1.AdminService.AdminRetryDeleteDatabase:output_type -> relay.server.v1.AdminRetryDeleteDatabaseResponse
-	249,  // 1579: relay.server.v1.AdminService.AdminSearchUsers:output_type -> relay.server.v1.AdminSearchUsersResponse
-	253,  // 1580: relay.server.v1.AdminService.AdminGetUser:output_type -> relay.server.v1.AdminGetUserResponse
-	255,  // 1581: relay.server.v1.AdminService.AdminRevokeUserSessions:output_type -> relay.server.v1.AdminRevokeUserSessionsResponse
-	257,  // 1582: relay.server.v1.AdminService.AdminSuspendUser:output_type -> relay.server.v1.AdminSuspendUserResponse
-	259,  // 1583: relay.server.v1.AdminService.AdminUnsuspendUser:output_type -> relay.server.v1.AdminUnsuspendUserResponse
-	239,  // 1584: relay.server.v1.AdminService.AdminGetOrganizationActivity:output_type -> relay.server.v1.AdminGetOrganizationActivityResponse
-	245,  // 1585: relay.server.v1.AdminService.AdminGetOrganizationSecurity:output_type -> relay.server.v1.AdminGetOrganizationSecurityResponse
-	233,  // 1586: relay.server.v1.AdminService.AdminGetPlatformOverview:output_type -> relay.server.v1.AdminGetPlatformOverviewResponse
-	236,  // 1587: relay.server.v1.AdminService.AdminListOrgActivation:output_type -> relay.server.v1.AdminListOrgActivationResponse
-	261,  // 1588: relay.server.v1.AdminService.AdminSuspendOrganization:output_type -> relay.server.v1.AdminSuspendOrganizationResponse
-	263,  // 1589: relay.server.v1.AdminService.AdminUnsuspendOrganization:output_type -> relay.server.v1.AdminUnsuspendOrganizationResponse
-	366,  // 1590: relay.server.v1.AdminService.AdminGetMaintenanceBanner:output_type -> relay.server.v1.AdminGetMaintenanceBannerResponse
-	368,  // 1591: relay.server.v1.AdminService.AdminSetMaintenanceBanner:output_type -> relay.server.v1.AdminSetMaintenanceBannerResponse
-	370,  // 1592: relay.server.v1.AdminService.AdminClearMaintenanceBanner:output_type -> relay.server.v1.AdminClearMaintenanceBannerResponse
-	373,  // 1593: relay.server.v1.AdminService.AdminGetFreeCreationPause:output_type -> relay.server.v1.AdminGetFreeCreationPauseResponse
-	375,  // 1594: relay.server.v1.AdminService.AdminPauseFreeCreation:output_type -> relay.server.v1.AdminPauseFreeCreationResponse
-	377,  // 1595: relay.server.v1.AdminService.AdminResumeFreeCreation:output_type -> relay.server.v1.AdminResumeFreeCreationResponse
-	267,  // 1596: relay.server.v1.AdminService.AdminListBillingAttention:output_type -> relay.server.v1.AdminListBillingAttentionResponse
-	269,  // 1597: relay.server.v1.AdminService.AdminPauseBillingProcess:output_type -> relay.server.v1.AdminPauseBillingProcessResponse
-	271,  // 1598: relay.server.v1.AdminService.AdminResumeBillingProcess:output_type -> relay.server.v1.AdminResumeBillingProcessResponse
-	273,  // 1599: relay.server.v1.AdminService.AdminExtendBillingDeadline:output_type -> relay.server.v1.AdminExtendBillingDeadlineResponse
-	276,  // 1600: relay.server.v1.AdminService.AdminRunBillingSweep:output_type -> relay.server.v1.AdminRunBillingSweepResponse
-	891,  // 1601: relay.server.v1.AdminService.AdminListFeatureFlags:output_type -> relay.server.v1.AdminListFeatureFlagsResponse
-	893,  // 1602: relay.server.v1.AdminService.AdminGetFeatureFlag:output_type -> relay.server.v1.AdminGetFeatureFlagResponse
-	895,  // 1603: relay.server.v1.AdminService.AdminCreateFeatureFlag:output_type -> relay.server.v1.AdminCreateFeatureFlagResponse
-	897,  // 1604: relay.server.v1.AdminService.AdminUpdateFeatureFlag:output_type -> relay.server.v1.AdminUpdateFeatureFlagResponse
-	899,  // 1605: relay.server.v1.AdminService.AdminArchiveFeatureFlag:output_type -> relay.server.v1.AdminArchiveFeatureFlagResponse
-	901,  // 1606: relay.server.v1.AdminService.AdminSetOrgFeatureOverride:output_type -> relay.server.v1.AdminSetOrgFeatureOverrideResponse
-	903,  // 1607: relay.server.v1.AdminService.AdminClearOrgFeatureOverride:output_type -> relay.server.v1.AdminClearOrgFeatureOverrideResponse
-	906,  // 1608: relay.server.v1.AdminService.AdminListFeatureFlagOrganizations:output_type -> relay.server.v1.AdminListFeatureFlagOrganizationsResponse
-	908,  // 1609: relay.server.v1.AdminService.AdminPreviewFeatureFlagRollout:output_type -> relay.server.v1.AdminPreviewFeatureFlagRolloutResponse
-	883,  // 1610: relay.server.v1.AdminService.AdminListOrgDomains:output_type -> relay.server.v1.AdminListOrgDomainsResponse
-	885,  // 1611: relay.server.v1.AdminService.AdminRemoveOrgDomain:output_type -> relay.server.v1.AdminRemoveOrgDomainResponse
-	1003, // 1612: relay.server.v1.BackofficeMCPService.CreateMCPGrant:output_type -> relay.server.v1.CreateMCPGrantResponse
-	1005, // 1613: relay.server.v1.BackofficeMCPService.RotateMCPGrant:output_type -> relay.server.v1.RotateMCPGrantResponse
-	1007, // 1614: relay.server.v1.BackofficeMCPService.ResolveMCPGrant:output_type -> relay.server.v1.ResolveMCPGrantResponse
-	1009, // 1615: relay.server.v1.BackofficeMCPService.RevokeMCPGrant:output_type -> relay.server.v1.RevokeMCPGrantResponse
-	1232, // [1232:1616] is the sub-list for method output_type
-	848,  // [848:1232] is the sub-list for method input_type
+	663,  // 982: relay.server.v1.ServerService.DeleteAccount:input_type -> relay.server.v1.DeleteAccountRequest
+	676,  // 983: relay.server.v1.ServerService.GetOrgOverview:input_type -> relay.server.v1.GetOrgOverviewRequest
+	666,  // 984: relay.server.v1.ServerService.ListWorkspaces:input_type -> relay.server.v1.ListWorkspacesRequest
+	668,  // 985: relay.server.v1.ServerService.GetWorkspace:input_type -> relay.server.v1.GetWorkspaceRequest
+	670,  // 986: relay.server.v1.ServerService.CreateWorkspace:input_type -> relay.server.v1.CreateWorkspaceRequest
+	672,  // 987: relay.server.v1.ServerService.UpdateWorkspace:input_type -> relay.server.v1.UpdateWorkspaceRequest
+	674,  // 988: relay.server.v1.ServerService.DeleteWorkspace:input_type -> relay.server.v1.DeleteWorkspaceRequest
+	681,  // 989: relay.server.v1.ServerService.AddWorkspaceMember:input_type -> relay.server.v1.AddWorkspaceMemberRequest
+	683,  // 990: relay.server.v1.ServerService.RemoveWorkspaceMember:input_type -> relay.server.v1.RemoveWorkspaceMemberRequest
+	685,  // 991: relay.server.v1.ServerService.ListWorkspaceMembers:input_type -> relay.server.v1.ListWorkspaceMembersRequest
+	687,  // 992: relay.server.v1.ServerService.AddWorkspaceTeam:input_type -> relay.server.v1.AddWorkspaceTeamRequest
+	689,  // 993: relay.server.v1.ServerService.RemoveWorkspaceTeam:input_type -> relay.server.v1.RemoveWorkspaceTeamRequest
+	691,  // 994: relay.server.v1.ServerService.ListWorkspaceTeams:input_type -> relay.server.v1.ListWorkspaceTeamsRequest
+	693,  // 995: relay.server.v1.ServerService.SetWorkspaceMemberRole:input_type -> relay.server.v1.SetWorkspaceMemberRoleRequest
+	695,  // 996: relay.server.v1.ServerService.SetWorkspaceTeamRole:input_type -> relay.server.v1.SetWorkspaceTeamRoleRequest
+	699,  // 997: relay.server.v1.ServerService.ListRoles:input_type -> relay.server.v1.ListRolesRequest
+	701,  // 998: relay.server.v1.ServerService.CreateRole:input_type -> relay.server.v1.CreateRoleRequest
+	703,  // 999: relay.server.v1.ServerService.UpdateRole:input_type -> relay.server.v1.UpdateRoleRequest
+	705,  // 1000: relay.server.v1.ServerService.DeleteRole:input_type -> relay.server.v1.DeleteRoleRequest
+	708,  // 1001: relay.server.v1.ServerService.ListRoleBindings:input_type -> relay.server.v1.ListRoleBindingsRequest
+	710,  // 1002: relay.server.v1.ServerService.CreateRoleBinding:input_type -> relay.server.v1.CreateRoleBindingRequest
+	712,  // 1003: relay.server.v1.ServerService.DeleteRoleBinding:input_type -> relay.server.v1.DeleteRoleBindingRequest
+	103,  // 1004: relay.server.v1.ServerService.ListDatabases:input_type -> relay.server.v1.ListDatabasesRequest
+	105,  // 1005: relay.server.v1.ServerService.CreateDatabase:input_type -> relay.server.v1.CreateDatabaseRequest
+	107,  // 1006: relay.server.v1.ServerService.RestoreDatabase:input_type -> relay.server.v1.RestoreDatabaseRequest
+	109,  // 1007: relay.server.v1.ServerService.GetDatabase:input_type -> relay.server.v1.GetDatabaseRequest
+	111,  // 1008: relay.server.v1.ServerService.UpdateDatabase:input_type -> relay.server.v1.UpdateDatabaseRequest
+	114,  // 1009: relay.server.v1.ServerService.ListPostgreSQLParameters:input_type -> relay.server.v1.ListPostgreSQLParametersRequest
+	117,  // 1010: relay.server.v1.ServerService.ListValkeyParameters:input_type -> relay.server.v1.ListValkeyParametersRequest
+	119,  // 1011: relay.server.v1.ServerService.ListDocumentDBParameters:input_type -> relay.server.v1.ListDocumentDBParametersRequest
+	121,  // 1012: relay.server.v1.ServerService.ListAutoscaleMetrics:input_type -> relay.server.v1.ListAutoscaleMetricsRequest
+	124,  // 1013: relay.server.v1.ServerService.ListScaleEvents:input_type -> relay.server.v1.ListScaleEventsRequest
+	127,  // 1014: relay.server.v1.ServerService.WatchDatabase:input_type -> relay.server.v1.WatchDatabaseRequest
+	130,  // 1015: relay.server.v1.ServerService.ListPendingOperations:input_type -> relay.server.v1.ListPendingOperationsRequest
+	132,  // 1016: relay.server.v1.ServerService.DeleteDatabase:input_type -> relay.server.v1.DeleteDatabaseRequest
+	134,  // 1017: relay.server.v1.ServerService.RetryDeleteDatabase:input_type -> relay.server.v1.RetryDeleteDatabaseRequest
+	136,  // 1018: relay.server.v1.ServerService.PauseDatabase:input_type -> relay.server.v1.PauseDatabaseRequest
+	138,  // 1019: relay.server.v1.ServerService.SetDefaultConnections:input_type -> relay.server.v1.SetDefaultConnectionsRequest
+	140,  // 1020: relay.server.v1.ServerService.SetDeletionProtection:input_type -> relay.server.v1.SetDeletionProtectionRequest
+	142,  // 1021: relay.server.v1.ServerService.ResumeDatabase:input_type -> relay.server.v1.ResumeDatabaseRequest
+	146,  // 1022: relay.server.v1.ServerService.GetTopologyOperation:input_type -> relay.server.v1.GetTopologyOperationRequest
+	148,  // 1023: relay.server.v1.ServerService.AbortTopologyOperation:input_type -> relay.server.v1.AbortTopologyOperationRequest
+	150,  // 1024: relay.server.v1.ServerService.ResumeTopologyOperation:input_type -> relay.server.v1.ResumeTopologyOperationRequest
+	152,  // 1025: relay.server.v1.ServerService.GetDatabaseStatus:input_type -> relay.server.v1.GetDatabaseStatusRequest
+	154,  // 1026: relay.server.v1.ServerService.ListDatabaseNodes:input_type -> relay.server.v1.ListDatabaseNodesRequest
+	156,  // 1027: relay.server.v1.ServerService.GetDatabaseLogs:input_type -> relay.server.v1.GetDatabaseLogsRequest
+	159,  // 1028: relay.server.v1.ServerService.SearchDatabaseLogs:input_type -> relay.server.v1.SearchDatabaseLogsRequest
+	571,  // 1029: relay.server.v1.ServerService.GetDatabaseAnalytics:input_type -> relay.server.v1.GetDatabaseAnalyticsRequest
+	575,  // 1030: relay.server.v1.ServerService.GetDatabaseTopSQL:input_type -> relay.server.v1.GetDatabaseTopSQLRequest
+	579,  // 1031: relay.server.v1.ServerService.GetDatabaseLoad:input_type -> relay.server.v1.GetDatabaseLoadRequest
+	616,  // 1032: relay.server.v1.ServerService.RecordDatabaseEvent:input_type -> relay.server.v1.RecordDatabaseEventRequest
+	618,  // 1033: relay.server.v1.ServerService.ListDatabaseEvents:input_type -> relay.server.v1.ListDatabaseEventsRequest
+	622,  // 1034: relay.server.v1.ServerService.CreateDatabaseEventSubscription:input_type -> relay.server.v1.CreateDatabaseEventSubscriptionRequest
+	624,  // 1035: relay.server.v1.ServerService.UpdateDatabaseEventSubscription:input_type -> relay.server.v1.UpdateDatabaseEventSubscriptionRequest
+	626,  // 1036: relay.server.v1.ServerService.DeleteDatabaseEventSubscription:input_type -> relay.server.v1.DeleteDatabaseEventSubscriptionRequest
+	628,  // 1037: relay.server.v1.ServerService.ListDatabaseEventSubscriptions:input_type -> relay.server.v1.ListDatabaseEventSubscriptionsRequest
+	584,  // 1038: relay.server.v1.ServerService.ListDatabaseAlarmMetrics:input_type -> relay.server.v1.ListDatabaseAlarmMetricsRequest
+	589,  // 1039: relay.server.v1.ServerService.CreateDatabaseAlarm:input_type -> relay.server.v1.CreateDatabaseAlarmRequest
+	591,  // 1040: relay.server.v1.ServerService.UpdateDatabaseAlarm:input_type -> relay.server.v1.UpdateDatabaseAlarmRequest
+	593,  // 1041: relay.server.v1.ServerService.DeleteDatabaseAlarm:input_type -> relay.server.v1.DeleteDatabaseAlarmRequest
+	595,  // 1042: relay.server.v1.ServerService.GetDatabaseAlarm:input_type -> relay.server.v1.GetDatabaseAlarmRequest
+	597,  // 1043: relay.server.v1.ServerService.ListDatabaseAlarms:input_type -> relay.server.v1.ListDatabaseAlarmsRequest
+	599,  // 1044: relay.server.v1.ServerService.ListDatabaseAlarmEvents:input_type -> relay.server.v1.ListDatabaseAlarmEventsRequest
+	601,  // 1045: relay.server.v1.ServerService.ListRecommendedDatabaseAlarms:input_type -> relay.server.v1.ListRecommendedDatabaseAlarmsRequest
+	604,  // 1046: relay.server.v1.ServerService.ApplyRecommendedDatabaseAlarms:input_type -> relay.server.v1.ApplyRecommendedDatabaseAlarmsRequest
+	607,  // 1047: relay.server.v1.ServerService.SetRecommendedAlarmsOnCreate:input_type -> relay.server.v1.SetRecommendedAlarmsOnCreateRequest
+	610,  // 1048: relay.server.v1.ServerService.GetDatabaseLocks:input_type -> relay.server.v1.GetDatabaseLocksRequest
+	34,   // 1049: relay.server.v1.ServerService.GetDatabaseConnection:input_type -> relay.server.v1.GetDatabaseConnectionRequest
+	40,   // 1050: relay.server.v1.ServerService.ListIPAllowlist:input_type -> relay.server.v1.ListIPAllowlistRequest
+	42,   // 1051: relay.server.v1.ServerService.AddIPAllowlistEntry:input_type -> relay.server.v1.AddIPAllowlistEntryRequest
+	44,   // 1052: relay.server.v1.ServerService.UpdateIPAllowlistEntry:input_type -> relay.server.v1.UpdateIPAllowlistEntryRequest
+	46,   // 1053: relay.server.v1.ServerService.RemoveIPAllowlistEntry:input_type -> relay.server.v1.RemoveIPAllowlistEntryRequest
+	49,   // 1054: relay.server.v1.ServerService.ListPrivateEndpointRegions:input_type -> relay.server.v1.ListPrivateEndpointRegionsRequest
+	54,   // 1055: relay.server.v1.ServerService.CreatePrivateEndpointService:input_type -> relay.server.v1.CreatePrivateEndpointServiceRequest
+	56,   // 1056: relay.server.v1.ServerService.ListPrivateEndpointServices:input_type -> relay.server.v1.ListPrivateEndpointServicesRequest
+	58,   // 1057: relay.server.v1.ServerService.GetPrivateEndpointService:input_type -> relay.server.v1.GetPrivateEndpointServiceRequest
+	60,   // 1058: relay.server.v1.ServerService.DeletePrivateEndpointService:input_type -> relay.server.v1.DeletePrivateEndpointServiceRequest
+	62,   // 1059: relay.server.v1.ServerService.CreatePrivateEndpoint:input_type -> relay.server.v1.CreatePrivateEndpointRequest
+	64,   // 1060: relay.server.v1.ServerService.GetPrivateEndpoint:input_type -> relay.server.v1.GetPrivateEndpointRequest
+	66,   // 1061: relay.server.v1.ServerService.DeletePrivateEndpoint:input_type -> relay.server.v1.DeletePrivateEndpointRequest
+	83,   // 1062: relay.server.v1.ServerService.CheckMigrationSource:input_type -> relay.server.v1.CheckMigrationSourceRequest
+	85,   // 1063: relay.server.v1.ServerService.GetMigrationSourceCheck:input_type -> relay.server.v1.GetMigrationSourceCheckRequest
+	87,   // 1064: relay.server.v1.ServerService.CreateMigration:input_type -> relay.server.v1.CreateMigrationRequest
+	89,   // 1065: relay.server.v1.ServerService.GetMigration:input_type -> relay.server.v1.GetMigrationRequest
+	91,   // 1066: relay.server.v1.ServerService.ListMigrations:input_type -> relay.server.v1.ListMigrationsRequest
+	93,   // 1067: relay.server.v1.ServerService.RequestMigrationCutover:input_type -> relay.server.v1.RequestMigrationCutoverRequest
+	95,   // 1068: relay.server.v1.ServerService.AbortMigration:input_type -> relay.server.v1.AbortMigrationRequest
+	97,   // 1069: relay.server.v1.ServerService.CompleteMigration:input_type -> relay.server.v1.CompleteMigrationRequest
+	171,  // 1070: relay.server.v1.ServerService.ListBackupSchedules:input_type -> relay.server.v1.ListBackupSchedulesRequest
+	173,  // 1071: relay.server.v1.ServerService.ListBackups:input_type -> relay.server.v1.ListBackupsRequest
+	175,  // 1072: relay.server.v1.ServerService.GetBackupSchedule:input_type -> relay.server.v1.GetBackupScheduleRequest
+	177,  // 1073: relay.server.v1.ServerService.UpsertBackupSchedule:input_type -> relay.server.v1.UpsertBackupScheduleRequest
+	179,  // 1074: relay.server.v1.ServerService.ResetBackupSchedule:input_type -> relay.server.v1.ResetBackupScheduleRequest
+	181,  // 1075: relay.server.v1.ServerService.CreateBackup:input_type -> relay.server.v1.CreateBackupRequest
+	183,  // 1076: relay.server.v1.ServerService.DeleteBackup:input_type -> relay.server.v1.DeleteBackupRequest
+	187,  // 1077: relay.server.v1.ServerService.ListDatabaseUsers:input_type -> relay.server.v1.ListDatabaseUsersRequest
+	189,  // 1078: relay.server.v1.ServerService.GetDatabaseUser:input_type -> relay.server.v1.GetDatabaseUserRequest
+	191,  // 1079: relay.server.v1.ServerService.CreateDatabaseUser:input_type -> relay.server.v1.CreateDatabaseUserRequest
+	193,  // 1080: relay.server.v1.ServerService.UpdateDatabaseUser:input_type -> relay.server.v1.UpdateDatabaseUserRequest
+	195,  // 1081: relay.server.v1.ServerService.DeleteDatabaseUser:input_type -> relay.server.v1.DeleteDatabaseUserRequest
+	201,  // 1082: relay.server.v1.ServerService.ListLogicalDatabases:input_type -> relay.server.v1.ListLogicalDatabasesRequest
+	203,  // 1083: relay.server.v1.ServerService.CreateLogicalDatabase:input_type -> relay.server.v1.CreateLogicalDatabaseRequest
+	205,  // 1084: relay.server.v1.ServerService.UpdateLogicalDatabase:input_type -> relay.server.v1.UpdateLogicalDatabaseRequest
+	207,  // 1085: relay.server.v1.ServerService.DeleteLogicalDatabase:input_type -> relay.server.v1.DeleteLogicalDatabaseRequest
+	210,  // 1086: relay.server.v1.ServerService.ListDatabaseProviders:input_type -> relay.server.v1.ListDatabaseProvidersRequest
+	717,  // 1087: relay.server.v1.ServerService.GetBillingState:input_type -> relay.server.v1.GetBillingStateRequest
+	723,  // 1088: relay.server.v1.ServerService.CreateCheckoutSession:input_type -> relay.server.v1.CreateCheckoutSessionRequest
+	727,  // 1089: relay.server.v1.ServerService.CreateBillingPortalSession:input_type -> relay.server.v1.CreateBillingPortalSessionRequest
+	725,  // 1090: relay.server.v1.ServerService.ChangePlan:input_type -> relay.server.v1.ChangePlanRequest
+	1013, // 1091: relay.server.v1.ServerService.RedeemPromoCode:input_type -> relay.server.v1.RedeemPromoCodeRequest
+	791,  // 1092: relay.server.v1.ServerService.CreateSupportReport:input_type -> relay.server.v1.CreateSupportReportRequest
+	793,  // 1093: relay.server.v1.ServerService.ListSupportReports:input_type -> relay.server.v1.ListSupportReportsRequest
+	795,  // 1094: relay.server.v1.ServerService.GetSupportReport:input_type -> relay.server.v1.GetSupportReportRequest
+	797,  // 1095: relay.server.v1.ServerService.AddSupportReportComment:input_type -> relay.server.v1.AddSupportReportCommentRequest
+	799,  // 1096: relay.server.v1.ServerService.GetSupportAttachment:input_type -> relay.server.v1.GetSupportAttachmentRequest
+	801,  // 1097: relay.server.v1.ServerService.UpdateSupportReportStatus:input_type -> relay.server.v1.UpdateSupportReportStatusRequest
+	833,  // 1098: relay.server.v1.ServerService.GetOrgSSOConnection:input_type -> relay.server.v1.GetOrgSSOConnectionRequest
+	835,  // 1099: relay.server.v1.ServerService.UpsertOrgSSOConnection:input_type -> relay.server.v1.UpsertOrgSSOConnectionRequest
+	837,  // 1100: relay.server.v1.ServerService.DeleteOrgSSOConnection:input_type -> relay.server.v1.DeleteOrgSSOConnectionRequest
+	839,  // 1101: relay.server.v1.ServerService.ListOrgSSOConnections:input_type -> relay.server.v1.ListOrgSSOConnectionsRequest
+	841,  // 1102: relay.server.v1.ServerService.CreateOrgSSOConnection:input_type -> relay.server.v1.CreateOrgSSOConnectionRequest
+	843,  // 1103: relay.server.v1.ServerService.AssignOrgDomainSSOConnection:input_type -> relay.server.v1.AssignOrgDomainSSOConnectionRequest
+	845,  // 1104: relay.server.v1.ServerService.TestOrgSSOConnection:input_type -> relay.server.v1.TestOrgSSOConnectionRequest
+	829,  // 1105: relay.server.v1.ServerService.ListSSOProviderPresets:input_type -> relay.server.v1.ListSSOProviderPresetsRequest
+	851,  // 1106: relay.server.v1.ServerService.GetOrgSignInPolicy:input_type -> relay.server.v1.GetOrgSignInPolicyRequest
+	854,  // 1107: relay.server.v1.ServerService.PreviewOrgSignInPolicy:input_type -> relay.server.v1.PreviewOrgSignInPolicyRequest
+	856,  // 1108: relay.server.v1.ServerService.UpdateOrgSignInPolicy:input_type -> relay.server.v1.UpdateOrgSignInPolicyRequest
+	859,  // 1109: relay.server.v1.ServerService.ListOrgDomains:input_type -> relay.server.v1.ListOrgDomainsRequest
+	861,  // 1110: relay.server.v1.ServerService.AddOrgDomain:input_type -> relay.server.v1.AddOrgDomainRequest
+	863,  // 1111: relay.server.v1.ServerService.VerifyOrgDomain:input_type -> relay.server.v1.VerifyOrgDomainRequest
+	865,  // 1112: relay.server.v1.ServerService.RemoveOrgDomain:input_type -> relay.server.v1.RemoveOrgDomainRequest
+	868,  // 1113: relay.server.v1.ServerService.CreateSCIMToken:input_type -> relay.server.v1.CreateSCIMTokenRequest
+	870,  // 1114: relay.server.v1.ServerService.ListSCIMTokens:input_type -> relay.server.v1.ListSCIMTokensRequest
+	872,  // 1115: relay.server.v1.ServerService.RotateSCIMToken:input_type -> relay.server.v1.RotateSCIMTokenRequest
+	874,  // 1116: relay.server.v1.ServerService.RevokeSCIMToken:input_type -> relay.server.v1.RevokeSCIMTokenRequest
+	877,  // 1117: relay.server.v1.ServerService.ListIdPGroupMappings:input_type -> relay.server.v1.ListIdPGroupMappingsRequest
+	879,  // 1118: relay.server.v1.ServerService.UpsertIdPGroupMapping:input_type -> relay.server.v1.UpsertIdPGroupMappingRequest
+	881,  // 1119: relay.server.v1.ServerService.DeleteIdPGroupMapping:input_type -> relay.server.v1.DeleteIdPGroupMappingRequest
+	889,  // 1120: relay.server.v1.ServerService.ListPostgreSQLExtensions:input_type -> relay.server.v1.ListPostgreSQLExtensionsRequest
+	911,  // 1121: relay.server.v1.ServerService.GetLicenseStatus:input_type -> relay.server.v1.GetLicenseStatusRequest
+	913,  // 1122: relay.server.v1.ServerService.ExportLicenseUsageReport:input_type -> relay.server.v1.ExportLicenseUsageReportRequest
+	916,  // 1123: relay.server.v1.ServerService.GetRunbookSource:input_type -> relay.server.v1.GetRunbookSourceRequest
+	918,  // 1124: relay.server.v1.ServerService.UpsertRunbookSource:input_type -> relay.server.v1.UpsertRunbookSourceRequest
+	920,  // 1125: relay.server.v1.ServerService.DeleteRunbookSource:input_type -> relay.server.v1.DeleteRunbookSourceRequest
+	922,  // 1126: relay.server.v1.ServerService.SyncRunbooks:input_type -> relay.server.v1.SyncRunbooksRequest
+	923,  // 1127: relay.server.v1.ServerService.RotateRunbookWebhookSecret:input_type -> relay.server.v1.RotateRunbookWebhookSecretRequest
+	925,  // 1128: relay.server.v1.ServerService.FetchRunbookHostKey:input_type -> relay.server.v1.FetchRunbookHostKeyRequest
+	931,  // 1129: relay.server.v1.ServerService.ListRunbooks:input_type -> relay.server.v1.ListRunbooksRequest
+	933,  // 1130: relay.server.v1.ServerService.GetRunbook:input_type -> relay.server.v1.GetRunbookRequest
+	935,  // 1131: relay.server.v1.ServerService.RunRunbook:input_type -> relay.server.v1.RunRunbookRequest
+	940,  // 1132: relay.server.v1.ServerService.GetRunbookExecution:input_type -> relay.server.v1.GetRunbookExecutionRequest
+	942,  // 1133: relay.server.v1.ServerService.ListRunbookExecutions:input_type -> relay.server.v1.ListRunbookExecutionsRequest
+	944,  // 1134: relay.server.v1.ServerService.ClaimRunbookExecutions:input_type -> relay.server.v1.ClaimRunbookExecutionsRequest
+	948,  // 1135: relay.server.v1.ServerService.ReportRunbookExecution:input_type -> relay.server.v1.ReportRunbookExecutionRequest
+	954,  // 1136: relay.server.v1.ServerService.CreateQueryTemplate:input_type -> relay.server.v1.CreateQueryTemplateRequest
+	957,  // 1137: relay.server.v1.ServerService.UpdateQueryTemplate:input_type -> relay.server.v1.UpdateQueryTemplateRequest
+	959,  // 1138: relay.server.v1.ServerService.GetQueryTemplate:input_type -> relay.server.v1.GetQueryTemplateRequest
+	961,  // 1139: relay.server.v1.ServerService.ListQueryTemplates:input_type -> relay.server.v1.ListQueryTemplatesRequest
+	963,  // 1140: relay.server.v1.ServerService.ListQueryTemplateVersions:input_type -> relay.server.v1.ListQueryTemplateVersionsRequest
+	965,  // 1141: relay.server.v1.ServerService.ApproveQueryTemplateVersion:input_type -> relay.server.v1.ApproveQueryTemplateVersionRequest
+	967,  // 1142: relay.server.v1.ServerService.WithdrawQueryTemplateVersion:input_type -> relay.server.v1.WithdrawQueryTemplateVersionRequest
+	969,  // 1143: relay.server.v1.ServerService.RevokeQueryTemplate:input_type -> relay.server.v1.RevokeQueryTemplateRequest
+	971,  // 1144: relay.server.v1.ServerService.RunQueryTemplate:input_type -> relay.server.v1.RunQueryTemplateRequest
+	221,  // 1145: relay.server.v1.AdminService.AdminListOrganizations:input_type -> relay.server.v1.AdminListOrganizationsRequest
+	223,  // 1146: relay.server.v1.AdminService.AdminGetOrganization:input_type -> relay.server.v1.AdminGetOrganizationRequest
+	230,  // 1147: relay.server.v1.AdminService.AdminGetOrganizationResources:input_type -> relay.server.v1.AdminGetOrganizationResourcesRequest
+	295,  // 1148: relay.server.v1.AdminService.AdminGetOrganizationBilling:input_type -> relay.server.v1.AdminGetOrganizationBillingRequest
+	296,  // 1149: relay.server.v1.AdminService.AdminSetOrganizationPlan:input_type -> relay.server.v1.AdminSetOrganizationPlanRequest
+	299,  // 1150: relay.server.v1.AdminService.AdminCreatePriceVersion:input_type -> relay.server.v1.AdminCreatePriceVersionRequest
+	301,  // 1151: relay.server.v1.AdminService.AdminPinOrganizationPriceVersion:input_type -> relay.server.v1.AdminPinOrganizationPriceVersionRequest
+	303,  // 1152: relay.server.v1.AdminService.AdminGetEffectivePriceBook:input_type -> relay.server.v1.AdminGetEffectivePriceBookRequest
+	306,  // 1153: relay.server.v1.AdminService.AdminListPriceVersions:input_type -> relay.server.v1.AdminListPriceVersionsRequest
+	309,  // 1154: relay.server.v1.AdminService.AdminGrantOrganizationComp:input_type -> relay.server.v1.AdminGrantOrganizationCompRequest
+	311,  // 1155: relay.server.v1.AdminService.AdminRevokeOrganizationComp:input_type -> relay.server.v1.AdminRevokeOrganizationCompRequest
+	313,  // 1156: relay.server.v1.AdminService.AdminGrantOrganizationCredit:input_type -> relay.server.v1.AdminGrantOrganizationCreditRequest
+	315,  // 1157: relay.server.v1.AdminService.AdminRevokeOrganizationCredit:input_type -> relay.server.v1.AdminRevokeOrganizationCreditRequest
+	317,  // 1158: relay.server.v1.AdminService.AdminListOrganizationGrants:input_type -> relay.server.v1.AdminListOrganizationGrantsRequest
+	325,  // 1159: relay.server.v1.AdminService.AdminListOrganizationContracts:input_type -> relay.server.v1.AdminListOrganizationContractsRequest
+	327,  // 1160: relay.server.v1.AdminService.AdminGetOrganizationContract:input_type -> relay.server.v1.AdminGetOrganizationContractRequest
+	329,  // 1161: relay.server.v1.AdminService.AdminCreateOrganizationContract:input_type -> relay.server.v1.AdminCreateOrganizationContractRequest
+	331,  // 1162: relay.server.v1.AdminService.AdminUpdateOrganizationContract:input_type -> relay.server.v1.AdminUpdateOrganizationContractRequest
+	333,  // 1163: relay.server.v1.AdminService.AdminListContractTemplates:input_type -> relay.server.v1.AdminListContractTemplatesRequest
+	1017, // 1164: relay.server.v1.AdminService.AdminCreatePromoCampaign:input_type -> relay.server.v1.AdminCreatePromoCampaignRequest
+	1019, // 1165: relay.server.v1.AdminService.AdminListPromoCampaigns:input_type -> relay.server.v1.AdminListPromoCampaignsRequest
+	1021, // 1166: relay.server.v1.AdminService.AdminSetPromoCampaignActive:input_type -> relay.server.v1.AdminSetPromoCampaignActiveRequest
+	1032, // 1167: relay.server.v1.AdminService.AdminUpdatePromoCampaign:input_type -> relay.server.v1.AdminUpdatePromoCampaignRequest
+	1023, // 1168: relay.server.v1.AdminService.AdminListPromoRedemptions:input_type -> relay.server.v1.AdminListPromoRedemptionsRequest
+	1025, // 1169: relay.server.v1.AdminService.AdminRevokePromoRedemption:input_type -> relay.server.v1.AdminRevokePromoRedemptionRequest
+	336,  // 1170: relay.server.v1.AdminService.AdminGetOrganizationCost:input_type -> relay.server.v1.AdminGetOrganizationCostRequest
+	341,  // 1171: relay.server.v1.AdminService.AdminListAuditLog:input_type -> relay.server.v1.AdminListAuditLogRequest
+	343,  // 1172: relay.server.v1.AdminService.AdminGetCloudCosts:input_type -> relay.server.v1.AdminGetCloudCostsRequest
+	351,  // 1173: relay.server.v1.AdminService.AdminListPlatformExpenses:input_type -> relay.server.v1.AdminListPlatformExpensesRequest
+	353,  // 1174: relay.server.v1.AdminService.AdminCreatePlatformExpense:input_type -> relay.server.v1.AdminCreatePlatformExpenseRequest
+	355,  // 1175: relay.server.v1.AdminService.AdminUpdatePlatformExpense:input_type -> relay.server.v1.AdminUpdatePlatformExpenseRequest
+	357,  // 1176: relay.server.v1.AdminService.AdminDeletePlatformExpense:input_type -> relay.server.v1.AdminDeletePlatformExpenseRequest
+	359,  // 1177: relay.server.v1.AdminService.AdminGetRevenueOverview:input_type -> relay.server.v1.AdminGetRevenueOverviewRequest
+	803,  // 1178: relay.server.v1.AdminService.AdminListSupportReports:input_type -> relay.server.v1.AdminListSupportReportsRequest
+	805,  // 1179: relay.server.v1.AdminService.AdminGetSupportReport:input_type -> relay.server.v1.AdminGetSupportReportRequest
+	807,  // 1180: relay.server.v1.AdminService.AdminAddSupportReportComment:input_type -> relay.server.v1.AdminAddSupportReportCommentRequest
+	809,  // 1181: relay.server.v1.AdminService.AdminGetSupportAttachment:input_type -> relay.server.v1.AdminGetSupportAttachmentRequest
+	811,  // 1182: relay.server.v1.AdminService.AdminUpdateSupportReportStatus:input_type -> relay.server.v1.AdminUpdateSupportReportStatusRequest
+	815,  // 1183: relay.server.v1.AdminService.AdminListSupportComponents:input_type -> relay.server.v1.AdminListSupportComponentsRequest
+	817,  // 1184: relay.server.v1.AdminService.AdminFileSupportReportIssue:input_type -> relay.server.v1.AdminFileSupportReportIssueRequest
+	289,  // 1185: relay.server.v1.AdminService.AdminListMembers:input_type -> relay.server.v1.AdminListMembersRequest
+	290,  // 1186: relay.server.v1.AdminService.AdminSetMemberRole:input_type -> relay.server.v1.AdminSetMemberRoleRequest
+	291,  // 1187: relay.server.v1.AdminService.AdminRemoveMember:input_type -> relay.server.v1.AdminRemoveMemberRequest
+	292,  // 1188: relay.server.v1.AdminService.AdminInviteMember:input_type -> relay.server.v1.AdminInviteMemberRequest
+	293,  // 1189: relay.server.v1.AdminService.AdminListInvitations:input_type -> relay.server.v1.AdminListInvitationsRequest
+	294,  // 1190: relay.server.v1.AdminService.AdminRevokeInvitation:input_type -> relay.server.v1.AdminRevokeInvitationRequest
+	277,  // 1191: relay.server.v1.AdminService.AdminListClusters:input_type -> relay.server.v1.AdminListClustersRequest
+	280,  // 1192: relay.server.v1.AdminService.AdminListPendingOperations:input_type -> relay.server.v1.AdminListPendingOperationsRequest
+	282,  // 1193: relay.server.v1.AdminService.AdminListAgents:input_type -> relay.server.v1.AdminListAgentsRequest
+	285,  // 1194: relay.server.v1.AdminService.AdminListTunnelSessions:input_type -> relay.server.v1.AdminListTunnelSessionsRequest
+	287,  // 1195: relay.server.v1.AdminService.AdminRetryDeleteDatabase:input_type -> relay.server.v1.AdminRetryDeleteDatabaseRequest
+	248,  // 1196: relay.server.v1.AdminService.AdminSearchUsers:input_type -> relay.server.v1.AdminSearchUsersRequest
+	250,  // 1197: relay.server.v1.AdminService.AdminGetUser:input_type -> relay.server.v1.AdminGetUserRequest
+	254,  // 1198: relay.server.v1.AdminService.AdminRevokeUserSessions:input_type -> relay.server.v1.AdminRevokeUserSessionsRequest
+	256,  // 1199: relay.server.v1.AdminService.AdminSuspendUser:input_type -> relay.server.v1.AdminSuspendUserRequest
+	258,  // 1200: relay.server.v1.AdminService.AdminUnsuspendUser:input_type -> relay.server.v1.AdminUnsuspendUserRequest
+	237,  // 1201: relay.server.v1.AdminService.AdminGetOrganizationActivity:input_type -> relay.server.v1.AdminGetOrganizationActivityRequest
+	240,  // 1202: relay.server.v1.AdminService.AdminGetOrganizationSecurity:input_type -> relay.server.v1.AdminGetOrganizationSecurityRequest
+	232,  // 1203: relay.server.v1.AdminService.AdminGetPlatformOverview:input_type -> relay.server.v1.AdminGetPlatformOverviewRequest
+	235,  // 1204: relay.server.v1.AdminService.AdminListOrgActivation:input_type -> relay.server.v1.AdminListOrgActivationRequest
+	260,  // 1205: relay.server.v1.AdminService.AdminSuspendOrganization:input_type -> relay.server.v1.AdminSuspendOrganizationRequest
+	262,  // 1206: relay.server.v1.AdminService.AdminUnsuspendOrganization:input_type -> relay.server.v1.AdminUnsuspendOrganizationRequest
+	365,  // 1207: relay.server.v1.AdminService.AdminGetMaintenanceBanner:input_type -> relay.server.v1.AdminGetMaintenanceBannerRequest
+	367,  // 1208: relay.server.v1.AdminService.AdminSetMaintenanceBanner:input_type -> relay.server.v1.AdminSetMaintenanceBannerRequest
+	369,  // 1209: relay.server.v1.AdminService.AdminClearMaintenanceBanner:input_type -> relay.server.v1.AdminClearMaintenanceBannerRequest
+	372,  // 1210: relay.server.v1.AdminService.AdminGetFreeCreationPause:input_type -> relay.server.v1.AdminGetFreeCreationPauseRequest
+	374,  // 1211: relay.server.v1.AdminService.AdminPauseFreeCreation:input_type -> relay.server.v1.AdminPauseFreeCreationRequest
+	376,  // 1212: relay.server.v1.AdminService.AdminResumeFreeCreation:input_type -> relay.server.v1.AdminResumeFreeCreationRequest
+	266,  // 1213: relay.server.v1.AdminService.AdminListBillingAttention:input_type -> relay.server.v1.AdminListBillingAttentionRequest
+	268,  // 1214: relay.server.v1.AdminService.AdminPauseBillingProcess:input_type -> relay.server.v1.AdminPauseBillingProcessRequest
+	270,  // 1215: relay.server.v1.AdminService.AdminResumeBillingProcess:input_type -> relay.server.v1.AdminResumeBillingProcessRequest
+	272,  // 1216: relay.server.v1.AdminService.AdminExtendBillingDeadline:input_type -> relay.server.v1.AdminExtendBillingDeadlineRequest
+	274,  // 1217: relay.server.v1.AdminService.AdminRunBillingSweep:input_type -> relay.server.v1.AdminRunBillingSweepRequest
+	892,  // 1218: relay.server.v1.AdminService.AdminListFeatureFlags:input_type -> relay.server.v1.AdminListFeatureFlagsRequest
+	894,  // 1219: relay.server.v1.AdminService.AdminGetFeatureFlag:input_type -> relay.server.v1.AdminGetFeatureFlagRequest
+	896,  // 1220: relay.server.v1.AdminService.AdminCreateFeatureFlag:input_type -> relay.server.v1.AdminCreateFeatureFlagRequest
+	898,  // 1221: relay.server.v1.AdminService.AdminUpdateFeatureFlag:input_type -> relay.server.v1.AdminUpdateFeatureFlagRequest
+	900,  // 1222: relay.server.v1.AdminService.AdminArchiveFeatureFlag:input_type -> relay.server.v1.AdminArchiveFeatureFlagRequest
+	902,  // 1223: relay.server.v1.AdminService.AdminSetOrgFeatureOverride:input_type -> relay.server.v1.AdminSetOrgFeatureOverrideRequest
+	904,  // 1224: relay.server.v1.AdminService.AdminClearOrgFeatureOverride:input_type -> relay.server.v1.AdminClearOrgFeatureOverrideRequest
+	907,  // 1225: relay.server.v1.AdminService.AdminListFeatureFlagOrganizations:input_type -> relay.server.v1.AdminListFeatureFlagOrganizationsRequest
+	909,  // 1226: relay.server.v1.AdminService.AdminPreviewFeatureFlagRollout:input_type -> relay.server.v1.AdminPreviewFeatureFlagRolloutRequest
+	884,  // 1227: relay.server.v1.AdminService.AdminListOrgDomains:input_type -> relay.server.v1.AdminListOrgDomainsRequest
+	886,  // 1228: relay.server.v1.AdminService.AdminRemoveOrgDomain:input_type -> relay.server.v1.AdminRemoveOrgDomainRequest
+	1004, // 1229: relay.server.v1.BackofficeMCPService.CreateMCPGrant:input_type -> relay.server.v1.CreateMCPGrantRequest
+	1006, // 1230: relay.server.v1.BackofficeMCPService.RotateMCPGrant:input_type -> relay.server.v1.RotateMCPGrantRequest
+	1008, // 1231: relay.server.v1.BackofficeMCPService.ResolveMCPGrant:input_type -> relay.server.v1.ResolveMCPGrantRequest
+	1010, // 1232: relay.server.v1.BackofficeMCPService.RevokeMCPGrant:input_type -> relay.server.v1.RevokeMCPGrantRequest
+	213,  // 1233: relay.server.v1.ServerService.WhoAmI:output_type -> relay.server.v1.WhoAmIResponse
+	215,  // 1234: relay.server.v1.ServerService.SetUserFlags:output_type -> relay.server.v1.SetUserFlagsResponse
+	505,  // 1235: relay.server.v1.ServerService.Logout:output_type -> relay.server.v1.LogoutResponse
+	508,  // 1236: relay.server.v1.ServerService.ListSessions:output_type -> relay.server.v1.ListSessionsResponse
+	510,  // 1237: relay.server.v1.ServerService.RevokeSession:output_type -> relay.server.v1.RevokeSessionResponse
+	219,  // 1238: relay.server.v1.ServerService.GetMaintenanceBanner:output_type -> relay.server.v1.GetMaintenanceBannerResponse
+	513,  // 1239: relay.server.v1.ServerService.CreateAPIKey:output_type -> relay.server.v1.CreateAPIKeyResponse
+	515,  // 1240: relay.server.v1.ServerService.ListAPIKeys:output_type -> relay.server.v1.ListAPIKeysResponse
+	517,  // 1241: relay.server.v1.ServerService.UpdateAPIKey:output_type -> relay.server.v1.UpdateAPIKeyResponse
+	519,  // 1242: relay.server.v1.ServerService.RevokeAPIKey:output_type -> relay.server.v1.RevokeAPIKeyResponse
+	522,  // 1243: relay.server.v1.ServerService.ListServiceAccounts:output_type -> relay.server.v1.ListServiceAccountsResponse
+	524,  // 1244: relay.server.v1.ServerService.CreateServiceAccount:output_type -> relay.server.v1.CreateServiceAccountResponse
+	526,  // 1245: relay.server.v1.ServerService.UpdateServiceAccount:output_type -> relay.server.v1.UpdateServiceAccountResponse
+	528,  // 1246: relay.server.v1.ServerService.DeleteServiceAccount:output_type -> relay.server.v1.DeleteServiceAccountResponse
+	530,  // 1247: relay.server.v1.ServerService.MoveAPIKeyToServiceAccount:output_type -> relay.server.v1.MoveAPIKeyToServiceAccountResponse
+	390,  // 1248: relay.server.v1.ServerService.ListConnections:output_type -> relay.server.v1.ListConnectionsResponse
+	392,  // 1249: relay.server.v1.ServerService.ListManagedDatabaseConnections:output_type -> relay.server.v1.ListManagedDatabaseConnectionsResponse
+	394,  // 1250: relay.server.v1.ServerService.GetConnections:output_type -> relay.server.v1.GetConnectionsResponse
+	396,  // 1251: relay.server.v1.ServerService.CreateConnection:output_type -> relay.server.v1.CreateConnectionResponse
+	398,  // 1252: relay.server.v1.ServerService.DeleteConnection:output_type -> relay.server.v1.DeleteConnectionResponse
+	400,  // 1253: relay.server.v1.ServerService.UpdateConnection:output_type -> relay.server.v1.UpdateConnectionResponse
+	402,  // 1254: relay.server.v1.ServerService.SetConnectionPools:output_type -> relay.server.v1.SetConnectionPoolsResponse
+	404,  // 1255: relay.server.v1.ServerService.IssueTunnelToken:output_type -> relay.server.v1.IssueTunnelTokenResponse
+	406,  // 1256: relay.server.v1.ServerService.ResolveTunnelToken:output_type -> relay.server.v1.ResolveTunnelTokenResponse
+	409,  // 1257: relay.server.v1.ServerService.ReportTunnelSessions:output_type -> relay.server.v1.ReportTunnelSessionsResponse
+	413,  // 1258: relay.server.v1.ServerService.ListTunnelSessions:output_type -> relay.server.v1.ListTunnelSessionsResponse
+	975,  // 1259: relay.server.v1.ServerService.ReportMaskingClassifications:output_type -> relay.server.v1.ReportMaskingClassificationsResponse
+	978,  // 1260: relay.server.v1.ServerService.ListMaskingClassifications:output_type -> relay.server.v1.ListMaskingClassificationsResponse
+	980,  // 1261: relay.server.v1.ServerService.ResolveMaskingClassification:output_type -> relay.server.v1.ResolveMaskingClassificationResponse
+	462,  // 1262: relay.server.v1.ServerService.ListConnectionGroups:output_type -> relay.server.v1.ListConnectionGroupsResponse
+	464,  // 1263: relay.server.v1.ServerService.CreateConnectionGroup:output_type -> relay.server.v1.CreateConnectionGroupResponse
+	466,  // 1264: relay.server.v1.ServerService.DeleteConnectionGroup:output_type -> relay.server.v1.DeleteConnectionGroupResponse
+	468,  // 1265: relay.server.v1.ServerService.UpdateConnectionGroup:output_type -> relay.server.v1.UpdateConnectionGroupResponse
+	470,  // 1266: relay.server.v1.ServerService.AddConnectionToGroup:output_type -> relay.server.v1.AddConnectionToGroupResponse
+	472,  // 1267: relay.server.v1.ServerService.RemoveConnectionFromGroup:output_type -> relay.server.v1.RemoveConnectionFromGroupResponse
+	418,  // 1268: relay.server.v1.ServerService.ListPolicies:output_type -> relay.server.v1.ListPoliciesResponse
+	420,  // 1269: relay.server.v1.ServerService.GetPolicy:output_type -> relay.server.v1.GetPolicyResponse
+	422,  // 1270: relay.server.v1.ServerService.CreatePolicy:output_type -> relay.server.v1.CreatePolicyResponse
+	424,  // 1271: relay.server.v1.ServerService.UpdatePolicy:output_type -> relay.server.v1.UpdatePolicyResponse
+	426,  // 1272: relay.server.v1.ServerService.DeletePolicy:output_type -> relay.server.v1.DeletePolicyResponse
+	428,  // 1273: relay.server.v1.ServerService.SetConnectionPolicies:output_type -> relay.server.v1.SetConnectionPoliciesResponse
+	430,  // 1274: relay.server.v1.ServerService.ListConnectionPolicies:output_type -> relay.server.v1.ListConnectionPoliciesResponse
+	435,  // 1275: relay.server.v1.ServerService.RequestQueryApproval:output_type -> relay.server.v1.RequestQueryApprovalResponse
+	442,  // 1276: relay.server.v1.ServerService.WaitQueryApproval:output_type -> relay.server.v1.WaitQueryApprovalResponse
+	444,  // 1277: relay.server.v1.ServerService.ListQueryApprovals:output_type -> relay.server.v1.ListQueryApprovalsResponse
+	446,  // 1278: relay.server.v1.ServerService.GetQueryApproval:output_type -> relay.server.v1.GetQueryApprovalResponse
+	448,  // 1279: relay.server.v1.ServerService.ApproveQueryApproval:output_type -> relay.server.v1.ApproveQueryApprovalResponse
+	450,  // 1280: relay.server.v1.ServerService.DenyQueryApproval:output_type -> relay.server.v1.DenyQueryApprovalResponse
+	438,  // 1281: relay.server.v1.ServerService.DetachQueryApproval:output_type -> relay.server.v1.DetachQueryApprovalResponse
+	440,  // 1282: relay.server.v1.ServerService.CancelQueryApproval:output_type -> relay.server.v1.CancelQueryApprovalResponse
+	456,  // 1283: relay.server.v1.ServerService.ListApprovalIntegrations:output_type -> relay.server.v1.ListApprovalIntegrationsResponse
+	458,  // 1284: relay.server.v1.ServerService.UpsertApprovalIntegration:output_type -> relay.server.v1.UpsertApprovalIntegrationResponse
+	460,  // 1285: relay.server.v1.ServerService.DeleteApprovalIntegration:output_type -> relay.server.v1.DeleteApprovalIntegrationResponse
+	475,  // 1286: relay.server.v1.ServerService.ListAccessGrants:output_type -> relay.server.v1.ListAccessGrantsResponse
+	477,  // 1287: relay.server.v1.ServerService.CreateAccessGrant:output_type -> relay.server.v1.CreateAccessGrantResponse
+	479,  // 1288: relay.server.v1.ServerService.DeleteAccessGrant:output_type -> relay.server.v1.DeleteAccessGrantResponse
+	983,  // 1289: relay.server.v1.ServerService.RequestAccessGrant:output_type -> relay.server.v1.RequestAccessGrantResponse
+	985,  // 1290: relay.server.v1.ServerService.ListAccessGrantRequests:output_type -> relay.server.v1.ListAccessGrantRequestsResponse
+	987,  // 1291: relay.server.v1.ServerService.GetAccessGrantRequest:output_type -> relay.server.v1.GetAccessGrantRequestResponse
+	989,  // 1292: relay.server.v1.ServerService.ApproveAccessGrantRequest:output_type -> relay.server.v1.ApproveAccessGrantRequestResponse
+	991,  // 1293: relay.server.v1.ServerService.DenyAccessGrantRequest:output_type -> relay.server.v1.DenyAccessGrantRequestResponse
+	993,  // 1294: relay.server.v1.ServerService.CancelAccessGrantRequest:output_type -> relay.server.v1.CancelAccessGrantRequestResponse
+	995,  // 1295: relay.server.v1.ServerService.RevokeAccessGrantRequest:output_type -> relay.server.v1.RevokeAccessGrantRequestResponse
+	998,  // 1296: relay.server.v1.ServerService.ListRequestableConnections:output_type -> relay.server.v1.ListRequestableConnectionsResponse
+	1001, // 1297: relay.server.v1.ServerService.GetAccessRequestSettings:output_type -> relay.server.v1.GetAccessRequestSettingsResponse
+	1003, // 1298: relay.server.v1.ServerService.UpdateAccessRequestSettings:output_type -> relay.server.v1.UpdateAccessRequestSettingsResponse
+	482,  // 1299: relay.server.v1.ServerService.ListTeams:output_type -> relay.server.v1.ListTeamsResponse
+	484,  // 1300: relay.server.v1.ServerService.CreateTeam:output_type -> relay.server.v1.CreateTeamResponse
+	486,  // 1301: relay.server.v1.ServerService.DeleteTeam:output_type -> relay.server.v1.DeleteTeamResponse
+	488,  // 1302: relay.server.v1.ServerService.AddTeamMember:output_type -> relay.server.v1.AddTeamMemberResponse
+	490,  // 1303: relay.server.v1.ServerService.RemoveTeamMember:output_type -> relay.server.v1.RemoveTeamMemberResponse
+	493,  // 1304: relay.server.v1.ServerService.ListMembers:output_type -> relay.server.v1.ListMembersResponse
+	495,  // 1305: relay.server.v1.ServerService.SetMemberRole:output_type -> relay.server.v1.SetMemberRoleResponse
+	497,  // 1306: relay.server.v1.ServerService.TransferOwnership:output_type -> relay.server.v1.TransferOwnershipResponse
+	499,  // 1307: relay.server.v1.ServerService.RemoveMember:output_type -> relay.server.v1.RemoveMemberResponse
+	501,  // 1308: relay.server.v1.ServerService.UpdateMember:output_type -> relay.server.v1.UpdateMemberResponse
+	503,  // 1309: relay.server.v1.ServerService.RevokeUserSessions:output_type -> relay.server.v1.RevokeUserSessionsResponse
+	534,  // 1310: relay.server.v1.ServerService.InviteMember:output_type -> relay.server.v1.InviteMemberResponse
+	536,  // 1311: relay.server.v1.ServerService.ListInvitations:output_type -> relay.server.v1.ListInvitationsResponse
+	538,  // 1312: relay.server.v1.ServerService.RevokeInvitation:output_type -> relay.server.v1.RevokeInvitationResponse
+	540,  // 1313: relay.server.v1.ServerService.GetInvitation:output_type -> relay.server.v1.GetInvitationResponse
+	542,  // 1314: relay.server.v1.ServerService.AcceptInvitation:output_type -> relay.server.v1.AcceptInvitationResponse
+	545,  // 1315: relay.server.v1.ServerService.ListAgents:output_type -> relay.server.v1.ListAgentsResponse
+	547,  // 1316: relay.server.v1.ServerService.DeleteAgent:output_type -> relay.server.v1.DeleteAgentResponse
+	549,  // 1317: relay.server.v1.ServerService.CreateEnrollmentToken:output_type -> relay.server.v1.CreateEnrollmentTokenResponse
+	552,  // 1318: relay.server.v1.ServerService.ListEnrollmentTokens:output_type -> relay.server.v1.ListEnrollmentTokensResponse
+	554,  // 1319: relay.server.v1.ServerService.DeleteEnrollmentToken:output_type -> relay.server.v1.DeleteEnrollmentTokenResponse
+	556,  // 1320: relay.server.v1.ServerService.EnrollAgent:output_type -> relay.server.v1.EnrollAgentResponse
+	560,  // 1321: relay.server.v1.ServerService.Heartbeat:output_type -> relay.server.v1.HeartbeatResponse
+	562,  // 1322: relay.server.v1.ServerService.Deregister:output_type -> relay.server.v1.DeregisterResponse
+	632,  // 1323: relay.server.v1.ServerService.ListAgentPools:output_type -> relay.server.v1.ListAgentPoolsResponse
+	634,  // 1324: relay.server.v1.ServerService.CreateAgentPool:output_type -> relay.server.v1.CreateAgentPoolResponse
+	636,  // 1325: relay.server.v1.ServerService.DeleteAgentPool:output_type -> relay.server.v1.DeleteAgentPoolResponse
+	638,  // 1326: relay.server.v1.ServerService.UpdateAgentPool:output_type -> relay.server.v1.UpdateAgentPoolResponse
+	640,  // 1327: relay.server.v1.ServerService.WakeAgentPool:output_type -> relay.server.v1.WakeAgentPoolResponse
+	739,  // 1328: relay.server.v1.ServerService.ResolveConnectionCredential:output_type -> relay.server.v1.ResolveConnectionCredentialResponse
+	741,  // 1329: relay.server.v1.ServerService.ResolveExternalSecretSource:output_type -> relay.server.v1.ResolveExternalSecretSourceResponse
+	731,  // 1330: relay.server.v1.ServerService.ListExternalSecretSources:output_type -> relay.server.v1.ListExternalSecretSourcesResponse
+	733,  // 1331: relay.server.v1.ServerService.GetExternalSecretSource:output_type -> relay.server.v1.GetExternalSecretSourceResponse
+	735,  // 1332: relay.server.v1.ServerService.UpsertExternalSecretSource:output_type -> relay.server.v1.UpsertExternalSecretSourceResponse
+	737,  // 1333: relay.server.v1.ServerService.DeleteExternalSecretSource:output_type -> relay.server.v1.DeleteExternalSecretSourceResponse
+	744,  // 1334: relay.server.v1.ServerService.GetCloudIntegrationSetup:output_type -> relay.server.v1.GetCloudIntegrationSetupResponse
+	746,  // 1335: relay.server.v1.ServerService.ListCloudIntegrations:output_type -> relay.server.v1.ListCloudIntegrationsResponse
+	748,  // 1336: relay.server.v1.ServerService.GetCloudIntegration:output_type -> relay.server.v1.GetCloudIntegrationResponse
+	750,  // 1337: relay.server.v1.ServerService.CreateCloudIntegration:output_type -> relay.server.v1.CreateCloudIntegrationResponse
+	752,  // 1338: relay.server.v1.ServerService.UpdateCloudIntegration:output_type -> relay.server.v1.UpdateCloudIntegrationResponse
+	754,  // 1339: relay.server.v1.ServerService.DeleteCloudIntegration:output_type -> relay.server.v1.DeleteCloudIntegrationResponse
+	756,  // 1340: relay.server.v1.ServerService.TestCloudIntegration:output_type -> relay.server.v1.TestCloudIntegrationResponse
+	760,  // 1341: relay.server.v1.ServerService.GetLogStream:output_type -> relay.server.v1.GetLogStreamResponse
+	762,  // 1342: relay.server.v1.ServerService.UpsertLogStream:output_type -> relay.server.v1.UpsertLogStreamResponse
+	764,  // 1343: relay.server.v1.ServerService.DeleteLogStream:output_type -> relay.server.v1.DeleteLogStreamResponse
+	780,  // 1344: relay.server.v1.ServerService.GetBackupAutoExport:output_type -> relay.server.v1.GetBackupAutoExportResponse
+	782,  // 1345: relay.server.v1.ServerService.UpsertBackupAutoExport:output_type -> relay.server.v1.UpsertBackupAutoExportResponse
+	784,  // 1346: relay.server.v1.ServerService.DeleteBackupAutoExport:output_type -> relay.server.v1.DeleteBackupAutoExportResponse
+	786,  // 1347: relay.server.v1.ServerService.ExportToCloud:output_type -> relay.server.v1.ExportToCloudResponse
+	769,  // 1348: relay.server.v1.ServerService.ListLogDestinations:output_type -> relay.server.v1.ListLogDestinationsResponse
+	771,  // 1349: relay.server.v1.ServerService.CreateLogDestination:output_type -> relay.server.v1.CreateLogDestinationResponse
+	773,  // 1350: relay.server.v1.ServerService.UpdateLogDestination:output_type -> relay.server.v1.UpdateLogDestinationResponse
+	775,  // 1351: relay.server.v1.ServerService.DeleteLogDestination:output_type -> relay.server.v1.DeleteLogDestinationResponse
+	777,  // 1352: relay.server.v1.ServerService.TestLogDestination:output_type -> relay.server.v1.TestLogDestinationResponse
+	565,  // 1353: relay.server.v1.ServerService.IngestAuditEvents:output_type -> relay.server.v1.IngestAuditEventsResponse
+	567,  // 1354: relay.server.v1.ServerService.ListAuditLogs:output_type -> relay.server.v1.ListAuditLogsResponse
+	570,  // 1355: relay.server.v1.ServerService.GetAuditMetrics:output_type -> relay.server.v1.GetAuditMetricsResponse
+	1031, // 1356: relay.server.v1.ServerService.GetAccessUsage:output_type -> relay.server.v1.GetAccessUsageResponse
+	643,  // 1357: relay.server.v1.ServerService.ListActivityLogs:output_type -> relay.server.v1.ListActivityLogsResponse
+	647,  // 1358: relay.server.v1.ServerService.ListOrgActivityLogs:output_type -> relay.server.v1.ListOrgActivityLogsResponse
+	645,  // 1359: relay.server.v1.ServerService.EmitActivity:output_type -> relay.server.v1.EmitActivityResponse
+	650,  // 1360: relay.server.v1.ServerService.ListUserOrganizations:output_type -> relay.server.v1.ListUserOrganizationsResponse
+	652,  // 1361: relay.server.v1.ServerService.GetOrganization:output_type -> relay.server.v1.GetOrganizationResponse
+	654,  // 1362: relay.server.v1.ServerService.CreateOrganization:output_type -> relay.server.v1.CreateOrganizationResponse
+	656,  // 1363: relay.server.v1.ServerService.UpdateOrganization:output_type -> relay.server.v1.UpdateOrganizationResponse
+	660,  // 1364: relay.server.v1.ServerService.UpdateOrganizationSettings:output_type -> relay.server.v1.UpdateOrganizationSettingsResponse
+	662,  // 1365: relay.server.v1.ServerService.DeleteOrganization:output_type -> relay.server.v1.DeleteOrganizationResponse
+	658,  // 1366: relay.server.v1.ServerService.SwitchOrganization:output_type -> relay.server.v1.SwitchOrganizationResponse
+	664,  // 1367: relay.server.v1.ServerService.DeleteAccount:output_type -> relay.server.v1.DeleteAccountResponse
+	677,  // 1368: relay.server.v1.ServerService.GetOrgOverview:output_type -> relay.server.v1.GetOrgOverviewResponse
+	667,  // 1369: relay.server.v1.ServerService.ListWorkspaces:output_type -> relay.server.v1.ListWorkspacesResponse
+	669,  // 1370: relay.server.v1.ServerService.GetWorkspace:output_type -> relay.server.v1.GetWorkspaceResponse
+	671,  // 1371: relay.server.v1.ServerService.CreateWorkspace:output_type -> relay.server.v1.CreateWorkspaceResponse
+	673,  // 1372: relay.server.v1.ServerService.UpdateWorkspace:output_type -> relay.server.v1.UpdateWorkspaceResponse
+	675,  // 1373: relay.server.v1.ServerService.DeleteWorkspace:output_type -> relay.server.v1.DeleteWorkspaceResponse
+	682,  // 1374: relay.server.v1.ServerService.AddWorkspaceMember:output_type -> relay.server.v1.AddWorkspaceMemberResponse
+	684,  // 1375: relay.server.v1.ServerService.RemoveWorkspaceMember:output_type -> relay.server.v1.RemoveWorkspaceMemberResponse
+	686,  // 1376: relay.server.v1.ServerService.ListWorkspaceMembers:output_type -> relay.server.v1.ListWorkspaceMembersResponse
+	688,  // 1377: relay.server.v1.ServerService.AddWorkspaceTeam:output_type -> relay.server.v1.AddWorkspaceTeamResponse
+	690,  // 1378: relay.server.v1.ServerService.RemoveWorkspaceTeam:output_type -> relay.server.v1.RemoveWorkspaceTeamResponse
+	692,  // 1379: relay.server.v1.ServerService.ListWorkspaceTeams:output_type -> relay.server.v1.ListWorkspaceTeamsResponse
+	694,  // 1380: relay.server.v1.ServerService.SetWorkspaceMemberRole:output_type -> relay.server.v1.SetWorkspaceMemberRoleResponse
+	696,  // 1381: relay.server.v1.ServerService.SetWorkspaceTeamRole:output_type -> relay.server.v1.SetWorkspaceTeamRoleResponse
+	700,  // 1382: relay.server.v1.ServerService.ListRoles:output_type -> relay.server.v1.ListRolesResponse
+	702,  // 1383: relay.server.v1.ServerService.CreateRole:output_type -> relay.server.v1.CreateRoleResponse
+	704,  // 1384: relay.server.v1.ServerService.UpdateRole:output_type -> relay.server.v1.UpdateRoleResponse
+	706,  // 1385: relay.server.v1.ServerService.DeleteRole:output_type -> relay.server.v1.DeleteRoleResponse
+	709,  // 1386: relay.server.v1.ServerService.ListRoleBindings:output_type -> relay.server.v1.ListRoleBindingsResponse
+	711,  // 1387: relay.server.v1.ServerService.CreateRoleBinding:output_type -> relay.server.v1.CreateRoleBindingResponse
+	713,  // 1388: relay.server.v1.ServerService.DeleteRoleBinding:output_type -> relay.server.v1.DeleteRoleBindingResponse
+	104,  // 1389: relay.server.v1.ServerService.ListDatabases:output_type -> relay.server.v1.ListDatabasesResponse
+	106,  // 1390: relay.server.v1.ServerService.CreateDatabase:output_type -> relay.server.v1.CreateDatabaseResponse
+	108,  // 1391: relay.server.v1.ServerService.RestoreDatabase:output_type -> relay.server.v1.RestoreDatabaseResponse
+	110,  // 1392: relay.server.v1.ServerService.GetDatabase:output_type -> relay.server.v1.GetDatabaseResponse
+	112,  // 1393: relay.server.v1.ServerService.UpdateDatabase:output_type -> relay.server.v1.UpdateDatabaseResponse
+	115,  // 1394: relay.server.v1.ServerService.ListPostgreSQLParameters:output_type -> relay.server.v1.ListPostgreSQLParametersResponse
+	118,  // 1395: relay.server.v1.ServerService.ListValkeyParameters:output_type -> relay.server.v1.ListValkeyParametersResponse
+	120,  // 1396: relay.server.v1.ServerService.ListDocumentDBParameters:output_type -> relay.server.v1.ListDocumentDBParametersResponse
+	123,  // 1397: relay.server.v1.ServerService.ListAutoscaleMetrics:output_type -> relay.server.v1.ListAutoscaleMetricsResponse
+	126,  // 1398: relay.server.v1.ServerService.ListScaleEvents:output_type -> relay.server.v1.ListScaleEventsResponse
+	128,  // 1399: relay.server.v1.ServerService.WatchDatabase:output_type -> relay.server.v1.WatchDatabaseEvent
+	131,  // 1400: relay.server.v1.ServerService.ListPendingOperations:output_type -> relay.server.v1.ListPendingOperationsResponse
+	133,  // 1401: relay.server.v1.ServerService.DeleteDatabase:output_type -> relay.server.v1.DeleteDatabaseResponse
+	135,  // 1402: relay.server.v1.ServerService.RetryDeleteDatabase:output_type -> relay.server.v1.RetryDeleteDatabaseResponse
+	137,  // 1403: relay.server.v1.ServerService.PauseDatabase:output_type -> relay.server.v1.PauseDatabaseResponse
+	139,  // 1404: relay.server.v1.ServerService.SetDefaultConnections:output_type -> relay.server.v1.SetDefaultConnectionsResponse
+	141,  // 1405: relay.server.v1.ServerService.SetDeletionProtection:output_type -> relay.server.v1.SetDeletionProtectionResponse
+	143,  // 1406: relay.server.v1.ServerService.ResumeDatabase:output_type -> relay.server.v1.ResumeDatabaseResponse
+	147,  // 1407: relay.server.v1.ServerService.GetTopologyOperation:output_type -> relay.server.v1.GetTopologyOperationResponse
+	149,  // 1408: relay.server.v1.ServerService.AbortTopologyOperation:output_type -> relay.server.v1.AbortTopologyOperationResponse
+	151,  // 1409: relay.server.v1.ServerService.ResumeTopologyOperation:output_type -> relay.server.v1.ResumeTopologyOperationResponse
+	153,  // 1410: relay.server.v1.ServerService.GetDatabaseStatus:output_type -> relay.server.v1.GetDatabaseStatusResponse
+	155,  // 1411: relay.server.v1.ServerService.ListDatabaseNodes:output_type -> relay.server.v1.ListDatabaseNodesResponse
+	158,  // 1412: relay.server.v1.ServerService.GetDatabaseLogs:output_type -> relay.server.v1.GetDatabaseLogsResponse
+	161,  // 1413: relay.server.v1.ServerService.SearchDatabaseLogs:output_type -> relay.server.v1.SearchDatabaseLogsResponse
+	574,  // 1414: relay.server.v1.ServerService.GetDatabaseAnalytics:output_type -> relay.server.v1.GetDatabaseAnalyticsResponse
+	578,  // 1415: relay.server.v1.ServerService.GetDatabaseTopSQL:output_type -> relay.server.v1.GetDatabaseTopSQLResponse
+	582,  // 1416: relay.server.v1.ServerService.GetDatabaseLoad:output_type -> relay.server.v1.GetDatabaseLoadResponse
+	617,  // 1417: relay.server.v1.ServerService.RecordDatabaseEvent:output_type -> relay.server.v1.RecordDatabaseEventResponse
+	619,  // 1418: relay.server.v1.ServerService.ListDatabaseEvents:output_type -> relay.server.v1.ListDatabaseEventsResponse
+	623,  // 1419: relay.server.v1.ServerService.CreateDatabaseEventSubscription:output_type -> relay.server.v1.CreateDatabaseEventSubscriptionResponse
+	625,  // 1420: relay.server.v1.ServerService.UpdateDatabaseEventSubscription:output_type -> relay.server.v1.UpdateDatabaseEventSubscriptionResponse
+	627,  // 1421: relay.server.v1.ServerService.DeleteDatabaseEventSubscription:output_type -> relay.server.v1.DeleteDatabaseEventSubscriptionResponse
+	629,  // 1422: relay.server.v1.ServerService.ListDatabaseEventSubscriptions:output_type -> relay.server.v1.ListDatabaseEventSubscriptionsResponse
+	585,  // 1423: relay.server.v1.ServerService.ListDatabaseAlarmMetrics:output_type -> relay.server.v1.ListDatabaseAlarmMetricsResponse
+	590,  // 1424: relay.server.v1.ServerService.CreateDatabaseAlarm:output_type -> relay.server.v1.CreateDatabaseAlarmResponse
+	592,  // 1425: relay.server.v1.ServerService.UpdateDatabaseAlarm:output_type -> relay.server.v1.UpdateDatabaseAlarmResponse
+	594,  // 1426: relay.server.v1.ServerService.DeleteDatabaseAlarm:output_type -> relay.server.v1.DeleteDatabaseAlarmResponse
+	596,  // 1427: relay.server.v1.ServerService.GetDatabaseAlarm:output_type -> relay.server.v1.GetDatabaseAlarmResponse
+	598,  // 1428: relay.server.v1.ServerService.ListDatabaseAlarms:output_type -> relay.server.v1.ListDatabaseAlarmsResponse
+	609,  // 1429: relay.server.v1.ServerService.ListDatabaseAlarmEvents:output_type -> relay.server.v1.ListDatabaseAlarmEventsResponse
+	602,  // 1430: relay.server.v1.ServerService.ListRecommendedDatabaseAlarms:output_type -> relay.server.v1.ListRecommendedDatabaseAlarmsResponse
+	606,  // 1431: relay.server.v1.ServerService.ApplyRecommendedDatabaseAlarms:output_type -> relay.server.v1.ApplyRecommendedDatabaseAlarmsResponse
+	608,  // 1432: relay.server.v1.ServerService.SetRecommendedAlarmsOnCreate:output_type -> relay.server.v1.SetRecommendedAlarmsOnCreateResponse
+	614,  // 1433: relay.server.v1.ServerService.GetDatabaseLocks:output_type -> relay.server.v1.GetDatabaseLocksResponse
+	38,   // 1434: relay.server.v1.ServerService.GetDatabaseConnection:output_type -> relay.server.v1.GetDatabaseConnectionResponse
+	41,   // 1435: relay.server.v1.ServerService.ListIPAllowlist:output_type -> relay.server.v1.ListIPAllowlistResponse
+	43,   // 1436: relay.server.v1.ServerService.AddIPAllowlistEntry:output_type -> relay.server.v1.AddIPAllowlistEntryResponse
+	45,   // 1437: relay.server.v1.ServerService.UpdateIPAllowlistEntry:output_type -> relay.server.v1.UpdateIPAllowlistEntryResponse
+	47,   // 1438: relay.server.v1.ServerService.RemoveIPAllowlistEntry:output_type -> relay.server.v1.RemoveIPAllowlistEntryResponse
+	50,   // 1439: relay.server.v1.ServerService.ListPrivateEndpointRegions:output_type -> relay.server.v1.ListPrivateEndpointRegionsResponse
+	55,   // 1440: relay.server.v1.ServerService.CreatePrivateEndpointService:output_type -> relay.server.v1.CreatePrivateEndpointServiceResponse
+	57,   // 1441: relay.server.v1.ServerService.ListPrivateEndpointServices:output_type -> relay.server.v1.ListPrivateEndpointServicesResponse
+	59,   // 1442: relay.server.v1.ServerService.GetPrivateEndpointService:output_type -> relay.server.v1.GetPrivateEndpointServiceResponse
+	61,   // 1443: relay.server.v1.ServerService.DeletePrivateEndpointService:output_type -> relay.server.v1.DeletePrivateEndpointServiceResponse
+	63,   // 1444: relay.server.v1.ServerService.CreatePrivateEndpoint:output_type -> relay.server.v1.CreatePrivateEndpointResponse
+	65,   // 1445: relay.server.v1.ServerService.GetPrivateEndpoint:output_type -> relay.server.v1.GetPrivateEndpointResponse
+	67,   // 1446: relay.server.v1.ServerService.DeletePrivateEndpoint:output_type -> relay.server.v1.DeletePrivateEndpointResponse
+	84,   // 1447: relay.server.v1.ServerService.CheckMigrationSource:output_type -> relay.server.v1.CheckMigrationSourceResponse
+	86,   // 1448: relay.server.v1.ServerService.GetMigrationSourceCheck:output_type -> relay.server.v1.GetMigrationSourceCheckResponse
+	88,   // 1449: relay.server.v1.ServerService.CreateMigration:output_type -> relay.server.v1.CreateMigrationResponse
+	90,   // 1450: relay.server.v1.ServerService.GetMigration:output_type -> relay.server.v1.GetMigrationResponse
+	92,   // 1451: relay.server.v1.ServerService.ListMigrations:output_type -> relay.server.v1.ListMigrationsResponse
+	94,   // 1452: relay.server.v1.ServerService.RequestMigrationCutover:output_type -> relay.server.v1.RequestMigrationCutoverResponse
+	96,   // 1453: relay.server.v1.ServerService.AbortMigration:output_type -> relay.server.v1.AbortMigrationResponse
+	98,   // 1454: relay.server.v1.ServerService.CompleteMigration:output_type -> relay.server.v1.CompleteMigrationResponse
+	172,  // 1455: relay.server.v1.ServerService.ListBackupSchedules:output_type -> relay.server.v1.ListBackupSchedulesResponse
+	174,  // 1456: relay.server.v1.ServerService.ListBackups:output_type -> relay.server.v1.ListBackupsResponse
+	176,  // 1457: relay.server.v1.ServerService.GetBackupSchedule:output_type -> relay.server.v1.GetBackupScheduleResponse
+	178,  // 1458: relay.server.v1.ServerService.UpsertBackupSchedule:output_type -> relay.server.v1.UpsertBackupScheduleResponse
+	180,  // 1459: relay.server.v1.ServerService.ResetBackupSchedule:output_type -> relay.server.v1.ResetBackupScheduleResponse
+	182,  // 1460: relay.server.v1.ServerService.CreateBackup:output_type -> relay.server.v1.CreateBackupResponse
+	184,  // 1461: relay.server.v1.ServerService.DeleteBackup:output_type -> relay.server.v1.DeleteBackupResponse
+	188,  // 1462: relay.server.v1.ServerService.ListDatabaseUsers:output_type -> relay.server.v1.ListDatabaseUsersResponse
+	190,  // 1463: relay.server.v1.ServerService.GetDatabaseUser:output_type -> relay.server.v1.GetDatabaseUserResponse
+	192,  // 1464: relay.server.v1.ServerService.CreateDatabaseUser:output_type -> relay.server.v1.CreateDatabaseUserResponse
+	194,  // 1465: relay.server.v1.ServerService.UpdateDatabaseUser:output_type -> relay.server.v1.UpdateDatabaseUserResponse
+	196,  // 1466: relay.server.v1.ServerService.DeleteDatabaseUser:output_type -> relay.server.v1.DeleteDatabaseUserResponse
+	202,  // 1467: relay.server.v1.ServerService.ListLogicalDatabases:output_type -> relay.server.v1.ListLogicalDatabasesResponse
+	204,  // 1468: relay.server.v1.ServerService.CreateLogicalDatabase:output_type -> relay.server.v1.CreateLogicalDatabaseResponse
+	206,  // 1469: relay.server.v1.ServerService.UpdateLogicalDatabase:output_type -> relay.server.v1.UpdateLogicalDatabaseResponse
+	208,  // 1470: relay.server.v1.ServerService.DeleteLogicalDatabase:output_type -> relay.server.v1.DeleteLogicalDatabaseResponse
+	211,  // 1471: relay.server.v1.ServerService.ListDatabaseProviders:output_type -> relay.server.v1.ListDatabaseProvidersResponse
+	718,  // 1472: relay.server.v1.ServerService.GetBillingState:output_type -> relay.server.v1.GetBillingStateResponse
+	724,  // 1473: relay.server.v1.ServerService.CreateCheckoutSession:output_type -> relay.server.v1.CreateCheckoutSessionResponse
+	728,  // 1474: relay.server.v1.ServerService.CreateBillingPortalSession:output_type -> relay.server.v1.CreateBillingPortalSessionResponse
+	726,  // 1475: relay.server.v1.ServerService.ChangePlan:output_type -> relay.server.v1.ChangePlanResponse
+	1014, // 1476: relay.server.v1.ServerService.RedeemPromoCode:output_type -> relay.server.v1.RedeemPromoCodeResponse
+	792,  // 1477: relay.server.v1.ServerService.CreateSupportReport:output_type -> relay.server.v1.CreateSupportReportResponse
+	794,  // 1478: relay.server.v1.ServerService.ListSupportReports:output_type -> relay.server.v1.ListSupportReportsResponse
+	796,  // 1479: relay.server.v1.ServerService.GetSupportReport:output_type -> relay.server.v1.GetSupportReportResponse
+	798,  // 1480: relay.server.v1.ServerService.AddSupportReportComment:output_type -> relay.server.v1.AddSupportReportCommentResponse
+	800,  // 1481: relay.server.v1.ServerService.GetSupportAttachment:output_type -> relay.server.v1.GetSupportAttachmentResponse
+	802,  // 1482: relay.server.v1.ServerService.UpdateSupportReportStatus:output_type -> relay.server.v1.UpdateSupportReportStatusResponse
+	834,  // 1483: relay.server.v1.ServerService.GetOrgSSOConnection:output_type -> relay.server.v1.GetOrgSSOConnectionResponse
+	836,  // 1484: relay.server.v1.ServerService.UpsertOrgSSOConnection:output_type -> relay.server.v1.UpsertOrgSSOConnectionResponse
+	838,  // 1485: relay.server.v1.ServerService.DeleteOrgSSOConnection:output_type -> relay.server.v1.DeleteOrgSSOConnectionResponse
+	840,  // 1486: relay.server.v1.ServerService.ListOrgSSOConnections:output_type -> relay.server.v1.ListOrgSSOConnectionsResponse
+	842,  // 1487: relay.server.v1.ServerService.CreateOrgSSOConnection:output_type -> relay.server.v1.CreateOrgSSOConnectionResponse
+	844,  // 1488: relay.server.v1.ServerService.AssignOrgDomainSSOConnection:output_type -> relay.server.v1.AssignOrgDomainSSOConnectionResponse
+	846,  // 1489: relay.server.v1.ServerService.TestOrgSSOConnection:output_type -> relay.server.v1.TestOrgSSOConnectionResponse
+	830,  // 1490: relay.server.v1.ServerService.ListSSOProviderPresets:output_type -> relay.server.v1.ListSSOProviderPresetsResponse
+	852,  // 1491: relay.server.v1.ServerService.GetOrgSignInPolicy:output_type -> relay.server.v1.GetOrgSignInPolicyResponse
+	855,  // 1492: relay.server.v1.ServerService.PreviewOrgSignInPolicy:output_type -> relay.server.v1.PreviewOrgSignInPolicyResponse
+	857,  // 1493: relay.server.v1.ServerService.UpdateOrgSignInPolicy:output_type -> relay.server.v1.UpdateOrgSignInPolicyResponse
+	860,  // 1494: relay.server.v1.ServerService.ListOrgDomains:output_type -> relay.server.v1.ListOrgDomainsResponse
+	862,  // 1495: relay.server.v1.ServerService.AddOrgDomain:output_type -> relay.server.v1.AddOrgDomainResponse
+	864,  // 1496: relay.server.v1.ServerService.VerifyOrgDomain:output_type -> relay.server.v1.VerifyOrgDomainResponse
+	866,  // 1497: relay.server.v1.ServerService.RemoveOrgDomain:output_type -> relay.server.v1.RemoveOrgDomainResponse
+	869,  // 1498: relay.server.v1.ServerService.CreateSCIMToken:output_type -> relay.server.v1.CreateSCIMTokenResponse
+	871,  // 1499: relay.server.v1.ServerService.ListSCIMTokens:output_type -> relay.server.v1.ListSCIMTokensResponse
+	873,  // 1500: relay.server.v1.ServerService.RotateSCIMToken:output_type -> relay.server.v1.RotateSCIMTokenResponse
+	875,  // 1501: relay.server.v1.ServerService.RevokeSCIMToken:output_type -> relay.server.v1.RevokeSCIMTokenResponse
+	878,  // 1502: relay.server.v1.ServerService.ListIdPGroupMappings:output_type -> relay.server.v1.ListIdPGroupMappingsResponse
+	880,  // 1503: relay.server.v1.ServerService.UpsertIdPGroupMapping:output_type -> relay.server.v1.UpsertIdPGroupMappingResponse
+	882,  // 1504: relay.server.v1.ServerService.DeleteIdPGroupMapping:output_type -> relay.server.v1.DeleteIdPGroupMappingResponse
+	890,  // 1505: relay.server.v1.ServerService.ListPostgreSQLExtensions:output_type -> relay.server.v1.ListPostgreSQLExtensionsResponse
+	912,  // 1506: relay.server.v1.ServerService.GetLicenseStatus:output_type -> relay.server.v1.GetLicenseStatusResponse
+	914,  // 1507: relay.server.v1.ServerService.ExportLicenseUsageReport:output_type -> relay.server.v1.ExportLicenseUsageReportResponse
+	917,  // 1508: relay.server.v1.ServerService.GetRunbookSource:output_type -> relay.server.v1.GetRunbookSourceResponse
+	919,  // 1509: relay.server.v1.ServerService.UpsertRunbookSource:output_type -> relay.server.v1.UpsertRunbookSourceResponse
+	921,  // 1510: relay.server.v1.ServerService.DeleteRunbookSource:output_type -> relay.server.v1.DeleteRunbookSourceResponse
+	928,  // 1511: relay.server.v1.ServerService.SyncRunbooks:output_type -> relay.server.v1.SyncRunbooksResponse
+	924,  // 1512: relay.server.v1.ServerService.RotateRunbookWebhookSecret:output_type -> relay.server.v1.RotateRunbookWebhookSecretResponse
+	926,  // 1513: relay.server.v1.ServerService.FetchRunbookHostKey:output_type -> relay.server.v1.FetchRunbookHostKeyResponse
+	932,  // 1514: relay.server.v1.ServerService.ListRunbooks:output_type -> relay.server.v1.ListRunbooksResponse
+	934,  // 1515: relay.server.v1.ServerService.GetRunbook:output_type -> relay.server.v1.GetRunbookResponse
+	936,  // 1516: relay.server.v1.ServerService.RunRunbook:output_type -> relay.server.v1.RunRunbookResponse
+	941,  // 1517: relay.server.v1.ServerService.GetRunbookExecution:output_type -> relay.server.v1.GetRunbookExecutionResponse
+	943,  // 1518: relay.server.v1.ServerService.ListRunbookExecutions:output_type -> relay.server.v1.ListRunbookExecutionsResponse
+	947,  // 1519: relay.server.v1.ServerService.ClaimRunbookExecutions:output_type -> relay.server.v1.ClaimRunbookExecutionsResponse
+	949,  // 1520: relay.server.v1.ServerService.ReportRunbookExecution:output_type -> relay.server.v1.ReportRunbookExecutionResponse
+	956,  // 1521: relay.server.v1.ServerService.CreateQueryTemplate:output_type -> relay.server.v1.CreateQueryTemplateResponse
+	958,  // 1522: relay.server.v1.ServerService.UpdateQueryTemplate:output_type -> relay.server.v1.UpdateQueryTemplateResponse
+	960,  // 1523: relay.server.v1.ServerService.GetQueryTemplate:output_type -> relay.server.v1.GetQueryTemplateResponse
+	962,  // 1524: relay.server.v1.ServerService.ListQueryTemplates:output_type -> relay.server.v1.ListQueryTemplatesResponse
+	964,  // 1525: relay.server.v1.ServerService.ListQueryTemplateVersions:output_type -> relay.server.v1.ListQueryTemplateVersionsResponse
+	966,  // 1526: relay.server.v1.ServerService.ApproveQueryTemplateVersion:output_type -> relay.server.v1.ApproveQueryTemplateVersionResponse
+	968,  // 1527: relay.server.v1.ServerService.WithdrawQueryTemplateVersion:output_type -> relay.server.v1.WithdrawQueryTemplateVersionResponse
+	970,  // 1528: relay.server.v1.ServerService.RevokeQueryTemplate:output_type -> relay.server.v1.RevokeQueryTemplateResponse
+	972,  // 1529: relay.server.v1.ServerService.RunQueryTemplate:output_type -> relay.server.v1.RunQueryTemplateResponse
+	222,  // 1530: relay.server.v1.AdminService.AdminListOrganizations:output_type -> relay.server.v1.AdminListOrganizationsResponse
+	224,  // 1531: relay.server.v1.AdminService.AdminGetOrganization:output_type -> relay.server.v1.AdminGetOrganizationResponse
+	231,  // 1532: relay.server.v1.AdminService.AdminGetOrganizationResources:output_type -> relay.server.v1.AdminGetOrganizationResourcesResponse
+	718,  // 1533: relay.server.v1.AdminService.AdminGetOrganizationBilling:output_type -> relay.server.v1.GetBillingStateResponse
+	297,  // 1534: relay.server.v1.AdminService.AdminSetOrganizationPlan:output_type -> relay.server.v1.AdminSetOrganizationPlanResponse
+	300,  // 1535: relay.server.v1.AdminService.AdminCreatePriceVersion:output_type -> relay.server.v1.AdminCreatePriceVersionResponse
+	302,  // 1536: relay.server.v1.AdminService.AdminPinOrganizationPriceVersion:output_type -> relay.server.v1.AdminPinOrganizationPriceVersionResponse
+	305,  // 1537: relay.server.v1.AdminService.AdminGetEffectivePriceBook:output_type -> relay.server.v1.AdminGetEffectivePriceBookResponse
+	308,  // 1538: relay.server.v1.AdminService.AdminListPriceVersions:output_type -> relay.server.v1.AdminListPriceVersionsResponse
+	310,  // 1539: relay.server.v1.AdminService.AdminGrantOrganizationComp:output_type -> relay.server.v1.AdminGrantOrganizationCompResponse
+	312,  // 1540: relay.server.v1.AdminService.AdminRevokeOrganizationComp:output_type -> relay.server.v1.AdminRevokeOrganizationCompResponse
+	314,  // 1541: relay.server.v1.AdminService.AdminGrantOrganizationCredit:output_type -> relay.server.v1.AdminGrantOrganizationCreditResponse
+	316,  // 1542: relay.server.v1.AdminService.AdminRevokeOrganizationCredit:output_type -> relay.server.v1.AdminRevokeOrganizationCreditResponse
+	319,  // 1543: relay.server.v1.AdminService.AdminListOrganizationGrants:output_type -> relay.server.v1.AdminListOrganizationGrantsResponse
+	326,  // 1544: relay.server.v1.AdminService.AdminListOrganizationContracts:output_type -> relay.server.v1.AdminListOrganizationContractsResponse
+	328,  // 1545: relay.server.v1.AdminService.AdminGetOrganizationContract:output_type -> relay.server.v1.AdminGetOrganizationContractResponse
+	330,  // 1546: relay.server.v1.AdminService.AdminCreateOrganizationContract:output_type -> relay.server.v1.AdminCreateOrganizationContractResponse
+	332,  // 1547: relay.server.v1.AdminService.AdminUpdateOrganizationContract:output_type -> relay.server.v1.AdminUpdateOrganizationContractResponse
+	335,  // 1548: relay.server.v1.AdminService.AdminListContractTemplates:output_type -> relay.server.v1.AdminListContractTemplatesResponse
+	1018, // 1549: relay.server.v1.AdminService.AdminCreatePromoCampaign:output_type -> relay.server.v1.AdminCreatePromoCampaignResponse
+	1020, // 1550: relay.server.v1.AdminService.AdminListPromoCampaigns:output_type -> relay.server.v1.AdminListPromoCampaignsResponse
+	1022, // 1551: relay.server.v1.AdminService.AdminSetPromoCampaignActive:output_type -> relay.server.v1.AdminSetPromoCampaignActiveResponse
+	1033, // 1552: relay.server.v1.AdminService.AdminUpdatePromoCampaign:output_type -> relay.server.v1.AdminUpdatePromoCampaignResponse
+	1024, // 1553: relay.server.v1.AdminService.AdminListPromoRedemptions:output_type -> relay.server.v1.AdminListPromoRedemptionsResponse
+	1026, // 1554: relay.server.v1.AdminService.AdminRevokePromoRedemption:output_type -> relay.server.v1.AdminRevokePromoRedemptionResponse
+	337,  // 1555: relay.server.v1.AdminService.AdminGetOrganizationCost:output_type -> relay.server.v1.AdminGetOrganizationCostResponse
+	342,  // 1556: relay.server.v1.AdminService.AdminListAuditLog:output_type -> relay.server.v1.AdminListAuditLogResponse
+	348,  // 1557: relay.server.v1.AdminService.AdminGetCloudCosts:output_type -> relay.server.v1.AdminGetCloudCostsResponse
+	352,  // 1558: relay.server.v1.AdminService.AdminListPlatformExpenses:output_type -> relay.server.v1.AdminListPlatformExpensesResponse
+	354,  // 1559: relay.server.v1.AdminService.AdminCreatePlatformExpense:output_type -> relay.server.v1.AdminCreatePlatformExpenseResponse
+	356,  // 1560: relay.server.v1.AdminService.AdminUpdatePlatformExpense:output_type -> relay.server.v1.AdminUpdatePlatformExpenseResponse
+	358,  // 1561: relay.server.v1.AdminService.AdminDeletePlatformExpense:output_type -> relay.server.v1.AdminDeletePlatformExpenseResponse
+	362,  // 1562: relay.server.v1.AdminService.AdminGetRevenueOverview:output_type -> relay.server.v1.AdminGetRevenueOverviewResponse
+	804,  // 1563: relay.server.v1.AdminService.AdminListSupportReports:output_type -> relay.server.v1.AdminListSupportReportsResponse
+	806,  // 1564: relay.server.v1.AdminService.AdminGetSupportReport:output_type -> relay.server.v1.AdminGetSupportReportResponse
+	808,  // 1565: relay.server.v1.AdminService.AdminAddSupportReportComment:output_type -> relay.server.v1.AdminAddSupportReportCommentResponse
+	810,  // 1566: relay.server.v1.AdminService.AdminGetSupportAttachment:output_type -> relay.server.v1.AdminGetSupportAttachmentResponse
+	812,  // 1567: relay.server.v1.AdminService.AdminUpdateSupportReportStatus:output_type -> relay.server.v1.AdminUpdateSupportReportStatusResponse
+	816,  // 1568: relay.server.v1.AdminService.AdminListSupportComponents:output_type -> relay.server.v1.AdminListSupportComponentsResponse
+	818,  // 1569: relay.server.v1.AdminService.AdminFileSupportReportIssue:output_type -> relay.server.v1.AdminFileSupportReportIssueResponse
+	493,  // 1570: relay.server.v1.AdminService.AdminListMembers:output_type -> relay.server.v1.ListMembersResponse
+	495,  // 1571: relay.server.v1.AdminService.AdminSetMemberRole:output_type -> relay.server.v1.SetMemberRoleResponse
+	499,  // 1572: relay.server.v1.AdminService.AdminRemoveMember:output_type -> relay.server.v1.RemoveMemberResponse
+	534,  // 1573: relay.server.v1.AdminService.AdminInviteMember:output_type -> relay.server.v1.InviteMemberResponse
+	536,  // 1574: relay.server.v1.AdminService.AdminListInvitations:output_type -> relay.server.v1.ListInvitationsResponse
+	538,  // 1575: relay.server.v1.AdminService.AdminRevokeInvitation:output_type -> relay.server.v1.RevokeInvitationResponse
+	278,  // 1576: relay.server.v1.AdminService.AdminListClusters:output_type -> relay.server.v1.AdminListClustersResponse
+	281,  // 1577: relay.server.v1.AdminService.AdminListPendingOperations:output_type -> relay.server.v1.AdminListPendingOperationsResponse
+	283,  // 1578: relay.server.v1.AdminService.AdminListAgents:output_type -> relay.server.v1.AdminListAgentsResponse
+	286,  // 1579: relay.server.v1.AdminService.AdminListTunnelSessions:output_type -> relay.server.v1.AdminListTunnelSessionsResponse
+	288,  // 1580: relay.server.v1.AdminService.AdminRetryDeleteDatabase:output_type -> relay.server.v1.AdminRetryDeleteDatabaseResponse
+	249,  // 1581: relay.server.v1.AdminService.AdminSearchUsers:output_type -> relay.server.v1.AdminSearchUsersResponse
+	253,  // 1582: relay.server.v1.AdminService.AdminGetUser:output_type -> relay.server.v1.AdminGetUserResponse
+	255,  // 1583: relay.server.v1.AdminService.AdminRevokeUserSessions:output_type -> relay.server.v1.AdminRevokeUserSessionsResponse
+	257,  // 1584: relay.server.v1.AdminService.AdminSuspendUser:output_type -> relay.server.v1.AdminSuspendUserResponse
+	259,  // 1585: relay.server.v1.AdminService.AdminUnsuspendUser:output_type -> relay.server.v1.AdminUnsuspendUserResponse
+	239,  // 1586: relay.server.v1.AdminService.AdminGetOrganizationActivity:output_type -> relay.server.v1.AdminGetOrganizationActivityResponse
+	245,  // 1587: relay.server.v1.AdminService.AdminGetOrganizationSecurity:output_type -> relay.server.v1.AdminGetOrganizationSecurityResponse
+	233,  // 1588: relay.server.v1.AdminService.AdminGetPlatformOverview:output_type -> relay.server.v1.AdminGetPlatformOverviewResponse
+	236,  // 1589: relay.server.v1.AdminService.AdminListOrgActivation:output_type -> relay.server.v1.AdminListOrgActivationResponse
+	261,  // 1590: relay.server.v1.AdminService.AdminSuspendOrganization:output_type -> relay.server.v1.AdminSuspendOrganizationResponse
+	263,  // 1591: relay.server.v1.AdminService.AdminUnsuspendOrganization:output_type -> relay.server.v1.AdminUnsuspendOrganizationResponse
+	366,  // 1592: relay.server.v1.AdminService.AdminGetMaintenanceBanner:output_type -> relay.server.v1.AdminGetMaintenanceBannerResponse
+	368,  // 1593: relay.server.v1.AdminService.AdminSetMaintenanceBanner:output_type -> relay.server.v1.AdminSetMaintenanceBannerResponse
+	370,  // 1594: relay.server.v1.AdminService.AdminClearMaintenanceBanner:output_type -> relay.server.v1.AdminClearMaintenanceBannerResponse
+	373,  // 1595: relay.server.v1.AdminService.AdminGetFreeCreationPause:output_type -> relay.server.v1.AdminGetFreeCreationPauseResponse
+	375,  // 1596: relay.server.v1.AdminService.AdminPauseFreeCreation:output_type -> relay.server.v1.AdminPauseFreeCreationResponse
+	377,  // 1597: relay.server.v1.AdminService.AdminResumeFreeCreation:output_type -> relay.server.v1.AdminResumeFreeCreationResponse
+	267,  // 1598: relay.server.v1.AdminService.AdminListBillingAttention:output_type -> relay.server.v1.AdminListBillingAttentionResponse
+	269,  // 1599: relay.server.v1.AdminService.AdminPauseBillingProcess:output_type -> relay.server.v1.AdminPauseBillingProcessResponse
+	271,  // 1600: relay.server.v1.AdminService.AdminResumeBillingProcess:output_type -> relay.server.v1.AdminResumeBillingProcessResponse
+	273,  // 1601: relay.server.v1.AdminService.AdminExtendBillingDeadline:output_type -> relay.server.v1.AdminExtendBillingDeadlineResponse
+	276,  // 1602: relay.server.v1.AdminService.AdminRunBillingSweep:output_type -> relay.server.v1.AdminRunBillingSweepResponse
+	893,  // 1603: relay.server.v1.AdminService.AdminListFeatureFlags:output_type -> relay.server.v1.AdminListFeatureFlagsResponse
+	895,  // 1604: relay.server.v1.AdminService.AdminGetFeatureFlag:output_type -> relay.server.v1.AdminGetFeatureFlagResponse
+	897,  // 1605: relay.server.v1.AdminService.AdminCreateFeatureFlag:output_type -> relay.server.v1.AdminCreateFeatureFlagResponse
+	899,  // 1606: relay.server.v1.AdminService.AdminUpdateFeatureFlag:output_type -> relay.server.v1.AdminUpdateFeatureFlagResponse
+	901,  // 1607: relay.server.v1.AdminService.AdminArchiveFeatureFlag:output_type -> relay.server.v1.AdminArchiveFeatureFlagResponse
+	903,  // 1608: relay.server.v1.AdminService.AdminSetOrgFeatureOverride:output_type -> relay.server.v1.AdminSetOrgFeatureOverrideResponse
+	905,  // 1609: relay.server.v1.AdminService.AdminClearOrgFeatureOverride:output_type -> relay.server.v1.AdminClearOrgFeatureOverrideResponse
+	908,  // 1610: relay.server.v1.AdminService.AdminListFeatureFlagOrganizations:output_type -> relay.server.v1.AdminListFeatureFlagOrganizationsResponse
+	910,  // 1611: relay.server.v1.AdminService.AdminPreviewFeatureFlagRollout:output_type -> relay.server.v1.AdminPreviewFeatureFlagRolloutResponse
+	885,  // 1612: relay.server.v1.AdminService.AdminListOrgDomains:output_type -> relay.server.v1.AdminListOrgDomainsResponse
+	887,  // 1613: relay.server.v1.AdminService.AdminRemoveOrgDomain:output_type -> relay.server.v1.AdminRemoveOrgDomainResponse
+	1005, // 1614: relay.server.v1.BackofficeMCPService.CreateMCPGrant:output_type -> relay.server.v1.CreateMCPGrantResponse
+	1007, // 1615: relay.server.v1.BackofficeMCPService.RotateMCPGrant:output_type -> relay.server.v1.RotateMCPGrantResponse
+	1009, // 1616: relay.server.v1.BackofficeMCPService.ResolveMCPGrant:output_type -> relay.server.v1.ResolveMCPGrantResponse
+	1011, // 1617: relay.server.v1.BackofficeMCPService.RevokeMCPGrant:output_type -> relay.server.v1.RevokeMCPGrantResponse
+	1233, // [1233:1618] is the sub-list for method output_type
+	848,  // [848:1233] is the sub-list for method input_type
 	848,  // [848:848] is the sub-list for extension type_name
 	848,  // [848:848] is the sub-list for extension extendee
 	0,    // [0:848] is the sub-list for field type_name
@@ -76452,34 +76541,34 @@ func file_relay_server_v1_server_proto_init() {
 	}
 	file_relay_server_v1_server_proto_msgTypes[647].OneofWrappers = []any{}
 	file_relay_server_v1_server_proto_msgTypes[651].OneofWrappers = []any{}
-	file_relay_server_v1_server_proto_msgTypes[658].OneofWrappers = []any{
+	file_relay_server_v1_server_proto_msgTypes[660].OneofWrappers = []any{
 		(*GetWorkspaceRequest_Name)(nil),
 		(*GetWorkspaceRequest_Id)(nil),
 	}
-	file_relay_server_v1_server_proto_msgTypes[660].OneofWrappers = []any{}
 	file_relay_server_v1_server_proto_msgTypes[662].OneofWrappers = []any{}
-	file_relay_server_v1_server_proto_msgTypes[693].OneofWrappers = []any{}
-	file_relay_server_v1_server_proto_msgTypes[708].OneofWrappers = []any{}
-	file_relay_server_v1_server_proto_msgTypes[724].OneofWrappers = []any{}
-	file_relay_server_v1_server_proto_msgTypes[741].OneofWrappers = []any{}
-	file_relay_server_v1_server_proto_msgTypes[762].OneofWrappers = []any{}
-	file_relay_server_v1_server_proto_msgTypes[781].OneofWrappers = []any{}
+	file_relay_server_v1_server_proto_msgTypes[664].OneofWrappers = []any{}
+	file_relay_server_v1_server_proto_msgTypes[695].OneofWrappers = []any{}
+	file_relay_server_v1_server_proto_msgTypes[710].OneofWrappers = []any{}
+	file_relay_server_v1_server_proto_msgTypes[726].OneofWrappers = []any{}
+	file_relay_server_v1_server_proto_msgTypes[743].OneofWrappers = []any{}
+	file_relay_server_v1_server_proto_msgTypes[764].OneofWrappers = []any{}
 	file_relay_server_v1_server_proto_msgTypes[783].OneofWrappers = []any{}
-	file_relay_server_v1_server_proto_msgTypes[793].OneofWrappers = []any{}
-	file_relay_server_v1_server_proto_msgTypes[814].OneofWrappers = []any{
+	file_relay_server_v1_server_proto_msgTypes[785].OneofWrappers = []any{}
+	file_relay_server_v1_server_proto_msgTypes[795].OneofWrappers = []any{}
+	file_relay_server_v1_server_proto_msgTypes[816].OneofWrappers = []any{
 		(*SSOSAMLInput_MetadataUrl)(nil),
 		(*SSOSAMLInput_MetadataXml)(nil),
 		(*SSOSAMLInput_Manual)(nil),
 	}
-	file_relay_server_v1_server_proto_msgTypes[815].OneofWrappers = []any{}
-	file_relay_server_v1_server_proto_msgTypes[825].OneofWrappers = []any{}
-	file_relay_server_v1_server_proto_msgTypes[831].OneofWrappers = []any{}
-	file_relay_server_v1_server_proto_msgTypes[858].OneofWrappers = []any{}
-	file_relay_server_v1_server_proto_msgTypes[908].OneofWrappers = []any{}
-	file_relay_server_v1_server_proto_msgTypes[925].OneofWrappers = []any{}
-	file_relay_server_v1_server_proto_msgTypes[940].OneofWrappers = []any{}
-	file_relay_server_v1_server_proto_msgTypes[961].OneofWrappers = []any{}
-	file_relay_server_v1_server_proto_msgTypes[1000].OneofWrappers = []any{
+	file_relay_server_v1_server_proto_msgTypes[817].OneofWrappers = []any{}
+	file_relay_server_v1_server_proto_msgTypes[827].OneofWrappers = []any{}
+	file_relay_server_v1_server_proto_msgTypes[833].OneofWrappers = []any{}
+	file_relay_server_v1_server_proto_msgTypes[860].OneofWrappers = []any{}
+	file_relay_server_v1_server_proto_msgTypes[910].OneofWrappers = []any{}
+	file_relay_server_v1_server_proto_msgTypes[927].OneofWrappers = []any{}
+	file_relay_server_v1_server_proto_msgTypes[942].OneofWrappers = []any{}
+	file_relay_server_v1_server_proto_msgTypes[963].OneofWrappers = []any{}
+	file_relay_server_v1_server_proto_msgTypes[1002].OneofWrappers = []any{
 		(*RevokeMCPGrantRequest_GrantId)(nil),
 		(*RevokeMCPGrantRequest_RefreshToken)(nil),
 	}
@@ -76489,7 +76578,7 @@ func file_relay_server_v1_server_proto_init() {
 			GoPackagePath: reflect.TypeOf(x{}).PkgPath(),
 			RawDescriptor: unsafe.Slice(unsafe.StringData(file_relay_server_v1_server_proto_rawDesc), len(file_relay_server_v1_server_proto_rawDesc)),
 			NumEnums:      8,
-			NumMessages:   1043,
+			NumMessages:   1045,
 			NumExtensions: 0,
 			NumServices:   3,
 		},

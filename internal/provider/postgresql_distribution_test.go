@@ -77,7 +77,7 @@ func TestPostgreSQLClusterResource_StandbyDistribution(t *testing.T) {
 					resource.TestCheckTypeSetElemNestedAttrs(pgAddr, "distribution.region.*", map[string]string{"cloud": "aws", "region": "eu-west-1", "primary": "false"}),
 					resource.TestCheckResourceAttr(pgAddr, "regions.#", "2"),
 					resource.TestCheckTypeSetElemNestedAttrs(pgAddr, "regions.*", map[string]string{"region": "us-east-1", "role": "primary", "replication_link": ""}),
-					resource.TestCheckTypeSetElemNestedAttrs(pgAddr, "regions.*", map[string]string{"region": "eu-west-1", "role": "standby", "replication_link": "Up"}),
+					resource.TestCheckTypeSetElemNestedAttrs(pgAddr, "regions.*", map[string]string{"region": "eu-west-1", "role": "standby", "replication_link": "Up", "endpoint": ""}),
 					func(*terraform.State) error {
 						spec := f.lastDBCreate.GetSpec()
 						d := spec.GetDistribution()
@@ -97,6 +97,24 @@ func TestPostgreSQLClusterResource_StandbyDistribution(t *testing.T) {
 				),
 			},
 			{Config: pgStandbyConfig(f, noParameters, eu, east), PlanOnly: true},
+			{
+				PreConfig: func() {
+					f.set(func() {
+						f.regionEndpoint["aws/us-east-1"] = "ledger.seg.cell-a.example"
+						f.regionEndpoint["aws/eu-west-1"] = "ledger.seg.cell-b.example"
+					})
+				},
+				RefreshState: true,
+				Check: resource.ComposeAggregateTestCheckFunc(
+					resource.TestCheckTypeSetElemNestedAttrs(pgAddr, "regions.*", map[string]string{"region": "us-east-1", "role": "primary", "endpoint": "ledger.seg.cell-a.example"}),
+					resource.TestCheckTypeSetElemNestedAttrs(pgAddr, "regions.*", map[string]string{"region": "eu-west-1", "role": "standby", "endpoint": "ledger.seg.cell-b.example"}),
+				),
+			},
+			{
+				PreConfig:    func() { f.set(func() { clear(f.regionEndpoint) }) },
+				RefreshState: true,
+				Check:        resource.TestCheckTypeSetElemNestedAttrs(pgAddr, "regions.*", map[string]string{"region": "eu-west-1", "endpoint": ""}),
+			},
 			{Config: pgStandbyConfig(f, noParameters, "    region {\n      cloud  = \"aws\"\n      region = \"eu-west-1\"\n    }\n", east), PlanOnly: true},
 			{
 				PreConfig: func() {
@@ -301,6 +319,8 @@ func TestPostgreSQLClusterDataSource_StandbyAndStretched(t *testing.T) {
 	f := startFakeServer(t)
 	f.set(func() {
 		f.regionLink["aws/eu-west-1"] = "Down"
+		f.regionEndpoint["aws/us-east-1"] = "ledger.seg.cell-a.example"
+		f.regionEndpoint["aws/eu-west-1"] = "ledger.seg.cell-b.example"
 		spec := func(d *serverv1.Distribution) *serverv1.DatabaseSpec {
 			return &serverv1.DatabaseSpec{
 				Engine: "postgresql", Version: "18", Distribution: d,
@@ -340,7 +360,8 @@ data "relay_postgresql_cluster" "plain" {
 				resource.TestCheckTypeSetElemNestedAttrs(standby, "distribution.region.*", map[string]string{"cloud": "aws", "region": "us-east-1", "primary": "true"}),
 				resource.TestCheckTypeSetElemNestedAttrs(standby, "distribution.region.*", map[string]string{"cloud": "aws", "region": "eu-west-1", "primary": "false"}),
 				resource.TestCheckResourceAttr(standby, "regions.#", "2"),
-				resource.TestCheckTypeSetElemNestedAttrs(standby, "regions.*", map[string]string{"region": "eu-west-1", "role": "standby", "replication_link": "Down"}),
+				resource.TestCheckTypeSetElemNestedAttrs(standby, "regions.*", map[string]string{"region": "eu-west-1", "role": "standby", "replication_link": "Down", "endpoint": "ledger.seg.cell-b.example"}),
+				resource.TestCheckTypeSetElemNestedAttrs(standby, "regions.*", map[string]string{"region": "us-east-1", "role": "primary", "endpoint": "ledger.seg.cell-a.example"}),
 				resource.TestCheckNoResourceAttr(stretched, "distribution"),
 				resource.TestCheckNoResourceAttr(plain, "distribution"),
 				resource.TestCheckResourceAttr(plain, "regions.#", "0"),

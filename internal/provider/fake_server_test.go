@@ -55,6 +55,7 @@ type fakeServer struct {
 	regionLink        map[string]string
 	regionHeld        map[string]string
 	regionMessage     map[string]string
+	regionEndpoint    map[string]string
 	stuck             bool
 	failProvision     string
 	failDeletion      string
@@ -140,6 +141,7 @@ func startFakeServer(t *testing.T) *fakeServer {
 		regionLink:        map[string]string{},
 		regionHeld:        map[string]string{},
 		regionMessage:     map[string]string{},
+		regionEndpoint:    map[string]string{},
 		readyAfter:        2,
 		users:             map[string]*serverv1.DatabaseUser{},
 		userCountdown:     map[string]int{},
@@ -885,7 +887,7 @@ func (f *fakeServer) effectiveRegions(db *serverv1.Database) {
 	for cloud, c := range d.GetClouds() {
 		for region, p := range c.GetRegions() {
 			key := cloud + "/" + region
-			r := &serverv1.RegionStatus{Cloud: cloud, Region: region, Role: "standby", Phase: db.GetStatus().GetPhase(), TotalNodes: nodes, ReadyNodes: db.GetStatus().GetReadyNodes(), Held: f.regionHeld[key], Message: f.regionMessage[key]}
+			r := &serverv1.RegionStatus{Cloud: cloud, Region: region, Role: "standby", Phase: db.GetStatus().GetPhase(), TotalNodes: nodes, ReadyNodes: db.GetStatus().GetReadyNodes(), Held: f.regionHeld[key], Message: f.regionMessage[key], Endpoint: f.regionEndpoint[key]}
 			if p.GetPrimary() {
 				r.Role = "primary"
 			} else if r.ReplicationLink = f.regionLink[key]; r.ReplicationLink == "" {

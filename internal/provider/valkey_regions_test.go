@@ -33,9 +33,30 @@ func TestValkeyClusterResource_RegionsStatus(t *testing.T) {
 					resource.TestCheckTypeSetElemNestedAttrs(addr, "regions.*", regionStatusAttrs("us-east-1", "primary", "", "")),
 					resource.TestCheckTypeSetElemNestedAttrs(addr, "regions.*", regionStatusAttrs("eu-west-1", "standby", "Up", "")),
 					resource.TestCheckTypeSetElemNestedAttrs(addr, "regions.*", map[string]string{"region": "eu-west-1", "phase": "running", "ready_nodes": "1", "message": ""}),
+					resource.TestCheckTypeSetElemNestedAttrs(addr, "regions.*", map[string]string{"region": "us-east-1", "endpoint": ""}),
+					resource.TestCheckTypeSetElemNestedAttrs(addr, "regions.*", map[string]string{"region": "eu-west-1", "endpoint": ""}),
 				),
 			},
 			{Config: standby, PlanOnly: true},
+			{
+				PreConfig: func() {
+					f.set(func() {
+						f.regionEndpoint["aws/us-east-1"] = "cache.seg.cell-a.example"
+						f.regionEndpoint["aws/eu-west-1"] = "cache.seg.cell-b.example"
+					})
+				},
+				RefreshState: true,
+				Check: resource.ComposeAggregateTestCheckFunc(
+					resource.TestCheckTypeSetElemNestedAttrs(addr, "regions.*", map[string]string{"region": "us-east-1", "role": "primary", "endpoint": "cache.seg.cell-a.example"}),
+					resource.TestCheckTypeSetElemNestedAttrs(addr, "regions.*", map[string]string{"region": "eu-west-1", "role": "standby", "endpoint": "cache.seg.cell-b.example"}),
+				),
+			},
+			{Config: standby, PlanOnly: true},
+			{
+				PreConfig:    func() { f.set(func() { clear(f.regionEndpoint) }) },
+				RefreshState: true,
+				Check:        resource.TestCheckTypeSetElemNestedAttrs(addr, "regions.*", map[string]string{"region": "eu-west-1", "endpoint": ""}),
+			},
 			{
 				PreConfig: func() {
 					f.set(func() {
@@ -122,6 +143,8 @@ func TestValkeyClusterDataSource_StandbyRegions(t *testing.T) {
 		f.regionLink["aws/eu-west-1"] = "Down"
 		f.regionHeld["aws/eu-west-1"] = "the standby has not synchronized"
 		f.regionMessage["aws/eu-west-1"] = "replication link is down"
+		f.regionEndpoint["aws/us-east-1"] = "sessions.seg.cell-a.example"
+		f.regionEndpoint["aws/eu-west-1"] = "sessions.seg.cell-b.example"
 		f.databases["db-standby"] = &serverv1.Database{
 			Id: "db-standby", Name: "sessions", WorkspaceId: dbWorkspace,
 			Spec: &serverv1.DatabaseSpec{
@@ -162,9 +185,11 @@ data "relay_valkey_cluster" "plain" {
 				resource.TestCheckResourceAttr(standby, "regions.#", "2"),
 				resource.TestCheckTypeSetElemNestedAttrs(standby, "regions.*", map[string]string{
 					"cloud": "aws", "region": "us-east-1", "role": "primary", "phase": "running", "ready_nodes": "2", "total_nodes": "2", "replication_link": "", "held": "", "message": "",
+					"endpoint": "sessions.seg.cell-a.example",
 				}),
 				resource.TestCheckTypeSetElemNestedAttrs(standby, "regions.*", map[string]string{
 					"cloud": "aws", "region": "eu-west-1", "role": "standby", "replication_link": "Down", "held": "the standby has not synchronized", "message": "replication link is down",
+					"endpoint": "sessions.seg.cell-b.example",
 				}),
 				resource.TestCheckNoResourceAttr(plain, "distribution"),
 				resource.TestCheckResourceAttr(plain, "regions.#", "0"),

@@ -153,6 +153,7 @@ const (
 	ServerService_UpdateOrganizationSettings_FullMethodName      = "/relay.server.v1.ServerService/UpdateOrganizationSettings"
 	ServerService_DeleteOrganization_FullMethodName              = "/relay.server.v1.ServerService/DeleteOrganization"
 	ServerService_SwitchOrganization_FullMethodName              = "/relay.server.v1.ServerService/SwitchOrganization"
+	ServerService_DeleteAccount_FullMethodName                   = "/relay.server.v1.ServerService/DeleteAccount"
 	ServerService_GetOrgOverview_FullMethodName                  = "/relay.server.v1.ServerService/GetOrgOverview"
 	ServerService_ListWorkspaces_FullMethodName                  = "/relay.server.v1.ServerService/ListWorkspaces"
 	ServerService_GetWorkspace_FullMethodName                    = "/relay.server.v1.ServerService/GetWorkspace"
@@ -642,6 +643,10 @@ type ServerServiceClient interface {
 	DeleteOrganization(ctx context.Context, in *DeleteOrganizationRequest, opts ...grpc.CallOption) (*DeleteOrganizationResponse, error)
 	// SwitchOrganization updates the user's default organization.
 	SwitchOrganization(ctx context.Context, in *SwitchOrganizationRequest, opts ...grpc.CallOption) (*SwitchOrganizationResponse, error)
+	// DeleteAccount permanently deletes the signed-in user's account. It removes the user
+	// from every organization they belong to; it is refused while they are the sole owner
+	// of an organization or while an organization's admin has removed them.
+	DeleteAccount(ctx context.Context, in *DeleteAccountRequest, opts ...grpc.CallOption) (*DeleteAccountResponse, error)
 	// GetOrgOverview returns aggregated overview data for the organization dashboard.
 	GetOrgOverview(ctx context.Context, in *GetOrgOverviewRequest, opts ...grpc.CallOption) (*GetOrgOverviewResponse, error)
 	// ListWorkspaces returns all workspaces in the user's organization.
@@ -2429,6 +2434,16 @@ func (c *serverServiceClient) SwitchOrganization(ctx context.Context, in *Switch
 	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
 	out := new(SwitchOrganizationResponse)
 	err := c.cc.Invoke(ctx, ServerService_SwitchOrganization_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *serverServiceClient) DeleteAccount(ctx context.Context, in *DeleteAccountRequest, opts ...grpc.CallOption) (*DeleteAccountResponse, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(DeleteAccountResponse)
+	err := c.cc.Invoke(ctx, ServerService_DeleteAccount_FullMethodName, in, out, cOpts...)
 	if err != nil {
 		return nil, err
 	}
@@ -4389,6 +4404,10 @@ type ServerServiceServer interface {
 	DeleteOrganization(context.Context, *DeleteOrganizationRequest) (*DeleteOrganizationResponse, error)
 	// SwitchOrganization updates the user's default organization.
 	SwitchOrganization(context.Context, *SwitchOrganizationRequest) (*SwitchOrganizationResponse, error)
+	// DeleteAccount permanently deletes the signed-in user's account. It removes the user
+	// from every organization they belong to; it is refused while they are the sole owner
+	// of an organization or while an organization's admin has removed them.
+	DeleteAccount(context.Context, *DeleteAccountRequest) (*DeleteAccountResponse, error)
 	// GetOrgOverview returns aggregated overview data for the organization dashboard.
 	GetOrgOverview(context.Context, *GetOrgOverviewRequest) (*GetOrgOverviewResponse, error)
 	// ListWorkspaces returns all workspaces in the user's organization.
@@ -5243,6 +5262,9 @@ func (UnimplementedServerServiceServer) DeleteOrganization(context.Context, *Del
 }
 func (UnimplementedServerServiceServer) SwitchOrganization(context.Context, *SwitchOrganizationRequest) (*SwitchOrganizationResponse, error) {
 	return nil, status.Error(codes.Unimplemented, "method SwitchOrganization not implemented")
+}
+func (UnimplementedServerServiceServer) DeleteAccount(context.Context, *DeleteAccountRequest) (*DeleteAccountResponse, error) {
+	return nil, status.Error(codes.Unimplemented, "method DeleteAccount not implemented")
 }
 func (UnimplementedServerServiceServer) GetOrgOverview(context.Context, *GetOrgOverviewRequest) (*GetOrgOverviewResponse, error) {
 	return nil, status.Error(codes.Unimplemented, "method GetOrgOverview not implemented")
@@ -8159,6 +8181,24 @@ func _ServerService_SwitchOrganization_Handler(srv interface{}, ctx context.Cont
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
 		return srv.(ServerServiceServer).SwitchOrganization(ctx, req.(*SwitchOrganizationRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _ServerService_DeleteAccount_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(DeleteAccountRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(ServerServiceServer).DeleteAccount(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: ServerService_DeleteAccount_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(ServerServiceServer).DeleteAccount(ctx, req.(*DeleteAccountRequest))
 	}
 	return interceptor(ctx, in, info, handler)
 }
@@ -11614,6 +11654,10 @@ var ServerService_ServiceDesc = grpc.ServiceDesc{
 		{
 			MethodName: "SwitchOrganization",
 			Handler:    _ServerService_SwitchOrganization_Handler,
+		},
+		{
+			MethodName: "DeleteAccount",
+			Handler:    _ServerService_DeleteAccount_Handler,
 		},
 		{
 			MethodName: "GetOrgOverview",
