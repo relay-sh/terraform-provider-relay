@@ -274,19 +274,6 @@ func distributionKeys(d types.Object) []string {
 	return keys
 }
 
-func distributionPlaced(d types.Object) ([]string, bool) {
-	regions, ok := distributionRegions(d)
-	if !ok {
-		return nil, false
-	}
-	for _, r := range regions {
-		if !known(r.Cloud) || !known(r.Region) {
-			return nil, false
-		}
-	}
-	return distributionKeys(d), true
-}
-
 func keepStoredPlacements(next, stored *serverv1.Distribution) {
 	for cloud, regions := range next.GetClouds() {
 		for region, placement := range regions.GetRegions() {

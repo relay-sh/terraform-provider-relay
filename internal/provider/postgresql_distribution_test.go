@@ -45,6 +45,8 @@ func TestPostgreSQLClusterResource_StandbyDistribution(t *testing.T) {
 	east, eu := standbyRegion("aws", "us-east-1", true), standbyRegion("aws", "eu-west-1", false)
 	movedEast, movedEu := "    region {\n      cloud  = \"aws\"\n      region = \"us-east-1\"\n    }\n", standbyRegion("aws", "eu-west-1", true)
 	const noParameters = `{}`
+	const workMem = `{ work_mem = "64MB" }`
+	sa := standbyRegion("aws", "sa-east-1", false)
 	wantMask := func(paths ...string) resource.TestCheckFunc {
 		return func(*terraform.State) error {
 			if got := f.lastDBUpdate.GetUpdateMask().GetPaths(); !slices.Equal(got, paths) {
@@ -127,12 +129,57 @@ func TestPostgreSQLClusterResource_StandbyDistribution(t *testing.T) {
 				Check:     wantMask("postgresql"),
 			},
 			{
-				Config:      pgStandbyConfig(f, noParameters, movedEast, movedEu, standbyRegion("aws", "sa-east-1", false)),
-				ExpectError: regexp.MustCompile(`(?s)Regions cannot change.*aws/eu-west-1,\s+aws/us-east-1.*aws/eu-west-1,\s+aws/sa-east-1,\s+aws/us-east-1`),
+				Config: pgStandbyConfig(f, workMem, movedEast, movedEu, sa),
+				ConfigPlanChecks: resource.ConfigPlanChecks{PreApply: []plancheck.PlanCheck{
+					plancheck.ExpectResourceAction(pgAddr, plancheck.ResourceActionUpdate),
+				}},
+				Check: resource.ComposeAggregateTestCheckFunc(
+					resource.TestCheckResourceAttr(pgAddr, "distribution.region.#", "3"),
+					resource.TestCheckResourceAttr(pgAddr, "regions.#", "3"),
+					resource.TestCheckTypeSetElemNestedAttrs(pgAddr, "regions.*", map[string]string{"region": "sa-east-1", "role": "standby"}),
+					wantMask("distribution"),
+					wantMembers("eu-west-1", 2),
+				),
+			},
+			{Config: pgStandbyConfig(f, workMem, movedEast, movedEu, sa), PlanOnly: true},
+			{
+				Config:      pgStandbyConfig(f, workMem, movedEast, movedEu, sa, standbyRegion("aws", "ap-south-1", false), standbyRegion("aws", "eu-central-1", false)),
+				ExpectError: regexp.MustCompile(`(?s)Cannot update cluster.*one\s+region\s+of\s+a\s+standby\s+database\s+per\s+update,\s+this\s+update\s+changes\s+2`),
 			},
 			{
-				Config:      pgStandbyConfig(f, noParameters, movedEu),
-				ExpectError: regexp.MustCompile(`Too few regions|Regions cannot change`),
+				Config:      pgStandbyConfig(f, workMem, movedEast, movedEu, sa, standbyRegion("aws", "ap-south-1", false)),
+				PreConfig:   func() { f.set(func() { f.noTopologyOps = true }) },
+				ExpectError: regexp.MustCompile(`(?s)Cannot update cluster.*topology\s+operations\s+are\s+not\s+enabled`),
+			},
+			{
+				Config:      pgStandbyConfig(f, noParameters, movedEast, movedEu),
+				PreConfig:   func() { f.set(func() { f.noTopologyOps = false }) },
+				ExpectError: regexp.MustCompile(`(?s)Cannot update cluster.*region\s+change\s+alone\s+and\s+the\s+other\s+fields`),
+			},
+			{
+				Config:      pgStandbyConfig(f, workMem, east, eu, sa, standbyRegion("aws", "ap-south-1", false)),
+				ExpectError: regexp.MustCompile(`(?s)Cannot update cluster.*primary\s+marker\s+together\s+with\s+a\s+region\s+change`),
+			},
+			{
+				Config:      pgStandbyConfig(f, workMem, east, sa),
+				ExpectError: regexp.MustCompile(`(?s)Cannot update cluster.*region\s+aws/eu-west-1\s+holds\s+the\s+primary\s+marker,\s+so\s+it\s+cannot\s+be\s+removed`),
+			},
+			{
+				Config:      pgStandbyConfig(f, workMem, movedEu, sa),
+				ExpectError: regexp.MustCompile(`(?s)Node group outside the distribution.*aws/us-east-1.*aws/eu-west-1,\s+aws/sa-east-1`),
+			},
+			{
+				Config: pgStandbyConfig(f, workMem, movedEast, movedEu),
+				Check: resource.ComposeAggregateTestCheckFunc(
+					resource.TestCheckResourceAttr(pgAddr, "distribution.region.#", "2"),
+					resource.TestCheckResourceAttr(pgAddr, "regions.#", "2"),
+					wantMask("distribution"),
+					wantMembers("eu-west-1", 2),
+				),
+			},
+			{
+				Config:      pgStandbyConfig(f, workMem, movedEu),
+				ExpectError: regexp.MustCompile(`Too few regions`),
 			},
 			{
 				Config:      clusterConfig(f, "18", "10Gi", noParameters, ""),
@@ -374,8 +421,8 @@ func TestRejectDistributionChange(t *testing.T) {
 		"removed":          {null, east, "Distribution cannot be removed"},
 		"marker moves":     {moved, east, ""},
 		"unchanged":        {east, east, ""},
-		"region added":     {added, east, "Regions cannot change"},
-		"region removed":   {east, added, "Regions cannot change"},
+		"region added":     {added, east, ""},
+		"region removed":   {east, added, ""},
 		"region not known": {partial, east, ""},
 		"regions unknown": {types.ObjectValueMust(distributionAttrTypes, map[string]attr.Value{
 			"mode": s("standby"), "region": types.SetUnknown(distributionRegionType),

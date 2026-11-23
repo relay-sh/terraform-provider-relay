@@ -51,6 +51,7 @@ type fakeServer struct {
 	valkeyFloor       string
 	unsyncedStandby   bool
 	noStandbyMesh     bool
+	noTopologyOps     bool
 	regionLink        map[string]string
 	regionHeld        map[string]string
 	regionMessage     map[string]string
@@ -980,6 +981,7 @@ func (f *fakeServer) UpdateDatabase(ctx context.Context, req *serverv1.UpdateDat
 	if merged.Storage == nil {
 		merged.Storage = &serverv1.ClusterStorage{}
 	}
+	base := proto.Clone(merged).(*serverv1.DatabaseSpec)
 	for _, p := range req.GetUpdateMask().GetPaths() {
 		switch p {
 		case "nodes":
@@ -1026,6 +1028,9 @@ func (f *fakeServer) UpdateDatabase(ctx context.Context, req *serverv1.UpdateDat
 		return nil, err
 	}
 	if err := validatePostgreSQLDistribution(merged); err != nil {
+		return nil, err
+	}
+	if err := f.gateDistribution(base, merged); err != nil {
 		return nil, err
 	}
 	f.resolveStorage(merged, db.GetSpec())

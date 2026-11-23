@@ -8,19 +8,17 @@ import (
 
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
+	"google.golang.org/protobuf/proto"
 
 	serverv1 "github.com/relay-sh/relay-go/gen/relay/server/v1"
 )
 
 func (f *fakeServer) updateDistribution(merged, in *serverv1.DatabaseSpec) error {
 	if merged.GetEngine() == enginePostgreSQL {
-		return f.updatePostgreSQLDistribution(merged, in)
+		return updatePostgreSQLDistribution(merged, in)
 	}
 	if (merged.GetDistribution() == nil) != (in.GetDistribution() == nil) {
 		return status.Error(codes.FailedPrecondition, "changing the distribution mode of a valkey database is not supported")
-	}
-	if err := f.gatePromotion(merged.GetDistribution(), in.GetDistribution()); err != nil {
-		return err
 	}
 	merged.Distribution = f.canonicalRegions(in.GetDistribution())
 	return nil
@@ -54,12 +52,10 @@ func (f *fakeServer) gatePromotion(old, next *serverv1.Distribution) error {
 	return nil
 }
 
-func (f *fakeServer) updatePostgreSQLDistribution(merged, in *serverv1.DatabaseSpec) error {
-	if err := f.gatePromotion(merged.GetDistribution(), in.GetDistribution()); err != nil {
-		return err
-	}
+func updatePostgreSQLDistribution(merged, in *serverv1.DatabaseSpec) error {
 	old, next := merged.GetDistribution(), in.GetDistribution()
-	if before, after := regionKeys(old), regionKeys(next); !slices.Equal(before, after) {
+	standby := old.GetMode() == distributionStandby && next.GetMode() == distributionStandby
+	if before, after := regionKeys(old), regionKeys(next); !standby && !slices.Equal(before, after) {
 		mode := distributionLocal
 		if len(before) > 0 {
 			mode = old.GetMode()
@@ -67,6 +63,81 @@ func (f *fakeServer) updatePostgreSQLDistribution(merged, in *serverv1.DatabaseS
 		return status.Errorf(codes.InvalidArgument, "changing the regions or cluster bindings of a %s database is not supported yet", mode)
 	}
 	merged.Distribution = next
+	return nil
+}
+
+type fakeRegion struct {
+	cloud, region string
+	placement     *serverv1.RegionPlacement
+}
+
+func regionEntries(d *serverv1.Distribution) map[string]fakeRegion {
+	out := map[string]fakeRegion{}
+	for cloud, c := range d.GetClouds() {
+		for region, p := range c.GetRegions() {
+			out[regionKey(cloud, region)] = fakeRegion{cloud: cloud, region: region, placement: p}
+		}
+	}
+	return out
+}
+
+func regionsMissingFrom(have, other map[string]fakeRegion) []fakeRegion {
+	var out []fakeRegion
+	for _, key := range slices.Sorted(maps.Keys(have)) {
+		if _, ok := other[key]; !ok {
+			out = append(out, have[key])
+		}
+	}
+	return out
+}
+
+func (f *fakeServer) gateDistribution(old, next *serverv1.DatabaseSpec) error {
+	if err := f.standbyRegionChange(old, next); err != nil {
+		return err
+	}
+	return f.gatePromotion(old.GetDistribution(), next.GetDistribution())
+}
+
+func (f *fakeServer) standbyRegionChange(old, next *serverv1.DatabaseSpec) error {
+	if old.GetDistribution().GetMode() != distributionStandby || next.GetDistribution().GetMode() != distributionStandby {
+		return nil
+	}
+	before, after := regionEntries(old.GetDistribution()), regionEntries(next.GetDistribution())
+	added, removed := regionsMissingFrom(after, before), regionsMissingFrom(before, after)
+	if changes := len(added) + len(removed); changes == 0 {
+		return nil
+	} else if changes > 1 {
+		return status.Errorf(codes.FailedPrecondition, "add or remove one region of a standby database per update, this update changes %d", changes)
+	}
+	expected := proto.Clone(old).(*serverv1.DatabaseSpec)
+	var region fakeRegion
+	if len(removed) == 1 {
+		region = removed[0]
+		if region.placement.GetPrimary() {
+			return status.Errorf(codes.FailedPrecondition, "region %s/%s holds the primary marker, so it cannot be removed; promote another region by moving the marker first", region.cloud, region.region)
+		}
+		delete(expected.Distribution.Clouds[region.cloud].Regions, region.region)
+		if len(expected.Distribution.Clouds[region.cloud].Regions) == 0 {
+			delete(expected.Distribution.Clouds, region.cloud)
+		}
+	} else {
+		region = added[0]
+	}
+	if !strings.EqualFold(primaryRegionOf(old.GetDistribution()), primaryRegionOf(next.GetDistribution())) {
+		return status.Error(codes.FailedPrecondition, "the update moves the primary marker together with a region change; promote in one update and add or remove the region in another")
+	}
+	if len(added) == 1 {
+		if expected.Distribution.Clouds[region.cloud] == nil {
+			expected.Distribution.Clouds[region.cloud] = &serverv1.CloudRegions{Regions: map[string]*serverv1.RegionPlacement{}}
+		}
+		expected.Distribution.Clouds[region.cloud].Regions[region.region] = proto.Clone(region.placement).(*serverv1.RegionPlacement)
+	}
+	if !proto.Equal(next, expected) {
+		return status.Error(codes.FailedPrecondition, "the update changes the regions together with other fields; send the region change alone and the other fields in a separate update")
+	}
+	if f.noTopologyOps {
+		return status.Error(codes.Unimplemented, "adding or removing a region of a standby database runs as a topology operation: topology operations are not enabled on this deployment")
+	}
 	return nil
 }
 
