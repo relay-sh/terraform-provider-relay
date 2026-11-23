@@ -1,7 +1,6 @@
 package provider
 
 import (
-	"slices"
 	"strings"
 
 	"github.com/hashicorp/terraform-plugin-framework/diag"
@@ -12,9 +11,11 @@ import (
 var postgresqlDistribution = distributionEngine{
 	description: "Spreads the cluster across regions as a standby: one region serves reads and writes, and every other region runs a full copy of the cluster " +
 		"that replicates from it and can be promoted. Add the block when you create the cluster: the platform cannot spread an existing cluster, " +
-		"cannot add or remove a region of one that is spread, and a cluster restored from a backup cannot have it. " +
+		"and a cluster restored from a backup cannot have it. " +
 		"The regions share one credentials Secret, so users and passwords are the same in all of them. " +
 		"Move the primary by setting `primary = true` on another region and `false` on the current one. " +
+		"Add or remove one region per update, with nothing else changed in it and without moving the primary. " +
+		"The primary region and the region the node groups run in cannot be removed. " +
 		"The platform refuses a promotion while the new primary has not synchronized; " +
 		"forcing one can lose data and is not available from Terraform, so use the API, CLI or dashboard. " +
 		"This is unrelated to a node group's `role = \"standby\"`. " +
@@ -46,13 +47,6 @@ func rejectDistributionChange(plan, prior types.Object, diags *diag.Diagnostics)
 	case plan.IsNull():
 		diags.AddAttributeError(root, "Distribution cannot be removed",
 			"The platform cannot turn a PostgreSQL cluster spread across regions back into a single-region one. Keep the distribution block.")
-	default:
-		was, _ := distributionPlaced(prior)
-		if now, ok := distributionPlaced(plan); ok && !slices.Equal(was, now) {
-			diags.AddAttributeError(root.AtName("region"), "Regions cannot change",
-				"The platform cannot add or remove a region of a PostgreSQL standby distribution, only move its primary. "+
-					"Regions in state: "+strings.Join(was, ", ")+"; in the configuration: "+strings.Join(now, ", ")+".")
-		}
 	}
 }
 

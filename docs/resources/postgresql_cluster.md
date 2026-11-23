@@ -112,6 +112,11 @@ resource "relay_postgresql_cluster" "ledger" {
       cloud  = "aws"
       region = "eu-west-1"
     }
+
+    region {
+      cloud  = "aws"
+      region = "eu-central-1"
+    }
   }
 }
 
@@ -133,7 +138,7 @@ output "ledger_standby_links" {
 
 - `default_connections` (Attributes) Relay-managed users the platform creates once the cluster is running, each with a Relay connection that uses it: one read-only, one read-write and one admin. Omitted on create, all three are created, as the Relay console does; omitted afterwards, the current value is kept. Changing a role on an existing cluster creates it, or deletes its connection and then its user, without replacing the cluster; a user whose roles were changed outside Relay is kept. The platform applies a change after the apply returns. (see [below for nested schema](#nestedatt--default_connections))
 - `deletion_protection` (Boolean) While `true`, the platform refuses to delete the cluster, and `terraform destroy` or a replacement fails before deleting it. Turning it on needs deletion protection enabled for the organization. Turning it off needs the `org.deletion_protection.disable` permission, which the owner and admin roles hold.
-- `distribution` (Block, Optional) Spreads the cluster across regions as a standby: one region serves reads and writes, and every other region runs a full copy of the cluster that replicates from it and can be promoted. Add the block when you create the cluster: the platform cannot spread an existing cluster, cannot add or remove a region of one that is spread, and a cluster restored from a backup cannot have it. The regions share one credentials Secret, so users and passwords are the same in all of them. Move the primary by setting `primary = true` on another region and `false` on the current one. The platform refuses a promotion while the new primary has not synchronized; forcing one can lose data and is not available from Terraform, so use the API, CLI or dashboard. This is unrelated to a node group's `role = "standby"`. The `stretched` mode, one cluster across regions on a shared etcd, is not available from Terraform. (see [below for nested schema](#nestedblock--distribution))
+- `distribution` (Block, Optional) Spreads the cluster across regions as a standby: one region serves reads and writes, and every other region runs a full copy of the cluster that replicates from it and can be promoted. Add the block when you create the cluster: the platform cannot spread an existing cluster, and a cluster restored from a backup cannot have it. The regions share one credentials Secret, so users and passwords are the same in all of them. Move the primary by setting `primary = true` on another region and `false` on the current one. Add or remove one region per update, with nothing else changed in it and without moving the primary. The primary region and the region the node groups run in cannot be removed. The platform refuses a promotion while the new primary has not synchronized; forcing one can lose data and is not available from Terraform, so use the API, CLI or dashboard. This is unrelated to a node group's `role = "standby"`. The `stretched` mode, one cluster across regions on a shared etcd, is not available from Terraform. (see [below for nested schema](#nestedblock--distribution))
 - `keep_backups_on_destroy` (Boolean) Keep the cluster's backups when it is destroyed.
 - `managed_by` (String) The tool that manages this cluster, recorded by Relay. Defaults to `terraform`; set it to another tool or an empty string. Clusters created before this attribute existed are tagged on the next apply.
 - `parameters` (Map of String) PostgreSQL settings (GUCs). An empty map resets them to defaults; omitting the attribute leaves them unmanaged. Some need a restart, which Relay orchestrates with a switchover.

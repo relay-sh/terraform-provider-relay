@@ -97,6 +97,11 @@ resource "relay_postgresql_cluster" "ledger" {
       cloud  = "aws"
       region = "eu-west-1"
     }
+
+    region {
+      cloud  = "aws"
+      region = "eu-central-1"
+    }
   }
 }
 

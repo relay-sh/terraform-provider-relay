@@ -113,7 +113,7 @@ func TestValkeyClusterResource_StandbyDistribution(t *testing.T) {
 			},
 			{
 				Config:      standbyConfig(f, east, eu, standbyRegion("aws", "sa-east-1", false)),
-				ExpectError: regexp.MustCompile(`(?s)Cannot update cluster.*cannot be promoted yet`),
+				ExpectError: regexp.MustCompile(`(?s)Cannot update cluster.*primary\s+marker\s+together\s+with\s+a\s+region\s+change`),
 			},
 			{
 				PreConfig: func() {
