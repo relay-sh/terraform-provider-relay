@@ -98,6 +98,7 @@ Read-Only:
 Read-Only:
 
 - `cloud` (String) Cloud of the region.
+- `endpoint` (String) Hostname of this region's own endpoint, on a standby region as well. Empty when the region has no DNS cell of its own and without the `region_endpoints` feature.
 - `held` (String) Why the operator holds this region's role change; empty when nothing is held.
 - `message` (String) Detail for the phase.
 - `phase` (String) Lifecycle phase of the cluster in this region.

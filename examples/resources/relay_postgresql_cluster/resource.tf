@@ -108,3 +108,7 @@ resource "relay_postgresql_cluster" "ledger" {
 output "ledger_standby_links" {
   value = { for r in relay_postgresql_cluster.ledger.regions : "${r.cloud}/${r.region}" => r.replication_link if r.role == "standby" }
 }
+
+output "ledger_region_endpoints" {
+  value = { for r in relay_postgresql_cluster.ledger.regions : "${r.cloud}/${r.region}" => r.endpoint }
+}
